@@ -14,28 +14,33 @@
             (repl/repl (common/ctx))))
 
 (defn parse-opts [opts]
-  (let [opts (str/trim opts)
-        opts (if (str/starts-with? opts "{")
-               (edn/read-string opts)
-               (let [parts (str/split opts #":")
-                     [host port] (if (= 1 (count parts))
-                                   [nil (Integer. ^String (first parts))]
-                                   [(first parts) (Integer. ^String (second parts))])]
-                 {:address host
-                  :port port
-                  :name "bb"
-                  :accept 'clojure.core.server/repl
-                  :args []}))]
-    opts))
+  (let [opts (str/trim opts)]
+    (cond
+      (str/starts-with? opts "{")
+      (edn/read-string opts)
+
+      (str/starts-with? opts "unix://")
+      {:socket (subs opts (count "unix://"))
+       :name "bb"
+       :accept 'clojure.core.server/repl
+       :args []}
+
+      :else
+      (let [parts (str/split opts #":")
+            [host port] (if (= 1 (count parts))
+                          [nil (Integer. ^String (first parts))]
+                          [(first parts) (Integer. ^String (second parts))])]
+        {:address host
+         :port port
+         :name "bb"
+         :accept 'clojure.core.server/repl
+         :args []}))))
 
 (defn start-repl! [opts sci-ctx]
   (let [opts (parse-opts opts)
-        socket (server/start-server sci-ctx opts)
-        inet-address (java.net.InetAddress/getByName (:address opts))]
+        socket (server/start-server sci-ctx opts)]
     (binding [*out* *err*]
-      (println (format "Babashka socket REPL started at %s:%d"
-                       (.getHostAddress inet-address)
-                       (.getLocalPort socket))))
+      (println (str "Babashka socket REPL started at " (server/describe socket))))
     socket))
 
 (defn stop-repl! []

@@ -217,6 +217,7 @@ REPL:
 
   repl                 Start REPL.
   socket-repl  [addr]  Start a socket REPL. Address defaults to localhost:1666.
+                       Addr may also be a UNIX domain socket: unix://<path>.
   nrepl-server [addr]  Start nREPL server. Address defaults to localhost:1667.
 
 Tasks:
@@ -368,8 +369,20 @@ Use bb run --help to show this help output.
                         sci/file (.getAbsolutePath f)}
       (sci/eval-string* (common/ctx) s))))
 
+(defn- exit-on-server-error
+  "Runs f. When it throws an ex-info about a server socket, prints the
+  message without a stack trace and exits."
+  [f]
+  (try (f)
+       (catch clojure.lang.ExceptionInfo e
+         (if (:socket (ex-data e))
+           (do (binding [*out* *err*]
+                 (println (ex-message e)))
+               (System/exit 1))
+           (throw e)))))
+
 (defn start-socket-repl! [address ctx]
-  (socket-repl/start-repl! address ctx))
+  (exit-on-server-error #(socket-repl/start-repl! address ctx)))
 
 (defn start-nrepl! [address]
   (let [opts (nrepl-server/parse-opt address)]

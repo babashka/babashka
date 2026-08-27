@@ -22,7 +22,10 @@
   (:import
    [clojure.lang LineNumberingPushbackReader]
    [java.io BufferedWriter InputStreamReader OutputStreamWriter]
-   [java.net InetAddress Socket ServerSocket SocketException]
+   [java.net BindException InetAddress Socket ServerSocket SocketException
+    StandardProtocolFamily UnixDomainSocketAddress]
+   [java.nio.channels Channels ClosedChannelException ServerSocketChannel SocketChannel]
+   [java.nio.file Files LinkOption Path Paths]
    [java.util.concurrent.locks ReentrantLock]))
 
 (set! *warn-on-reflection* true)
@@ -57,6 +60,77 @@
           (throw (Exception. (str "can't resolve: " valf)))))
     valf))
 
+(defprotocol Listener
+  (accept-conn [listener] "Blocks until a client connects; returns the connection.")
+  (listener-closed? [listener])
+  (close-listener! [listener])
+  (describe [listener] "Human-readable address, for the startup banner."))
+
+(defprotocol Connection
+  (conn-in [conn])
+  (conn-out [conn])
+  (close-conn! [conn]))
+
+(extend-protocol Connection
+  Socket
+  (conn-in [conn] (.getInputStream conn))
+  (conn-out [conn] (.getOutputStream conn))
+  (close-conn! [conn] (.close conn))
+  SocketChannel
+  (conn-in [conn] (Channels/newInputStream conn))
+  (conn-out [conn] (Channels/newOutputStream conn))
+  (close-conn! [conn] (.close conn)))
+
+(extend-protocol Listener
+  ServerSocket
+  (accept-conn [listener] (.accept listener))
+  (listener-closed? [listener] (.isClosed listener))
+  (close-listener! [listener] (.close listener))
+  (describe [listener]
+    (str (.getHostAddress (.getInetAddress listener)) ":" (.getLocalPort listener))))
+
+(defrecord UnixListener [^ServerSocketChannel channel ^Path path]
+  Listener
+  (accept-conn [_] (.accept channel))
+  (listener-closed? [_] (not (.isOpen channel)))
+  (close-listener! [_]
+    (.close channel)
+    (Files/deleteIfExists path))
+  (describe [_] (str path)))
+
+(defn- bind-unix-listener ^ServerSocketChannel [^Path path]
+  (let [address (UnixDomainSocketAddress/of path)
+        channel (ServerSocketChannel/open StandardProtocolFamily/UNIX)]
+    (try (.bind channel address)
+         (catch BindException e
+           ;; A file already exists at path. If nothing accepts connections on
+           ;; it, it was left behind by a dead process: remove it and rebind.
+           (let [stale? (try (.close (SocketChannel/open address)) false
+                             (catch java.io.IOException _ true))]
+             (if stale?
+               (do (Files/deleteIfExists path)
+                   (.bind channel address))
+               (do (.close channel)
+                   (throw (ex-info (str "A server is already listening on " path)
+                                   {:socket (str path)} e))))))
+         (catch SocketException e
+           ;; e.g. ENOENT: the parent directory of path does not exist
+           (.close channel)
+           (let [parent (.getParent path)
+                 msg (if (and parent (not (Files/exists parent (into-array LinkOption []))))
+                       (str "Cannot start server at " path
+                            ": parent directory " parent " does not exist")
+                       (str "Cannot start server at " path ": " (.getMessage e)))]
+             (throw (ex-info msg {:socket (str path)} e)))))
+    channel))
+
+(defn- unix-listener [{:keys [socket]}]
+  (let [path (.toAbsolutePath (Paths/get ^String socket (into-array String [])))
+        channel (bind-unix-listener path)]
+    ;; SIGINT/exit is the normal way these servers stop; clean up the file.
+    (.deleteOnExit (.toFile path))
+    (->UnixListener channel path)))
+
 (defn- accept-connection
   "Start accept function, to be invoked on a client thread, given:
     conn - client socket
@@ -67,7 +141,7 @@
     err - err stream
     accept - accept fn symbol to invoke
     args - to pass to accept-fn"
-  [ctx ^Socket conn client-id in out err accept args]
+  [ctx conn client-id in out err accept args]
   (let [accept (resolve-fn ctx accept)]
     (try
       (binding [*session* {:server name :client client-id}]
@@ -79,45 +153,51 @@
             (alter-var-root #'servers assoc-in [name :sessions client-id] {}))
           (apply accept args)))
       (catch SocketException _disconnect)
+      (catch ClosedChannelException _disconnect)
       (finally
         (with-lock lock
           (alter-var-root #'servers update-in [name :sessions] dissoc client-id))
-        (.close conn)))))
+        (close-conn! conn)))))
 
 (defn start-server
   "Start a socket server given the specified opts:
     :address Host or address, string, defaults to loopback address
-    :port Port, integer, required
+    :port Port, integer, required unless :socket is given
+    :socket Path to a UNIX domain socket file, mutually exclusive with :address and :port
     :name Name, required
     :accept Namespaced symbol of the accept function to invoke, required
     :args Vector of args to pass to accept function
     :bind-err Bind *err* to socket out stream?, defaults to true
     :server-daemon Is server thread a daemon?, defaults to true
     :client-daemon Are client threads daemons?, defaults to true
-   Returns server socket."
-  ^ServerSocket [ctx opts]
-  (let [{:keys [address port name accept args bind-err server-daemon client-daemon]
+   Returns the server listener: a ServerSocket, or a UNIX domain socket
+   listener when :socket was given."
+  [ctx opts]
+  (let [{:keys [address port socket name accept args bind-err server-daemon client-daemon]
          :or {bind-err true
               server-daemon true
               client-daemon true}} opts
-        address (InetAddress/getByName address)  ;; nil returns loopback
-        socket (ServerSocket. port 0 address)]
+        socket (if socket
+                 (unix-listener opts)
+                 ;; nil address returns loopback
+                 (ServerSocket. port 0 (InetAddress/getByName address)))]
     (with-lock lock
       (alter-var-root #'servers assoc name {:name name, :socket socket, :sessions {}}))
     (thread
       (str "Clojure Server " name) server-daemon
       (try
         (loop [client-counter 1]
-          (when (not (.isClosed socket))
+          (when (not (listener-closed? socket))
             (try
-              (let [conn (.accept socket)
-                    in (LineNumberingPushbackReader. (InputStreamReader. (.getInputStream conn)))
-                    out (BufferedWriter. (OutputStreamWriter. (.getOutputStream conn)))
+              (let [conn (accept-conn socket)
+                    in (LineNumberingPushbackReader. (InputStreamReader. (conn-in conn)))
+                    out (BufferedWriter. (OutputStreamWriter. (conn-out conn)))
                     client-id (str client-counter)]
                 (thread
                   (str "Clojure Connection " name " " client-id) client-daemon
                   (accept-connection ctx conn client-id in out (if bind-err out *err*) accept args)))
-              (catch SocketException _disconnect))
+              (catch SocketException _disconnect)
+              (catch ClosedChannelException _disconnect))
             (recur (inc client-counter))))
         (finally
           (with-lock lock
@@ -132,10 +212,10 @@
    (stop-server (:server *session*)))
   ([name]
    (with-lock lock
-     (let [server-socket ^ServerSocket (get-in servers [name :socket])]
-       (when server-socket
+     (let [listener (get-in servers [name :socket])]
+       (when listener
          (alter-var-root #'servers dissoc name)
-         (.close server-socket)
+         (close-listener! listener)
          true)))))
 
 (defn stop-servers
