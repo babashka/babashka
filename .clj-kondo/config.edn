@@ -1,6 +1,6 @@
 {:config-paths ["babashka/sci"]
- :lint-as {babashka.ffi/defcfn clj-kondo.lint-as/def-catch-all
-           me.raynes.conch/let-programs clojure.core/let
+ :hooks {:analyze-call {babashka.ffi/defcfn hooks.babashka.ffi/defcfn}}
+ :lint-as {me.raynes.conch/let-programs clojure.core/let
            babashka.impl.File/gen-wrapper-fn clojure.core/def
            babashka.impl.Pattern/gen-wrapper-fn clojure.core/def
            babashka.impl.File/gen-wrapper-fn-2 clojure.core/def

@@ -831,23 +831,40 @@
   (when (< (count args) 3)
     (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
                     {:name name})))
-  ;; the C symbol is the first element that its argtypes vector directly
-  ;; follows, so a leading string is a docstring only when no vector
-  ;; follows it
-  (let [[docstring args] (if (and (string? (first args))
-                                  (not (vector? (second args))))
-                           [(first args) (rest args)]
-                           [nil args])
-        [attr-map args] (if (map? (first args))
-                          [(first args) (rest args)]
-                          [nil args])
-        [sym argtypes rettype & wrapper] args]
-    (when-not (vector? argtypes)
+  ;; the first literal vector is the argtypes and anchors the parse: the C
+  ;; symbol sits before it, the return type after it, and a wrapper follows.
+  ;; Without a literal vector there can be no wrapper, and the last three
+  ;; arguments are the binding, as they always were.
+  (let [anchor (first (keep-indexed (fn [i a] (when (vector? a) i)) args))
+        [prefix sym argtypes rettype wrapper]
+        (if (and anchor (pos? anchor))
+          [(take (dec anchor) args)
+           (nth args (dec anchor))
+           (nth args anchor)
+           (when (> (count args) (inc anchor)) (nth args (inc anchor)))
+           (drop (+ anchor 2) args)]
+          [(drop-last 3 args)
+           (first (take-last 3 args))
+           (second (take-last 3 args))
+           (last args)
+           nil])
+        docstring (first (filter string? prefix))
+        attr-map (first (filter map? prefix))]
+    (when (nil? rettype)
       (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
+                      {:name name})))
+    (when-not (and (<= (count prefix) 2)
+                   (<= (count (filter string? prefix)) 1)
+                   (<= (count (filter map? prefix)) 1)
+                   (every? #(or (string? %) (map? %)) prefix))
+      (throw (ex-info "babashka.ffi: defcfn takes at most a docstring and an attribute map before the C symbol"
                       {:name name})))
     (when (and (seq wrapper)
                (not (and (symbol? (first wrapper)) (next wrapper))))
       (throw (ex-info "babashka.ffi: the defcfn wrapper form is a symbol for the raw binding followed by a fn tail"
+                      {:name name})))
+    (when (= (first wrapper) name)
+      (throw (ex-info "babashka.ffi: the raw binding of the defcfn wrapper form needs its own name"
                       {:name name})))
     (let [native-fn (first wrapper)
           fn-tail (next wrapper)

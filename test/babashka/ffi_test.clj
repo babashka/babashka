@@ -147,6 +147,22 @@
                        ([~'x ~'y] (~'raw-pow ~'x ~'y)))
                       [(~'pow* 3.0) (~'pow* 2.0 3.0)
                        (:arglists (meta (resolve '~'pow*)))])))))
+    (testing "argtypes may be an expression in the plain form, as before"
+      (is (= 42 (bb `(do ~ffi-require
+                         (def ~'arg-types [:long])
+                         (~'defcfn ~'labs3 "labs" ~'arg-types :long)
+                         (~'labs3 -42))))))
+    (testing "the attribute map may precede the docstring, as before"
+      (is (= ["Doc." true]
+             (bb `(do ~ffi-require
+                      (~'defcfn ~'labs4 {:private true} "Doc." "labs" [:long] :long)
+                      (let [m# (meta (resolve '~'labs4))]
+                        [(:doc m#) (:private m#)]))))))
+    (testing "the raw binding needs its own name"
+      (is (thrown-with-msg?
+           Exception #"its own name"
+           (bb `(do ~ffi-require
+                    (~'defcfn ~'same "labs" [:long] :long ~'same [x#] (~'same x#)))))))
     (testing "the wrapper marker must be a symbol with a fn tail"
       (is (thrown-with-msg?
            Exception #"wrapper form"
