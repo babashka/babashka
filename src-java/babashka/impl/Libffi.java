@@ -21,6 +21,11 @@ public final class Libffi {
     private static native void ffi_call(PointerBase cif, PointerBase fn,
                                         PointerBase rvalue, PointerBase avalues);
 
+    @CFunction(value = "ffi_prep_cif_var", transition = Transition.TO_NATIVE)
+    private static native int ffi_prep_cif_var(PointerBase cif, int abi,
+                                               int nfixed, int ntotal,
+                                               PointerBase rtype, PointerBase atypes);
+
     // This leaf function returns a constant.
     @CFunction(value = "ffi_get_version", transition = Transition.NO_TRANSITION)
     private static native CCharPointer ffi_get_version();
@@ -28,6 +33,12 @@ public final class Libffi {
     /** Returns the linked libffi version. */
     public static String version() {
         return CTypeConversion.toJavaString(ffi_get_version());
+    }
+
+    public static int prepCifVar(long cif, int abi, int nfixed, int ntotal,
+                                 long rtype, long atypes) {
+        return ffi_prep_cif_var(WordFactory.pointer(cif), abi, nfixed, ntotal,
+                                WordFactory.pointer(rtype), WordFactory.pointer(atypes));
     }
 
     public static int prepCif(long cif, int abi, int nargs, long rtype, long atypes) {

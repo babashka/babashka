@@ -427,6 +427,44 @@
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/cfn "printf" [:&] :int))))))))
 
+(deftest libffi-fallback-test
+  ;; a native image routes what the trampolines do not cover through libffi
+  (when (and (not skip?) @libffi?)
+    (let [native? (= "native" (System/getenv "BABASHKA_TEST_ENV"))]
+      (testing "a variadic call beyond the descriptor limits"
+        (let [[r1 r2] (bb `(do ~ffi-require
+                               (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                                     buf# (ffi/alloc 64)
+                                     r1# (do (f# buf# 64 "%d %d %d %d %d %d" 1 2 3 4 5 6)
+                                             (ffi/ptr->string buf#))
+                                     r2# (do (f# buf# 64 "a=%.1f b=%.1f c=%.1f" 1.5 2.5 3.5)
+                                             (ffi/ptr->string buf#))]
+                                 (ffi/free buf#)
+                                 [r1# r2#])))]
+          (is (= "1 2 3 4 5 6" r1))
+          ;; the decimal separator follows the C locale of the process
+          (is (contains? #{"a=1.5 b=2.5 c=3.5" "a=1,5 b=2,5 c=3,5"} r2))))
+      (testing "nil and a pointer in a variadic tail encode as they do on the JVM"
+        (is (true? (bb `(do ~ffi-require
+                            (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                                  buf# (ffi/alloc 64)
+                                  n# (f# buf# 64 "%p %p" buf# nil)
+                                  s# (ffi/ptr->string buf#)]
+                              (ffi/free buf#)
+                              (and (pos? n#) (string? s#) (pos? (count s#)))))))))
+      (testing "the variadic binding names its backend"
+        (is (= (if native? :libffi :ffm)
+               (bb `(do ~ffi-require
+                        (:babashka.ffi/backend
+                         (meta (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int))))))))
+      (when @struct-lib
+        (testing "a fixed signature outside the trampoline family"
+          (is (= [10.0 (if native? :libffi :ffm)]
+                 (bb `(do ~(lib-require @struct-lib)
+                          (let [f# (ffi/cfn "mix4" [:float :double :float :double] :double)]
+                            [(f# 1.0 2.0 3.0 4.0)
+                             (:babashka.ffi/backend (meta f#))]))))))))))
+
 (deftest address-test
   (when-not skip?
     (testing "cfn binds a function pointer"
@@ -679,45 +717,26 @@
                                       ((ffi/cfn "bb_no_such_symbol" [] :void)))))))))
 
 (deftest documented-limits-test
-  ;; the limits in doc/ffi.md are a contract: check both sides of each rule
-  (when (and (not skip?) tu/native?)
-    (let [bind (fn [args ret]
-                 (bb `(do (require '[babashka.ffi :as ~'ffi])
-                          (try (ffi/cfn "abs" ~args ~ret) :ok
-                               (catch Exception _# :refused)))))]
-      (testing "signatures the docs say fit"
-        (is (= [:ok :ok :ok :ok :ok :ok]
-               [(bind [:pointer :pointer :int :int :double :float] :void)
-                (bind [:pointer :double :float :double] :void)
-                (bind [:float :float :float :float] :void)
-                (bind [:double :double :double :double] :void)
-                (bind (vec (repeat 10 :long)) :long)
-                (bind [:int :int :int :int] :float)])))
-      (testing "signatures the docs say do not fit"
-        (is (= [:refused :refused :refused :refused]
-               [(bind [:pointer :pointer :int :int :int :double :float] :void)
-                (bind [:double :double :double :float] :void)
-                (bind (vec (repeat 11 :long)) :long)
-                (bind [:int :int :int :int :int] :float)]))))))
-
-(deftest unsupported-signature-test
-  ;; native image only: the JVM path has no signature limits
-  (when (and (not skip?) tu/native?)
-    (testing "out-of-family signatures fail at bind time with the limits"
-      (is (thrown-with-msg?
-           Exception #"unsupported signature"
-           (bb `(do (require '[babashka.ffi :as ~'ffi])
-                    (ffi/cfn "printf"
-                             [:double :double :double :double :float :long :long :long]
-                             :double)))))
-      (is (thrown-with-msg?
-           Exception #"unsupported signature"
-           (bb `(do (require '[babashka.ffi :as ~'ffi])
-                    ((ffi/cfn "printf" [:string :&] :int) "%d %d %d %d %d" 1 2 3 4 5)))))
-      (is (thrown-with-msg?
-           Exception #"unsupported signature"
-           (bb `(do (require '[babashka.ffi :as ~'ffi])
-                    (ffi/cfn "printf" [:string :&] :double))))))))
+  ;; the trampoline set in doc/ffi.md is a contract: a shape in the set
+  ;; compiles, a shape outside it calls through libffi
+  (when (and (not skip?) tu/native? @libffi?)
+    (let [backend (fn [args ret]
+                    (bb `(do (require '[babashka.ffi :as ~'ffi])
+                             (:babashka.ffi/backend (meta (ffi/cfn "abs" ~args ~ret))))))]
+      (testing "shapes the docs say compile"
+        (is (= (vec (repeat 6 :trampoline))
+               [(backend [:pointer :pointer :int :int :double :float] :void)
+                (backend [:pointer :double :float :double] :void)
+                (backend [:float :float :float :float] :void)
+                (backend [:double :double :double :double] :void)
+                (backend (vec (repeat 10 :long)) :long)
+                (backend [:int :int :int :int] :float)])))
+      (testing "shapes outside the set go through libffi"
+        (is (= (vec (repeat 4 :libffi))
+               [(backend [:pointer :pointer :int :int :int :double :float] :void)
+                (backend [:double :double :double :float] :void)
+                (backend (vec (repeat 11 :long)) :long)
+                (backend [:int :int :int :int :int] :float)]))))))
 
 (deftest error-test
   (when-not skip?
@@ -846,12 +865,15 @@
               compiled trampoline backend - a fallback to the interpreted FFM
               path is a 75x performance regression. Windows has ordered
               trampolines, so mixed shapes compile there too"
-      (is (= (if tu/native? [:trampoline :trampoline :ffm] [:ffm :ffm :ffm])
+      (is (= (cond (not tu/native?) [:ffm :ffm :ffm]
+                   ;; a native build without libffi keeps the FFM fallback
+                   @libffi? [:trampoline :trampoline :libffi]
+                   :else [:trampoline :trampoline :ffm])
              (bb `(do ~ffi-require
                       (mapv (comp :babashka.ffi/backend meta)
                             [(ffi/cfn "abs" [:int] :int)
                              (ffi/cfn "ldexp" [:double :int] :double)
-                             ;; variadic stays on FFM by design
+                             ;; variadic goes through libffi in the image
                              (ffi/cfn ~snprintf-sym
                                       [:pointer :size_t :string :&]
                                       :int)]))))))))
