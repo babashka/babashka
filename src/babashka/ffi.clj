@@ -820,7 +820,7 @@
   the symbol.
 
   The wrapper form binds the raw C function to a local name and defines name
-  as the public wrapper:
+  as the wrapper:
 
       (defcfn open-db
         \"sqlite3_open_v2\" [:string :pointer :int :string] :int

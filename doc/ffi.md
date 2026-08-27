@@ -229,7 +229,7 @@ library value after the first call do not change the binding.
 
 ### Wrap the binding in one form
 
-Use the wrapper form of `defcfn` to define a raw binding and a public wrapper
+Use the wrapper form of `defcfn` to define a raw binding and a wrapper
 together:
 
 ```clojure

@@ -37,11 +37,23 @@
         wrap-do (fn [n]
                   (if (seq extras)
                     (api/list-node (concat [(api/token-node 'do)] extras [n]))
-                    n))]
+                    n))
+        ;; The arity that argtypes declares: _argN per fixed type, variadic
+        ;; past :&.
+        arg-params (fn []
+                     (let [types (:children argtypes)
+                           variadic? (= :& (some-> (last types) api/sexpr))
+                           fixed (if variadic? (butlast types) types)]
+                       (api/vector-node
+                        (cond-> (mapv (fn [i] (api/token-node (symbol (str "_arg" i))))
+                                      (range (count fixed)))
+                          variadic? (conj (api/token-node '&)
+                                          (api/token-node '_rest))))))]
     {:node
      (cond
        (seq wrapper)
-       ;; Bind raw in each arity.
+       ;; Bind raw in each arity, with the arity that argtypes declares, so
+       ;; a raw call with the wrong number of arguments is reported.
        (let [raw (first wrapper)
              tail (rest wrapper)
              arities (if (api/vector-node? (first tail))
@@ -55,24 +67,16 @@
                         (api/vector-node
                          [raw (api/list-node
                                [(api/token-node 'clojure.core/fn)
-                                (api/vector-node [(api/token-node '&)
-                                                  (api/token-node '_)])])])
+                                (arg-params)])])
                         (api/list-node
                          (list* (api/token-node 'do) body))])]))]
          (wrap-do (api/list-node (into head (map bind arities)))))
 
        ;; Model literal argtypes as a fixed or variadic arity.
        anchor
-       (let [types (:children argtypes)
-             variadic? (= :& (some-> (last types) api/sexpr))
-             fixed (if variadic? (butlast types) types)
-             params (cond-> (mapv (fn [i] (api/token-node (symbol (str "_arg" i))))
-                                  (range (count fixed)))
-                      variadic? (conj (api/token-node '&)
-                                      (api/token-node '_rest)))]
-         (wrap-do (api/list-node (conj head
-                                       (api/vector-node params)
-                                       (api/token-node nil)))))
+       (wrap-do (api/list-node (conj head
+                                     (arg-params)
+                                     (api/token-node nil))))
 
        ;; Dynamic argtypes have no static arity.
        :else
