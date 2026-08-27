@@ -278,8 +278,10 @@ becomes `nil`.
 A C function can take a struct as an argument, or return one, without a
 pointer in between. On that position in the signature, write a layout
 instead of a type keyword. A struct layout has the form `[:struct fields]`.
-Each field is a `[name type]` pair. A type is a type keyword or another
-layout. A struct value is a map of its fields:
+Each field is a `[name type]` pair, in the order of the C declaration: the
+order decides the offsets in memory, the name only decides the key in the
+map. A type is a type keyword or another layout. A struct value is a map of
+its fields, in any order:
 
 ```clojure
 (defcfn c-div "div" [:int :int] [:struct [[:quot :int] [:rem :int]]])
