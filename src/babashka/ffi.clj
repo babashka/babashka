@@ -28,8 +28,9 @@
   represents a one-byte C boolean and returns true or false. Thus, a C
   predicate does not return the truthy number 0.
 
-  Use a layout for a struct that C passes or returns by value. Use a map for
-  its field values:
+  A function that takes a struct as an argument, or returns one, without a
+  pointer in between, gets a layout on that position in the signature. A
+  struct value is a map of its fields:
 
       (ffi/defcfn c-div \"div\" [:int :int] [:struct [[:quot :int] [:rem :int]]])
       (c-div 7 2)   ;=> {:quot 3 :rem 1}
@@ -602,8 +603,9 @@
 (defn cfn
   "Creates a Clojure function that calls the C function sym. sym is a C symbol
   name or a function pointer. argtypes is a vector of type keywords. rettype
-  is a type keyword. Use a layout for a struct that C passes or returns by
-  value. Use a map for its field values. Struct calls use libffi.
+  is a type keyword. A struct that the function takes as an argument, or
+  returns, without a pointer in between, is a layout on that position, and
+  its value is a map of its fields. Struct calls use libffi.
 
   Use a function pointer for a function that has no exported name. The pointer
   can come from a loader, C function, struct field, find-symbol, or callback.
@@ -1220,7 +1222,8 @@
       entry)))
 
 (defn- struct-cfn
-  "Returns a libffi binding that passes or returns a struct by value. Builds
+  "Returns a libffi binding for a signature with a struct argument or return
+  value. Builds
   the cif and ffi_type trees once in the global arena. Each call uses one
   allocation for its temporary values."
   [lib sym argtypes rettype]

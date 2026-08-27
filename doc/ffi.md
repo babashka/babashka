@@ -275,9 +275,11 @@ becomes `nil`.
 
 ### Pass a struct by value
 
-Use a layout for a struct that C passes or returns by value. A struct layout
-has the form `[:struct fields]`. Each field is a `[name type]` pair. A type is
-a type keyword or another layout. Use a map for a struct value:
+A C function can take a struct as an argument, or return one, without a
+pointer in between. On that position in the signature, write a layout
+instead of a type keyword. A struct layout has the form `[:struct fields]`.
+Each field is a `[name type]` pair. A type is a type keyword or another
+layout. A struct value is a map of its fields:
 
 ```clojure
 (defcfn c-div "div" [:int :int] [:struct [[:quot :int] [:rem :int]]])
