@@ -997,7 +997,8 @@
 (defn- layout-of
   "Resolves a type keyword or struct layout. Returns a map with :type, :size,
   and :align. A struct also has :fields. Each field has a :name and :offset.
-  The offsets use natural C alignment.
+  The fields keep the order of the layout, the order of the C declaration,
+  and the offsets use natural C alignment.
 
   A layout is a vector that starts with its kind, such as [:struct fields].
   A keyword is a primitive type."
