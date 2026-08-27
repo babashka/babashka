@@ -159,7 +159,7 @@
                         (def ~'div-args [:int :int])
                         (~'defcfn ~'div* "div" ~'div-args [:struct [[:quot :int] [:rem :int]]])
                         (~'div* 7 2)))))))
-    (testing "an argtypes expression combines with a docstring and an attribute map"
+    (testing "dynamic argtypes preserve metadata"
       (is (= [42 "Dyn." true]
              (bb `(do ~ffi-require
                       (def ~'arg-types [:long])
@@ -973,7 +973,6 @@
                            edn/read-string))
           ffi-kinds (kinds (slurp "src/babashka/ffi.clj"))
           hook-kinds (kinds (slurp ".clj-kondo/hooks/babashka/ffi.clj"))]
-      ;; nil = nil must not pass as in sync
       (is (set? ffi-kinds))
       (is (set? hook-kinds))
       (is (= ffi-kinds hook-kinds)))))
