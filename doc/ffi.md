@@ -302,8 +302,7 @@ Layouts nest, and so do their values:
 A struct value must contain each layout field and no other field. A missing or
 unknown field causes an error.
 
-`sizeof` and `alignof` accept a layout. Babashka includes the required padding.
-When it binds the function, it compares the result with the libffi layout:
+`sizeof` and `alignof` accept a layout. Babashka includes the required padding:
 
 ```clojure
 (ffi/sizeof [:struct [[:c :char] [:d :double]]])
@@ -320,18 +319,21 @@ To map a struct to a value of your own, wrap the binding:
     (vec3 x y z)))
 ```
 
-Struct calls use libffi. A struct call takes approximately 1 microsecond. A
-call that uses only primitive types takes approximately 150 nanoseconds.
+A struct call goes through libffi, which places the arguments from a
+description of the call. When babashka binds the function, it compares its
+own struct layout with the one libffi computes; a difference is an error.
+A struct call takes approximately 1 microsecond, a call with only primitive
+types approximately 150 nanoseconds.
+
+Every babashka binary includes libffi, except the musl static binary and a
+build made with `BABASHKA_LIBFFI=none`. `bb describe` shows the version under
+`:libffi/version`. On the JVM, babashka loads the system libffi. Without
+libffi, a struct binding causes an error.
 
 This implementation does not support structs in variadic signatures.
 
 If a `:string` field contains a Clojure string, babashka allocates a temporary
 C string for the call. C must not keep its pointer after the call returns.
-
-Struct calls require libffi. The musl static binary and builds made with
-`BABASHKA_LIBFFI=none` do not include it. `bb describe` shows the included
-version under `:libffi/version`. On the JVM, babashka loads the system libffi.
-A struct binding causes an error if libffi is not available.
 
 ## Call a variadic function
 
