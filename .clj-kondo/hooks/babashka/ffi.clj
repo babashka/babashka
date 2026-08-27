@@ -1,16 +1,19 @@
 (ns hooks.babashka.ffi
   (:require [clj-kondo.hooks-api :as api]))
 
+(def ^:private layout-kinds
+  "Mirrors babashka.ffi/layout-kinds: extend both."
+  #{:struct})
+
 (defn- layout-vector?
-  "A layout such as [:struct ...] is a return type, never argtypes."
   [n]
   (and (api/vector-node? n)
-       (= :struct (some-> n :children first api/sexpr))))
+       (contains? layout-kinds (some-> n :children first api/sexpr))))
 
 (defn defcfn
-  "Lints both defcfn forms as a defn, so the docstring, the attribute map
-  and the arglists reach the analysis. The wrapper body sees the raw
-  binding through a let."
+  "Rewrites both defcfn forms to a defn, so the docstring, the attribute
+  map, the arglists, the wrapper body and the C symbol, argtypes and return
+  type expressions all reach the analysis."
   [{:keys [node]}]
   (let [[nm & args] (rest (:children node))
         anchor (first (keep-indexed (fn [i n]
@@ -18,15 +21,25 @@
                                                  (not (layout-vector? n)))
                                         i))
                                     args))
-        prefix (if (and anchor (pos? anchor)) (take (dec anchor) args) [])
+        anchored? (and anchor (pos? anchor))
+        prefix (if anchored? (take (dec anchor) args) (drop-last 3 args))
         docstring (first (filter api/string-node? prefix))
         attr-map (first (filter api/map-node? prefix))
+        sym-node (when anchored? (nth args (dec anchor)))
         argtypes (when anchor (nth args anchor))
+        rettype (when (and anchor (> (count args) (inc anchor)))
+                  (nth args (inc anchor)))
         wrapper (when (and anchor (> (count args) (+ anchor 2)))
                   (drop (+ anchor 2) args))
         head (cond-> [(api/token-node 'clojure.core/defn) nm]
                docstring (conj docstring)
-               attr-map (conj attr-map))]
+               attr-map (conj attr-map))
+        ;; the C symbol, argtypes and return type are linted as well
+        extras (remove nil? [sym-node argtypes rettype])
+        wrap-do (fn [n]
+                  (if (seq extras)
+                    (api/list-node (concat [(api/token-node 'do)] extras [n]))
+                    n))]
     {:node
      (cond
        (seq wrapper)
@@ -48,24 +61,25 @@
                                                   (api/token-node '_)])])])
                         (api/list-node
                          (list* (api/token-node 'do) body))])]))]
-         (api/list-node (into head (map bind arities))))
+         (wrap-do (api/list-node (into head (map bind arities)))))
 
-       ;; plain form with literal argtypes: a synthetic arglist of the same
-       ;; arity, so calls are checked
+       ;; plain form with literal argtypes: an arglist of the same arity,
+       ;; variadic when the types end in :&
        anchor
-       (let [params (api/vector-node
-                     (map-indexed (fn [i _] (api/token-node (symbol (str "_arg" i))))
-                                  (:children argtypes)))]
-         (api/list-node
-          (conj head params
-                (api/list-node
-                 (list* (api/token-node 'do)
-                        (concat [argtypes]
-                                (drop (inc anchor) args)
-                                [(api/token-node nil)]))))))
+       (let [types (:children argtypes)
+             variadic? (= :& (api/sexpr (last types)))
+             fixed (if variadic? (butlast types) types)
+             params (cond-> (mapv (fn [i] (api/token-node (symbol (str "_arg" i))))
+                                  (range (count fixed)))
+                      variadic? (conj (api/token-node '&)
+                                      (api/token-node '_rest)))]
+         (wrap-do (api/list-node (conj head
+                                       (api/vector-node params)
+                                       (api/token-node nil)))))
 
-       ;; plain form without a literal argtypes vector: a def
+       ;; plain form without a literal argtypes vector: any arity fits
        :else
        (api/list-node
-        [(api/token-node 'def) nm
-         (api/list-node (list* (api/token-node 'do) args))]))}))
+        (conj head
+              (api/vector-node [(api/token-node '&) (api/token-node '_args)])
+              (api/list-node (list* (api/token-node 'do) (take-last 3 args))))))}))

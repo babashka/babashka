@@ -546,7 +546,7 @@
 (def ^:private variadic-limits
   "variadic calls support up to 5 args total, at most 3 fixed and none of them :float, at most 2 :double, and a :void, integer or pointer return")
 
-(declare ^:private fixed-cfn fixed-ffm-cfn variadic-ffm-cfn libffi-cfn libffi-available? struct-layout?)
+(declare ^:private fixed-cfn fixed-ffm-cfn variadic-ffm-cfn libffi-cfn libffi-available? struct-layout? layout-vector?)
 
 (defn- variadic-libffi-cfn
   "A variadic binding through libffi: one cif per distinct tail shape,
@@ -823,7 +823,7 @@
               (throw (ex-info \"open failed\" {:code code}))))))
 
   The symbol after the return type names the raw binding. Only the wrapper
-  body can use this name. The remaining forms are a normal fn tail. The
+  body can use this name. The forms after this name are a normal fn tail. The
   wrapper can have multiple arities. Its argument lists can differ from the
   C function. The raw name does not enter the namespace."
   {:arglists '([name docstring? attr-map? sym argtypes rettype]
@@ -832,12 +832,11 @@
   (when (< (count args) 3)
     (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
                     {:name name})))
-  ;; A literal argtypes vector anchors a wrapper form. A layout such as
-  ;; [:struct ...] is a return type, never argtypes, and does not anchor.
-  ;; Otherwise, a plain form uses the last three arguments.
+  ;; The first non-struct vector identifies literal argtypes.
+  ;; Plain forms with dynamic argtypes use the last three arguments.
   (let [anchor (first (keep-indexed (fn [i a]
                                       (when (and (vector? a)
-                                                 (not (struct-layout? a)))
+                                                 (not (layout-vector? a)))
                                         i))
                                     args))
         [prefix sym argtypes rettype wrapper]
@@ -1109,6 +1108,15 @@
 ;; in registers. On AArch64, a struct larger than 16 bytes returns through x8.
 ;; This register is not an argument register. Libffi uses a call description
 ;; to put each value in the correct place. See doc/adr/ai/0003.
+
+(def ^:private layout-kinds
+  "The keywords that start a vector layout. The defcfn parse skips these
+  vectors when it looks for the argtypes vector. The clj-kondo hook in
+  .clj-kondo/hooks/babashka/ffi.clj mirrors this set: extend both."
+  #{:struct})
+
+(defn- layout-vector? [t]
+  (and (vector? t) (contains? layout-kinds (first t))))
 
 (defn- struct-layout? [t]
   (and (vector? t) (= :struct (first t))))

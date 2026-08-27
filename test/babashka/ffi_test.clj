@@ -152,7 +152,7 @@
                          (def ~'arg-types [:long])
                          (~'defcfn ~'labs3 "labs" ~'arg-types :long)
                          (~'labs3 -42))))))
-    (testing "a struct return type does not anchor the parse"
+    (testing "the plain form accepts a struct return type"
       (when @libffi?
         (is (= {:quot 3 :rem 1}
                (bb `(do ~ffi-require
