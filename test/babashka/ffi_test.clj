@@ -964,6 +964,32 @@
                         ((ffi/cfn "compressBound" [:ulong] :ulong) 0)
                         ((ffi/cfn "strlen" [:string] :size_t) "hello"))))))))
 
+(deftest kondo-hook-test
+  ;; pins the defcfn hook on the fixture: what it must report, and that the
+  ;; rest of the fixture lints clean
+  ;; a separate process: in this one, clj-kondo's bundled sci and
+  ;; babashka's own sci collide
+  (let [res (try (p/sh "clojure" "-Sdeps"
+                       "{:deps {clj-kondo/clj-kondo {:mvn/version \"2026.05.25\"}}}"
+                       "-M" "-m" "clj-kondo.main"
+                       "--lint" "test-resources/ffi_hook_probe.clj"
+                       "--config-dir" ".clj-kondo"
+                       "--config" "{:output {:format :edn}}")
+                 (catch Exception _ nil))
+        findings (some-> res :out edn/read-string :findings)]
+    (if (nil? findings)
+      (println "kondo-hook-test skipped: no clojure launcher on PATH")
+      (is (= #{[10 :unused-binding]      ;; raw2 never called
+               [11 :unused-binding]      ;; unused-param
+               [12 :unresolved-symbol]   ;; in the wrapper body
+               [26 :unresolved-symbol]   ;; in the C symbol expression
+               [33 :invalid-arity]       ;; good with 2 args
+               [34 :invalid-arity]       ;; multi with 3 args
+               [35 :invalid-arity]       ;; plain with 2 args
+               [38 :invalid-arity]       ;; printf* below its fixed arity
+               [48 :invalid-arity]}      ;; raw-p with 1 arg, C takes 2
+             (set (map (juxt :row :type) findings)))))))
+
 (deftest layout-kinds-in-sync-test
   (testing "runtime and hook layout kinds match"
     (let [kinds (fn [src]

@@ -38,8 +38,7 @@
                   (if (seq extras)
                     (api/list-node (concat [(api/token-node 'do)] extras [n]))
                     n))
-        ;; The arity that argtypes declares: _argN per fixed type, variadic
-        ;; past :&.
+        ;; Match fixed and variadic C arities.
         arg-params (fn []
                      (let [types (:children argtypes)
                            variadic? (= :& (some-> (last types) api/sexpr))
@@ -52,25 +51,22 @@
     {:node
      (cond
        (seq wrapper)
-       ;; Bind raw in each arity, with the arity that argtypes declares, so
-       ;; a raw call with the wrong number of arguments is reported.
+       ;; the raw binding sits outside the wrapper fn, as in the macro, so
+       ;; a parameter with the same name shadows it there and nowhere else
        (let [raw (first wrapper)
              tail (rest wrapper)
              arities (if (api/vector-node? (first tail))
                        [tail]
                        (map :children tail))
-             bind (fn [[params & body]]
-                    (api/list-node
-                     [params
-                      (api/list-node
-                       [(api/token-node 'clojure.core/let)
-                        (api/vector-node
-                         [raw (api/list-node
-                               [(api/token-node 'clojure.core/fn)
-                                (arg-params)])])
-                        (api/list-node
-                         (list* (api/token-node 'do) body))])]))]
-         (wrap-do (api/list-node (into head (map bind arities)))))
+             arity-node (fn [children] (api/list-node children))]
+         (wrap-do
+          (api/list-node
+           [(api/token-node 'clojure.core/let)
+            (api/vector-node
+             [raw (api/list-node
+                   [(api/token-node 'clojure.core/fn)
+                    (arg-params)])])
+            (api/list-node (into head (map arity-node arities)))])))
 
        ;; Model literal argtypes as a fixed or variadic arity.
        anchor
