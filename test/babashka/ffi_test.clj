@@ -427,6 +427,36 @@
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/cfn "printf" [:&] :int))))))))
 
+(deftest libffi-fallback-test
+  ;; a native image routes what the trampolines do not cover through libffi
+  (when (and (not skip?) @libffi?)
+    (let [native? (= "native" (System/getenv "BABASHKA_TEST_ENV"))]
+      (testing "a variadic call beyond the descriptor limits"
+        (let [[r1 r2] (bb `(do ~ffi-require
+                               (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                                     buf# (ffi/alloc 64)
+                                     r1# (do (f# buf# 64 "%d %d %d %d %d %d" 1 2 3 4 5 6)
+                                             (ffi/ptr->string buf#))
+                                     r2# (do (f# buf# 64 "a=%.1f b=%.1f c=%.1f" 1.5 2.5 3.5)
+                                             (ffi/ptr->string buf#))]
+                                 (ffi/free buf#)
+                                 [r1# r2#])))]
+          (is (= "1 2 3 4 5 6" r1))
+          ;; the decimal separator follows the C locale of the process
+          (is (contains? #{"a=1.5 b=2.5 c=3.5" "a=1,5 b=2,5 c=3,5"} r2))))
+      (testing "the variadic binding names its backend"
+        (is (= (if native? :libffi :ffm)
+               (bb `(do ~ffi-require
+                        (:babashka.ffi/backend
+                         (meta (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int))))))))
+      (when @struct-lib
+        (testing "a fixed signature outside the trampoline family"
+          (is (= [10.0 (if native? :libffi :ffm)]
+                 (bb `(do ~(lib-require @struct-lib)
+                          (let [f# (ffi/cfn "mix4" [:float :double :float :double] :double)]
+                            [(f# 1.0 2.0 3.0 4.0)
+                             (:babashka.ffi/backend (meta f#))]))))))))))
+
 (deftest address-test
   (when-not skip?
     (testing "cfn binds a function pointer"

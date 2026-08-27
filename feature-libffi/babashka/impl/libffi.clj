@@ -16,6 +16,11 @@
   [cif abi nargs rtype atypes]
   (Libffi/prepCif (long cif) (int abi) (int nargs) (long rtype) (long atypes)))
 
+(defn prep-cif-var
+  "Calls ffi_prep_cif_var, for a variadic call, and returns its status code."
+  [cif abi nfixed ntotal rtype atypes]
+  (Libffi/prepCifVar (long cif) (int abi) (int nfixed) (int ntotal) (long rtype) (long atypes)))
+
 (defn call
   "Calls ffi_call and writes the return value to rvalue."
   [cif fnp rvalue avalues]

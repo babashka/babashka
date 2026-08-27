@@ -542,14 +542,45 @@
 (def ^:private variadic-limits
   "variadic calls support up to 5 args total, at most 3 fixed, at most 2 :double, and a :void, integer or pointer return")
 
-(declare ^:private fixed-cfn struct-cfn struct-layout?)
+(declare ^:private fixed-cfn fixed-ffm-cfn variadic-ffm-cfn libffi-cfn libffi-available? struct-layout?)
+
+(defn- variadic-libffi-cfn
+  "A variadic binding through libffi: one cif per distinct tail shape,
+  cached. libffi applies the platform's variadic convention from
+  ffi_prep_cif_var, so the limits of the registered FFM descriptors do not
+  apply."
+  [lib sym fixed rettype]
+  (let [nf (count fixed)
+        cache (atom {})]
+    (with-meta
+      (fn [& args]
+        (when (< (count args) nf)
+          (throw (ex-info (str "babashka.ffi: " sym " expects at least " nf
+                               " args, got " (count args))
+                          {:symbol sym})))
+        (let [args (vec args)
+              tail-types (mapv tail-type (subvec args nf))
+              f (or (get @cache tail-types)
+                    (let [f (libffi-cfn lib sym (into fixed tail-types) rettype nf)]
+                      (swap! cache assoc tail-types f)
+                      f))]
+          (apply f args)))
+      {:babashka.ffi/backend :libffi})))
 
 (defn- variadic-cfn
-  "A variadic binding: fixed types declared, tail inferred per call. One FFM
-  handle per distinct tail shape, cached."
+  "A variadic binding: fixed types declared, tail inferred per call. In a
+  native image the call goes through libffi (an FFM handle is interpreted
+  there, which costs microseconds); on the JVM one FFM handle per distinct
+  tail shape, cached."
   [lib sym fixed argtypes rettype]
   (doseq [t fixed] (carrier t))
   (carrier rettype)
+  (if (and native-image? (libffi-available?))
+    (variadic-libffi-cfn lib sym fixed rettype)
+    (variadic-ffm-cfn lib sym fixed argtypes rettype)))
+
+(defn- variadic-ffm-cfn
+  [lib sym fixed argtypes rettype]
   (when (and native-image?
              (or (> (count fixed) 3)
                  (some #(= :float (carrier %)) fixed)
@@ -640,11 +671,22 @@
        (and structs? fixed)
        (throw (ex-info (str "babashka.ffi: a variadic signature cannot pass a struct by value: " sym)
                        {:argtypes argtypes :rettype rettype}))
-       structs? (struct-cfn lib sym argtypes rettype)
+       structs? (libffi-cfn lib sym argtypes rettype)
        fixed (variadic-cfn lib sym fixed argtypes rettype)
        :else (fixed-cfn lib sym argtypes rettype)))))
 
 (defn- fixed-cfn
+  [lib sym argtypes rettype]
+  (if (and native-image?
+           (not (get trampoline-ids (shape-key (let [p (sort-permutation argtypes)]
+                                                 (if p (mapv argtypes p) argtypes))
+                                               rettype)))
+           (libffi-available?))
+    ;; no trampoline for this shape: libffi makes the call (~1us)
+    (libffi-cfn lib sym argtypes rettype)
+    (fixed-ffm-cfn lib sym argtypes rettype)))
+
+(defn- fixed-ffm-cfn
   [lib sym argtypes rettype]
   (let [types argtypes
         perm (sort-permutation types)
@@ -653,13 +695,14 @@
         ;; image a generated trampoline (compiled direct call) when the
         ;; shape has one; otherwise an FFM downcall handle.
         tramp-id (get trampoline-ids (shape-key types* rettype))
-        ;; in a native image every supported shape is known ahead of time
-        ;; (ordered shapes on Windows, canonical elsewhere), so reject
-        ;; unsupported signatures here with a useful message instead of
-        ;; GraalVM's rebuild-the-image error at call time
-        _ (when (and native-image? (not tramp-id))
+        ;; in a native image every trampoline shape is known ahead of time
+        ;; (ordered shapes on Windows, canonical elsewhere). A signature
+        ;; without one calls through libffi; a build without libffi gets
+        ;; a useful message instead of GraalVM's rebuild-the-image error
+        ;; at call time
+        _ (when (and native-image? (not tramp-id) (not (libffi-available?)))
             (throw (unsupported-ex sym argtypes rettype
-                                   "see the signature limits in doc/ffi.md")))
+                                   "this build has no libffi; see the signature limits in doc/ffi.md")))
         raw (if tramp-id
               (delay (trampoline-invoker tramp-id (.address (require-symbol lib sym))))
               (delay
@@ -1192,6 +1235,7 @@
   The value is nil on the JVM."
   (when (and native-image? (= "true" (System/getenv "BABASHKA_FEATURE_LIBFFI")))
     (try {:prep-cif @(requiring-resolve 'babashka.impl.libffi/prep-cif)
+          :prep-cif-var @(requiring-resolve 'babashka.impl.libffi/prep-cif-var)
           :call @(requiring-resolve 'babashka.impl.libffi/call)}
          (catch Throwable _ nil))))
 
@@ -1204,37 +1248,47 @@
                     (when-not native-image?
                       (try (load-system-library "ffi") (catch Exception _ nil))
                       (let [prep (find-symbol "ffi_prep_cif")
+                            prep-var (find-symbol "ffi_prep_cif_var")
                             call (find-symbol "ffi_call")]
-                        (when (and prep call)
+                        (when (and prep prep-var call)
                           ;; addresses travel as longs: the same carrier as
                           ;; a pointer, without the pointer checks
                           {:prep-cif (cfn prep [:long :int :uint :long :long] :int)
+                           :prep-cif-var (cfn prep-var [:long :int :uint :uint :long :long] :int)
                            :call (cfn call [:long :long :long :long] :void)}))))]
       (when-not entry
         (throw (ex-info (if native-image?
-                          "babashka.ffi: passing a struct by value needs libffi, and this babashka binary was built without it (see bb describe, :libffi/version)"
-                          "babashka.ffi: passing a struct by value needs libffi, which is not installed on this system")
+                          "babashka.ffi: this call needs libffi, and this babashka binary was built without it (see bb describe, :libffi/version)"
+                          "babashka.ffi: this call needs libffi, which is not installed on this system")
                         {})))
       (when-not @default-abi
-        (throw (ex-info (str "babashka.ffi: passing a struct by value is not supported on "
+        (throw (ex-info (str "babashka.ffi: libffi calls are not supported on "
                              (System/getProperty "os.name") " "
                              (System/getProperty "os.arch"))
                         {})))
       entry)))
 
-(defn- struct-cfn
-  "Returns a libffi binding for a signature with a struct argument or return
-  value. Builds
-  the cif and ffi_type trees once in the global arena. Each call uses one
-  allocation for its temporary values."
-  [lib sym argtypes rettype]
+(defn- libffi-available?
+  "True when this process can make libffi calls: the linked libffi in a
+  native image, the system libffi on the JVM."
+  []
+  (try @libffi true (catch Exception _ false)))
+
+(defn- libffi-cfn
+  "Returns a libffi binding: a struct signature on any platform, and in a
+  native image every fixed signature without a trampoline and every variadic
+  call. Builds the cif and ffi_type trees once in the global arena. Each call
+  uses one allocation for its temporary values. nfixed, for a variadic call,
+  is the number of declared parameters."
+  ([lib sym argtypes rettype] (libffi-cfn lib sym argtypes rettype nil))
+  ([lib sym argtypes rettype nfixed]
   (let [n (count argtypes)
         void? (= :void rettype)
         ;; the layouts resolve first, so that a bad one is an error even
         ;; where there is no libffi
         alays (mapv layout-of argtypes)
         rlay (if void? {:type :void :size 8 :align 8} (layout-of rettype))
-        {:keys [prep-cif call]} @libffi
+        {:keys [prep-cif prep-cif-var call]} @libffi
         arena (Arena/global)
         atypes (mapv #(ffi-type! arena %) argtypes)
         rtype (ffi-type! arena rettype)
@@ -1242,7 +1296,10 @@
         cif (.allocate arena (long cif-bytes) 16)
         cif-addr (.address cif)]
     (dotimes [i n] (write atypes-arr :pointer (* 8 i) (nth atypes i)))
-    (let [status (long (prep-cif cif-addr @default-abi n (.address rtype) (.address atypes-arr)))]
+    (let [status (long (if nfixed
+                         (prep-cif-var cif-addr @default-abi (long nfixed) n
+                                       (.address rtype) (.address atypes-arr))
+                         (prep-cif cif-addr @default-abi n (.address rtype) (.address atypes-arr))))]
       (when-not (zero? status)
         (throw (ex-info (str "babashka.ffi: ffi_prep_cif failed for " sym)
                         {:symbol sym :status status}))))
@@ -1278,7 +1335,7 @@
                   ((aget encs i) a scratch (nth args i)))
                 (call cif-addr @fnp (+ base rvalue-off) base)
                 (when decode (decode scratch))))))
-        {:babashka.ffi/backend :libffi}))))
+        {:babashka.ffi/backend :libffi})))))
 
 ;; -- callbacks ----------------------------------------------------------------
 

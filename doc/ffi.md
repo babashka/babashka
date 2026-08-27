@@ -619,39 +619,30 @@ the callback, or the process can stop.
 
 ## Signature limits
 
-Babashka includes a fixed set of native call signatures. If a signature is
-not supported, `cfn` or `callback` throws an exception. These limits apply to
-primitive types. Struct calls use libffi instead. See
-[Pass a struct by value](#pass-a-struct-by-value).
+Babashka includes a fixed set of fast native call signatures. A fixed
+signature in this set calls through a compiled trampoline in approximately
+70 to 150 nanoseconds. The set covers:
 
-Fixed functions have these limits:
+- A function with up to 6 arguments.
+- Up to 3 `:float` or `:double` arguments in any combination, or 4 of the
+  same floating-point type.
+- A function with only integer or pointer arguments, up to 10 arguments.
+- A function that returns `:float`, up to 4 arguments.
 
-- A function can have up to 6 arguments.
-- Up to 3 arguments can use `:float` or `:double` in any combination.
-- If all floating-point arguments use the same type, a function can have 4 of them.
-- A function with only integer or pointer arguments can have up to 10 arguments.
-- A function that returns `:float` can have up to 4 arguments.
+Argument order does not change this set.
 
-Variadic functions have these limits:
+Everything else calls through libffi: a fixed signature outside the set,
+every variadic call, and every struct call. A libffi call takes
+approximately 1 microsecond. Every babashka binary includes libffi, except
+the musl static binary and a build made with `BABASHKA_LIBFFI=none`; in
+those, a signature outside the set throws.
 
-- A call can have up to 5 arguments in total.
-- A signature can have up to 3 fixed arguments.
-- A call can have up to 2 `:double` arguments.
-- A return type can be `:void`, an integer type, or a pointer type.
-
-Callbacks have these limits:
+Callbacks do not use libffi and keep these limits:
 
 - A callback can have up to 4 arguments.
 - A callback can have up to 2 `:double` arguments.
 - A callback cannot use `:float`.
 - A return type can be `:void`, an integer type, or `:double`.
-
-Argument order does not change these limits.
-
-Struct values are not supported as direct arguments or return values, yet.
-
-If a signature is not supported, use libffi or write a small C wrapper.
-See [`examples/ffi/libffi.clj`](../examples/ffi/libffi.clj) for a libffi example.
 
 ## Examples
 
