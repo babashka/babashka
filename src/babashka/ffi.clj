@@ -551,7 +551,8 @@
   apply."
   [lib sym fixed rettype]
   (let [nf (count fixed)
-        cache (atom {})]
+        cache (atom {})
+        address (delay (.address (require-symbol lib sym)))]
     (with-meta
       (fn [& args]
         (when (< (count args) nf)
@@ -561,7 +562,7 @@
         (let [args (vec args)
               tail-types (mapv tail-type (subvec args nf))
               f (or (get @cache tail-types)
-                    (let [f (libffi-cfn lib sym (into fixed tail-types) rettype nf)]
+                    (let [f (libffi-cfn lib sym (into fixed tail-types) rettype nf address)]
                       (swap! cache assoc tail-types f)
                       f))]
           (apply f args)))
@@ -1280,8 +1281,9 @@
   call. Builds the cif and ffi_type trees once in the global arena. Each call
   uses one allocation for its temporary values. nfixed, for a variadic call,
   is the number of declared parameters."
-  ([lib sym argtypes rettype] (libffi-cfn lib sym argtypes rettype nil))
-  ([lib sym argtypes rettype nfixed]
+  ([lib sym argtypes rettype] (libffi-cfn lib sym argtypes rettype nil nil))
+  ([lib sym argtypes rettype nfixed] (libffi-cfn lib sym argtypes rettype nfixed nil))
+  ([lib sym argtypes rettype nfixed fnp0]
   (let [n (count argtypes)
         void? (= :void rettype)
         ;; the layouts resolve first, so that a bad one is an error even
@@ -1316,7 +1318,9 @@
           ^objects encs (object-array (map-indexed (fn [i lay] (encoder lay (aget slot-offs i)))
                                                    alays))
           decode (when-not void? (decoder rlay rvalue-off))
-          fnp (delay (.address (require-symbol lib sym)))
+          ;; a variadic binding shares one address delay over its tail
+          ;; shapes, so a :library function is asked once per binding
+          fnp (or fnp0 (delay (.address (require-symbol lib sym))))
           arity-error (fn [got]
                         (throw (ex-info (str "babashka.ffi: " sym " expects " n
                                              " args, got " got)
