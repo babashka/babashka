@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- `babashka.ffi`: pass or return C structs by value. Define the fields with a layout, such as `[:struct [[:x :int] [:y :int]]]`. Use a map for the field values. `sizeof` and `alignof` now accept layouts. Struct calls use libffi
 - Link a static libffi for FFI calls that the fixed native call shapes cannot make. Set `BABASHKA_LIBFFI` to another archive or `none`
 - Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems. See ADR 0010
 - Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine

@@ -273,6 +273,62 @@ pointer after C no longer uses it.
 A `:string` return value reads the pointer as UTF-8. A NULL return value
 becomes `nil`.
 
+### Pass a struct by value
+
+Use a layout for a struct that C passes or returns by value. A struct layout
+has the form `[:struct fields]`. Each field is a `[name type]` pair. A type is
+a type keyword or another layout. Use a map for a struct value:
+
+```clojure
+(defcfn c-div "div" [:int :int] [:struct [[:quot :int] [:rem :int]]])
+(c-div 7 2)
+;;=> {:quot 3 :rem 1}
+```
+
+Layouts nest, and so do their values:
+
+```clojure
+(def point [:struct [[:x :int] [:y :int]]])
+(def rect [:struct [[:lo point] [:hi point]]])
+(defcfn rect-grow "rect_grow" [rect :int] rect)
+(rect-grow {:lo {:x 1 :y 1} :hi {:x 5 :y 5}} 2)
+;;=> {:lo {:x -1 :y -1} :hi {:x 7 :y 7}}
+```
+
+A struct value must contain each layout field and no other field. A missing or
+unknown field causes an error.
+
+`sizeof` and `alignof` accept a layout. Babashka includes the required padding.
+When it binds the function, it compares the result with the libffi layout:
+
+```clojure
+(ffi/sizeof [:struct [[:c :char] [:d :double]]])
+;;=> 16
+(ffi/alignof [:struct [[:c :char] [:d :double]]])
+;;=> 8
+```
+
+To map a struct to a value of your own, wrap the binding:
+
+```clojure
+(defn body-position [id]
+  (let [{:keys [x y z]} (c-body-position id)]
+    (vec3 x y z)))
+```
+
+Struct calls use libffi. A struct call takes approximately 1 microsecond. A
+call that uses only primitive types takes approximately 150 nanoseconds.
+
+This implementation does not support structs in variadic signatures.
+
+If a `:string` field contains a Clojure string, babashka allocates a temporary
+C string for the call. C must not keep its pointer after the call returns.
+
+Struct calls require libffi. The musl static binary and builds made with
+`BABASHKA_LIBFFI=none` do not include it. `bb describe` shows the included
+version under `:libffi/version`. On the JVM, babashka loads the system libffi.
+A struct binding causes an error if libffi is not available.
+
 ## Call a variadic function
 
 Put `:&` after the fixed argument types:
@@ -558,7 +614,9 @@ the callback, or the process can stop.
 ## Signature limits
 
 Babashka includes a fixed set of native call signatures. If a signature is
-unsupported, `cfn` or `callback` throws an exception.
+not supported, `cfn` or `callback` throws an exception. These limits apply to
+primitive types. Struct calls use libffi instead. See
+[Pass a struct by value](#pass-a-struct-by-value).
 
 Fixed functions have these limits:
 
