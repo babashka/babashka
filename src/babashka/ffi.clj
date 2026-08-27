@@ -37,17 +37,18 @@
 
   Struct calls use libffi. See doc/ffi.md.
 
-  Native images limit most fixed signatures to six arguments. A signature
-  that uses only pointer and integer types supports up to 10 arguments. A
-  fixed signature supports at most three mixed floating-point arguments. It
-  supports four arguments of the same floating-point type. A :float return
-  supports at most four arguments.
+  Native images compile a fixed set of fast call shapes: up to six
+  arguments, at most three mixed floating-point arguments or four of the
+  same floating-point type, up to 10 integer or pointer arguments, and a
+  :float return with up to four arguments. A fixed signature outside this
+  set calls through libffi, at about 1 microsecond instead of about 100
+  nanoseconds. Without libffi, such a signature throws.
 
   Native images use libffi for every variadic call. If libffi is not
   available, variadic calls use the FFM fallback. This fallback supports at
-  most five total arguments, three fixed arguments, and two :double
-  arguments. Its return type must be :void, an integer type, or a pointer
-  type. Callbacks
+  most five total arguments, three fixed arguments, none of them :float,
+  and two :double arguments. Its return type must be :void, an integer
+  type, or a pointer type. Callbacks
   support up to four arguments and two :double arguments. Callbacks do not
   support :float. The callback return type must be :void, an integer type, or
   :double. Argument order does not affect these limits. See doc/ffi.md for
@@ -564,12 +565,13 @@
                           {:symbol sym})))
         (let [args (vec args)
               tail-types (mapv tail-type (subvec args nf))
-              ;; a delay per shape: two threads that miss at once still
-              ;; build one cif
-              f @(get (swap! cache update tail-types
-                             #(or % (delay (libffi-cfn lib sym (into fixed tail-types)
-                                                       rettype nf address))))
-                      tail-types)]
+              ;; a hit reads the atom; only a miss swaps, and a delay per
+              ;; shape means two threads that miss at once build one cif
+              f @(or (get @cache tail-types)
+                     (get (swap! cache update tail-types
+                                 #(or % (delay (libffi-cfn lib sym (into fixed tail-types)
+                                                           rettype nf address))))
+                          tail-types))]
           (apply f args)))
       {:babashka.ffi/backend :libffi})))
 
@@ -1288,10 +1290,9 @@
 (defn- libffi-cfn
   "Returns a libffi binding: a struct signature on any platform, and in a
   native image every fixed signature without a trampoline and every variadic
-  call. Builds the cif and ffi_type trees once, in the global arena: they
-  live until the process stops, also when the binding becomes unreachable,
-  so a binding is something a program makes once, not per call. Each call
-  uses one allocation for its temporary values. nfixed, for a variadic call,
+  call. Builds the cif and ffi_type trees once, in an arena that the
+  garbage collector releases when the binding becomes unreachable. Each
+  call uses one allocation for its temporary values. nfixed, for a variadic call,
   is the number of declared parameters."
   ([lib sym argtypes rettype] (libffi-cfn lib sym argtypes rettype nil nil))
   ([lib sym argtypes rettype nfixed] (libffi-cfn lib sym argtypes rettype nfixed nil))
@@ -1303,11 +1304,14 @@
         alays (mapv layout-of argtypes)
         rlay (if void? {:type :void :size 8 :align 8} (layout-of rettype))
         {:keys [prep-cif prep-cif-var call]} @libffi
-        arena (Arena/global)
+        ;; the garbage collector releases this arena when the binding
+        ;; becomes unreachable: the call below holds the cif segment, and a
+        ;; segment keeps its arena reachable
+        arena (Arena/ofAuto)
         atypes (mapv #(ffi-type! arena %) argtypes)
         rtype (ffi-type! arena rettype)
         atypes-arr (.allocate arena (long (* 8 (max 1 n))) 8)
-        cif (.allocate arena (long cif-bytes) 16)
+        ^MemorySegment cif (.allocate arena (long cif-bytes) 16)
         cif-addr (.address cif)]
     (dotimes [i n] (write atypes-arr :pointer (* 8 i) (nth atypes i)))
     (let [status (long (if nfixed
@@ -1349,7 +1353,7 @@
                 (dotimes [i n]
                   (write scratch :long (* 8 i) (+ base (aget slot-offs i)))
                   ((aget encs i) a scratch (nth args i)))
-                (call cif-addr @fnp (+ base rvalue-off) base)
+                (call (.address cif) @fnp (+ base rvalue-off) base)
                 (when decode (decode scratch))))))
         {:babashka.ffi/backend :libffi})))))
 

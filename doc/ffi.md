@@ -637,8 +637,8 @@ approximately 1 microsecond. Every babashka binary includes libffi, except
 the musl static binary and a build made with `BABASHKA_LIBFFI=none`. In a
 build without libffi, a fixed signature outside the set throws, and
 variadic calls use the FFM fallback: at most five total arguments, three
-fixed arguments, and two `:double` arguments, with a `:void`, integer, or
-pointer return type.
+fixed arguments, none of them `:float`, and two `:double` arguments, with a
+`:void`, integer, or pointer return type.
 
 Callbacks do not use libffi and keep these limits:
 
