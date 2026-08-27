@@ -965,10 +965,7 @@
                         ((ffi/cfn "strlen" [:string] :size_t) "hello"))))))))
 
 (deftest kondo-hook-test
-  ;; pins the defcfn hook on the fixture: what it must report, and that the
-  ;; rest of the fixture lints clean
-  ;; a separate process: in this one, clj-kondo's bundled sci and
-  ;; babashka's own sci collide
+  ;; Run clj-kondo separately because the SCI versions conflict.
   (let [res (try (p/sh "clojure" "-Sdeps"
                        "{:deps {clj-kondo/clj-kondo {:mvn/version \"2026.05.25\"}}}"
                        "-M" "-m" "clj-kondo.main"

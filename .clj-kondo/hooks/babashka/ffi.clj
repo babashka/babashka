@@ -51,8 +51,7 @@
     {:node
      (cond
        (seq wrapper)
-       ;; the raw binding sits outside the wrapper fn, as in the macro, so
-       ;; a parameter with the same name shadows it there and nowhere else
+       ;; Use the same raw-binding scope as the macro.
        (let [raw (first wrapper)
              tail (rest wrapper)
              arities (if (api/vector-node? (first tail))

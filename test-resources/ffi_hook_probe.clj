@@ -30,13 +30,13 @@
 
 (defn calls []
   [(good 1)
-   (good 1 2)        ;; wrong arity: flagged
-   (multi 1 2 3)     ;; wrong arity: flagged
-   (plain 1 2)       ;; wrong arity: flagged
-   (printf* "x")     ;; fixed args only: fine
-   (printf* "x" 1 2) ;; variadic tail: fine
-   (printf*)         ;; below fixed arity: flagged
-   (dyn 1 2 3)       ;; unknown arity: fine
+   (good 1 2)
+   (multi 1 2 3)
+   (plain 1 2)
+   (printf* "x")
+   (printf* "x" 1 2)
+   (printf*)
+   (dyn 1 2 3)
    (bad 1)])
 
 (defcfn no-args "zlibVersion" [] :string)
@@ -45,9 +45,9 @@
 (defcfn raw-arity "pow" [:double :double] :double
   raw-p
   [x]
-  (raw-p x))  ;; raw called with 1 arg, C function takes 2: flagged
+  (raw-p x))
 
 (defcfn shadow "labs" [:long] :long
   raw-s
-  ([raw-s] raw-s)          ;; param shadows raw here only
-  ([a b] (raw-s (+ a b)))) ;; raw used in the other arity: no unused warning
+  ([raw-s] raw-s)
+  ([a b] (raw-s (+ a b))))
