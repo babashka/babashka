@@ -159,6 +159,12 @@
                         (def ~'div-args [:int :int])
                         (~'defcfn ~'div* "div" ~'div-args [:struct [[:quot :int] [:rem :int]]])
                         (~'div* 7 2)))))))
+    (testing "the wrapper form asks for a literal argtypes vector"
+      (is (thrown-with-msg?
+           Exception #"literal argtypes vector"
+           (bb `(do ~ffi-require
+                    (def ~'arg-types [:long])
+                    (~'defcfn ~'labs5 "labs" ~'arg-types :long ~'raw [x#] (~'raw x#)))))))
     (testing "the attribute map can precede the docstring"
       (is (= ["Doc." true]
              (bb `(do ~ffi-require
@@ -950,6 +956,16 @@
                         (ffi/load-library {:darwin "libz.dylib" :linux "libz.so.1"})
                         ((ffi/cfn "compressBound" [:ulong] :ulong) 0)
                         ((ffi/cfn "strlen" [:string] :size_t) "hello"))))))))
+
+(deftest layout-kinds-in-sync-test
+  (testing "the clj-kondo hook mirrors babashka.ffi/layout-kinds"
+    (let [kinds (fn [src]
+                  (some->> (re-find #"layout-kinds\"?\s*(?:;;[^\n]*\n\s*)?(#\{[^}]*\})"
+                                    src)
+                           second
+                           edn/read-string))]
+      (is (= (kinds (slurp "src/babashka/ffi.clj"))
+             (kinds (slurp ".clj-kondo/hooks/babashka/ffi.clj")))))))
 
 (def ^:private generated-files
   ["resources/META-INF/native-image/babashka/ffi/reachability-metadata.json"

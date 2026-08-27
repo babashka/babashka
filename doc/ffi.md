@@ -248,9 +248,12 @@ together:
 The symbol after the return type names the raw binding. Only the wrapper body
 can use this name. The raw name does not enter the namespace.
 
-The forms after this name are a normal `fn` tail. The wrapper can have multiple
-arities. Its argument lists can differ from the C function. coffi uses the
-same form.
+The forms after the raw name are a normal `fn` tail. The wrapper can have
+multiple arities. Its argument lists can differ from the C function. coffi
+uses the same form.
+
+The wrapper form needs a literal argtypes vector. Only the plain form
+accepts an argtypes expression.
 
 ### Types
 

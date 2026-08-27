@@ -2,7 +2,7 @@
   (:require [clj-kondo.hooks-api :as api]))
 
 (def ^:private layout-kinds
-  "Mirrors babashka.ffi/layout-kinds: extend both."
+  ;; Keep in sync with babashka.ffi/layout-kinds.
   #{:struct})
 
 (defn- layout-vector?
@@ -11,9 +11,7 @@
        (contains? layout-kinds (some-> n :children first api/sexpr))))
 
 (defn defcfn
-  "Rewrites both defcfn forms to a defn, so the docstring, the attribute
-  map, the arglists, the wrapper body and the C symbol, argtypes and return
-  type expressions all reach the analysis."
+  "Rewrites defcfn forms for linting."
   [{:keys [node]}]
   (let [[nm & args] (rest (:children node))
         anchor (first (keep-indexed (fn [i n]
@@ -34,7 +32,7 @@
         head (cond-> [(api/token-node 'clojure.core/defn) nm]
                docstring (conj docstring)
                attr-map (conj attr-map))
-        ;; the C symbol, argtypes and return type are linted as well
+        ;; Lint signature expressions.
         extras (remove nil? [sym-node argtypes rettype])
         wrap-do (fn [n]
                   (if (seq extras)
@@ -43,7 +41,7 @@
     {:node
      (cond
        (seq wrapper)
-       ;; each arity body sees the raw binding
+       ;; Bind raw in each arity.
        (let [raw (first wrapper)
              tail (rest wrapper)
              arities (if (api/vector-node? (first tail))
@@ -63,11 +61,10 @@
                          (list* (api/token-node 'do) body))])]))]
          (wrap-do (api/list-node (into head (map bind arities)))))
 
-       ;; plain form with literal argtypes: an arglist of the same arity,
-       ;; variadic when the types end in :&
+       ;; Model literal argtypes as a fixed or variadic arity.
        anchor
        (let [types (:children argtypes)
-             variadic? (= :& (api/sexpr (last types)))
+             variadic? (= :& (some-> (last types) api/sexpr))
              fixed (if variadic? (butlast types) types)
              params (cond-> (mapv (fn [i] (api/token-node (symbol (str "_arg" i))))
                                   (range (count fixed)))
@@ -77,7 +74,7 @@
                                        (api/vector-node params)
                                        (api/token-node nil)))))
 
-       ;; plain form without a literal argtypes vector: any arity fits
+       ;; Dynamic argtypes have no static arity.
        :else
        (api/list-node
         (conj head
