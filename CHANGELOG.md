@@ -9,7 +9,9 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+
 - `bb socket-repl` can listen on a UNIX domain socket: `bb socket-repl unix://<path>`
+- `babashka.ffi`: a fixed signature outside the trampoline set and every variadic call now go through libffi in a native binary, instead of throwing or crossing an interpreted FFM handle. The signature limits remain only for callbacks and for builds without libffi. A variadic call drops from ~14 to ~1 microsecond
 - `babashka.ffi`: a C function that takes a struct as an argument, or returns one, without a pointer in between. Define the fields with a layout, such as `[:struct [[:x :int] [:y :int]]]`. Use a map for the field values. `sizeof` and `alignof` now accept layouts. Struct calls use libffi
 - Link a static libffi for FFI calls that the fixed native call shapes cannot make. Set `BABASHKA_LIBFFI` to another archive or `none`
 - Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems. See ADR 0010

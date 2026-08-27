@@ -20,6 +20,12 @@ EXPORT Big big_make(int64_t s) { Big r = { s, s + 1, s + 2, s + 3 }; return r; }
 
 EXPORT int64_t big_sum(Big b) { return b.a + b.b + b.c + b.d; }
 
+/* Four mixed float arguments: outside the trampoline family, so a native
+ * image calls it through libffi. */
+EXPORT double mix4(float a, double b, float c, double d) {
+  return a + b + c + d;
+}
+
 EXPORT Rect rect_grow(Rect r, int32_t d) {
   Rect o = { { r.lo.x - d, r.lo.y - d }, { r.hi.x + d, r.hi.y + d } };
   return o;
