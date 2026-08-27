@@ -544,7 +544,7 @@
            {:symbol sym :argtypes argtypes :rettype rettype}))
 
 (def ^:private variadic-limits
-  "variadic calls support up to 5 args total, at most 3 fixed, at most 2 :double, and a :void, integer or pointer return")
+  "variadic calls support up to 5 args total, at most 3 fixed and none of them :float, at most 2 :double, and a :void, integer or pointer return")
 
 (declare ^:private fixed-cfn fixed-ffm-cfn variadic-ffm-cfn libffi-cfn libffi-available? struct-layout?)
 
@@ -552,7 +552,9 @@
   "A variadic binding through libffi: one cif per distinct tail shape,
   cached. libffi applies the platform's variadic convention from
   ffi_prep_cif_var, so the limits of the registered FFM descriptors do not
-  apply."
+  apply. The cache starts over past 64 shapes, so a binding that sees ever
+  new tails does not hold native memory without bound; the garbage
+  collector releases a dropped shape's cif."
   [lib sym fixed rettype]
   (let [nf (count fixed)
         cache (atom {})
@@ -568,9 +570,15 @@
               ;; a hit reads the atom; only a miss swaps, and a delay per
               ;; shape means two threads that miss at once build one cif
               f @(or (get @cache tail-types)
-                     (get (swap! cache update tail-types
-                                 #(or % (delay (libffi-cfn lib sym (into fixed tail-types)
-                                                           rettype nf address))))
+                     (get (swap! cache
+                                 (fn [m]
+                                   (cond (get m tail-types) m
+                                         ;; past 64 shapes the cache starts
+                                         ;; over; the GC frees dropped cifs
+                                         :else (assoc (if (> (count m) 64) {} m)
+                                                      tail-types
+                                                      (delay (libffi-cfn lib sym (into fixed tail-types)
+                                                                         rettype nf address))))))
                           tail-types))]
           (apply f args)))
       {:babashka.ffi/backend :libffi})))
@@ -1353,7 +1361,11 @@
                 (dotimes [i n]
                   (write scratch :long (* 8 i) (+ base (aget slot-offs i)))
                   ((aget encs i) a scratch (nth args i)))
-                (call (.address cif) @fnp (+ base rvalue-off) base)
+                ;; the fence keeps the cif segment, and with it the arena,
+                ;; reachable while libffi reads them: without it the VM may
+                ;; collect the binding during its own call
+                (try (call (.address cif) @fnp (+ base rvalue-off) base)
+                     (finally (java.lang.ref.Reference/reachabilityFence cif)))
                 (when decode (decode scratch))))))
         {:babashka.ffi/backend :libffi})))))
 
