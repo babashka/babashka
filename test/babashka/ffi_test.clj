@@ -129,6 +129,69 @@
                        "strlen" [:string] :size_t)
                       (let [m# (meta (resolve '~'strlen))]
                         [(~'strlen "hello") (:doc m#) (:private m#) (:added m#)]))))))
+    (testing "the raw binding is local to the wrapper body"
+      (is (= [42 nil "Absolute value." '([x])]
+             (bb `(do ~ffi-require
+                      (~'defcfn ~'labs* "Absolute value." "labs" [:long] :long
+                       ~'raw-labs
+                       [~'x] (~'raw-labs (long ~'x)))
+                      [(~'labs* -42)
+                       (resolve '~'raw-labs)
+                       (:doc (meta (resolve '~'labs*)))
+                       (:arglists (meta (resolve '~'labs*)))]))))
+      (is (= [9.0 8.0 '([x] [x y])]
+             (bb `(do ~ffi-require
+                      (~'defcfn ~'pow* "pow" [:double :double] :double
+                       ~'raw-pow
+                       ([~'x] (~'raw-pow ~'x 2.0))
+                       ([~'x ~'y] (~'raw-pow ~'x ~'y)))
+                      [(~'pow* 3.0) (~'pow* 2.0 3.0)
+                       (:arglists (meta (resolve '~'pow*)))])))))
+    (testing "the plain form accepts an argtypes expression"
+      (is (= 42 (bb `(do ~ffi-require
+                         (def ~'arg-types [:long])
+                         (~'defcfn ~'labs3 "labs" ~'arg-types :long)
+                         (~'labs3 -42))))))
+    (testing "the plain form accepts a struct return type"
+      (when @libffi?
+        (is (= {:quot 3 :rem 1}
+               (bb `(do ~ffi-require
+                        (def ~'div-args [:int :int])
+                        (~'defcfn ~'div* "div" ~'div-args [:struct [[:quot :int] [:rem :int]]])
+                        (~'div* 7 2)))))))
+    (testing "dynamic argtypes preserve metadata"
+      (is (= [42 "Dyn." true]
+             (bb `(do ~ffi-require
+                      (def ~'arg-types [:long])
+                      (~'defcfn ~'labs6 "Dyn." {:private true} "labs" ~'arg-types :long)
+                      (let [m# (meta (resolve '~'labs6))]
+                        [(~'labs6 -42) (:doc m#) (:private m#)]))))))
+    (testing "the wrapper form rejects dynamic argtypes"
+      (is (thrown-with-msg?
+           Exception #"literal argtypes vector"
+           (bb `(do ~ffi-require
+                    (def ~'arg-types [:long])
+                    (~'defcfn ~'labs5 "labs" ~'arg-types :long ~'raw [x#] (~'raw x#)))))))
+    (testing "the attribute map can precede the docstring"
+      (is (= ["Doc." true]
+             (bb `(do ~ffi-require
+                      (~'defcfn ~'labs4 {:private true} "Doc." "labs" [:long] :long)
+                      (let [m# (meta (resolve '~'labs4))]
+                        [(:doc m#) (:private m#)]))))))
+    (testing "the raw binding name differs from the wrapper name"
+      (is (thrown-with-msg?
+           Exception #"must differ"
+           (bb `(do ~ffi-require
+                    (~'defcfn ~'same "labs" [:long] :long ~'same [x#] (~'same x#)))))))
+    (testing "the wrapper needs a raw binding name and a fn tail"
+      (is (thrown-with-msg?
+           Exception #"needs a raw binding name"
+           (bb `(do ~ffi-require
+                    (~'defcfn ~'bad "labs" [:long] :long "nope" [x#] x#)))))
+      (is (thrown-with-msg?
+           Exception #"needs a raw binding name"
+           (bb `(do ~ffi-require
+                    (~'defcfn ~'bad "labs" [:long] :long ~'lonely))))))
     (testing "too many forms before the C symbol"
       (is (thrown? Exception
                    (bb `(do ~ffi-require
@@ -900,6 +963,42 @@
                         (ffi/load-library {:darwin "libz.dylib" :linux "libz.so.1"})
                         ((ffi/cfn "compressBound" [:ulong] :ulong) 0)
                         ((ffi/cfn "strlen" [:string] :size_t) "hello"))))))))
+
+(deftest kondo-hook-test
+  ;; Run clj-kondo separately because the SCI versions conflict.
+  (let [res (try (p/sh "clojure" "-Sdeps"
+                       "{:deps {clj-kondo/clj-kondo {:mvn/version \"2026.05.25\"}}}"
+                       "-M" "-m" "clj-kondo.main"
+                       "--lint" "test-resources/ffi_hook_probe.clj"
+                       "--config-dir" ".clj-kondo"
+                       "--config" "{:output {:format :edn}}")
+                 (catch Exception _ nil))
+        findings (some-> res :out edn/read-string :findings)]
+    (if (nil? findings)
+      (println "kondo-hook-test skipped: no clojure launcher on PATH")
+      (is (= #{[10 :unused-binding]      ;; raw2 never called
+               [11 :unused-binding]      ;; unused-param
+               [12 :unresolved-symbol]   ;; in the wrapper body
+               [26 :unresolved-symbol]   ;; in the C symbol expression
+               [33 :invalid-arity]       ;; good with 2 args
+               [34 :invalid-arity]       ;; multi with 3 args
+               [35 :invalid-arity]       ;; plain with 2 args
+               [38 :invalid-arity]       ;; printf* below its fixed arity
+               [48 :invalid-arity]}      ;; raw-p with 1 arg, C takes 2
+             (set (map (juxt :row :type) findings)))))))
+
+(deftest layout-kinds-in-sync-test
+  (testing "runtime and hook layout kinds match"
+    (let [kinds (fn [src]
+                  (some->> (re-find #"layout-kinds\"?\s*(?:;;[^\n]*\n\s*)?(#\{[^}]*\})"
+                                    src)
+                           second
+                           edn/read-string))
+          ffi-kinds (kinds (slurp "src/babashka/ffi.clj"))
+          hook-kinds (kinds (slurp ".clj-kondo/hooks/babashka/ffi.clj"))]
+      (is (set? ffi-kinds))
+      (is (set? hook-kinds))
+      (is (= ffi-kinds hook-kinds)))))
 
 (def ^:private generated-files
   ["resources/META-INF/native-image/babashka/ffi/reachability-metadata.json"

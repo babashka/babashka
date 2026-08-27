@@ -546,7 +546,18 @@
 (def ^:private variadic-limits
   "variadic calls support up to 5 args total, at most 3 fixed and none of them :float, at most 2 :double, and a :void, integer or pointer return")
 
-(declare ^:private fixed-cfn fixed-ffm-cfn variadic-ffm-cfn libffi-cfn libffi-available? struct-layout?)
+(def ^:private layout-kinds
+  ;; Keep in sync with .clj-kondo/hooks/babashka/ffi.clj.
+  #{:struct})
+
+(defn- layout-vector? [t]
+  (and (vector? t) (contains? layout-kinds (first t))))
+
+(defn- struct-layout? [t]
+  (and (vector? t) (= :struct (first t))))
+
+(declare ^:private fixed-cfn ^:private fixed-ffm-cfn ^:private variadic-ffm-cfn
+         ^:private libffi-cfn ^:private libffi-available?)
 
 (defn- variadic-libffi-cfn
   "A variadic binding through libffi: one cif per distinct tail shape,
@@ -806,28 +817,92 @@
 
   Without :library, a binding searches all loaded libraries. Then it searches
   the default system lookup. A system library with the same name can supply
-  the symbol."
-  {:arglists '([name docstring? attr-map? sym argtypes rettype])}
+  the symbol.
+
+  The wrapper form binds the raw C function to a local name and defines name
+  as the wrapper:
+
+      (defcfn open-db
+        \"sqlite3_open_v2\" [:string :pointer :int :string] :int
+        open-native
+        [filename flags]
+        (with-open [arena (ffi/confined-arena)]
+          (let [pdb (ffi/alloc arena :pointer)
+                code (open-native filename pdb flags nil)]
+            (if (zero? code)
+              (ffi/read pdb :pointer)
+              (throw (ex-info \"open failed\" {:code code}))))))
+
+  The symbol after the return type names the raw binding. Only the wrapper
+  body can use this name. The forms after the raw name are a normal fn tail.
+  The wrapper can have multiple arities. Its argument lists can differ from
+  the C function. The raw name does not enter the namespace. The wrapper
+  form needs a literal argtypes vector. Only the plain form accepts an
+  argtypes expression."
+  {:arglists '([name docstring? attr-map? sym argtypes rettype]
+               [name docstring? attr-map? sym argtypes rettype native-fn & fn-tail])}
   [name & args]
   (when (< (count args) 3)
     (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
                     {:name name})))
-  (let [[sym argtypes rettype] (take-last 3 args)
-        prefix (drop-last 3 args)
+  ;; The first non-struct vector identifies literal argtypes.
+  ;; Plain forms with dynamic argtypes use the last three arguments.
+  (let [anchor (first (keep-indexed (fn [i a]
+                                      (when (and (vector? a)
+                                                 (not (layout-vector? a)))
+                                        i))
+                                    args))
+        [prefix sym argtypes rettype wrapper]
+        (if (and anchor (pos? anchor))
+          [(take (dec anchor) args)
+           (nth args (dec anchor))
+           (nth args anchor)
+           (when (> (count args) (inc anchor)) (nth args (inc anchor)))
+           (drop (+ anchor 2) args)]
+          [(drop-last 3 args)
+           (first (take-last 3 args))
+           (second (take-last 3 args))
+           (last args)
+           nil])
         docstring (first (filter string? prefix))
         attr-map (first (filter map? prefix))]
+    (when (nil? rettype)
+      (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
+                      {:name name})))
     (when-not (and (<= (count prefix) 2)
                    (<= (count (filter string? prefix)) 1)
                    (<= (count (filter map? prefix)) 1)
                    (every? #(or (string? %) (map? %)) prefix))
-      (throw (ex-info "babashka.ffi: defcfn takes at most a docstring and an attribute map before the C symbol"
+      (throw (ex-info "babashka.ffi: defcfn accepts at most one docstring and one attribute map before the C symbol. The wrapper form needs a literal argtypes vector"
                       {:name name})))
-    `(def ~(with-meta name (cond-> (meta name)
-                             ;; :library selects the library. It is not var
-                             ;; metadata.
-                             attr-map (merge (dissoc attr-map :library))
-                             docstring (assoc :doc docstring)))
-       (cfn ~(:library attr-map) ~sym ~argtypes ~rettype))))
+    (when (and (seq wrapper)
+               (not (and (symbol? (first wrapper)) (next wrapper))))
+      (throw (ex-info "babashka.ffi: defcfn needs a raw binding name and a fn tail after the return type"
+                      {:name name})))
+    (when (= (first wrapper) name)
+      (throw (ex-info "babashka.ffi: the raw binding name must differ from the defcfn name"
+                      {:name name})))
+    (let [native-fn (first wrapper)
+          fn-tail (next wrapper)
+          arglists (when fn-tail
+                     (if (vector? (first fn-tail))
+                       (list (first fn-tail))
+                       (map first fn-tail)))
+          name (with-meta name (cond-> (meta name)
+                                 ;; :library selects the library. It is not
+                                 ;; var metadata.
+                                 attr-map (merge (dissoc attr-map :library))
+                                 docstring (assoc :doc docstring)
+                                 (and arglists
+                                      (not (:arglists (meta name)))
+                                      (not (:arglists attr-map)))
+                                 (assoc :arglists (list 'quote arglists))))
+          binding-form `(cfn ~(:library attr-map) ~sym ~argtypes ~rettype)]
+      (if native-fn
+        `(def ~name
+           (let [~native-fn ~binding-form]
+             (fn ~name ~@fn-tail)))
+        `(def ~name ~binding-form)))))
 
 ;; -- manual memory ------------------------------------------------------------
 
@@ -1046,9 +1121,6 @@
 ;; in registers. On AArch64, a struct larger than 16 bytes returns through x8.
 ;; This register is not an argument register. Libffi uses a call description
 ;; to put each value in the correct place. See doc/adr/ai/0003.
-
-(defn- struct-layout? [t]
-  (and (vector? t) (= :struct (first t))))
 
 (defn- align-up ^long [^long n ^long a]
   (* a (quot (+ n (dec a)) a)))

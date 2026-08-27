@@ -227,6 +227,34 @@ binding keeps the function address.
 A function or `delay` can refer to a library that loads later. Changes to the
 library value after the first call do not change the binding.
 
+### Wrap the binding in one form
+
+Use the wrapper form of `defcfn` to define a raw binding and a wrapper
+together:
+
+```clojure
+(defcfn open-db
+  "sqlite3_open_v2" [:string :pointer :int :string] :int
+  open-native
+  [filename flags]
+  (with-open [arena (ffi/confined-arena)]
+    (let [pdb  (ffi/alloc arena :pointer)
+          code (open-native filename pdb flags nil)]
+      (if (zero? code)
+        (ffi/read pdb :pointer)
+        (throw (ex-info "open failed" {:code code}))))))
+```
+
+The symbol after the return type names the raw binding. Only the wrapper body
+can use this name. The raw name does not enter the namespace.
+
+The forms after the raw name are a normal `fn` tail. The wrapper can have
+multiple arities. Its argument lists can differ from the C function. coffi
+uses the same form.
+
+The wrapper form needs a literal argtypes vector. Only the plain form
+accepts an argtypes expression.
+
 ### Types
 
 Use these type keywords in function signatures:
