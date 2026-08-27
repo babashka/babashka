@@ -136,6 +136,41 @@ already:
 
 `alloc`, `cfn` and `find-symbol` do not change.
 
+## How this compares to coffi and to the FFM API
+
+Checked against both, 2026-08-27.
+
+The FFM API agrees with every rule except the one change we make. `Arena.allocate(size, alignment)` puts the arena in the receiver position, which
+is `(alloc arena n alignment)`. `MemorySegment.reinterpret(size, arena, cleanup)` keeps the segment as the receiver, which is `(reinterpret seg
+size arena cleanup)`. `MemorySegment.get(layout, offset)` is `(read p t
+offset)`.
+
+Then `MemorySegment.set(layout, offset, value)` puts the offset before the
+value, and our new `write` does not. That divergence is deliberate, and the
+reason is that Java can afford this order while we cannot: `set` has no arity
+that omits the offset, so no position in it ever changes meaning. The hazard is
+not the order. The hazard is a convenience arity combined with that order, and
+the convenience arity is ours, not Java's.
+
+coffi made the same two choices we did, independently:
+
+```clojure
+;; coffi.mem
+(defn read-long  ([segment] ...) ([segment offset] ...))
+(defn write-long ([segment value] ...) ([segment offset value] ...))
+```
+
+Its reads append the offset and are safe. Its writes insert it, so position two
+holds a value in one arity and an offset in the other, both longs. `write-longs` repeats the shape with `[segment n value]` and `[segment n
+offset value]`.
+
+So fixing `write` moves us away from coffi, but not away from a decision coffi
+argued for. Two libraries mirrored `MemorySegment.set` and inherited a hazard
+that the Java method does not have, because the Java method has no optional
+offset. Being right is worth more here than matching, and the same reasoning
+applies to the arena: coffi appends it, we lead with it, and both are defensible
+while only one of them is ours to keep consistent.
+
 ## Alternatives considered
 
 ### Put the arena last, as coffi does
@@ -152,6 +187,16 @@ every day and which we already match exactly.
 
 The cost is contained. A coffi habit produces `(alloc 8 arena)`, which throws
 at once with a message that names the problem.
+
+### Keep the Java order and drop the convenience arity
+
+`(write p t offset v)` as the only form. Nothing is optional, so no position
+ever shifts, rule 2 holds, and the call matches `MemorySegment.set` exactly.
+This is the most faithful answer to the FFM API.
+
+Rejected on ergonomics. Almost every call site in our own libraries writes at
+offset zero, and this form makes each of them carry a literal `0` that says
+nothing. The rule we adopt keeps the short form and still satisfies rule 2.
 
 ### Mirror the Java method, with the receiver first
 
