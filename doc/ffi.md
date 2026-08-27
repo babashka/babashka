@@ -634,8 +634,11 @@ Argument order does not change this set.
 Everything else calls through libffi: a fixed signature outside the set,
 every variadic call, and every struct call. A libffi call takes
 approximately 1 microsecond. Every babashka binary includes libffi, except
-the musl static binary and a build made with `BABASHKA_LIBFFI=none`; in
-those, a signature outside the set throws.
+the musl static binary and a build made with `BABASHKA_LIBFFI=none`. In a
+build without libffi, a fixed signature outside the set throws, and
+variadic calls use the FFM fallback: at most five total arguments, three
+fixed arguments, and two `:double` arguments, with a `:void`, integer, or
+pointer return type.
 
 Callbacks do not use libffi and keep these limits:
 

@@ -43,8 +43,11 @@
   supports four arguments of the same floating-point type. A :float return
   supports at most four arguments.
 
-  In native images, variadic calls support up to five total arguments. They
-  support at most three fixed arguments and two :double arguments. Callbacks
+  Native images use libffi for every variadic call. If libffi is not
+  available, variadic calls use the FFM fallback. This fallback supports at
+  most five total arguments, three fixed arguments, and two :double
+  arguments. Its return type must be :void, an integer type, or a pointer
+  type. Callbacks
   support up to four arguments and two :double arguments. Callbacks do not
   support :float. The callback return type must be :void, an integer type, or
   :double. Argument order does not affect these limits. See doc/ffi.md for
@@ -561,10 +564,12 @@
                           {:symbol sym})))
         (let [args (vec args)
               tail-types (mapv tail-type (subvec args nf))
-              f (or (get @cache tail-types)
-                    (let [f (libffi-cfn lib sym (into fixed tail-types) rettype nf address)]
-                      (swap! cache assoc tail-types f)
-                      f))]
+              ;; a delay per shape: two threads that miss at once still
+              ;; build one cif
+              f @(get (swap! cache update tail-types
+                             #(or % (delay (libffi-cfn lib sym (into fixed tail-types)
+                                                       rettype nf address))))
+                      tail-types)]
           (apply f args)))
       {:babashka.ffi/backend :libffi})))
 
@@ -1125,7 +1130,12 @@
       :string (fn [arena seg v]
                 (write seg :pointer offset
                        (if (string? v) (.allocateFrom ^Arena arena ^String v) v)))
-      (fn [_ seg v] (write seg t offset v)))))
+      ;; write :pointer takes a segment or nil itself
+      (:pointer :bool) (fn [_ seg v] (write seg t offset v))
+      ;; the same coercion as the FFM path: nil and a pointer become a
+      ;; long, so a variadic tail value encodes like it always did
+      (let [coerce (arg-coercer t)]
+        (fn [_ seg v] (write seg t offset (coerce v)))))))
 
 (defn- decoder
   "Returns a function that reads a value from a segment. The function uses
@@ -1278,7 +1288,9 @@
 (defn- libffi-cfn
   "Returns a libffi binding: a struct signature on any platform, and in a
   native image every fixed signature without a trampoline and every variadic
-  call. Builds the cif and ffi_type trees once in the global arena. Each call
+  call. Builds the cif and ffi_type trees once, in the global arena: they
+  live until the process stops, also when the binding becomes unreachable,
+  so a binding is something a program makes once, not per call. Each call
   uses one allocation for its temporary values. nfixed, for a variadic call,
   is the number of declared parameters."
   ([lib sym argtypes rettype] (libffi-cfn lib sym argtypes rettype nil nil))

@@ -444,6 +444,14 @@
           (is (= "1 2 3 4 5 6" r1))
           ;; the decimal separator follows the C locale of the process
           (is (contains? #{"a=1.5 b=2.5 c=3.5" "a=1,5 b=2,5 c=3,5"} r2))))
+      (testing "nil and a pointer in a variadic tail encode as they do on the JVM"
+        (is (true? (bb `(do ~ffi-require
+                            (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                                  buf# (ffi/alloc 64)
+                                  n# (f# buf# 64 "%p %p" buf# nil)
+                                  s# (ffi/ptr->string buf#)]
+                              (ffi/free buf#)
+                              (and (pos? n#) (string? s#) (pos? (count s#)))))))))
       (testing "the variadic binding names its backend"
         (is (= (if native? :libffi :ffm)
                (bb `(do ~ffi-require
@@ -857,7 +865,10 @@
               compiled trampoline backend - a fallback to the interpreted FFM
               path is a 75x performance regression. Windows has ordered
               trampolines, so mixed shapes compile there too"
-      (is (= (if tu/native? [:trampoline :trampoline :libffi] [:ffm :ffm :ffm])
+      (is (= (cond (not tu/native?) [:ffm :ffm :ffm]
+                   ;; a native build without libffi keeps the FFM fallback
+                   @libffi? [:trampoline :trampoline :libffi]
+                   :else [:trampoline :trampoline :ffm])
              (bb `(do ~ffi-require
                       (mapv (comp :babashka.ffi/backend meta)
                             [(ffi/cfn "abs" [:int] :int)
