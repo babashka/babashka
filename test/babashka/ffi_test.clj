@@ -129,6 +129,33 @@
                        "strlen" [:string] :size_t)
                       (let [m# (meta (resolve '~'strlen))]
                         [(~'strlen "hello") (:doc m#) (:private m#) (:added m#)]))))))
+    (testing "the wrapper form binds the raw function for the body only"
+      (is (= [42 nil "Absolute value." '([x])]
+             (bb `(do ~ffi-require
+                      (~'defcfn ~'labs* "Absolute value." "labs" [:long] :long
+                       ~'raw-labs
+                       [~'x] (~'raw-labs (long ~'x)))
+                      [(~'labs* -42)
+                       (resolve '~'raw-labs)
+                       (:doc (meta (resolve '~'labs*)))
+                       (:arglists (meta (resolve '~'labs*)))]))))
+      (is (= [9.0 8.0 '([x] [x y])]
+             (bb `(do ~ffi-require
+                      (~'defcfn ~'pow* "pow" [:double :double] :double
+                       ~'raw-pow
+                       ([~'x] (~'raw-pow ~'x 2.0))
+                       ([~'x ~'y] (~'raw-pow ~'x ~'y)))
+                      [(~'pow* 3.0) (~'pow* 2.0 3.0)
+                       (:arglists (meta (resolve '~'pow*)))])))))
+    (testing "the wrapper marker must be a symbol with a fn tail"
+      (is (thrown-with-msg?
+           Exception #"wrapper form"
+           (bb `(do ~ffi-require
+                    (~'defcfn ~'bad "labs" [:long] :long "nope" [x#] x#)))))
+      (is (thrown-with-msg?
+           Exception #"wrapper form"
+           (bb `(do ~ffi-require
+                    (~'defcfn ~'bad "labs" [:long] :long ~'lonely))))))
     (testing "too many forms before the C symbol"
       (is (thrown? Exception
                    (bb `(do ~ffi-require

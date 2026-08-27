@@ -806,28 +806,70 @@
 
   Without :library, a binding searches all loaded libraries. Then it searches
   the default system lookup. A system library with the same name can supply
-  the symbol."
-  {:arglists '([name docstring? attr-map? sym argtypes rettype])}
+  the symbol.
+
+  The wrapper form, as in coffi, binds the raw C function to a name that
+  only the body sees, and defines name as the wrapper:
+
+      (defcfn open-db
+        \"sqlite3_open_v2\" [:string :pointer :int :string] :int
+        open-native
+        [filename flags]
+        (with-open [arena (ffi/confined-arena)]
+          (let [pdb (ffi/alloc arena :pointer)
+                code (open-native filename pdb flags nil)]
+            (if (zero? code)
+              (ffi/read pdb :pointer)
+              (throw (ex-info \"open failed\" {:code code}))))))
+
+  The symbol after the return type names the raw binding; the rest is a
+  normal fn tail, more than one arity included. The raw name is not
+  interned: only the wrapper enters the namespace."
+  {:arglists '([name docstring? attr-map? sym argtypes rettype]
+               [name docstring? attr-map? sym argtypes rettype native-fn & fn-tail])}
   [name & args]
   (when (< (count args) 3)
     (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
                     {:name name})))
-  (let [[sym argtypes rettype] (take-last 3 args)
-        prefix (drop-last 3 args)
-        docstring (first (filter string? prefix))
-        attr-map (first (filter map? prefix))]
-    (when-not (and (<= (count prefix) 2)
-                   (<= (count (filter string? prefix)) 1)
-                   (<= (count (filter map? prefix)) 1)
-                   (every? #(or (string? %) (map? %)) prefix))
-      (throw (ex-info "babashka.ffi: defcfn takes at most a docstring and an attribute map before the C symbol"
+  ;; the C symbol is the first element that its argtypes vector directly
+  ;; follows, so a leading string is a docstring only when no vector
+  ;; follows it
+  (let [[docstring args] (if (and (string? (first args))
+                                  (not (vector? (second args))))
+                           [(first args) (rest args)]
+                           [nil args])
+        [attr-map args] (if (map? (first args))
+                          [(first args) (rest args)]
+                          [nil args])
+        [sym argtypes rettype & wrapper] args]
+    (when-not (vector? argtypes)
+      (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
                       {:name name})))
-    `(def ~(with-meta name (cond-> (meta name)
-                             ;; :library selects the library. It is not var
-                             ;; metadata.
-                             attr-map (merge (dissoc attr-map :library))
-                             docstring (assoc :doc docstring)))
-       (cfn ~(:library attr-map) ~sym ~argtypes ~rettype))))
+    (when (and (seq wrapper)
+               (not (and (symbol? (first wrapper)) (next wrapper))))
+      (throw (ex-info "babashka.ffi: the defcfn wrapper form is a symbol for the raw binding followed by a fn tail"
+                      {:name name})))
+    (let [native-fn (first wrapper)
+          fn-tail (next wrapper)
+          arglists (when fn-tail
+                     (if (vector? (first fn-tail))
+                       (list (first fn-tail))
+                       (map first fn-tail)))
+          name (with-meta name (cond-> (meta name)
+                                 ;; :library selects the library. It is not
+                                 ;; var metadata.
+                                 attr-map (merge (dissoc attr-map :library))
+                                 docstring (assoc :doc docstring)
+                                 (and arglists
+                                      (not (:arglists (meta name)))
+                                      (not (:arglists attr-map)))
+                                 (assoc :arglists (list 'quote arglists))))
+          binding-form `(cfn ~(:library attr-map) ~sym ~argtypes ~rettype)]
+      (if native-fn
+        `(def ~name
+           (let [~native-fn ~binding-form]
+             (fn ~name ~@fn-tail)))
+        `(def ~name ~binding-form)))))
 
 ;; -- manual memory ------------------------------------------------------------
 
