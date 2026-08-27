@@ -159,7 +159,14 @@
                         (def ~'div-args [:int :int])
                         (~'defcfn ~'div* "div" ~'div-args [:struct [[:quot :int] [:rem :int]]])
                         (~'div* 7 2)))))))
-    (testing "the wrapper form asks for a literal argtypes vector"
+    (testing "an argtypes expression combines with a docstring and an attribute map"
+      (is (= [42 "Dyn." true]
+             (bb `(do ~ffi-require
+                      (def ~'arg-types [:long])
+                      (~'defcfn ~'labs6 "Dyn." {:private true} "labs" ~'arg-types :long)
+                      (let [m# (meta (resolve '~'labs6))]
+                        [(~'labs6 -42) (:doc m#) (:private m#)]))))))
+    (testing "the wrapper form rejects dynamic argtypes"
       (is (thrown-with-msg?
            Exception #"literal argtypes vector"
            (bb `(do ~ffi-require
@@ -958,14 +965,18 @@
                         ((ffi/cfn "strlen" [:string] :size_t) "hello"))))))))
 
 (deftest layout-kinds-in-sync-test
-  (testing "the clj-kondo hook mirrors babashka.ffi/layout-kinds"
+  (testing "runtime and hook layout kinds match"
     (let [kinds (fn [src]
                   (some->> (re-find #"layout-kinds\"?\s*(?:;;[^\n]*\n\s*)?(#\{[^}]*\})"
                                     src)
                            second
-                           edn/read-string))]
-      (is (= (kinds (slurp "src/babashka/ffi.clj"))
-             (kinds (slurp ".clj-kondo/hooks/babashka/ffi.clj")))))))
+                           edn/read-string))
+          ffi-kinds (kinds (slurp "src/babashka/ffi.clj"))
+          hook-kinds (kinds (slurp ".clj-kondo/hooks/babashka/ffi.clj"))]
+      ;; nil = nil must not pass as in sync
+      (is (set? ffi-kinds))
+      (is (set? hook-kinds))
+      (is (= ffi-kinds hook-kinds)))))
 
 (def ^:private generated-files
   ["resources/META-INF/native-image/babashka/ffi/reachability-metadata.json"

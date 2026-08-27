@@ -546,9 +546,18 @@
 (def ^:private variadic-limits
   "variadic calls support up to 5 args total, at most 3 fixed and none of them :float, at most 2 :double, and a :void, integer or pointer return")
 
+(def ^:private layout-kinds
+  ;; Keep in sync with .clj-kondo/hooks/babashka/ffi.clj.
+  #{:struct})
+
+(defn- layout-vector? [t]
+  (and (vector? t) (contains? layout-kinds (first t))))
+
+(defn- struct-layout? [t]
+  (and (vector? t) (= :struct (first t))))
+
 (declare ^:private fixed-cfn ^:private fixed-ffm-cfn ^:private variadic-ffm-cfn
-         ^:private libffi-cfn ^:private libffi-available?
-         ^:private struct-layout? ^:private layout-vector?)
+         ^:private libffi-cfn ^:private libffi-available?)
 
 (defn- variadic-libffi-cfn
   "A variadic binding through libffi: one cif per distinct tail shape,
@@ -828,7 +837,7 @@
   body can use this name. The forms after the raw name are a normal fn tail.
   The wrapper can have multiple arities. Its argument lists can differ from
   the C function. The raw name does not enter the namespace. The wrapper
-  form needs a literal argtypes vector; only the plain form accepts an
+  form needs a literal argtypes vector. Only the plain form accepts an
   argtypes expression."
   {:arglists '([name docstring? attr-map? sym argtypes rettype]
                [name docstring? attr-map? sym argtypes rettype native-fn & fn-tail])}
@@ -860,16 +869,11 @@
     (when (nil? rettype)
       (throw (ex-info "babashka.ffi: defcfn needs a C symbol, argtypes and a return type"
                       {:name name})))
-    ;; without the anchor a wrapper cannot be told apart from the binding,
-    ;; so the wrapper form requires a literal argtypes vector
-    (when (and (not anchor) (> (count args) 3))
-      (throw (ex-info "babashka.ffi: the defcfn wrapper form needs a literal argtypes vector"
-                      {:name name})))
     (when-not (and (<= (count prefix) 2)
                    (<= (count (filter string? prefix)) 1)
                    (<= (count (filter map? prefix)) 1)
                    (every? #(or (string? %) (map? %)) prefix))
-      (throw (ex-info "babashka.ffi: defcfn takes at most a docstring and an attribute map before the C symbol, and the wrapper form needs a literal argtypes vector"
+      (throw (ex-info "babashka.ffi: defcfn accepts at most one docstring and one attribute map before the C symbol. The wrapper form needs a literal argtypes vector"
                       {:name name})))
     (when (and (seq wrapper)
                (not (and (symbol? (first wrapper)) (next wrapper))))
@@ -1117,16 +1121,6 @@
 ;; in registers. On AArch64, a struct larger than 16 bytes returns through x8.
 ;; This register is not an argument register. Libffi uses a call description
 ;; to put each value in the correct place. See doc/adr/ai/0003.
-
-(def ^:private layout-kinds
-  ;; Keep in sync with .clj-kondo/hooks/babashka/ffi.clj.
-  #{:struct})
-
-(defn- layout-vector? [t]
-  (and (vector? t) (contains? layout-kinds (first t))))
-
-(defn- struct-layout? [t]
-  (and (vector? t) (= :struct (first t))))
 
 (defn- align-up ^long [^long n ^long a]
   (* a (quot (+ n (dec a)) a)))
