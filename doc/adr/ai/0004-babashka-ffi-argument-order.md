@@ -329,6 +329,38 @@ through an out-pointer, and the machinery is already there: `layout-of`
 computes the field offsets and the libffi path already decodes structs into
 maps.
 
+### Settled: `write` changes
+
+```clojure
+;; before
+(write p t v)
+(write p t offset v)
+
+;; after
+(write p t v)
+(write p t v offset)
+```
+
+It breaks Rule A, because position three holds a value in one arity and an
+offset in the other and both are numbers. It breaks Rule B, because the offset
+is optional, provides nothing, and therefore belongs at the end.
+
+The sharper argument came out of seeing the rest of the API first. Every other
+function that takes an offset puts it last: `read`, `read-bytes`,
+`write-bytes`, `slice`. So a caller who knows `(write p t v)` and wants to add
+an offset writes `(write p t v offset)` because that is what the API has taught
+them everywhere else, and today that call silently means something different.
+
+The fix does not remove the risk, it relocates it, and that is worth stating.
+Afterwards `v` and `offset` sit next to each other and are both often numbers,
+so Rule C's known limit applies and `(write p :int64 42 8)` cannot be told from
+`(write p :int64 8 42)`. That is an improvement on two counts. The trap now
+only catches someone using the four-argument form who transposes two of its own
+arguments, which is the same irreducible risk `segment` and `slice` carry,
+instead of catching everyone who knows the common form and extends it. And once
+`t` may be a layout, `v` is a map, so the two stop sharing a type and a
+transposition throws.
+
 ### Code changes this walkthrough has collected
 
 Applied together when the walkthrough ends, so that the branch stays
