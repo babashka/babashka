@@ -38,6 +38,52 @@ carries a type. Two integers side by side, as in `(alloc arena 64 8)`, cannot be
 told apart, and neither can the address and size of `segment`. That residual
 risk is inherent to a positional API.
 
+### Settled: `segment`
+
+`[addr]` and `[addr size]`, unchanged. Rule A holds because nothing shifts
+position. Rule B holds because `size` is optional and appended. Rule C cannot
+apply, because an address and a byte count are both numbers and no type
+distinction is available.
+
+The residual risk is therefore real and goes in the docstring rather than being
+designed around: `(segment 8 addr)` builds a valid-looking pointer to address 8
+with an enormous size, throws nothing, and fails later at the first read, in a
+native image by taking the process down.
+
+### Settled: `reinterpret`
+
+`[seg size]`, `[seg size arena]` and `[seg size arena cleanup]`, unchanged.
+Every position keeps its meaning across all three arities, the optional
+arguments are appended, and no adjacent pair shares a type. The arity structure
+also encodes a real dependency: `cleanup` cannot be passed without `arena`,
+because the arena is what calls it.
+
+The arena stays optional because the two forms make different and equally valid
+claims about ownership. Without an arena you get a window onto memory that C
+owns and that outlives your code. With an arena you bind the foreign pointer's
+validity to that arena, and the runtime then enforces it, which is worth more
+than the convenience:
+
+```clojure
+(def view (with-open [a (ffi/confined-arena)] (ffi/reinterpret p 6 a)))
+(ffi/ptr->string view)
+;; babashka.ffi: the pointer at address 105553138057360 belongs to a closed arena
+```
+
+That is a use-after-free turned into an exception. Requiring an arena would
+force the caller to name one in the common case where it controls nothing,
+which is a lie in the code rather than a safety gain.
+
+The docstring changes. It currently explains only what the arena does and says
+nothing about what the form without an arena means, which is the difference
+that matters.
+
+Two problems found next to `reinterpret` are not `reinterpret`'s fault and are
+tracked separately: the cleanup argument is used nowhere in our libraries, and
+`ptr->string` refuses a zero-size segment even though our own `string-at` reads
+unbounded behind every `:string` return, which is what drives the
+`Long/MAX_VALUE` call in ffi-duckdb.
+
 ## Context
 
 The API is positional. Several functions have optional arguments, so the same
