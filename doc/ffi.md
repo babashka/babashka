@@ -444,42 +444,35 @@ Pointer arguments reject numbers. `ffi/null` is the NULL pointer:
 ;;=> true
 ```
 
-Native memory has one of three owners. An [arena](#arenas) owns memory for
-one scope, and releases it when the arena closes: use this for your own
-buffers. An `auto-arena` lets the garbage collector release the memory. The
-C allocator owns memory from `alloc` without an arena: use this for memory
-that changes owner with C, such as a buffer that a C function keeps or
-frees, and release it yourself with `free`. Closing the arena replaces the
-call to `free` for arena memory.
-
-Use `alloc` to allocate zeroed memory from the C allocator. Release this
-memory with `free`:
+Every allocation belongs to an [arena](#arenas). The arena controls the
+lifetime of the memory. `alloc` always takes an arena:
 
 ```clojure
-(let [p (ffi/alloc 16)]
-  (try
+(with-open [arena (ffi/confined-arena)]
+  (let [p (ffi/alloc arena 16)]
     (ffi/write p :int 42)
-    (ffi/read p :int)
-    (finally
-      (ffi/free p))))
+    (ffi/read p :int)))
 ;;=> 42
 ```
+
+`alloc` also takes a type keyword or a struct layout instead of an integer
+byte count. It uses the natural alignment of the type or layout:
+
+```clojure
+(ffi/alloc arena :pointer)                          ; 8 bytes
+(ffi/alloc arena [:struct [[:x :int] [:y :int]]])   ; 8 bytes, aligned for the struct
+```
+
+`free` releases memory that a C function returned for the caller to release.
+If the library has a deallocator, use it. One example is `duckdb_free`.
 
 CAUTION: Do not use a pointer after `free`. This can corrupt memory or stop the
 process.
 
-`free` refuses memory of an arena with an error: the arena releases that
-memory.
-
-`alloc` also accepts a type keyword instead of an integer byte count:
-
-```clojure
-(ffi/alloc :pointer)   ; 8 bytes
-```
-
 ### Arenas
 
-An arena owns its allocated memory. Closing the arena releases this memory.
+An arena owns its allocated memory. When the arena closes, it releases this
+memory.
 
 Create an arena in `with-open`:
 
@@ -496,7 +489,8 @@ The arena releases `p` and `q` when the body ends. It also releases them if the
 body throws. After release, memory access throws an `IllegalStateException`.
 C functions reject pointers from a closed arena.
 
-`free` refuses memory that an arena allocated: the arena releases it.
+`free` refuses memory from a confined, shared, or automatic arena. The arena
+releases this memory.
 
 CAUTION: Do not close an arena while C uses its memory. C can access released
 memory.
@@ -526,13 +520,14 @@ or global arena.
 The functions return a `java.lang.foreign.Arena`, so the same code runs in
 babashka and on the JVM.
 
-`read` and `write` accept an optional byte offset:
+`read` and `write` accept an optional byte offset, and it is always the last
+argument:
 
 ```clojure
-(ffi/write p :int 0 42)
-(ffi/write p :double 8 1.5)
+(ffi/write p :int 42)        ; at offset 0
+(ffi/write p :double 1.5 8)  ; at offset 8
 
-(ffi/read p :int 0)
+(ffi/read p :int)
 (ffi/read p :double 8)
 ```
 
@@ -567,14 +562,11 @@ Use `sizeof` to get the size of a type:
 ;;=> 8
 ```
 
-Use `string->ptr` to allocate a C string. Release the result with `free`:
+Use `string->ptr` to allocate a C string in an arena:
 
 ```clojure
-(let [p (ffi/string->ptr "hello")]
-  (try
-    (ffi/ptr->string p)
-    (finally
-      (ffi/free p))))
+(with-open [arena (ffi/confined-arena)]
+  (ffi/ptr->string (ffi/string->ptr arena "hello")))
 ;;=> "hello"
 ```
 
@@ -601,12 +593,10 @@ function:
 ```clojure
 (defcfn sqlite3-open "sqlite3_open" [:string :pointer] :int)
 
-(let [database-pointer (ffi/alloc (ffi/sizeof :pointer))]
-  (try
+(with-open [arena (ffi/confined-arena)]
+  (let [database-pointer (ffi/alloc arena :pointer)]
     (sqlite3-open "example.db" database-pointer)
-    (ffi/read database-pointer :pointer)
-    (finally
-      (ffi/free database-pointer))))
+    (ffi/read database-pointer :pointer)))
 ```
 
 The returned database pointer belongs to SQLite. Close it with the related

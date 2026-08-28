@@ -7,13 +7,13 @@
       (require '[babashka.ffi :as ffi])
       (ffi/load-system-library \"sqlite3\")
       (def sqlite3-open (ffi/cfn \"sqlite3_open\" [:string :pointer] :int))
-      (let [pp (ffi/alloc (ffi/sizeof :pointer))]
-        (try (sqlite3-open \"x.db\" pp)
-             (ffi/read pp :pointer)
-             (finally (ffi/free pp))))
+      (with-open [arena (ffi/confined-arena)]
+        (let [pp (ffi/alloc arena :pointer)]
+          (sqlite3-open \"x.db\" pp)
+          (ffi/read pp :pointer)))
 
-  This example manages the memory by hand with alloc and free. With an arena
-  instead, closing the arena releases the memory.
+  Every allocation belongs to an arena. The arena controls the lifetime of
+  the memory.
 
   Use these type keywords:
 
@@ -222,7 +222,10 @@
 
 (defn segment
   "Returns a pointer to addr. The default size is zero.
-  A specified nonzero size enables bounds checks."
+  A specified nonzero size enables bounds checks.
+
+  CAUTION: Keep addr before size. A transposed call can stop the process at
+  the first read."
   (^MemorySegment [addr] (MemorySegment/ofAddress (long addr)))
   (^MemorySegment [addr size]
    (.reinterpret (MemorySegment/ofAddress (long addr)) (long size))))
@@ -230,11 +233,18 @@
 (defn reinterpret
   "Returns a view of segment seg with byte size size.
 
-  An arena controls the lifetime of the view. The arena calls the optional
-  cleanup function with the view when the arena closes.
+  Without an arena the view has an unbounded lifetime. That is correct for
+  memory that C owns and that outlives your code.
 
-  CAUTION: Do not pass the view to C after the arena closes.
-  C can access released memory."
+  With an arena, the view is valid only while that arena is open. A read after
+  the arena closes throws. The arena calls the optional cleanup function with
+  the view when it closes. Use this function for a C library deallocator.
+
+  CAUTION: Give the actual size. The runtime cannot know if this size is
+  correct. A larger size permits out-of-bounds reads.
+
+  CAUTION: If the arena is closed, do not pass the view to C. C can access the
+  released memory."
   (^MemorySegment [seg size] (.reinterpret (as-pointer seg) (long size)))
   (^MemorySegment [seg size arena]
    (.reinterpret (as-pointer seg) (long size) ^Arena arena nil))
@@ -243,11 +253,21 @@
                  (reify java.util.function.Consumer
                    (accept [_ s] (cleanup s))))))
 
+(declare sizeof)
+
 (defn slice
-  "Returns a slice of seg at byte offset. By default, the slice ends with seg."
+  "Returns a slice of seg at byte offset. By default, the slice ends with seg.
+  len is an integer byte count, a type keyword, or a struct layout, so walking
+  an array of structs takes the layout itself:
+
+      (slice arr (* i (sizeof point)) point)
+
+  CAUTION: Keep offset before len. A transposed call throws only if the result
+  does not fit in seg."
   (^MemorySegment [seg offset] (.asSlice (as-pointer seg) (long offset)))
   (^MemorySegment [seg offset len]
-   (.asSlice (as-pointer seg) (long offset) (long len))))
+   (.asSlice (as-pointer seg) (long offset)
+             (long (if (integer? len) len (sizeof len))))))
 
 (defn address
   "Returns the native address of pointer p as a Clojure long."
@@ -687,9 +707,17 @@
    ;; returns this value when it does not have the requested function.
    (when (and (instance? MemorySegment sym) (zero? (.address ^MemorySegment sym)))
      (throw (ex-info "babashka.ffi: cannot bind the null address" {:sym sym})))
-   (when (some #(= :void %) argtypes)
-     (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
-                     {:argtypes argtypes})))
+   (doseq [t argtypes]
+     (when (= :void t)
+       (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
+                       {:argtypes argtypes})))
+     ;; A layout kind here usually means that argtypes and rettype are transposed.
+     (when (contains? layout-kinds t)
+       (throw (ex-info (str "babashka.ffi: " t " is a layout kind, not an argument type. "
+                            "A layout goes in one type position as " (pr-str [t '...])
+                            ". Make sure that argtypes and the return type are in the correct order: "
+                            (pr-str argtypes))
+                       {:argtypes argtypes :rettype rettype}))))
    (let [fixed (check-variadic-marker argtypes)
          ;; any vector on a type position is a layout; layout-of says which
          ;; kinds exist
@@ -912,7 +940,6 @@
            (or (try (load-library "msvcrt.dll") (catch Exception _ nil))
                (try (load-library "ucrtbase.dll") (catch Exception _ nil))))))
 
-(def ^:private c-calloc (delay (cfn @crt-lib "calloc" [:size_t :size_t] :pointer)))
 (def ^:private c-free (delay (cfn @crt-lib "free" [:pointer] :void)))
 
 (def ^:private sizes
@@ -960,34 +987,31 @@
 
 (defn- size-and-alignment
   "Returns the requested size and alignment.
-  A type uses natural alignment. An integer byte count uses alignment 16."
+  A type or layout uses natural alignment. An integer byte count uses
+  alignment 16."
   [n]
   (cond (integer? n) [(long n) 16]
         (keyword? n) (let [size (long (sizeof n))] [size (max 1 (min 8 size))])
-        :else (throw (ex-info (str "babashka.ffi: alloc takes an integer byte count or a type keyword, got " (pr-str n))
+        (layout-vector? n) [(sizeof n) (alignof n)]
+        :else (throw (ex-info (str "babashka.ffi: alloc takes an integer byte count, a type keyword or a layout, got " (pr-str n))
                               {:n n}))))
 
 (defn alloc
-  "Allocates zeroed native memory and returns its pointer.
-  n is an integer byte count or a type keyword.
+  "Allocates zeroed native memory in arena and returns its pointer.
+  n is an integer byte count, a type keyword, or a struct layout.
 
-  (alloc n) takes memory from the C allocator. Use it for memory that changes
-  owner with C. Release it with free.
+  Use a confined arena inside one function. Use a shared arena for memory that
+  outlives the call and is released elsewhere. When the arena closes, it
+  releases its memory.
 
-  (alloc arena n) allocates scoped memory. Closing the arena releases this
-  memory and replaces the call to free.
-
-  With an arena, a type uses natural alignment. An integer byte count uses
+  A type or layout uses natural alignment. An integer byte count uses
   alignment 16. Specify an alignment to override this value.
 
-  free refuses a pointer that an arena allocated: the arena releases it.
+  There is no unscoped form. If C allocates the memory, bind its allocator with
+  cfn. Release the result with the matching C deallocator.
 
   CAUTION: Do not close the arena while C uses its memory.
   C can access released memory."
-  ([n]
-   (let [size (long (first (size-and-alignment n)))]
-     ;; calloc returns a pointer of size 0
-     (.reinterpret ^MemorySegment (@c-calloc 1 size) size)))
   ([^Arena arena n]
    (let [[size align] (size-and-alignment n)]
      (alloc arena size align)))
@@ -999,9 +1023,14 @@
    (.allocate arena (long (first (size-and-alignment n))) (long alignment))))
 
 (defn free
-  "Releases memory from alloc, string->ptr, or a C function that expects the
-  caller to free its result. Refuses memory of an arena: the arena releases
-  that when it closes.
+  "Releases memory that a C function returned and expects the caller to free.
+  A C library that allocates usually ships its own deallocator, such as
+  duckdb_free. If the library has a deallocator, use it.
+
+  Refuses memory of a confined, shared, or automatic arena. The arena releases
+  that memory. Memory of the global arena has the same scope as memory from the
+  C allocator. The function cannot distinguish them. Do not pass global arena
+  memory to free.
 
   CAUTION: Do not use p after free. This can corrupt memory or stop the process."
   [p]
@@ -1045,8 +1074,8 @@
 
   Checks the access against the size of p. Rejects a zero-size pointer.
   reinterpret specifies a valid size."
-  ([p t v] (write p t 0 v))
-  ([p t offset v]
+  ([p t v] (write p t v 0))
+  ([p t v offset]
    (let [off (long offset)
          ^MemorySegment seg (accessible p)]
      (case t
@@ -1097,14 +1126,10 @@
     (.asByteBuffer (.asSlice seg 0 (long n)))))
 
 (defn string->ptr
-  "Copies s to newly allocated native memory as a NUL-terminated UTF-8
-  string. Returns its pointer. Release the pointer with free."
-  [^String s]
-  (let [bytes (.getBytes s "UTF-8")
-        n (inc (alength bytes))
-        ^MemorySegment seg (alloc n)]
-    (MemorySegment/copy bytes 0 seg ValueLayout/JAVA_BYTE 0 (alength bytes))
-    seg))
+  "Copies s into arena as a NUL-terminated UTF-8 string and returns its
+  pointer. The arena controls the lifetime of the string."
+  ^MemorySegment [^Arena arena ^String s]
+  (.allocateFrom arena s))
 
 (def null
   "The NULL pointer."
@@ -1125,6 +1150,12 @@
 (defn- align-up ^long [^long n ^long a]
   (* a (quot (+ n (dec a)) a)))
 
+;; Immutable layouts make resolved values safe to cache.
+(def ^:private layout-cache (atom {}))
+(def ^:private layout-cache-limit 256)
+
+(declare ^:private layout-of*)
+
 (defn- layout-of
   "Resolves a type keyword or struct layout. Returns a map with :type, :size,
   and :align. A struct also has :fields. Each field has a :name and :offset.
@@ -1133,6 +1164,17 @@
 
   A layout is a vector that starts with its kind, such as [:struct fields].
   A keyword is a primitive type."
+  [t]
+  (if (keyword? t)
+    (layout-of* t)
+    (or (get @layout-cache t)
+        (let [v (layout-of* t)]
+          ;; Keep the first 256 layouts. Generated layouts do not evict this set.
+          (swap! layout-cache
+                 (fn [m] (if (<= layout-cache-limit (count m)) m (assoc m t v))))
+          v))))
+
+(defn- layout-of*
   [t]
   (cond
     (struct-layout? t)
@@ -1210,14 +1252,15 @@
                 (field-error v))
               ((aget encs i) arena seg x)))))
       :string (fn [arena seg v]
-                (write seg :pointer offset
-                       (if (string? v) (.allocateFrom ^Arena arena ^String v) v)))
+                (write seg :pointer
+                       (if (string? v) (.allocateFrom ^Arena arena ^String v) v)
+                       offset))
       ;; write :pointer takes a segment or nil itself
-      (:pointer :bool) (fn [_ seg v] (write seg t offset v))
+      (:pointer :bool) (fn [_ seg v] (write seg t v offset))
       ;; the same coercion as the FFM path: nil and a pointer become a
       ;; long, so a variadic tail value encodes like it always did
       (let [coerce (arg-coercer t)]
-        (fn [_ seg v] (write seg t offset (coerce v)))))))
+        (fn [_ seg v] (write seg t (coerce v) offset))))))
 
 (defn- decoder
   "Returns a function that reads a value from a segment. The function uses
@@ -1270,20 +1313,20 @@
       (let [elems (mapv (fn [[_ ty]] (ffi-type! arena ty)) (second t))
             n (count elems)
             arr (.allocate arena (long (* 8 (inc n))) 8)]
-        (dotimes [i n] (write arr :pointer (* 8 i) (nth elems i)))
-        (write arr :pointer (* 8 n) nil)
+        (dotimes [i n] (write arr :pointer (nth elems i) (* 8 i)))
+        (write arr :pointer nil (* 8 n))
         ;; ffi_prep_cif fills in the size and the alignment
         (write p :size_t 0 0)
-        (write p :uint16 8 0)
-        (write p :uint16 10 (ffi-type-codes :struct))
-        (write p :pointer 16 arr))
+        (write p :uint16 0 8)
+        (write p :uint16 (ffi-type-codes :struct) 10)
+        (write p :pointer arr 16))
       (let [code (or (ffi-type-codes t)
                      (throw (ex-info (str "babashka.ffi: unknown type " t) {:type t})))
             size (if (= :void t) 1 (long (sizeof t)))]
-        (write p :size_t 0 size)
-        (write p :uint16 8 size)
-        (write p :uint16 10 code)
-        (write p :pointer 16 nil)))
+        (write p :size_t size 0)
+        (write p :uint16 size 8)
+        (write p :uint16 code 10)
+        (write p :pointer nil 16)))
     p))
 
 (defn- check-layout!
@@ -1393,7 +1436,7 @@
         atypes-arr (.allocate arena (long (* 8 (max 1 n))) 8)
         ^MemorySegment cif (.allocate arena (long cif-bytes) 16)
         cif-addr (.address cif)]
-    (dotimes [i n] (write atypes-arr :pointer (* 8 i) (nth atypes i)))
+    (dotimes [i n] (write atypes-arr :pointer (nth atypes i) (* 8 i)))
     (let [status (long (if nfixed
                          (prep-cif-var cif-addr @default-abi (long nfixed) n
                                        (.address rtype) (.address atypes-arr))
@@ -1431,7 +1474,7 @@
               (let [scratch (.allocate a total 16)
                     base (.address scratch)]
                 (dotimes [i n]
-                  (write scratch :long (* 8 i) (+ base (aget slot-offs i)))
+                  (write scratch :long (+ base (aget slot-offs i)) (* 8 i))
                   ((aget encs i) a scratch (nth args i)))
                 ;; the fence keeps the cif segment, and with it the arena,
                 ;; reachable while libffi reads them: without it the VM may
