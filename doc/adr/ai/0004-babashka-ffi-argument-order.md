@@ -226,6 +226,30 @@ call, which is necessary because a `:library` may be a delay or a var that is
 not ready at bind time, as the bring-your-own-dynlib pattern requires. The
 error is clear when it arrives: `babashka.ffi: symbol not found: zlibVersion`.
 
+### Settled: `defcfn` is exempt, narrowly
+
+`defcfn` is the one place in the API that breaks Rule A on its face. Position
+two holds the C symbol when there is no docstring and the docstring when there
+is one, and both are strings.
+
+It is exempt, because `name docstring? attr-map?` is the convention of every
+def form in Clojure, and a def form that looked like the others but placed its
+docstring elsewhere would cause more mistakes than the shift it avoids.
+
+The ambiguity is resolved structurally rather than by type. The parser anchors
+on the first literal vector that is not a layout, takes the C symbol as the
+element before it, and treats everything earlier as the prefix. With dynamic
+argtypes there is no anchor, so it counts back three from the end. All four
+legal shapes parse correctly, and the degenerate one points at itself:
+
+```clojure
+(defcfn e "Doc." at :size_t)   ; C symbol omitted
+;; babashka.ffi: symbol not found: Doc.
+```
+
+The exemption covers the `docstring?` and `attr-map?` prefix of a def form and
+nothing else. It is not a general licence for same-type shifts.
+
 ### Code changes this walkthrough has collected
 
 Applied together when the walkthrough ends, so that the branch stays
