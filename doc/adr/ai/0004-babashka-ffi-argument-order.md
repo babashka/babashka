@@ -174,6 +174,31 @@ delegates at call time rather than resolving once:
 (defmethod c-layout ~new-type [_type#] (c-layout aliased#))
 ```
 
+### Settled: `find-symbol`, and Rule B's exception has a precedent in core
+
+`[sym]` and `[lib sym]`, unchanged. It reads as "find this symbol in this
+library", and a swapped call throws with a message that names the problem:
+`:library must be a library map, a function that returns one, or a delay, atom
+or var that holds one, got "pow"`.
+
+Rule B's exception is not our invention. Clojure core already does exactly
+this, and reserves the leading position for a scope in its lookup functions
+while appending ordinary optional arguments elsewhere:
+
+```
+resolve      ([sym] [env sym])
+ns-resolve   ([ns sym] [ns env sym])
+get          ([map key] [map key not-found])
+subs         ([s start] [s start end])
+```
+
+`resolve` has the shape of `find-symbol` exactly. So the rule describes
+existing practice rather than a preference of ours.
+
+Core is not spotless here: `ns-resolve` inserts `env` in the middle, so `sym`
+moves from position two to position three. That is the construction Rule A
+tolerates only because the types differ.
+
 ### Code changes this walkthrough has collected
 
 Applied together when the walkthrough ends, so that the branch stays
