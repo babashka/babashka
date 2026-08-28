@@ -108,6 +108,72 @@ tracked separately: the cleanup argument is used nowhere in our libraries, and
 unbounded behind every `:string` return, which is what drives the
 `Long/MAX_VALUE` call in ffi-duckdb.
 
+### Settled: layouts as a size argument, and memoizing `layout-of`
+
+`alloc` takes a layout where it takes a type keyword, and `slice` takes one
+where it takes a length:
+
+```clojure
+(alloc arena [:struct [[:x :int] [:y :int]]])
+(slice arr (* i (sizeof point)) point)
+```
+
+Today `sizeof` and `alignof` accept a layout but `alloc` and `slice` refuse
+one, so the caller writes `(alloc arena (sizeof point) (alignof point))`. That
+walks the layout tree twice, and writing an alignment by hand is the step this
+is meant to remove.
+
+It also strengthens Rule C. `offset` and `alignment` stay integers while their
+neighbours accept a layout, so a swapped call throws.
+
+Measured cost per call, 2026-08-28:
+
+```
+(sizeof :pointer)   keyword           48 ns
+(sizeof point)      flat struct      554 ns
+(sizeof rect)       nested struct   1565 ns
+sizeof + alignof point              1133 ns   <- what callers write today
+(alloc arena 8)     baseline         120 ns
+```
+
+So the new form is about twice as fast as the workaround, because it resolves
+the layout once. But resolving a layout still costs four to thirteen times the
+allocation it precedes, because `layout-of` validates the structure, recurses
+through the fields and builds a fresh map on every call.
+
+Therefore `layout-of` is memoized, with a bounded cache in the style of the
+tail-shape cache. Invalidation is not a concern: a layout is an immutable
+value, so the same layout always resolves the same way, and the only risk is
+growth from dynamically generated layouts, which the bound covers. Hashing is
+not the bottleneck people expect it to be:
+
+```
+hash of a hoisted layout             34 ns
+hash of a fresh literal              33 ns
+map lookup, hoisted key              42 ns
+map lookup, fresh literal key       102 ns
+```
+
+Even the worst case is five times cheaper than recomputing.
+
+We do not build `java.lang.foreign.MemoryLayout` objects, although that is the
+JVM's own answer and coffi's. A `MemoryLayout` computes its size and alignment
+once and stores them, so holding the object is the cache. It buys coffi more
+than it would buy us: coffi passes structs through FFM downcalls, so its layout
+object feeds the function descriptor directly, while our structs go through
+libffi and need `ffi_type` descriptors instead. For us a `StructLayout` would
+serve size and alignment only, and would add a second representation of a
+layout to document.
+
+Worth noting that coffi does not memoize either. `size-of` and `align-of`
+rebuild the layout on every call unless the caller passes a `MemoryLayout`
+instance, and `defalias`, which is where caching would naturally happen,
+delegates at call time rather than resolving once:
+
+```clojure
+(defmethod c-layout ~new-type [_type#] (c-layout aliased#))
+```
+
 ### Code changes this walkthrough has collected
 
 Applied together when the walkthrough ends, so that the branch stays
@@ -115,6 +181,11 @@ documentation until then and the code lands in one tested commit.
 
 - `reinterpret`: replace the docstring with the text agreed above. No change to
   the arguments.
+- `segment`: document in the docstring that an address and a size are both
+  numbers, so a swapped call builds a valid-looking pointer that fails later.
+- `alloc`: accept a layout wherever it accepts a type keyword.
+- `slice`: accept a layout as the length.
+- `layout-of`: memoize with a bounded cache.
 
 ## Context
 
