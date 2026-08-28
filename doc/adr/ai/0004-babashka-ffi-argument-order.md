@@ -250,6 +250,63 @@ legal shapes parse correctly, and the degenerate one points at itself:
 The exemption covers the `docstring?` and `attr-map?` prefix of a def form and
 nothing else. It is not a general licence for same-type shifts.
 
+### Settled: `alloc` requires an arena
+
+```clojure
+(alloc arena n)
+(alloc arena n alignment)
+```
+
+The one-argument form that took memory from the C allocator is removed. No
+`malloc` replaces it. `free` stays, for memory that a C function returned.
+
+This is not an ordering decision. The order was already settled by the rules,
+and the question was which ownership models the API offers. It now offers one,
+and the arena is mandatory because the arena is the model the platform we live
+on has chosen.
+
+The FFM API has no malloc and no free. `Arena` exposes `allocate`, `scope` and
+`close`, and manual lifetime is a confined or shared arena that the caller
+closes. coffi carries neither word in its source either.
+
+Our own code barely used the other model. ffi-sqlite3 and the sqlite4clj port
+are already arena-only with no `free` at all. ffi-brotli holds eighteen manual
+allocations in three patterns, and every one is lexically scoped, so one arena
+per function replaces them and deletes eight `free` calls and a `run!`.
+ffi-duckdb has a single genuinely non-lexical allocation, `pdb`, which lives
+from `open` until `close!` and becomes a shared arena in the connection map.
+
+The finding that decided it: across all four libraries, no `ffi/free` call
+releases memory that a C function returned. Every one releases our own
+`alloc`. Where foreign memory does appear, in ffi-duckdb's `varchar-at`, the
+code calls duckdb's own `c-duckdb-free`. So `(alloc n)` and `free` were a
+closed loop that existed to serve itself.
+
+That loop also produced the bug found the same day. `free` decides what to
+accept by comparing scopes, and memory from the global arena carries the global
+scope exactly as C memory does, so the guard cannot tell them apart:
+
+```clojure
+(ffi/free (ffi/alloc (ffi/global-arena) 64))   ; accepted, calls C free() on
+                                               ; memory C never allocated
+```
+
+With one ownership model that mistake stops being something the API invites.
+The guard still catches confined and shared arena memory, which is the common
+error; global arena memory remains indistinguishable and is documented rather
+than engineered around.
+
+`string->ptr` follows in the same decision, because it also handed out C memory
+that needed `free`. It becomes `(string->ptr arena s)`, with the arena leading
+under Rule B because it provides the memory, and it maps directly onto
+`SegmentAllocator.allocateFrom(String)`, which is what our own internal
+argument coercion already uses.
+
+The cost lands on babashka rather than on the libraries: 42 `alloc` and 25
+`free` calls in the test suite, a good number of which exist to exercise the C
+allocator path, and two sections of `doc/ffi.md` that teach both models side by
+side. Tests follow the API rather than deciding it.
+
 ### Code changes this walkthrough has collected
 
 Applied together when the walkthrough ends, so that the branch stays
@@ -264,6 +321,16 @@ documentation until then and the code lands in one tested commit.
 - `layout-of`: memoize with a bounded cache.
 - `cfn`: name the cause when a layout vector appears on an argtypes position.
   Today that reports `unknown type :struct`, which describes the symptom.
+- `alloc`: remove the one-argument form. The arena is required.
+- `string->ptr`: becomes `[arena s]`.
+- `free`: rewrite the docstring around memory a C function returned, and state
+  that a pointer from the global arena cannot be distinguished from one the C
+  allocator returned.
+- ffi-duckdb: `pdb` becomes a shared arena in the connection map.
+- ffi-brotli: the segment sweep now also replaces its eighteen manual
+  allocations with one arena per function.
+- babashka: rework the tests that exercise the C allocator path, and the two
+  sections of doc/ffi.md that teach both ownership models.
 
 ## Context
 
