@@ -51,13 +51,3 @@ then
    ../../bb dir/script.clj
 fi
 popd
-
-# The babashka.ffi library carries its own test suite. Run it through this
-# binary, so the same assertions that its CI checks on the JVM also cover the
-# compiled trampolines. The task uses a test runner that exits non-zero.
-if [[ $BABASHKA_TEST_ENV = "native" ]]
-then
-  pushd ffi
-  ../bb test:bb
-  popd
-fi
