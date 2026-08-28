@@ -76,13 +76,45 @@ which is a lie in the code rather than a safety gain.
 
 The docstring changes. It currently explains only what the arena does and says
 nothing about what the form without an arena means, which is the difference
-that matters.
+that matters. Agreed text:
+
+```
+Returns a view of segment seg with byte size size.
+
+Without an arena the view has an unbounded lifetime. That is correct for
+memory that C owns and that outlives your code.
+
+With an arena the view is valid only while that arena is open, and the
+runtime enforces it: a read after the arena closes throws. The arena calls
+the optional cleanup function with the view when it closes, which is where
+the deallocator of a C library belongs.
+
+CAUTION: Give the real size. The runtime cannot check this claim, and a size
+larger than the allocation turns every bounds check into a silent
+out-of-bounds read.
+
+CAUTION: Do not pass the view to C after the arena closes. The runtime stops
+your own reads, but C can still reach the released memory.
+```
+
+The first caution is new and covers what makes this function fundamentally
+unsafe: `size` is a claim the runtime cannot verify. The second one existed
+already, and gains the distinction that makes it comprehensible, which is that
+the runtime stops your reads but not C's.
 
 Two problems found next to `reinterpret` are not `reinterpret`'s fault and are
 tracked separately: the cleanup argument is used nowhere in our libraries, and
 `ptr->string` refuses a zero-size segment even though our own `string-at` reads
 unbounded behind every `:string` return, which is what drives the
 `Long/MAX_VALUE` call in ffi-duckdb.
+
+### Code changes this walkthrough has collected
+
+Applied together when the walkthrough ends, so that the branch stays
+documentation until then and the code lands in one tested commit.
+
+- `reinterpret`: replace the docstring with the text agreed above. No change to
+  the arguments.
 
 ## Context
 
