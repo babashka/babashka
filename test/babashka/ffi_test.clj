@@ -210,81 +210,73 @@
     (testing "a bool argument takes Clojure truthiness"
       (is (= [1 0 1 0]
              (bb `(do ~ffi-require
-                      (let [p# (ffi/alloc 4)]
-                        (ffi/write p# :bool 0 true)
-                        (ffi/write p# :bool 1 false)
-                        (ffi/write p# :bool 2 :truthy)
-                        (ffi/write p# :bool 3 nil)
-                        (let [res# (mapv #(ffi/read p# :uint8 %) (range 4))]
-                          (ffi/free p#)
-                          res#)))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc a# 4)]
+                          (ffi/write p# :bool true 0)
+                          (ffi/write p# :bool false 1)
+                          (ffi/write p# :bool :truthy 2)
+                          (ffi/write p# :bool nil 3)
+                          (mapv #(ffi/read p# :uint8 %) (range 4)))))))))
     (testing "reading a bool back"
       (is (= [true false]
              (bb `(do ~ffi-require
-                      (let [p# (ffi/alloc 2)]
-                        (ffi/write p# :bool 0 true)
-                        (ffi/write p# :bool 1 false)
-                        (let [res# [(ffi/read p# :bool 0) (ffi/read p# :bool 1)]]
-                          (ffi/free p#)
-                          res#)))))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc a# 2)]
+                          (ffi/write p# :bool true 0)
+                          (ffi/write p# :bool false 1)
+                          [(ffi/read p# :bool 0) (ffi/read p# :bool 1)])))))))))
 
 (deftest segment-test
   (when-not skip?
     (testing "alloc returns a sized MemorySegment"
       (is (= [true 8]
              (bb `(do ~ffi-require
-                      (let [p# (ffi/alloc 8)
-                            res# [(ffi/pointer? p#) (ffi/size p#)]]
-                        (ffi/free p#)
-                        res#))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc a# 8)]
+                          [(ffi/pointer? p#) (ffi/size p#)])))))))
     (testing "read rejects an access past the end"
       (is (thrown-with-msg?
            Exception #"IndexOutOfBounds|Out of bound"
            (bb `(do ~ffi-require
-                    (let [p# (ffi/alloc 4)]
-                      (try (ffi/read p# :long 0)
-                           (finally (ffi/free p#)))))))))
+                    (with-open [a# (ffi/confined-arena)]
+                      (ffi/read (ffi/alloc a# 4) :long 0)))))))
     (testing "read rejects a zero-size pointer from C"
       (is (= [0 "has size 0" "abc" "has size 0" 97]
              (bb `(do ~ffi-require
-                      (let [src# (ffi/string->ptr "abc")
-                            ;; strchr returns a zero-size pointer into src.
-                            hit# ((ffi/cfn "strchr" [:pointer :int] :pointer) src# (int \a))
-                            msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))
-                            res# [(ffi/size hit#)
-                                  (msg# #(ffi/ptr->string hit#))
-                                  (ffi/ptr->string (ffi/reinterpret hit# 4))
-                                  (msg# #(ffi/read hit# :char))
-                                  (ffi/read (ffi/reinterpret hit# 1) :char)]]
-                        (ffi/free src#)
-                        res#))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [src# (ffi/string->ptr a# "abc")
+                              ;; strchr returns a zero-size pointer into src.
+                              hit# ((ffi/cfn "strchr" [:pointer :int] :pointer) src# (int \a))
+                              msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))]
+                          [(ffi/size hit#)
+                           (msg# #(ffi/ptr->string hit#))
+                           (ffi/ptr->string (ffi/reinterpret hit# 4))
+                           (msg# #(ffi/read hit# :char))
+                           (ffi/read (ffi/reinterpret hit# 1) :char)])))))))
     (testing "read and write reject zero-size segments"
       (is (= ["has size 0" "has size 0"]
              (bb `(do ~ffi-require
-                      (let [p# (ffi/alloc 4)
-                            z# (ffi/alloc 0)
-                            msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))
-                            res# [(msg# #(ffi/read (ffi/slice p# 4) :int))
-                                  (msg# #(ffi/write z# :int 0 1))]]
-                        (ffi/free p#)
-                        (ffi/free z#)
-                        res#))))))
+                      (with-open [ar# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc ar# 4)
+                              z# (ffi/alloc ar# 0)
+                              msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))]
+                          [(msg# #(ffi/read (ffi/slice p# 4) :int))
+                           (msg# #(ffi/write z# :int 1 0))])))))))
     (testing "segment, address, slice and reinterpret"
       (is (= [true 8 4 42 4]
              (bb `(do ~ffi-require
-                      (let [p# (ffi/alloc 8)
-                            a# (ffi/address p#)
-                            again# (ffi/segment a# 8)
-                            tail# (ffi/slice p# 4)
-                            _# (ffi/write tail# :int 0 42)
-                            sized# (ffi/reinterpret (ffi/segment a#) 4)
-                            res# [(= a# (ffi/address again#))
-                                  (ffi/size again#)
-                                  (ffi/size tail#)
-                                  (ffi/read p# :int 4)
-                                  (ffi/size sized#)]]
-                        (ffi/free p#)
-                        res#))))))
+                      (with-open [ar# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc ar# 8)
+                              a# (ffi/address p#)
+                              again# (ffi/segment a# 8)
+                              tail# (ffi/slice p# 4)
+                              _# (ffi/write tail# :int 42 0)
+                              sized# (ffi/reinterpret (ffi/segment a#) 4)]
+                          [(= a# (ffi/address again#))
+                           (ffi/size again#)
+                           (ffi/size tail#)
+                           (ffi/read p# :int 4)
+                           (ffi/size sized#)])))))))
     (testing "a pointer argument rejects a number"
       (is (thrown-with-msg?
            Exception #"expected a pointer \(a MemorySegment\), got 42"
@@ -293,12 +285,11 @@
     (testing "null is a segment and null? detects each zero address"
       (is (= [true true false]
              (bb `(do ~ffi-require
-                      (let [p# (ffi/alloc 1)
-                            res# [(ffi/pointer? ffi/null)
-                                  (ffi/null? (ffi/segment 0))
-                                  (ffi/null? p#)]]
-                        (ffi/free p#)
-                        res#))))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc a# 1)]
+                          [(ffi/pointer? ffi/null)
+                           (ffi/null? (ffi/segment 0))
+                           (ffi/null? p#)])))))))))
 
 (deftest heap-segment-test
   ;; A babashka script cannot create a heap segment.
@@ -343,8 +334,8 @@
                       (with-open [a# (ffi/confined-arena)]
                         (let [p# (ffi/alloc a# :pointer)
                               q# (ffi/alloc a# 16)]
-                          (ffi/write p# :long 0 42)
-                          (ffi/write q# :int 4 7)
+                          (ffi/write p# :long 42 0)
+                          (ffi/write q# :int 7 4)
                           [(ffi/read p# :long) (ffi/read q# :int 4)])))))))
     (testing "each arena type allocates memory"
       (is (= [true true true true]
@@ -353,12 +344,13 @@
                        (with-open [a# (ffi/shared-arena)] (ffi/pointer? (ffi/alloc a# 8)))
                        (ffi/pointer? (ffi/alloc (ffi/auto-arena) 8))
                        (ffi/pointer? (ffi/alloc (ffi/global-arena) 8))])))))
-    (testing "alloc accepts a type or an integer size"
-      (is (= 8 (bb `(do ~ffi-require
-                        (with-open [a# (ffi/confined-arena)]
-                          (let [p# (ffi/alloc a# :pointer)]
-                            (ffi/write p# :long 0 -1)
-                            (count (ffi/read-bytes p# 8)))))))))
+    (testing "alloc accepts a type, a layout or an integer size"
+      (is (= [8 8] (bb `(do ~ffi-require
+                          (with-open [a# (ffi/confined-arena)]
+                            (let [p# (ffi/alloc a# :pointer)]
+                              (ffi/write p# :long -1 0)
+                              [(count (ffi/read-bytes p# 8))
+                               (ffi/size (ffi/alloc a# [:struct [[:x :int] [:y :int]]]))])))))))
     (testing "arena allocations use the required alignment"
       ;; Types use natural alignment. Integer byte counts use alignment 16.
       (is (= [0 0 0 0]
@@ -388,100 +380,93 @@
                          (mod (ffi/address (ffi/alloc a# :int 32)) 32)]))))))
     (testing "alloc rejects an invalid size"
       (is (thrown-with-msg?
-           Exception #"alloc takes an integer byte count or a type keyword"
+           Exception #"alloc takes an integer byte count, a type keyword or a layout"
            (bb `(do ~ffi-require
                     (with-open [a# (ffi/confined-arena)]
                       (ffi/alloc a# "eight")))))))
     (testing "alloc rejects a fraction as size or alignment instead of truncating it"
-      (is (= ["integer byte count" "integer byte count" "integer alignment"]
+      (is (= ["integer byte count" "integer alignment"]
              (bb `(do ~ffi-require
                       (let [msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"integer byte count|integer alignment" (ex-message e#)))))]
                         (with-open [a# (ffi/confined-arena)]
-                          [(msg# #(ffi/alloc 3.9))
-                           (msg# #(ffi/alloc a# 3/2))
+                          [(msg# #(ffi/alloc a# 3/2))
                            (msg# #(ffi/alloc a# 8 8.9))])))))))
+    (testing "the arena is mandatory: there is no unscoped alloc"
+      (is (thrown-with-msg?
+           Exception #"Wrong number of args \(1\)"
+           (bb `(do ~ffi-require (ffi/alloc 8))))))
     (testing "free refuses arena memory instead of crashing"
-      (is (= ["belongs to an arena" "belongs to an arena" nil]
+      (is (= ["belongs to an arena" "belongs to an arena"]
              (bb `(do ~ffi-require
                       (let [msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"belongs to an arena" (ex-message e#)))))]
                         (with-open [a# (ffi/confined-arena)]
                           [(msg# #(ffi/free (ffi/alloc a# 8)))
-                           (msg# #(ffi/free (ffi/alloc (ffi/auto-arena) 8)))
-                           (msg# #(ffi/free (ffi/alloc 8)))])))))))))
+                           (msg# #(ffi/free (ffi/alloc (ffi/auto-arena) 8)))])))))))))
 
 (deftest memory-test
   (when-not skip?
-    (testing "alloc, typed write and read, free"
+    (testing "alloc, typed write and read"
       (is (= [-7 1.5 255]
              (bb `(do ~ffi-require
-                      (let [p (ffi/alloc 16)]
-                        (ffi/write p :int 0 -7)
-                        (ffi/write p :double 8 1.5)
-                        (ffi/write p :uint8 4 255)
-                        (let [res [(ffi/read p :int) (ffi/read p :double 8) (ffi/read p :uint8 4)]]
-                          (ffi/free p)
-                          res)))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p (ffi/alloc a# 16)]
+                          (ffi/write p :int -7 0)
+                          (ffi/write p :double 1.5 8)
+                          (ffi/write p :uint8 255 4)
+                          [(ffi/read p :int) (ffi/read p :double 8) (ffi/read p :uint8 4)])))))))
     (testing "a NULL char* reads as nil"
       (is (= [nil nil]
              (bb `(do ~ffi-require
-                      (let [p# (ffi/alloc 8)]
-                        (let [res# [(ffi/read p# :string) (ffi/ptr->string ffi/null)]]
-                          (ffi/free p#)
-                          res#)))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc a# 8)]
+                          [(ffi/read p# :string) (ffi/ptr->string ffi/null)])))))))
     (testing "read-bytes and write-bytes use the specified offset"
       (is (= [[1 2 3 4] [0 0]]
              (bb `(do ~ffi-require
-                      (let [p# (ffi/alloc 16)]
-                        (ffi/write-bytes p# (byte-array [1 2 3 4]) 2)
-                        (let [res# [(vec (ffi/read-bytes p# 4 2))
-                                    (vec (ffi/read-bytes p# 2))]]
-                          (ffi/free p#)
-                          res#)))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc a# 16)]
+                          (ffi/write-bytes p# (byte-array [1 2 3 4]) 2)
+                          [(vec (ffi/read-bytes p# 4 2))
+                           (vec (ffi/read-bytes p# 2))])))))))
     (testing "byte-buffer shares native memory without a copy"
       (is (= [7 42]
              (bb `(do ~ffi-require
-                      (let [p# (ffi/alloc 8)
-                            bb# (ffi/byte-buffer p# 8)]
-                        (.put bb# 0 (byte 7))
-                        (ffi/write p# :int8 1 42)
-                        (let [res# [(ffi/read p# :int8) (long (.get bb# 1))]]
-                          (ffi/free p#)
-                          res#)))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [p# (ffi/alloc a# 8)
+                              bb# (ffi/byte-buffer p# 8)]
+                          (.put bb# 0 (byte 7))
+                          (ffi/write p# :int8 42 1)
+                          [(ffi/read p# :int8) (long (.get bb# 1))])))))))
     (testing "string round trip through foreign memory"
       (is (= "abc" (bb `(do ~ffi-require
-                            (let [p (ffi/string->ptr "abc")
-                                  s (ffi/ptr->string p)]
-                              (ffi/free p)
-                              s))))))
+                            (with-open [a# (ffi/confined-arena)]
+                              (ffi/ptr->string (ffi/string->ptr a# "abc"))))))))
     (testing "out parameter"
       (is (= "xy" (bb `(do ~ffi-require
-                           (let [src (ffi/string->ptr "xy")
-                                 dst (ffi/alloc 3)]
-                             ((ffi/cfn "memcpy" [:pointer :pointer :size_t] :pointer) dst src 3)
-                             (let [s (ffi/ptr->string dst)]
-                               (ffi/free src)
-                               (ffi/free dst)
-                               s)))))))))
+                           (with-open [a# (ffi/confined-arena)]
+                             (let [src (ffi/string->ptr a# "xy")
+                                   dst (ffi/alloc a# 3)]
+                               ((ffi/cfn "memcpy" [:pointer :pointer :size_t] :pointer) dst src 3)
+                               (ffi/ptr->string dst))))))))))
 
 (deftest varargs-test
   (when-not skip?
     (testing "snprintf through the variadic calling convention, tail inferred"
       (is (= ["x-42" "pi=4"]
              (bb `(do ~ffi-require
-                      (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
-                            buf# (ffi/alloc 64)
-                            r1# (do (f# buf# 64 "%s-%ld" "x" 42) (ffi/ptr->string buf#))
-                            r2# (do (f# buf# 64 "pi=%.0f" 3.7) (ffi/ptr->string buf#))]
-                        (ffi/free buf#)
-                        [r1# r2#]))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                              buf# (ffi/alloc a# 64)
+                              r1# (do (f# buf# 64 "%s-%ld" "x" 42) (ffi/ptr->string buf#))
+                              r2# (do (f# buf# 64 "pi=%.0f" 3.7) (ffi/ptr->string buf#))]
+                          [r1# r2#])))))))
     (testing "empty tail from the same binding"
       (is (= "plain" (bb `(do ~ffi-require
-                              (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
-                                    buf# (ffi/alloc 64)]
-                                (f# buf# 64 "plain")
-                                (let [s# (ffi/ptr->string buf#)]
-                                  (ffi/free buf#)
-                                  s#)))))))
+                              (with-open [a# (ffi/confined-arena)]
+                                (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                                      buf# (ffi/alloc a# 64)]
+                                  (f# buf# 64 "plain")
+                                  (ffi/ptr->string buf#))))))))
     (testing "marker validation"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/cfn "printf" [:string :varargs :long] :int)))))
@@ -496,25 +481,25 @@
     (let [native? (= "native" (System/getenv "BABASHKA_TEST_ENV"))]
       (testing "a variadic call beyond the descriptor limits"
         (let [[r1 r2] (bb `(do ~ffi-require
-                               (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
-                                     buf# (ffi/alloc 64)
-                                     r1# (do (f# buf# 64 "%d %d %d %d %d %d" 1 2 3 4 5 6)
-                                             (ffi/ptr->string buf#))
-                                     r2# (do (f# buf# 64 "a=%.1f b=%.1f c=%.1f" 1.5 2.5 3.5)
-                                             (ffi/ptr->string buf#))]
-                                 (ffi/free buf#)
-                                 [r1# r2#])))]
+                               (with-open [a# (ffi/confined-arena)]
+                                 (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                                       buf# (ffi/alloc a# 64)
+                                       r1# (do (f# buf# 64 "%d %d %d %d %d %d" 1 2 3 4 5 6)
+                                               (ffi/ptr->string buf#))
+                                       r2# (do (f# buf# 64 "a=%.1f b=%.1f c=%.1f" 1.5 2.5 3.5)
+                                               (ffi/ptr->string buf#))]
+                                   [r1# r2#]))))]
           (is (= "1 2 3 4 5 6" r1))
           ;; the decimal separator follows the C locale of the process
           (is (contains? #{"a=1.5 b=2.5 c=3.5" "a=1,5 b=2,5 c=3,5"} r2))))
       (testing "nil and a pointer in a variadic tail encode as they do on the JVM"
         (is (true? (bb `(do ~ffi-require
-                            (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
-                                  buf# (ffi/alloc 64)
-                                  n# (f# buf# 64 "%p %p" buf# nil)
-                                  s# (ffi/ptr->string buf#)]
-                              (ffi/free buf#)
-                              (and (pos? n#) (string? s#) (pos? (count s#)))))))))
+                            (with-open [a# (ffi/confined-arena)]
+                              (let [f# (ffi/cfn ~snprintf-sym [:pointer :size_t :string :&] :int)
+                                    buf# (ffi/alloc a# 64)
+                                    n# (f# buf# 64 "%p %p" buf# nil)
+                                    s# (ffi/ptr->string buf#)]
+                                (and (pos? n#) (string? s#) (pos? (count s#))))))))))
       (testing "the variadic binding names its backend"
         (is (= (if native? :libffi :ffm)
                (bb `(do ~ffi-require
@@ -550,20 +535,19 @@
     (testing "qsort comparator upcall"
       (is (= [1 2 3 4 5]
              (bb `(do ~ffi-require
-                      (let [arr (ffi/alloc 20)]
-                        (doseq [[i# v#] (map-indexed vector [5 3 1 4 2])]
-                          (ffi/write arr :int (* i# 4) v#))
-                        (let [cmp (ffi/callback
-                                   ;; qsort gives zero-size pointers to the comparator.
-                                   (fn [pa# pb#]
-                                     (compare (ffi/read (ffi/reinterpret pa# 4) :int)
-                                              (ffi/read (ffi/reinterpret pb# 4) :int)))
-                                   [:pointer :pointer] :int)]
-                          ((ffi/cfn "qsort" [:pointer :size_t :size_t :pointer] :void)
-                           arr 5 4 cmp)
-                          (let [res (mapv #(ffi/read arr :int (* % 4)) (range 5))]
-                            (ffi/free arr)
-                            res))))))))))
+                      (with-open [a# (ffi/confined-arena)]
+                        (let [arr (ffi/alloc a# 20)]
+                          (doseq [[i# v#] (map-indexed vector [5 3 1 4 2])]
+                            (ffi/write arr :int v# (* i# 4)))
+                          (let [cmp (ffi/callback
+                                     ;; qsort gives zero-size pointers to the comparator.
+                                     (fn [pa# pb#]
+                                       (compare (ffi/read (ffi/reinterpret pa# 4) :int)
+                                                (ffi/read (ffi/reinterpret pb# 4) :int)))
+                                     [:pointer :pointer] :int)]
+                            ((ffi/cfn "qsort" [:pointer :size_t :size_t :pointer] :void)
+                             arr 5 4 cmp)
+                            (mapv #(ffi/read arr :int (* % 4)) (range 5))))))))))))
 
 (deftest struct-test
   (when-not skip?
@@ -757,21 +741,21 @@
     ;; floats, since %f follows the C locale and prints "1,5" under nl_NL
     (is (= [1 "1" "2-3"]
            (bb `(do ~ffi-require
-                    (let [calls# (atom 0)
-                          ;; zlib links the C library, and a library map
-                          ;; searches the libraries it links, so snprintf
-                          ;; resolves through it on every platform
-                          lib# (fn [] (swap! calls# inc)
-                                 (ffi/load-system-library ~(if tu/windows? "msvcrt" "z")))
-                          snprintf# (ffi/cfn lib# ~snprintf-sym [:pointer :size_t :string :&] :int)
-                          buf# (ffi/alloc 32)
-                          fmt# (fn [f# & vs#]
-                                 (apply snprintf# buf# 32 f# vs#)
-                                 (ffi/ptr->string buf#))
-                          a# (fmt# "%d" 1)
-                          b# (fmt# "%d-%d" 2 3)]
-                      (ffi/free buf#)
-                      [@calls# a# b#]))))))
+                    (with-open [ar# (ffi/confined-arena)]
+                      (let [calls# (atom 0)
+                            ;; zlib links the C library, and a library map
+                            ;; searches the libraries it links, so snprintf
+                            ;; resolves through it on every platform
+                            lib# (fn [] (swap! calls# inc)
+                                   (ffi/load-system-library ~(if tu/windows? "msvcrt" "z")))
+                            snprintf# (ffi/cfn lib# ~snprintf-sym [:pointer :size_t :string :&] :int)
+                            buf# (ffi/alloc ar# 32)
+                            fmt# (fn [f# & vs#]
+                                   (apply snprintf# buf# 32 f# vs#)
+                                   (ffi/ptr->string buf#))
+                            a# (fmt# "%d" 1)
+                            b# (fmt# "%d-%d" 2 3)]
+                        [@calls# a# b#])))))))
   (testing "missing library throws"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/load-library "libdoesnotexist-bb.so"))))))

@@ -2,8 +2,8 @@
 
 ## Status
 
-Accepted 2026-08-28, after reviewing every public function one at a time. The
-code changes it calls for are listed at the end and are not made yet.
+Accepted 2026-08-28, after reviewing every public function one at a time, and
+implemented on branch `ffi-arg-order-adr`. The changes are listed at the end.
 
 ## Context
 
@@ -419,9 +419,6 @@ but not away from a decision coffi argued for: two libraries mirrored
 `MemorySegment.set` and inherited a hazard the Java method does not have.
 
 ## Code changes this decision calls for
-
-Not made yet. They land together, in one tested commit, after this decision is
-merged.
 
 - `alloc`: remove the one-argument form, and accept a layout wherever it
   accepts a type keyword.
