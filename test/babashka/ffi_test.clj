@@ -998,7 +998,7 @@
                                     src)
                            second
                            edn/read-string))
-          ffi-kinds (kinds (slurp "src/babashka/ffi.clj"))
+          ffi-kinds (kinds (slurp "ffi/src/babashka/ffi.clj"))
           hook-kinds (kinds (slurp ".clj-kondo/hooks/babashka/ffi.clj"))]
       (is (set? ffi-kinds))
       (is (set? hook-kinds))
