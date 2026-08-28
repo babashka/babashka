@@ -710,17 +710,18 @@
    ;; returns this value when it does not have the requested function.
    (when (and (instance? MemorySegment sym) (zero? (.address ^MemorySegment sym)))
      (throw (ex-info "babashka.ffi: cannot bind the null address" {:sym sym})))
-   (when (some #(= :void %) argtypes)
-     (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
-                     {:argtypes argtypes})))
-   ;; a layout kind on an argument position means a layout vector landed where
-   ;; argtypes belong, most often by transposing argtypes and rettype
-   (when-let [kind (some #(when (contains? layout-kinds %) %) argtypes)]
-     (throw (ex-info (str "babashka.ffi: " kind " is a layout kind, not an argument type. "
-                          "A layout goes in one type position as " (pr-str [kind '...])
-                          ", so check the order of argtypes and the return type: "
-                          (pr-str argtypes))
-                     {:argtypes argtypes :rettype rettype})))
+   (doseq [t argtypes]
+     (when (= :void t)
+       (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
+                       {:argtypes argtypes})))
+     ;; a layout kind on an argument position means a layout vector landed
+     ;; where argtypes belong, most often by transposing argtypes and rettype
+     (when (contains? layout-kinds t)
+       (throw (ex-info (str "babashka.ffi: " t " is a layout kind, not an argument type. "
+                            "A layout goes in one type position as " (pr-str [t '...])
+                            ", so check the order of argtypes and the return type: "
+                            (pr-str argtypes))
+                       {:argtypes argtypes :rettype rettype}))))
    (let [fixed (check-variadic-marker argtypes)
          ;; any vector on a type position is a layout; layout-of says which
          ;; kinds exist
