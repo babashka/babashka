@@ -77,6 +77,38 @@ tar xzf /tmp/release/babashka-$VERSION-linux-amd64.tar.gz -C .")
         :environment {:PLATFORMS "linux/amd64,linux/arm64"}
         :command     "./bb .circleci/script/docker.clj"}}]))))
 
+(defn ffi-main
+  "Runs babashka's own FFI suite against the HEAD of the babashka.ffi
+  repository instead of the pinned submodule commit. The library's CI proves
+  a change on the JVM in isolation; this proves it still satisfies the
+  integration tests here, before the submodule pointer moves. Master only, so
+  a library change never reddens an unrelated pull request."
+  [shorted? graalvm-home]
+  (gen-job
+   shorted?
+   (ordered-map
+    :docker            [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]
+    :working_directory "~/repo"
+    :environment       {:LEIN_ROOT         "true"
+                        :BABASHKA_PLATFORM "linux"
+                        :GRAALVM_VERSION   graalvm-version
+                        :GRAALVM_HOME      graalvm-home
+                        :BABASHKA_TEST_ENV "jvm"
+                        :BABASHKA_SHA (System/getenv "CIRCLE_SHA1")}
+    :resource_class    "large"
+    :steps
+    (gen-steps
+     shorted?
+     [:checkout
+      (pull-submodules)
+      {:restore_cache {:keys ["v1-dependencies-{{ checksum \"project.clj\" }}-{{ checksum \"deps.edn\" }}"
+                              "v1-dependencies-"]}}
+      (run "Install Clojure" "sudo script/install-clojure")
+      (run "Move the ffi submodule to its main branch"
+        "git -C ffi fetch origin main\ngit -C ffi checkout FETCH_HEAD\ngit -C ffi log --oneline -1")
+      (run "Run the FFI tests against that source"
+        "lein do clean, test :only babashka.ffi-test")]))))
+
 (defn jvm
   [shorted? graalvm-home]
   (gen-job
@@ -240,6 +272,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                  :linux-aarch64-static
                  (unix shorted? true false "aarch64" machine-executor-conf "arm.large" linux-graalvm-home "linux" graalvm-version)
                  :mac (unix shorted? false false "amd64" mac-executor-conf "m4pro.large" mac-graalvm-home "mac" macos-amd64-graalvm-version)
+                 :ffi-main (ffi-main shorted? linux-graalvm-home)
                  :deploy (deploy shorted?)
                  :docker (docker shorted?))
      :workflows (ordered-map
@@ -249,6 +282,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                   "linux-static"
                                   "mac"
                                   "linux-aarch64-static"
+                                  {:ffi-main {:filters {:branches {:only "master"}}}}
                                   {:deploy {:filters  {:branches {:only "master"}}
                                             :requires ["jvm" "linux"]}}
                                   {:docker {:filters  {:branches {:only "master"}}
