@@ -307,6 +307,28 @@ The cost lands on babashka rather than on the libraries: 42 `alloc` and 25
 allocator path, and two sections of `doc/ffi.md` that teach both models side by
 side. Tests follow the API rather than deciding it.
 
+### Settled: `read`
+
+`[p t]` and `[p t offset]`, unchanged, and it is the shape `write` has to move
+to. Nothing shifts between the arities, the offset is optional and appended,
+and no adjacent pair shares a type. The order matches
+`MemorySegment.get(layout, offset)`.
+
+The walkthrough found a gap next to it that is not an ordering question and is
+tracked separately. A struct returned by a C function arrives as a map, but the
+same struct cannot be read out of memory:
+
+```clojure
+((cfn "div" [:int :int] [:struct [[:quot :int] [:rem :int]]]) 7 2)  ;=> {:quot 3, :rem 1}
+(read p [:struct [[:x :int] [:y :int]]])
+;; babashka.ffi: cannot read type [:struct [[:x :int] [:y :int]]]
+```
+
+That blocks the most ordinary shape in C, the function that fills a struct
+through an out-pointer, and the machinery is already there: `layout-of`
+computes the field offsets and the libffi path already decodes structs into
+maps.
+
 ### Code changes this walkthrough has collected
 
 Applied together when the walkthrough ends, so that the branch stays
