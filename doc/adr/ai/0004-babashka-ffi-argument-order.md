@@ -5,6 +5,39 @@
 Accepted 2026-08-27. Recorded on branch `ffi-arg-order-adr`. The audit below is
 complete. The one code change that follows from it is not made yet.
 
+## Walkthrough decisions, in progress
+
+Recorded one at a time during the review of 2026-08-28. When the walkthrough
+finishes this section replaces the rules and the audit below it.
+
+### Confirmed
+
+Rule C. When two adjacent parameters could be swapped, keep the sets of types
+they accept disjoint, so that at least one direction of the swap throws. This
+covers the case Rule A does not: Rule A forbids a position from changing
+meaning between arities, but says nothing about two parameters of the same type
+standing next to each other inside one arity.
+
+The alignment argument of `alloc` stays an integer, and that is the worked
+example of Rule C. Its neighbour `n` is polymorphic and takes a byte count or a
+type keyword, so a swapped call throws:
+
+```clojure
+(ffi/alloc arena :pointer 64)  ; a pointer-sized block on a 64-byte boundary
+(ffi/alloc arena 64 :pointer)  ; babashka.ffi: alloc takes an integer alignment
+```
+
+Letting alignment take a type as well would make both calls valid and mean
+different things, which manufactures the hazard instead of catching it. An
+alignment that does come from a type is already available as `(alignof t)`,
+which returns an integer and composes: `(alloc arena 80 (alignof :pointer))`
+allocates room for ten pointers.
+
+Rule C has a limit worth stating. It only bites when one of the two parameters
+carries a type. Two integers side by side, as in `(alloc arena 64 8)`, cannot be
+told apart, and neither can the address and size of `segment`. That residual
+risk is inherent to a positional API.
+
 ## Context
 
 The API is positional. Several functions have optional arguments, so the same
