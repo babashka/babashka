@@ -121,6 +121,16 @@
   (System/setProperty "babashka.process.test.reload" "true")
   (test-namespaces 'babashka.process-test 'babashka.process-exec-test))
 
+;;;; babashka.ffi
+;; The library ships its own suite. Run it against the built-in namespace,
+;; then, natively, against the submodule source, the same way process does.
+(test-namespaces 'babashka.ffi-test)
+
+(when (= "native" (System/getenv "BABASHKA_TEST_ENV"))
+  #_{:clj-kondo/ignore [:duplicate-require]}
+  (require '[babashka.ffi] :reload)
+  (test-namespaces 'babashka.ffi-test))
+
 ;;;; clerk (native only - needs to run from Clerk's checkout dir)
 ;; Clerk tests shell out to a bb process in Clerk's gitlibs checkout.
 ;; The missing-hashes test is skipped: Clerk's analyzer treats files under
