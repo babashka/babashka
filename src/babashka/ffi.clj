@@ -7,13 +7,13 @@
       (require '[babashka.ffi :as ffi])
       (ffi/load-system-library \"sqlite3\")
       (def sqlite3-open (ffi/cfn \"sqlite3_open\" [:string :pointer] :int))
-      (let [pp (ffi/alloc (ffi/sizeof :pointer))]
-        (try (sqlite3-open \"x.db\" pp)
-             (ffi/read pp :pointer)
-             (finally (ffi/free pp))))
+      (with-open [arena (ffi/confined-arena)]
+        (let [pp (ffi/alloc arena :pointer)]
+          (sqlite3-open \"x.db\" pp)
+          (ffi/read pp :pointer)))
 
-  This example manages the memory by hand with alloc and free. With an arena
-  instead, closing the arena releases the memory.
+  Every allocation belongs to an arena, which releases the memory when it
+  closes.
 
   Use these type keywords:
 
@@ -944,7 +944,6 @@
            (or (try (load-library "msvcrt.dll") (catch Exception _ nil))
                (try (load-library "ucrtbase.dll") (catch Exception _ nil))))))
 
-(def ^:private c-calloc (delay (cfn @crt-lib "calloc" [:size_t :size_t] :pointer)))
 (def ^:private c-free (delay (cfn @crt-lib "free" [:pointer] :void)))
 
 (def ^:private sizes
@@ -1032,8 +1031,8 @@
   A C library that allocates usually ships its own deallocator, such as
   duckdb_free; use that one when it exists.
 
-  Refuses memory of a confined or shared arena: the arena releases that when
-  it closes. Memory of the global arena carries the same scope as memory from
+  Refuses memory of a confined, shared, or automatic arena: the arena releases
+  that memory. Memory of the global arena carries the same scope as memory from
   the C allocator, so this check cannot reject it. Do not pass it here.
 
   CAUTION: Do not use p after free. This can corrupt memory or stop the process."
@@ -1156,8 +1155,7 @@
 
 ;; Resolving a struct layout validates it and walks its fields, which costs
 ;; several times the allocation it usually precedes. A layout is an immutable
-;; value, so the result can never go stale. Bounded, and cleared past the
-;; bound, so generated layouts cannot grow it without limit.
+;; value, so a cached result can never go stale.
 (def ^:private layout-cache (atom {}))
 (def ^:private layout-cache-limit 256)
 
@@ -1176,8 +1174,12 @@
     (layout-of* t)
     (or (get @layout-cache t)
         (let [v (layout-of* t)]
+          ;; Layouts come from source, so the ones that arrive first are the
+          ;; working set. At the bound we stop adding instead of clearing: a
+          ;; run of generated layouts then resolves the slow way rather than
+          ;; evicting the layouts in real use.
           (swap! layout-cache
-                 (fn [m] (assoc (if (< layout-cache-limit (count m)) {} m) t v)))
+                 (fn [m] (if (<= layout-cache-limit (count m)) m (assoc m t v))))
           v))))
 
 (defn- layout-of*

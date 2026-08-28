@@ -971,6 +971,32 @@
                [48 :invalid-arity]}      ;; raw-p with 1 arg, C takes 2
              (set (map (juxt :row :type) findings)))))))
 
+(deftest layout-cache-test
+  (when-not skip?
+    (testing "a run of generated layouts does not evict the layouts in use"
+      ;; The bound stops the cache from growing. It must not clear the cache,
+      ;; because that would make a one-off generated layout slow down every
+      ;; layout the program actually uses.
+      (is (true? (bb `(do ~ffi-require
+                          (let [hot# [:struct [[:x :int] [:y :int]]]
+                                time# (fn [t#]
+                                        (dotimes [_# 200] (ffi/sizeof t#))
+                                        (let [s# (System/nanoTime)]
+                                          (dotimes [_# 2000] (ffi/sizeof t#))
+                                          (- (System/nanoTime) s#)))
+                                warm# (do (ffi/sizeof hot#) (time# hot#))]
+                            ;; far past the bound, each one seen once
+                            (dotimes [i# 600]
+                              (ffi/sizeof [:struct [[(keyword (str "f" i#)) :int]]]))
+                            ;; the hot layout is still cached, so still fast
+                            (< (time# hot#) (* 3 warm#)))))))))
+  (testing "an unbounded run does not grow the cache without limit"
+    (is (true? (bb `(do ~ffi-require
+                        (dotimes [i# 400]
+                          (ffi/sizeof [:struct [[(keyword (str "g" i#)) :int]]]))
+                        ;; a fresh layout still resolves correctly after the bound
+                        (= 8 (ffi/sizeof [:struct [[:x :int] [:y :int]]]))))))))
+
 (deftest layout-kinds-in-sync-test
   (testing "runtime and hook layout kinds match"
     (let [kinds (fn [src]

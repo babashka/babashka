@@ -489,8 +489,8 @@ The arena releases `p` and `q` when the body ends. It also releases them if the
 body throws. After release, memory access throws an `IllegalStateException`.
 C functions reject pointers from a closed arena.
 
-`free` refuses memory that a confined or shared arena allocated: the arena
-releases it.
+`free` refuses memory from a confined, shared, or automatic arena. The arena
+releases this memory.
 
 CAUTION: Do not close an arena while C uses its memory. C can access released
 memory.
