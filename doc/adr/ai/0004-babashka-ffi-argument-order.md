@@ -199,6 +199,33 @@ Core is not spotless here: `ns-resolve` inserts `env` in the middle, so `sym`
 moves from position two to position three. That is the construction Rule A
 tolerates only because the types differ.
 
+### Settled: `cfn`
+
+`[sym argtypes rettype]` and `[lib sym argtypes rettype]`, unchanged. It is the
+function Rule B's exception actually rests on, because appending would give
+`(cfn sym argtypes rettype lib)` and put the library three positions away from
+the symbol it qualifies.
+
+Adding the library shifts the whole tail by one, so every position holds
+something different between the two arities. That is safe because the arity is
+chosen by argument count, not by type, and because the types are disjoint at
+every position but one. The exception is position three, where a `rettype` may
+be a layout vector and an `argtypes` is always a vector. Those two are also
+adjacent, so Rule C applies, and a swap is caught:
+
+```clojure
+(cfn "div" [:struct [[:quot :int] [:rem :int]]] [:int :int])
+;; babashka.ffi: unknown type :struct
+```
+
+Two observations recorded without acting on them. Omitting the library falls
+back silently to searching every loaded library and then the system lookup,
+which is documented behaviour and is inherent to the argument being optional
+rather than to its position. And symbol resolution is deferred to the first
+call, which is necessary because a `:library` may be a delay or a var that is
+not ready at bind time, as the bring-your-own-dynlib pattern requires. The
+error is clear when it arrives: `babashka.ffi: symbol not found: zlibVersion`.
+
 ### Code changes this walkthrough has collected
 
 Applied together when the walkthrough ends, so that the branch stays
@@ -211,6 +238,8 @@ documentation until then and the code lands in one tested commit.
 - `alloc`: accept a layout wherever it accepts a type keyword.
 - `slice`: accept a layout as the length.
 - `layout-of`: memoize with a bounded cache.
+- `cfn`: name the cause when a layout vector appears on an argtypes position.
+  Today that reports `unknown type :struct`, which describes the symptom.
 
 ## Context
 
