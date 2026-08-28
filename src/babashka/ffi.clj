@@ -12,8 +12,8 @@
           (sqlite3-open \"x.db\" pp)
           (ffi/read pp :pointer)))
 
-  Every allocation belongs to an arena, which releases the memory when it
-  closes.
+  Every allocation belongs to an arena. The arena controls the lifetime of
+  the memory.
 
   Use these type keywords:
 
@@ -224,9 +224,8 @@
   "Returns a pointer to addr. The default size is zero.
   A specified nonzero size enables bounds checks.
 
-  CAUTION: An address and a size are both numbers, so nothing catches a
-  transposed call. It builds a valid-looking pointer that fails at the first
-  read, in a native image by stopping the process."
+  CAUTION: Keep addr before size. A transposed call can stop the process at
+  the first read."
   (^MemorySegment [addr] (MemorySegment/ofAddress (long addr)))
   (^MemorySegment [addr size]
    (.reinterpret (MemorySegment/ofAddress (long addr)) (long size))))
@@ -237,17 +236,15 @@
   Without an arena the view has an unbounded lifetime. That is correct for
   memory that C owns and that outlives your code.
 
-  With an arena the view is valid only while that arena is open, and the
-  runtime enforces it: a read after the arena closes throws. The arena calls
-  the optional cleanup function with the view when it closes, which is where
-  the deallocator of a C library belongs.
+  With an arena, the view is valid only while that arena is open. A read after
+  the arena closes throws. The arena calls the optional cleanup function with
+  the view when it closes. Use this function for a C library deallocator.
 
-  CAUTION: Give the real size. The runtime cannot check this claim, and a size
-  larger than the allocation turns every bounds check into a silent
-  out-of-bounds read.
+  CAUTION: Give the actual size. The runtime cannot know if this size is
+  correct. A larger size permits out-of-bounds reads.
 
-  CAUTION: Do not pass the view to C after the arena closes. The runtime stops
-  your own reads, but C can still reach the released memory."
+  CAUTION: If the arena is closed, do not pass the view to C. C can access the
+  released memory."
   (^MemorySegment [seg size] (.reinterpret (as-pointer seg) (long size)))
   (^MemorySegment [seg size arena]
    (.reinterpret (as-pointer seg) (long size) ^Arena arena nil))
@@ -265,8 +262,8 @@
 
       (slice arr (* i (sizeof point)) point)
 
-  CAUTION: An offset and a byte count are both numbers, so a transposed call
-  throws only when the result does not fit in seg."
+  CAUTION: Keep offset before len. A transposed call throws only if the result
+  does not fit in seg."
   (^MemorySegment [seg offset] (.asSlice (as-pointer seg) (long offset)))
   (^MemorySegment [seg offset len]
    (.asSlice (as-pointer seg) (long offset)
@@ -714,12 +711,11 @@
      (when (= :void t)
        (throw (ex-info (str "babashka.ffi: :void is not an argument type: " (pr-str argtypes))
                        {:argtypes argtypes})))
-     ;; a layout kind on an argument position means a layout vector landed
-     ;; where argtypes belong, most often by transposing argtypes and rettype
+     ;; A layout kind here usually means that argtypes and rettype are transposed.
      (when (contains? layout-kinds t)
        (throw (ex-info (str "babashka.ffi: " t " is a layout kind, not an argument type. "
                             "A layout goes in one type position as " (pr-str [t '...])
-                            ", so check the order of argtypes and the return type: "
+                            ". Make sure that argtypes and the return type are in the correct order: "
                             (pr-str argtypes))
                        {:argtypes argtypes :rettype rettype}))))
    (let [fixed (check-variadic-marker argtypes)
@@ -1004,15 +1000,15 @@
   "Allocates zeroed native memory in arena and returns its pointer.
   n is an integer byte count, a type keyword, or a struct layout.
 
-  Closing the arena releases the memory, so scope the arena to the lifetime
-  the memory needs. Use a confined arena inside one function, a shared arena
-  for memory that outlives the call and is released elsewhere.
+  Use a confined arena inside one function. Use a shared arena for memory that
+  outlives the call and is released elsewhere. When the arena closes, it
+  releases its memory.
 
   A type or layout uses natural alignment. An integer byte count uses
   alignment 16. Specify an alignment to override this value.
 
-  There is no unscoped form. For memory that C allocates and frees, bind its
-  allocator with cfn and release it with free.
+  There is no unscoped form. If C allocates the memory, bind its allocator with
+  cfn. Release the result with the matching C deallocator.
 
   CAUTION: Do not close the arena while C uses its memory.
   C can access released memory."
@@ -1029,11 +1025,12 @@
 (defn free
   "Releases memory that a C function returned and expects the caller to free.
   A C library that allocates usually ships its own deallocator, such as
-  duckdb_free; use that one when it exists.
+  duckdb_free. If the library has a deallocator, use it.
 
-  Refuses memory of a confined, shared, or automatic arena: the arena releases
-  that memory. Memory of the global arena carries the same scope as memory from
-  the C allocator, so this check cannot reject it. Do not pass it here.
+  Refuses memory of a confined, shared, or automatic arena. The arena releases
+  that memory. Memory of the global arena has the same scope as memory from the
+  C allocator. The function cannot distinguish them. Do not pass global arena
+  memory to free.
 
   CAUTION: Do not use p after free. This can corrupt memory or stop the process."
   [p]
@@ -1130,7 +1127,7 @@
 
 (defn string->ptr
   "Copies s into arena as a NUL-terminated UTF-8 string and returns its
-  pointer. Closing the arena releases the string."
+  pointer. The arena controls the lifetime of the string."
   ^MemorySegment [^Arena arena ^String s]
   (.allocateFrom arena s))
 
@@ -1153,9 +1150,7 @@
 (defn- align-up ^long [^long n ^long a]
   (* a (quot (+ n (dec a)) a)))
 
-;; Resolving a struct layout validates it and walks its fields, which costs
-;; several times the allocation it usually precedes. A layout is an immutable
-;; value, so a cached result can never go stale.
+;; Immutable layouts make resolved values safe to cache.
 (def ^:private layout-cache (atom {}))
 (def ^:private layout-cache-limit 256)
 
@@ -1174,10 +1169,7 @@
     (layout-of* t)
     (or (get @layout-cache t)
         (let [v (layout-of* t)]
-          ;; Layouts come from source, so the ones that arrive first are the
-          ;; working set. At the bound we stop adding instead of clearing: a
-          ;; run of generated layouts then resolves the slow way rather than
-          ;; evicting the layouts in real use.
+          ;; Keep the first 256 layouts. Generated layouts do not evict this set.
           (swap! layout-cache
                  (fn [m] (if (<= layout-cache-limit (count m)) m (assoc m t v))))
           v))))

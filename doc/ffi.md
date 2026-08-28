@@ -444,8 +444,8 @@ Pointer arguments reject numbers. `ffi/null` is the NULL pointer:
 ;;=> true
 ```
 
-Every allocation belongs to an [arena](#arenas), which owns the memory and
-releases it when it closes. `alloc` always takes one:
+Every allocation belongs to an [arena](#arenas). The arena controls the
+lifetime of the memory. `alloc` always takes an arena:
 
 ```clojure
 (with-open [arena (ffi/confined-arena)]
@@ -456,23 +456,23 @@ releases it when it closes. `alloc` always takes one:
 ```
 
 `alloc` also takes a type keyword or a struct layout instead of an integer
-byte count, and then uses the natural alignment of that type:
+byte count. It uses the natural alignment of the type or layout:
 
 ```clojure
 (ffi/alloc arena :pointer)                          ; 8 bytes
 (ffi/alloc arena [:struct [[:x :int] [:y :int]]])   ; 8 bytes, aligned for the struct
 ```
 
-`free` is for memory that a C function returned and expects you to release. A
-library that allocates usually ships its own deallocator, such as
-`duckdb_free`, and you use that one instead.
+`free` releases memory that a C function returned for the caller to release.
+If the library has a deallocator, use it. One example is `duckdb_free`.
 
 CAUTION: Do not use a pointer after `free`. This can corrupt memory or stop the
 process.
 
 ### Arenas
 
-An arena owns its allocated memory. Closing the arena releases this memory.
+An arena owns its allocated memory. When the arena closes, it releases this
+memory.
 
 Create an arena in `with-open`:
 

@@ -9,8 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- `babashka.ffi`: BREAKING, `alloc` now requires an arena, and `string->ptr` takes one. The unscoped form and its manual `free` are gone. `free` remains for memory that a C function returned. See ADR 0004
-- `babashka.ffi`: BREAKING, the byte offset of `write` moves to the last argument, so `(write p t v offset)` instead of `(write p t offset v)`. The offset is now last in `read`, `write`, `read-bytes`, `write-bytes` and `slice` alike. A four-argument call written for the old order compiles and writes the wrong value to the wrong place, so check every one. See ADR 0004
+- `babashka.ffi`: BREAKING: `alloc` requires an arena, and `string->ptr` takes one. The unscoped form and its manual `free` are gone. `free` remains for memory that a C function returned. See ADR 0004
+- `babashka.ffi`: BREAKING: the byte offset of `write` moves to the last argument: `(write p t v offset)`. Existing four-argument calls must change. See ADR 0004
 - `babashka.ffi`: `alloc` and `slice` accept a struct layout where they accept a size, so `(alloc arena point)` allocates room for that struct with its own alignment. Resolving a layout is now cached
 - `babashka.ffi`: `defcfn` accepts the wrapper form from coffi. The raw binding is local to the wrapper body
 - `babashka.ffi`: a fixed signature outside the trampoline set and every variadic call now go through libffi in a native binary, instead of throwing or crossing an interpreted FFM handle. The signature limits remain only for callbacks and for builds without libffi. A variadic call drops from ~14 to ~1 microsecond
@@ -1995,8 +1995,8 @@ Details about releases prior to v0.1.0 can be found
 
 ### Unreleased
 
-- `babashka.ffi`: `alloc` requires an arena, and `string->ptr` takes one. The unscoped `(alloc n)` and its manual `free` are gone; take a confined or shared arena instead. `free` stays for memory a C function returned.
-- `babashka.ffi`: the byte offset of `write` is now the last argument. A call written as `(write p t offset v)` still compiles and writes the wrong value to the wrong place, so check every four-argument call.
+- `babashka.ffi`: `alloc` requires an arena, and `string->ptr` takes one. Use a confined or shared arena instead of unscoped `(alloc n)` and manual `free`. `free` remains for memory that a C function returned.
+- `babashka.ffi`: the byte offset of `write` is the last argument. Change each existing four-argument call to `(write p t v offset)`.
 
 ### v1.1.172
 
