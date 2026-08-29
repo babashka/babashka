@@ -477,3 +477,32 @@ Rules A and C still hold. There are no arities to trade places, and each pair
 of adjacent parameters has disjoint types: an arena, then a function, then a
 vector of argument types, then a return type keyword. A callback return cannot
 be a layout, so the last two never collide.
+
+## Amendment 2026-08-29: `free` is removed
+
+The table lists `free` as `[p]`, "unchanged, new docstring", and the prose
+says it stays for memory that a C function returned. It does not stay.
+
+`free` called the C allocator's `free`. That is correct only for a library
+that allocated with `malloc`. A library that ships its own deallocator
+allocates from its own heap, and on Windows a library built against another C
+runtime has a different heap, so the wrong deallocator corrupts it instead of
+failing.
+
+Its guard could not be made to hold either. It refused arena memory by
+comparing scopes, but FFM gives a global arena segment the same scope object
+as a raw C pointer, so global arena memory passed the check and reached the C
+allocator. The docstring asked the caller to keep a distinction that nothing
+in the API shows.
+
+`reinterpret` already covers the case, and orders its arguments by the same
+rules: the pointer is the subject, and the arena and the deallocator follow
+it.
+
+```clojure
+(with-open [arena (ffi/confined-arena)]
+  (ffi/ptr->string (ffi/reinterpret p 64 arena duckdb-free)))
+```
+
+With this and the `callback` amendment above, an arena owns every lifetime in
+the API. No function releases anything by itself.

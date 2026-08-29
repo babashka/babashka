@@ -16,7 +16,6 @@
    'shared-arena (copy-var ffi/shared-arena tns)
    'auto-arena (copy-var ffi/auto-arena tns)
    'global-arena (copy-var ffi/global-arena tns)
-   'free (copy-var ffi/free tns)
    'sizeof (copy-var ffi/sizeof tns)
    'alignof (copy-var ffi/alignof tns)
    'read (copy-var ffi/read tns)

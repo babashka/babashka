@@ -9,8 +9,9 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- `babashka.ffi`: BREAKING: `alloc` requires an arena, and `string->ptr` takes one. The unscoped form and its manual `free` are gone. `free` remains for memory that a C function returned. See ADR 0004
+- `babashka.ffi`: BREAKING: `alloc` requires an arena, and `string->ptr` takes one. The unscoped form and its manual `free` are gone. See ADR 0004
 - `babashka.ffi`: BREAKING: the byte offset of `write` moves to the last argument: `(write p t v offset)`. Existing four-argument calls must change. See ADR 0004
+- `babashka.ffi`: BREAKING: `free` is gone. It called the C allocator's `free`, which is correct only for a library that allocated with `malloc`, and it could not tell global arena memory from a C pointer. Hand the pointer to an arena with the library's own deallocator instead: `(reinterpret p n arena duckdb-free)`. For memory the C allocator returned, bind it yourself with `(defcfn c-free "free" [:pointer] :void)`
 - `babashka.ffi`: BREAKING: `callback` takes an arena first, which owns the function pointer, and `free-callback` is gone. Closing the arena releases the callback. A confined arena covers a comparison function that C calls during your own call, and an automatic arena releases the callback once the pointer becomes unreachable
 - `babashka.ffi`: `alloc` and `slice` accept a struct layout where they accept a size, so `(alloc arena point)` allocates room for that struct with its own alignment. Resolving a layout is now cached
 - `babashka.ffi`: `read` and `write` accept a struct layout. A struct in memory reads as a map and writes from one, at a byte offset when you give one
