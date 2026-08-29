@@ -68,7 +68,14 @@ struct that holds a union gets the offsets the compiler gives it.
 `read` of a union returns **a pointer to its bytes**, sized to the union.
 The caller reads the member it knows applies:
 
+The C constants are enum values from the headers; a binding defines them
+as numbers:
+
 ```clojure
+(def CURLMSG_DONE 1)       ; curl/multi.h:92, enum CURLMSG: NONE 0, DONE 1
+(def SDL_KEYDOWN 0x300)    ; SDL_events.h:98
+(def SDL_MOUSEMOTION 0x400) ; SDL_events.h:108
+
 ;; the tag is a sibling field
 (let [{:keys [msg data]} (ffi/read p curl-msg)]
   (when (= msg CURLMSG_DONE)
