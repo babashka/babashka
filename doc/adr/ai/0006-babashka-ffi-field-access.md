@@ -3,7 +3,7 @@
 ## Status
 
 Accepted 2026-08-29. Implemented on branch `field-access` of babashka/ffi
-(b0c8cc2). Builds on ADR 0003 (structs by
+(bda6bf0). Builds on ADR 0003 (structs by
 value), ADR 0004 (argument order) and ADR 0005 (unions), and on the array
 layouts merged in babashka/ffi#14.
 
