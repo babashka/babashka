@@ -30,3 +30,23 @@ EXPORT Rect rect_grow(Rect r, int32_t d) {
   Rect o = { { r.lo.x - d, r.lo.y - d }, { r.hi.x + d, r.hi.y + d } };
   return o;
 }
+
+/* Fixed arrays inside structs. libffi has no array kind; babashka.ffi
+ * describes one as a struct of repeated elements, and these functions check
+ * that this agrees with the compiler for each ABI class. */
+
+typedef struct { int32_t v[4]; } Quad;                   /* 16 bytes: two integer registers */
+typedef struct { char name[32]; int32_t parent; } Bone;  /* 36 bytes: passed in memory */
+typedef struct { double m[2][2]; } Mat2;                 /* four doubles: an HFA on Arm64 */
+typedef struct { P2 pts[2]; } Pair;                      /* an array of structs */
+
+EXPORT int32_t quad_sum(Quad q) { return q.v[0] + q.v[1] + q.v[2] + q.v[3]; }
+EXPORT Quad quad_make(int32_t a) { Quad q = { { a, a + 1, a + 2, a + 3 } }; return q; }
+EXPORT int32_t bone_len(Bone b) {
+  int32_t i = 0;
+  while (b.name[i]) i++;
+  return i + b.parent;
+}
+EXPORT Bone bone_make(int32_t parent) { Bone b = { "spine", parent }; return b; }
+EXPORT double mat2_trace(Mat2 m) { return m.m[0][0] + m.m[1][1]; }
+EXPORT int32_t pair_sum(Pair p) { return p.pts[0].x + p.pts[0].y + p.pts[1].x + p.pts[1].y; }

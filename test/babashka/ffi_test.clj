@@ -657,6 +657,38 @@
                            ((ffi/cfn "rect_grow" [rect# :int] rect#) {:lo {:x 1 :y 1} :hi {:x 5 :y 5}} 2)
                            ((ffi/cfn "p2_add" [p2# p2#] p2#) {:x 1 :y 2} {:x 10 :y 20})])))))))))
 
+(deftest array-in-struct-lib-test
+  ;; The library suite covers arrays through the FFM linker; this one runs
+  ;; them through libffi in the image, where an array is a struct of
+  ;; repeated elements and check-layout! must agree with the compiler.
+  (when (and (not skip?) @libffi?)
+    (if-not @struct-lib
+      (println "babashka.ffi array struct tests skipped: no C compiler on PATH")
+      (testing "arrays inside structs by value, each ABI class, both directions"
+        (is (= [10 {:v [5 6 7 8]}
+                12 {:name (vec (concat (map long (.getBytes "spine")) (repeat 27 0))) :parent 3}
+                5.0
+                10]
+               (bb `(do ~(lib-require @struct-lib)
+                        (let [p2# [:struct [[:x :int] [:y :int]]]
+                              quad# [:struct [[:v [:array :int 4]]]]
+                              bone# [:struct [[:name [:array :char 32]] [:parent :int]]]
+                              mat2# [:struct [[:m [:array [:array :double 2] 2]]]]
+                              pair# [:struct [[:pts [:array p2# 2]]]]
+                              spine# (vec (concat (map long (.getBytes "spine")) (repeat 27 0)))]
+                          [((ffi/cfn "quad_sum" [quad#] :int) {:v [1 2 3 4]})
+                           ((ffi/cfn "quad_make" [:int] quad#) 5)
+                           ((ffi/cfn "bone_len" [bone#] :int) {:name spine# :parent 7})
+                           ((ffi/cfn "bone_make" [:int] bone#) 3)
+                           ((ffi/cfn "mat2_trace" [mat2#] :double) {:m [[1.0 2.0] [3.0 4.0]]})
+                           ((ffi/cfn "pair_sum" [pair#] :int) {:pts [{:x 1 :y 2} {:x 3 :y 4}]})])))))))
+    (testing "in an image these calls go through libffi"
+      (when @struct-lib
+        (is (= (if (= "native" (System/getenv "BABASHKA_TEST_ENV")) :libffi :ffm)
+               (bb `(do ~(lib-require @struct-lib)
+                        (:babashka.ffi/backend
+                         (meta (ffi/cfn "quad_sum" [[:struct [[:v [:array :int 4]]]]] :int)))))))))))
+
 (deftest struct-thread-test
   (when (and (not skip?) @libffi? @struct-lib)
     (testing "threads that share one struct binding do not share its scratch"
