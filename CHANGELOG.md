@@ -9,10 +9,10 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Add experimental [`babashka.ffi`](doc/ffi.md): call C functions in shared libraries straight from a script, with no pod and no compile step. Structs, callbacks and arenas included, and the same library runs on JVM Clojure. See the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
 - Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems
 - Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine
 - SCI caches resolved JVM instance methods, static methods, constructors and fields per call site for performance
-- Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries. The namespace is built in and the same library runs on JVM Clojure: see the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
 - On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
 - The dynamic binary for Linux amd64 links every library statically except glibc. It no longer needs `libz.so.1` at run time
 - On FreeBSD, the install script installs the dynamic binary when the Linuxulator has a linux_base with glibc 2.17 or newer, such as `linux_base-rl9`
