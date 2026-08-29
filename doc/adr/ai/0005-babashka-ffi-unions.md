@@ -2,9 +2,9 @@
 
 ## Status
 
-Proposed 2026-08-29. Not implemented. Builds on ADR 0003 (structs by value)
-and ADR 0004 (argument order), and on the array layouts merged in
-babashka/ffi#14.
+Accepted 2026-08-29. Implemented on branch `union-layouts` of babashka/ffi
+(eda98a8). Builds on ADR 0003 (structs by value) and ADR 0004 (argument
+order), and on the array layouts merged in babashka/ffi#14.
 
 ## Context
 
