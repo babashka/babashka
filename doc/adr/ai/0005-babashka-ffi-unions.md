@@ -104,9 +104,19 @@ write:
 (ffi/write p curl-msg {:msg 1 :easy h :data {:result 0}})
 ```
 
-A map with zero or two keys is an error naming the members. The key is the
-tag: it says which member's encoding applies, in data, so nothing else has
-to.
+The same bytes are a pointer as `:whatever` and an int as `:result`, so a
+write has to say which member it writes. The map key says it:
+
+```clojure
+(ffi/write p data {:result 0})               ; the :result member
+(ffi/write p data {:whatever some-ptr})      ; the :whatever member
+(ffi/write p data {:result 0 :whatever nil}) ; error: two members named
+(ffi/write p data {})                        ; error: no member named
+```
+
+coffi needs a separate `:dispatch` function for this choice, because its
+union value is a bare `0`, which does not say whether it is the int or the
+pointer. Here the value carries the choice.
 
 ### By value: refused
 
