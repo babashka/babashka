@@ -66,10 +66,9 @@ struct that holds a union gets the offsets the compiler gives it.
 ### Reading
 
 `read` of a union returns **a pointer to its bytes**, sized to the union.
-The caller reads the member it knows applies:
-
-The C constants are enum values from the headers; a binding defines them
-as numbers:
+The caller reads the member it knows applies. The C constants in the
+examples are enum values from the headers, which a binding defines as
+numbers:
 
 ```clojure
 (def CURLMSG_DONE 1)       ; curl/multi.h:92, enum CURLMSG: NONE 0, DONE 1
