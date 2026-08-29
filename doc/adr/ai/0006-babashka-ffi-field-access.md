@@ -1,9 +1,10 @@
-# ADR 0006: Access one member of a layout by name or path
+# ADR 0006: A place: one member of a layout, resolved once
 
 ## Status
 
-Accepted 2026-08-29. Implemented on branch `field-access` of babashka/ffi
-(bda6bf0). Builds on ADR 0003 (structs by
+Accepted 2026-08-29. First implemented as `field-reader`/`field-writer`
+(babashka/ffi#20), then reshaped the same day into `place` on branch
+`place` of babashka/ffi (d294149), which is the decision below. Builds on ADR 0003 (structs by
 value), ADR 0004 (argument order) and ADR 0005 (unions), and on the array
 layouts merged in babashka/ffi#14.
 
@@ -33,39 +34,32 @@ unions, where the member name is the only thing that fixes the type
 
 ## Decision
 
-Two functions that each return a function. The place is a member name, or
-a path of member names and array indices; a name is a one-element path.
-The path is resolved when the function is made; the function it returns
-only accesses.
+One function, `place`, and no new verbs. It takes a layout and a member
+name, or a path of member names and array indices, and returns a **place**:
+the member resolved once into its offset and its codecs. Without a path,
+the place is the whole layout. `read` and `write` take a place where they
+take a type keyword or a layout:
 
 ```clojure
-(ffi/field-reader layout path)          ; -> (fn [p]), the member decoded as its type
-(ffi/field-writer layout path)          ; -> (fn [p v]), v encoded as its type, returns nil
+(def parent (ffi/place bone :parent))          ; resolved once: offset 32, :int
 
-(def bone-parent (ffi/field-reader bone :parent))
-(bone-parent p)                                            ;=> 7
-((ffi/field-reader curl-msg [:data :result]) p)            ; struct offset 16, union member :result, as :int
-((ffi/field-reader outer [:msgs 1 :data :result]) p)       ; through an array index
-((ffi/field-writer outer [:msgs 1 :data :result]) p 0)
-((ffi/field-writer outer [:msgs 1]) p {:msg 1 :easy nil :data [:result 0]})   ; a non-leaf: the struct's encoder
+(ffi/read p parent)                            ;=> 7      the bare form
+(ffi/write p parent 3)                         ;           the assignment
+(ffi/read arr (ffi/place point :y) (* i 8))    ; the byte-offset arity composes: stride an array of structs
+(ffi/read p (ffi/place point))                 ; the whole layout, its lookup done once
+(ffi/write q (ffi/place outer [:msgs 1 :data :result]) 9)   ; through an array and a union
 ```
 
-There is no per-call form. The rule this API follows, stated here for the
-first time: **a function with a resolve step is made once and kept, and
-has no per-call twin.** `cfn` resolves a symbol and builds a call;
-`field-reader` and `field-writer` resolve a path and pick a codec. `read`
-and `write` stay as the per-call primitives: for a scalar type there is
-nothing to resolve (a keyword is a `case` dispatch), and for a whole layout
-they are the one-off operation itself, fill a struct and hand it to C. A
-one-off member access is a `let`:
+The direction stays in the verb. This is Common Lisp's model of a place
+(CLHS 5.1, "Generalized Reference"): `(car x)` is the form you read, and
+`(setf (car x) v)` the assignment to the same place. Here `read` is the
+form, `write` is `setf`, and a place is what both act on. FFM has the same
+shape: `layout.varHandle(path...)` is a value, and `get`/`set` on it are
+the verbs.
 
-```clojure
-(let [parent (ffi/field-reader bone :parent)]
-  (parent p))
-```
-
-which costs the same as a per-call function would, since both do the one
-cached lookup; from the second use on the accessor wins.
+There is no per-call form and no function that resolves per call. The
+rule, stated in ADR 0007: **a function with a resolve step is made once
+and kept, and has no per-call twin.** A one-off member access is a `let`.
 
 Semantics:
 
@@ -79,14 +73,15 @@ Semantics:
   names the member, so `write-field` needs no pair on this route:
   `(write-field p curl-msg [:data :result] 0)` and
   `(write p curl-msg {... :data [:result 0]})` write the same bytes.
-- A bad path is an error when the function is made, naming the problem:
+- A bad path is an error when the place is made, naming the problem:
   no such member, an index past the array's count, a path that continues
   past a scalar. Not `nil`, as
   `get-in` would give: a map's keys are open, a layout's members are
   closed, so a member that is not there is a mistake in the program, and
   `nil` could not be told from a `0` that was read.
 - Resolution is cached per `[layout path]`, bounded as the layout and codec
-  caches are, so a call is a lookup plus the slot access.
+  caches are, so making a place in a `let` costs one lookup and using it
+  costs none: `read` sees the place's type and calls its baked decoder.
 
 Argument order follows ADR 0004: the pointer is the subject and comes
 first, the layout next as in `read` and `write`, the place after it, and
@@ -101,22 +96,26 @@ silently, and a re-stated type. A bad path fails by name. The leaf reuses
 the existing codecs, so nothing is checked differently from `write`.
 Reads stay bounds-checked by the segment.
 
-**Performance.** Measured on the JVM, best of five runs of two million,
-for the 33-slot `BoneInfo`:
+**Performance.** Measured on the JVM, best of five runs of two million:
 
-    hoisted reader, (parent p)                6-19 ns   (JIT-dependent)
-    (let [r (field-reader ..)] (r p)), once     31 ns   the lookup, same as a per-call form
-    (let [r ..] (r p) (r p) (r p))              33 ns   against 85 for three per-call reads
-    (:parent (read p bone)), the whole struct  138 ns
-    read :int 32, the offset by hand             2 ns   the JIT folds a constant offset
+    read p (place bone :parent)                3.5 ns   the 33-slot struct's one member
+    read q (place outer [:msgs 1 :data :result]) 5.9 ns
+    read pt (place point), the whole layout     16 ns   against 127 for (read pt point) per call
+    write p parent 3                           8.8 ns   (write :int 3 32 by hand: 5.0)
+    read :int 32, the offset by hand           1.7 ns   the JIT folds a constant offset
+    the closure form this replaced            6-19 ns   (JIT-dependent)
 
-Native image, where nothing folds, measured on the accessor build:
+A place through `read` is cheaper than the closure form was: the `case`
+default plus one `instance?` costs less than a closure call.
 
-    read :int 32, the offset by hand          101 ns
-    hoisted reader, (parent p)                102 ns   equal to the hand read
-    hoisted reader, [:msgs 1 :data :result]   102 ns   depth is free once resolved
-    (let [r (field-reader ..)] (r p)), once   157 ns   the lookup
-    (:parent (read p bone)), the whole struct 1466 ns The accessor is never
+Native image, where nothing folds, measured on the place build:
+
+    read :int 32, the offset by hand           98 ns
+    read p (place bone :parent)               105 ns   at the hand read
+    read q (place outer [:msgs 1 :data :result]) 103 ns   depth is free once resolved
+    read pt point, per call                   359 ns   a two-int struct
+    read pt (place point), the whole layout   154 ns
+    (:parent (read p bone)), the 33-slot struct 1466 ns The accessor is never
 worse than a per-call form at any use count, which is what made the
 per-call form unnecessary. No new `ValueLayout` access site. An accessor
 form, `(field-reader layout path)` returning a function the way `cfn`
@@ -152,6 +151,17 @@ resolved by FFM to the same byte: `byteOffset` of
 
 ## Alternatives not taken
 
+- **`field-reader` / `field-writer`, functions that access.** Shipped as
+  babashka/ffi#20 and reshaped the same day. A function per direction
+  hides the direction (`(parent p)` reads, `(parent p 3)` would write),
+  and "field reader" stopped naming the thing once the whole layout became
+  a legal target. A place as a value, with the verbs kept, fixes both.
+- **The name.** `reader`/`writer` name the plumbing, not the thing;
+  `lens` is a pure abstraction and this mutates memory, the same objection
+  ADR 0006 raised against `get`/`assoc-in`; `path` names the argument, not
+  the result, and collides with `babashka.fs/path` in every script;
+  `accessor` is a function that accesses, and a place is not called. A
+  place is the Common Lisp word for exactly this, mutation included.
 - **A per-call form, `(read-field p layout path)` / `(write-field p layout
   path v)`.** Built first, then removed before merge. Measured: a `let`
   that makes the accessor and uses it once costs the same, and every
@@ -183,6 +193,8 @@ resolved by FFM to the same byte: `byteOffset` of
 ## Consequences
 
 - The last place the API says "compute the offset yourself" goes away.
+- `read` and `write` accept three things in the type slot: a keyword, a
+  layout, a place. A place is the resolved form of the other two.
 - The API has a stated rule for resolve-once functions, which any later
   addition follows: no per-call twin.
 - `babashka.impl.ffi` exposes the two vars through `copy-ns`; the
