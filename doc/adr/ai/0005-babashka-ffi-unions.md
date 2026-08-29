@@ -3,7 +3,7 @@
 ## Status
 
 Accepted 2026-08-29. Implemented on branch `union-layouts` of babashka/ffi
-(eda98a8). Builds on ADR 0003 (structs by value) and ADR 0004 (argument
+(e646d0b). Builds on ADR 0003 (structs by value) and ADR 0004 (argument
 order), and on the array layouts merged in babashka/ffi#14.
 
 ## Context
@@ -97,26 +97,38 @@ returned pointer are bounds-checked against the union's size.
 
 ### Writing
 
-`write` of a union takes a map with **exactly one key**, the member to
-write:
+`write` of a union takes a **pair**, the member and its value:
 
 ```clojure
-(ffi/write p curl-msg {:msg 1 :easy h :data {:result 0}})
+(ffi/write p curl-msg {:msg 1 :easy h :data [:result 0]})
 ```
 
 The same bytes are a pointer as `:whatever` and an int as `:result`, so a
-write has to say which member it writes. The map key says it:
+write has to say which member it writes. The first element of the pair
+says it:
 
 ```clojure
-(ffi/write p data {:result 0})               ; the :result member
-(ffi/write p data {:whatever some-ptr})      ; the :whatever member
-(ffi/write p data {:result 0 :whatever nil}) ; error: two members named
-(ffi/write p data {})                        ; error: no member named
+(ffi/write p data [:result 0])            ; the :result member
+(ffi/write p data [:whatever some-ptr])   ; the :whatever member
+(ffi/write p data [:nope 0])              ; error: no such member
+(ffi/write p data {:result 0})            ; error: a union value is a pair
 ```
+
+A pair is the shape Clojure already uses for one-of-several with a tag:
+`spec`'s `s/or` conforms to `[:tag value]`. A struct is a map, an array a
+vector, a union a tagged pair, so each layout kind has a Clojure shape of
+its own, and a union value cannot be mistaken for a struct's.
 
 coffi needs a separate `:dispatch` function for this choice, because its
 union value is a bare `0`, which does not say whether it is the int or the
 pointer. Here the value carries the choice.
+
+The tag flows one way. A write names the member; a read cannot, because a
+C union stores no tag. This is a property of C unions, not of the pair:
+coffi has the same asymmetry (`clone-segment` on read, `:dispatch` on
+write), and so does every binding in the table below. The pair is the
+form a tagged read would return if one is ever added, so the two sides
+would then round-trip.
 
 ### By value: refused
 
@@ -208,6 +220,11 @@ dispatch expressed as data, and it makes the ambiguous case (`{:fd 42 :u32
 
 ## Alternatives not taken
 
+- A one-key map for the write value, `{:result 0}`. It was the first
+  draft. It carries a rule the shape does not show ("exactly one key"),
+  it is a struct's shape, and a tagged read would have to return a map
+  that reads as a struct. The pair wins on all three counts, and its
+  encoder allocates nothing where `first` on a map allocates an entry.
 - A union as an opaque byte vector, `[0 42 0 0 ...]`. Comparable with `=`,
   but reading a member then needs a write-back into memory first, which
   costs an allocation and hides the fact that the bytes have a type.
