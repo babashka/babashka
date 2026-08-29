@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - `babashka.ffi`: BREAKING: `alloc` requires an arena, and `string->ptr` takes one. The unscoped form and its manual `free` are gone. `free` remains for memory that a C function returned. See ADR 0004
 - `babashka.ffi`: BREAKING: the byte offset of `write` moves to the last argument: `(write p t v offset)`. Existing four-argument calls must change. See ADR 0004
+- `babashka.ffi`: BREAKING: `callback` takes an arena first, which owns the function pointer, and `free-callback` is gone. Closing the arena releases the callback. A confined arena covers a comparison function that C calls during your own call, and an automatic arena releases the callback once the pointer becomes unreachable
 - `babashka.ffi`: `alloc` and `slice` accept a struct layout where they accept a size, so `(alloc arena point)` allocates room for that struct with its own alignment. Resolving a layout is now cached
 - `babashka.ffi`: `read` and `write` accept a struct layout. A struct in memory reads as a map and writes from one, at a byte offset when you give one
 - `babashka.ffi`: `ptr->string` reads a pointer that has no size, such as one a C function returned, up to the first NUL byte. A second argument limits the read in bytes. A limit narrows an existing bound but never widens it

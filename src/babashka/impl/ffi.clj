@@ -34,5 +34,4 @@
    'pointer? (copy-var ffi/pointer? tns)
    'null (copy-var ffi/null tns)
    'null? (copy-var ffi/null? tns)
-   'callback (copy-var ffi/callback tns)
-   'free-callback (copy-var ffi/free-callback tns)})
+   'callback (copy-var ffi/callback tns)})
