@@ -12,9 +12,12 @@ A preview of the next release can be installed from
 - `babashka.ffi`: BREAKING: `alloc` requires an arena, and `string->ptr` takes one. The unscoped form and its manual `free` are gone. `free` remains for memory that a C function returned. See ADR 0004
 - `babashka.ffi`: BREAKING: the byte offset of `write` moves to the last argument: `(write p t v offset)`. Existing four-argument calls must change. See ADR 0004
 - `babashka.ffi`: `alloc` and `slice` accept a struct layout where they accept a size, so `(alloc arena point)` allocates room for that struct with its own alignment. Resolving a layout is now cached
+- `babashka.ffi`: `read` and `write` accept a struct layout. A struct in memory reads as a map and writes from one, at a byte offset when you give one
+- `babashka.ffi`: `ptr->string` reads a pointer that has no size, such as one a C function returned, up to the first NUL byte. A second argument limits the read in bytes. A limit narrows an existing bound but never widens it
 - `babashka.ffi`: `defcfn` accepts the wrapper form from coffi. The raw binding is local to the wrapper body
 - `babashka.ffi`: a fixed signature outside the trampoline set and every variadic call now go through libffi in a native binary, instead of throwing or crossing an interpreted FFM handle. The signature limits remain only for callbacks and for builds without libffi. A variadic call drops from ~14 to ~1 microsecond
-- `babashka.ffi`: a C function that takes a struct as an argument, or returns one, without a pointer in between. Define the fields with a layout, such as `[:struct [[:x :int] [:y :int]]]`. Use a map for the field values. `sizeof` and `alignof` now accept layouts. Struct calls use libffi
+- `babashka.ffi`: a C function that takes a struct as an argument, or returns one, without a pointer in between. Define the fields with a layout, such as `[:struct [[:x :int] [:y :int]]]`. Use a map for the field values. `sizeof` and `alignof` now accept layouts. A native image makes a struct call through libffi
+- `babashka.ffi`: on the JVM a struct call goes through the FFM linker, so it no longer needs a libffi on the system. This was a first-call error on Windows, which has none. The call is also faster: about 133 against 197 nanoseconds for libc `div`
 - Link a static libffi for FFI calls that the fixed native call shapes cannot make. Set `BABASHKA_LIBFFI` to another archive or `none`
 - Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems. See ADR 0010
 - Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine

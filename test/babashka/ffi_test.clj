@@ -240,8 +240,8 @@
            (bb `(do ~ffi-require
                     (with-open [a# (ffi/confined-arena)]
                       (ffi/read (ffi/alloc a# 4) :long 0)))))))
-    (testing "read rejects a zero-size pointer from C"
-      (is (= [0 "has size 0" "abc" "has size 0" 97]
+    (testing "read rejects a zero-size pointer from C, ptr->string reads to the NUL"
+      (is (= [0 "abc" "abc" "has size 0" 97]
              (bb `(do ~ffi-require
                       (with-open [a# (ffi/confined-arena)]
                         (let [src# (ffi/string->ptr a# "abc")
@@ -249,7 +249,7 @@
                               hit# ((ffi/cfn "strchr" [:pointer :int] :pointer) src# (int \a))
                               msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))]
                           [(ffi/size hit#)
-                           (msg# #(ffi/ptr->string hit#))
+                           (ffi/ptr->string hit#)
                            (ffi/ptr->string (ffi/reinterpret hit# 4))
                            (msg# #(ffi/read hit# :char))
                            (ffi/read (ffi/reinterpret hit# 1) :char)])))))))
@@ -598,11 +598,16 @@
                                  [:struct [[:lo [:struct [[:x :int] [:y :int]]]]
                                            [:hi [:struct [[:x :int] [:y :int]]]]]]
                                  [:struct [[:c :char] [:d :double]]]]))))))
-        (testing "a struct binding calls through libffi"
-          (is (= :libffi
-                 (bb `(do ~ffi-require
+        (testing "a struct binding calls through libffi in an image, the FFM linker on the JVM"
+          ;; the child reports which host it is, so this holds in both test
+          ;; environments without reading one here
+          (let [[native? backend]
+                (bb `(do ~ffi-require
+                         [(boolean (System/getProperty "org.graalvm.nativeimage.imagecode"))
                           (:babashka.ffi/backend
-                           (meta (ffi/cfn "div" [:int :int] [:struct [[:quot :int] [:rem :int]]]))))))))
+                           (meta (ffi/cfn "div" [:int :int]
+                                          [:struct [[:quot :int] [:rem :int]]])))]))]
+            (is (= (if native? :libffi :ffm) backend))))
         (testing "an invalid struct value is an error"
           (is (= ["misses field :rem" "has unknown field :x" "needs a map of [:quot :rem]"]
                  (bb `(do ~ffi-require
