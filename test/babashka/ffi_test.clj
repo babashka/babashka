@@ -240,8 +240,8 @@
            (bb `(do ~ffi-require
                     (with-open [a# (ffi/confined-arena)]
                       (ffi/read (ffi/alloc a# 4) :long 0)))))))
-    (testing "read rejects a zero-size pointer from C"
-      (is (= [0 "has size 0" "abc" "has size 0" 97]
+    (testing "read rejects a zero-size pointer from C, ptr->string reads to the NUL"
+      (is (= [0 "abc" "abc" "has size 0" 97]
              (bb `(do ~ffi-require
                       (with-open [a# (ffi/confined-arena)]
                         (let [src# (ffi/string->ptr a# "abc")
@@ -249,7 +249,7 @@
                               hit# ((ffi/cfn "strchr" [:pointer :int] :pointer) src# (int \a))
                               msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"has size 0" (ex-message e#)))))]
                           [(ffi/size hit#)
-                           (msg# #(ffi/ptr->string hit#))
+                           (ffi/ptr->string hit#)
                            (ffi/ptr->string (ffi/reinterpret hit# 4))
                            (msg# #(ffi/read hit# :char))
                            (ffi/read (ffi/reinterpret hit# 1) :char)])))))))
