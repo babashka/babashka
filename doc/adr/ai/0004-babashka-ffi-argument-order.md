@@ -447,3 +447,33 @@ These topics do not concern ordering and remain on the project list:
 The source will move to the babashka/ffi repository. These changes break the
 four-argument `write` and the one-argument `alloc`. They land before the
 library's first release, and the changelog records them.
+
+## Amendment 2026-08-29: `callback` takes an arena
+
+`callback` moved from `[f argtypes rettype]` to `[arena f argtypes rettype]`,
+and `free-callback` is gone. The table above lists both under "nothing to
+order"; that row is a snapshot of the API as it stood when this decision was
+accepted.
+
+The new order follows the rules this ADR states rather than departing from
+them. Rule B puts an optional argument last unless it is the source the result
+comes from. The arena is that source: it owns the returned function pointer
+exactly as it owns the memory `alloc` returns, so it leads, and the three
+lifetime-bearing functions now read the same way.
+
+```clojure
+(ffi/alloc arena :int64)
+(ffi/string->ptr arena "hello")
+(ffi/callback arena f [:pointer] :void)
+```
+
+An earlier sketch in the project notes put the arena last and optional, to
+match coffi. That sketch predates this ADR. Mandatory-and-first is what lets
+`free-callback` go: closing the arena releases the stub, a global arena keeps
+it for the life of the process, and an automatic arena releases it once the
+pointer becomes unreachable, which the old API could not express.
+
+Rules A and C still hold. There are no arities to trade places, and each pair
+of adjacent parameters has disjoint types: an arena, then a function, then a
+vector of argument types, then a return type keyword. A callback return cannot
+be a layout, so the last two never collide.
