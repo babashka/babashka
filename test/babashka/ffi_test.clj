@@ -349,7 +349,7 @@
                           (with-open [a# (ffi/confined-arena)]
                             (let [p# (ffi/alloc a# :pointer)]
                               (ffi/write p# :long -1 0)
-                              [(count (ffi/read-bytes p# 8))
+                              [(count (ffi/read-array p# :byte 8))
                                (ffi/size (ffi/alloc a# [:struct [[:x :int] [:y :int]]]))])))))))
     (testing "arena allocations use the required alignment"
       ;; Types use natural alignment. Integer byte counts use alignment 16.
@@ -425,14 +425,14 @@
                       (with-open [a# (ffi/confined-arena)]
                         (let [p# (ffi/alloc a# 8)]
                           [(ffi/read p# :string) (ffi/ptr->string ffi/null)])))))))
-    (testing "read-bytes and write-bytes use the specified offset"
+    (testing "read-array and write-array use the specified offset"
       (is (= [[1 2 3 4] [0 0]]
              (bb `(do ~ffi-require
                       (with-open [a# (ffi/confined-arena)]
                         (let [p# (ffi/alloc a# 16)]
-                          (ffi/write-bytes p# (byte-array [1 2 3 4]) 2)
-                          [(vec (ffi/read-bytes p# 4 2))
-                           (vec (ffi/read-bytes p# 2))])))))))
+                          (ffi/write-array p# :byte (byte-array [1 2 3 4]) 2)
+                          [(vec (ffi/read-array p# :byte 4 2))
+                           (vec (ffi/read-array p# :byte 2))])))))))
     (testing "byte-buffer shares native memory without a copy"
       (is (= [7 42]
              (bb `(do ~ffi-require
@@ -1044,6 +1044,18 @@
                         (dotimes [i# 400]
                           (ffi/sizeof [:struct [[(keyword (str "g" i#)) :int]]]))
                         (= 8 (ffi/sizeof [:struct [[:x :int] [:y :int]]]))))))))
+
+(deftest ffi-exports-test
+  ;; A public var of the library is invisible in babashka until the sci
+  ;; namespace lists it, and the library suite then skips its test, so a
+  ;; missing export leaves no trace. This compares the library on the
+  ;; classpath with what babashka exposes.
+  (when-not skip?
+    (let [library (set (map name (keys (ns-publics 'babashka.ffi))))
+          exposed (set (map name (bb `(do (require 'babashka.ffi)
+                                          (keys (ns-publics 'babashka.ffi))))))]
+      (is (empty? (sort (remove exposed library)))
+          "public vars of babashka.ffi that babashka.impl.ffi does not export"))))
 
 (deftest layout-kinds-in-sync-test
   (testing "runtime and hook layout kinds match"
