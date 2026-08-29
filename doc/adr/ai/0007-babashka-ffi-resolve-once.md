@@ -21,9 +21,9 @@ Measured on the JVM while deciding ADR 0006 (best of five runs of two
 million), for a 33-slot struct and a two-int struct:
 
     read-field :parent, per call, resolving each time      26-31 ns
-    field-reader hoisted, (parent p)                        6-19 ns
+    read p (place bone :parent), the place made once         3.5 ns
     (read p point), per call                                 107 ns
-    (field-reader point []) hoisted                           13 ns
+    read p (place point), the whole layout, made once         16 ns
     read :int 32, the offset by hand                        1.7 ns  (the JIT folds a constant)
 
 In the native image nothing folds, and the hoisted accessor costs exactly
@@ -45,15 +45,15 @@ variadic tail shape. The function that does one returns a function; the
 returned function only accesses or calls.
 
 This is the shape of `cfn` (symbol and signature, once), `callback`
-(stub, once), `field-reader` and `field-writer` (path and codec, once), and
-`(field-reader layout [])` for a whole layout. The one-off use is a `let`,
+(stub, once), and `place` (path and codec, once; the whole layout without
+a path), which `read` and `write` then take where they take a type. The one-off use is a `let`,
 which costs the per-call price once and nothing after.
 
 `read` and `write` stay as per-call primitives, and are the exception the
 rule defines: for a scalar type there is nothing to resolve (a keyword is
 a `case` dispatch), and for a whole layout they are the one-off operation
 itself, fill a struct and hand it to C. When a whole layout is read in a
-loop, `(field-reader layout [])` is the hoisted form.
+loop, `(place layout)` is the hoisted form.
 
 Where a per-call spelling is wanted later, it is a macro that hoists at
 expansion time, the way Specter's `select` caches a compiled path at the
