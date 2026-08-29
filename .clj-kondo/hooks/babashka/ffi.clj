@@ -3,7 +3,7 @@
 
 (def ^:private layout-kinds
   ;; Keep in sync with babashka.ffi/layout-kinds.
-  #{:struct})
+  #{:struct :array})
 
 (defn- layout-vector?
   [n]
