@@ -9,26 +9,10 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- `babashka.ffi`: BREAKING: `alloc` requires an arena, and `string->ptr` takes one. The unscoped form and its manual `free` are gone. See ADR 0004
-- `babashka.ffi`: BREAKING: the byte offset of `write` moves to the last argument: `(write p t v offset)`. Existing four-argument calls must change. See ADR 0004
-- `babashka.ffi`: BREAKING: `free` is gone. It called the C allocator's `free`, which is correct only for a library that allocated with `malloc`, and it could not tell global arena memory from a C pointer. Hand the pointer to an arena with the library's own deallocator instead: `(reinterpret p n arena duckdb-free)`. For memory the C allocator returned, bind it yourself with `(defcfn c-free "free" [:pointer] :void)`
-- `babashka.ffi`: BREAKING: `callback` takes an arena first, which owns the function pointer, and `free-callback` is gone. Closing the arena releases the callback. A confined arena covers a comparison function that C calls during your own call, and an automatic arena releases the callback once the pointer becomes unreachable
-- `babashka.ffi`: `alloc` and `slice` accept a struct layout where they accept a size, so `(alloc arena point)` allocates room for that struct with its own alignment. Resolving a layout is now cached
-- `babashka.ffi`: `read` and `write` accept a struct layout. A struct in memory reads as a map and writes from one, at a byte offset when you give one
-- `babashka.ffi`: `ptr->string` reads a pointer that has no size, such as one a C function returned, up to the first NUL byte. A second argument limits the read in bytes. A limit narrows an existing bound but never widens it
-- `babashka.ffi`: `defcfn` accepts the wrapper form from coffi. The raw binding is local to the wrapper body
-- `babashka.ffi`: a fixed signature outside the trampoline set and every variadic call now go through libffi in a native binary, instead of throwing or crossing an interpreted FFM handle. The signature limits remain only for callbacks and for builds without libffi. A variadic call drops from ~14 to ~1 microsecond
-- `babashka.ffi`: a C function that takes a struct as an argument, or returns one, without a pointer in between. Define the fields with a layout, such as `[:struct [[:x :int] [:y :int]]]`. Use a map for the field values. `sizeof` and `alignof` now accept layouts. A native image makes a struct call through libffi
-- `babashka.ffi`: on the JVM a struct call goes through the FFM linker, so it no longer needs a libffi on the system. This was a first-call error on Windows, which has none. The call is also faster: about 133 against 197 nanoseconds for libc `div`
-- Link a static libffi for FFI calls that the fixed native call shapes cannot make. Set `BABASHKA_LIBFFI` to another archive or `none`
 - Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems. See ADR 0010
 - Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine
 - SCI caches resolved JVM instance methods, static methods, constructors and fields per call site for performance
-- Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries
-- `babashka.ffi`: Adds arenas for scoped allocation. New functions create confined, shared, automatic, and global arenas. `alloc` accepts an arena, a type keyword, and an alignment. Closing an arena releases its memory, and `free` refuses arena memory.
-- `babashka.ffi`: A binding can limit its symbol search to one library and its dependencies. `defcfn` uses its `:library` key for this selection. `cfn` and `find-symbol` accept the library as an argument. The library value can be a map, a function, or an object that implements `IDeref`. This limit prevents a system library with the same name from supplying the symbol.
-- `babashka.ffi`: `cfn` can bind a function address. This supports pointers from loaders, C calls, struct fields, and `callback`.
-- `babashka.ffi`: `read-bytes` and `write-bytes` copy byte arrays to and from native memory. `byte-buffer` gives a zero-copy `java.nio.ByteBuffer` view of native memory
+- Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries. The namespace is built in and the same library runs on JVM Clojure: see the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
 - On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
 - The dynamic binary for Linux amd64 links every library statically except glibc. It no longer needs `libz.so.1` at run time
 - On FreeBSD, the install script installs the dynamic binary when the Linuxulator has a linux_base with glibc 2.17 or newer, such as `linux_base-rl9`
@@ -1997,11 +1981,6 @@ Details about releases prior to v0.1.0 can be found
 [here](https://github.com/babashka/babashka/releases).
 
 ## Breaking changes
-
-### Unreleased
-
-- `babashka.ffi`: `alloc` requires an arena, and `string->ptr` takes one. Use a confined or shared arena instead of unscoped `(alloc n)` and manual `free`. `free` remains for memory that a C function returned.
-- `babashka.ffi`: the byte offset of `write` is the last argument. Change each existing four-argument call to `(write p t v offset)`.
 
 ### v1.1.172
 
