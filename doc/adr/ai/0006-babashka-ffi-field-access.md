@@ -108,13 +108,14 @@ Reads stay bounds-checked by the segment.
 A place through `read` is cheaper than the closure form was: the `case`
 default plus one `instance?` costs less than a closure call.
 
-Native image, where nothing folds, measured on the accessor build:
+Native image, where nothing folds, measured on the place build:
 
-    read :int 32, the offset by hand          101 ns
-    hoisted reader, (parent p)                102 ns   equal to the hand read
-    hoisted reader, [:msgs 1 :data :result]   102 ns   depth is free once resolved
-    (let [r (field-reader ..)] (r p)), once   157 ns   the lookup
-    (:parent (read p bone)), the whole struct 1466 ns The accessor is never
+    read :int 32, the offset by hand           98 ns
+    read p (place bone :parent)               105 ns   at the hand read
+    read q (place outer [:msgs 1 :data :result]) 103 ns   depth is free once resolved
+    read pt point, per call                   359 ns   a two-int struct
+    read pt (place point), the whole layout   154 ns
+    (:parent (read p bone)), the 33-slot struct 1466 ns The accessor is never
 worse than a per-call form at any use count, which is what made the
 per-call form unnecessary. No new `ValueLayout` access site. An accessor
 form, `(field-reader layout path)` returning a function the way `cfn`
