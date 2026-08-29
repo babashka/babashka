@@ -506,3 +506,13 @@ it.
 
 With this and the `callback` amendment above, an arena owns every lifetime in
 the API. No function releases anything by itself.
+
+## Amendment 2026-08-29: `read-array` and `write-array` replace the byte pair
+
+`read-bytes` and `write-bytes` are gone. `(read-array p t n offset?)` and
+`(write-array p t arr offset?)` copy elements of any scalar type between
+native memory and the Java array of that width, as one memcpy; `:byte` is
+the case the old pair covered. The order follows the rules above: the
+pointer is the subject, the type comes next as in `read` and `write`, and
+the optional offset is last. Two integers stay adjacent at the end, the
+same shape `read-bytes` had, which this ADR listed as unchanged.
