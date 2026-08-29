@@ -23,6 +23,8 @@
    'ptr->string (copy-var ffi/ptr->string tns)
    'byte-buffer (copy-var ffi/byte-buffer tns)
    'read-bytes (copy-var ffi/read-bytes tns)
+   'read-array (copy-var ffi/read-array tns)
+   'write-array (copy-var ffi/write-array tns)
    'write-bytes (copy-var ffi/write-bytes tns)
    'string->ptr (copy-var ffi/string->ptr tns)
    'segment (copy-var ffi/segment tns)
