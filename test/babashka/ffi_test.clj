@@ -525,7 +525,7 @@
     (testing "cfn calls a callback through its address"
       (is (= 42
              (bb `(do ~ffi-require
-                      (let [cb# (ffi/callback (fn [x#] (* x# 3)) [:int] :int)]
+                      (let [cb# (ffi/callback (ffi/global-arena) (fn [x#] (* x# 3)) [:int] :int)]
                         ((ffi/cfn cb# [:int] :int) 14)))))))
     (testing "cfn rejects the null address at bind time"
       (is (thrown? Exception (bb `(do ~ffi-require (ffi/cfn 0 [:int] :int))))))))
@@ -540,6 +540,9 @@
                           (doseq [[i# v#] (map-indexed vector [5 3 1 4 2])]
                             (ffi/write arr :int v# (* i# 4)))
                           (let [cmp (ffi/callback
+                                     ;; qsort calls back on this thread, during
+                                     ;; the call, so the confined arena owns it
+                                     a#
                                      ;; qsort gives zero-size pointers to the comparator.
                                      (fn [pa# pb#]
                                        (compare (ffi/read (ffi/reinterpret pa# 4) :int)
@@ -804,7 +807,7 @@
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/cfn "printf" [:string :void :&] :int)))))
       (is (thrown? Exception (bb `(do ~ffi-require
-                                      (ffi/callback (fn [a#] a#) [:void] :long))))))
+                                      (ffi/callback (ffi/global-arena) (fn [a#] a#) [:void] :long))))))
     (testing "reserved spellings fail at bind time, not at call time"
       (is (thrown? Exception (bb `(do ~ffi-require
                                       (ffi/cfn (symbol "abs") [:int] :int)))))
@@ -861,11 +864,11 @@
     (testing "callbacks with typed args, including declared-order un-permutation"
       (is (= [30 24.5 24.5]
              (bb `(do ~(lib-require lib)
-                      (let [jj# (ffi/callback (fn [a# b#] (* a# b#)) [:long :long] :long)
-                            jd# (ffi/callback (fn [l# d#] (+ l# (* 2 d#))) [:long :double] :double)
+                      (let [jj# (ffi/callback (ffi/global-arena) (fn [a# b#] (* a# b#)) [:long :long] :long)
+                            jd# (ffi/callback (ffi/global-arena) (fn [l# d#] (+ l# (* 2 d#))) [:long :double] :double)
                             ;; declared double-then-long: C passes (d0, x0),
                             ;; the wrapper must un-permute back to declared order
-                            dj# (ffi/callback (fn [d# l#] (+ (* 2 d#) l#)) [:double :long] :double)]
+                            dj# (ffi/callback (ffi/global-arena) (fn [d# l#] (+ (* 2 d#) l#)) [:double :long] :double)]
                         [((ffi/cfn "cb_apply_jj" [:pointer :long :long] :long) jj# 5 6)
                          ((ffi/cfn "cb_apply_jd" [:pointer :long :double] :double) jd# 4 10.25)
                          ((ffi/cfn "cb_apply_dj" [:pointer :double :long] :double) dj# 10.25 4)])))))))
@@ -875,22 +878,22 @@
       (is (= [1 0 3 7]
              (bb `(do ~(lib-require lib)
                       (let [apply# (ffi/cfn "cb_apply_jj" [:pointer :long :long] :long)
-                            bool# (ffi/callback (fn [a# b#] (< a# b#)) [:long :long] :bool)
-                            int# (ffi/callback (fn [a# b#] (int (+ a# b#))) [:long :long] :int)]
+                            bool# (ffi/callback (ffi/global-arena) (fn [a# b#] (< a# b#)) [:long :long] :bool)
+                            int# (ffi/callback (ffi/global-arena) (fn [a# b#] (int (+ a# b#))) [:long :long] :int)]
                         [(apply# bool# 1 2) (apply# bool# 2 1)
                          (apply# int# 1 2) (apply# int# 3 4)]))))))
     (testing "bool callback arguments arrive as booleans"
       (is (= [1 0]
              (bb `(do ~(lib-require lib)
                       (let [apply# (ffi/cfn "cb_apply_jj" [:pointer :long :long] :long)
-                            cb# (ffi/callback (fn [a# b#] (if (and a# (not b#)) 1 0))
+                            cb# (ffi/callback (ffi/global-arena) (fn [a# b#] (if (and a# (not b#)) 1 0))
                                               [:bool :bool] :long)]
                         [(apply# cb# 1 0) (apply# cb# 0 1)])))))))
   (when-not skip?
     (testing "out-of-family callback shapes fail at creation"
       (is (= (if tu/native? :threw :ok)
              (bb `(do ~ffi-require
-                      (try (ffi/callback (fn [a# b# c# d# e#] 0)
+                      (try (ffi/callback (ffi/global-arena) (fn [a# b# c# d# e#] 0)
                                          [:long :long :long :long :long] :long)
                            :ok
                            (catch Exception e#
@@ -900,16 +903,21 @@
   (when-let [lib @test-lib]
     (testing "callback invoked from a C-created thread the runtime never saw"
       (is (= 42 (bb `(do ~(lib-require lib)
-                         (let [cb# (ffi/callback (fn [a# b#] (* a# b#)) [:long :long] :long)]
+                         (let [cb# (ffi/callback (ffi/global-arena) (fn [a# b#] (* a# b#)) [:long :long] :long)]
                            ((ffi/cfn "cb_call_on_thread" [:pointer :long :long] :long)
                             cb# 21 2))))))))
   (when-let [lib @test-lib]
-    (testing "free-callback releases; freeing twice or freeing unknown is a no-op"
-      (is (= [42 nil nil]
+    (testing "closing the arena releases the callback, and a later call throws"
+      (is (= [42 :released]
              (bb `(do ~(lib-require lib)
-                      (let [cb# (ffi/callback (fn [a# b#] (+ a# b#)) [:long :long] :long)
-                            res# ((ffi/cfn "cb_apply_jj" [:pointer :long :long] :long) cb# 40 2)]
-                        [res# (ffi/free-callback cb#) (ffi/free-callback cb#)]))))))))
+                      (let [a# (ffi/shared-arena)
+                            cb# (ffi/callback a# (fn [x# y#] (+ x# y#)) [:long :long] :long)
+                            call# (ffi/cfn "cb_apply_jj" [:pointer :long :long] :long)
+                            res# (call# cb# 40 2)]
+                        (.close a#)
+                        [res# (try (call# cb# 1 2)
+                                   :still-usable
+                                   (catch Exception _# :released))]))))))))
 
 (deftest backend-test
   (when-not skip?
