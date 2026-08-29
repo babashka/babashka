@@ -932,10 +932,12 @@
                         [(apply# cb# 1 0) (apply# cb# 0 1)])))))))
   (when-not skip?
     (testing "out-of-family callback shapes fail at creation"
+      ;; five integer arguments are in the family since the FSEvents work;
+      ;; a double among more than four is not
       (is (= (if tu/native? :threw :ok)
              (bb `(do ~ffi-require
                       (try (ffi/callback (ffi/global-arena) (fn [a# b# c# d# e#] 0)
-                                         [:long :long :long :long :long] :long)
+                                         [:long :long :long :long :double] :long)
                            :ok
                            (catch Exception e#
                              (if (re-find #"unsupported signature" (ex-message e#))
