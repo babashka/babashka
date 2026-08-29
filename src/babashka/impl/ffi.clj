@@ -24,6 +24,8 @@
    'byte-buffer (copy-var ffi/byte-buffer tns)
    'read-array (copy-var ffi/read-array tns)
    'write-array (copy-var ffi/write-array tns)
+   'copy (copy-var ffi/copy tns)
+   'clone (copy-var ffi/clone tns)
    'string->ptr (copy-var ffi/string->ptr tns)
    'segment (copy-var ffi/segment tns)
    'reinterpret (copy-var ffi/reinterpret tns)
