@@ -116,6 +116,11 @@ resolved by FFM to the same byte: `byteOffset` of
   (`(get m k)` has no layout and has a not-found arity), and they shadow
   `clojure.core` for anyone who `:refer`s them. The API already says
   `read` and `write` for memory; these extend the same verbs.
+- **`get-field` / `set-field`.** Suggested in review. `get`/`set` is the
+  accessor pair for object fields (beans, `setX`); `read`/`write` is the
+  pair this API already uses for memory, where bounds and scope apply. A
+  second vocabulary for the same operation is the cost, and JNA made the
+  same choice for the same reason (`readField`/`writeField`).
 - **A depth split, `read-field` and `read-fields`.** Clojure splits `get`
   and `get-in` because a vector is a legal map key; in a layout a member
   is always a keyword and an index always an integer, so a vector can only
