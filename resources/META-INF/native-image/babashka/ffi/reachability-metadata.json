@@ -1453,6 +1453,24 @@
     }, {
       "returnType" : "jdouble",
       "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong" ]
+    }, {
+      "returnType" : "void",
+      "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong", "jlong" ]
+    }, {
+      "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong", "jlong" ]
+    }, {
+      "returnType" : "jdouble",
+      "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong", "jlong" ]
+    }, {
+      "returnType" : "void",
+      "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong", "jlong", "jlong" ]
+    }, {
+      "returnType" : "jlong",
+      "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong", "jlong", "jlong" ]
+    }, {
+      "returnType" : "jdouble",
+      "parameterTypes" : [ "jlong", "jlong", "jlong", "jlong", "jlong", "jlong" ]
     } ]
   },
   "reflection" : [ {
@@ -1472,6 +1490,12 @@
     }, {
       "name" : "invoke",
       "parameterTypes" : [ "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object" ]
+    }, {
+      "name" : "invoke",
+      "parameterTypes" : [ "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object" ]
+    }, {
+      "name" : "invoke",
+      "parameterTypes" : [ "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object" ]
     } ]
   } ]
 }
