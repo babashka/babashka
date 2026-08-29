@@ -813,8 +813,8 @@
                                       ((ffi/cfn "bb_no_such_symbol" [] :void)))))))))
 
 (deftest documented-limits-test
-  ;; the trampoline set in doc/ffi.md is a contract: a shape in the set
-  ;; compiles, a shape outside it calls through libffi
+  ;; the trampoline set the guide documents is a contract: a shape in the
+  ;; set compiles, a shape outside it calls through libffi
   (when (and (not skip?) tu/native? @libffi?)
     (let [backend (fn [args ret]
                     (bb `(do (require '[babashka.ffi :as ~'ffi])
