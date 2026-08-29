@@ -9,26 +9,38 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Add experimental [`babashka.ffi`](https://github.com/babashka/ffi): call C functions in shared libraries straight from a script, with no pod and no compile step. Structs, callbacks and arenas included, and the same library runs on JVM Clojure. See the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
+FFI:
+
+- Add experimental [`babashka.ffi`](https://github.com/babashka/ffi): call C functions in shared libraries straight from babashka and JVM Clojure! See the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
 - Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems
-- Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine
-- SCI caches resolved JVM instance methods, static methods, constructors and fields per call site for performance
 - On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
 - The dynamic binary for Linux amd64 links every library statically except glibc. It no longer needs `libz.so.1` at run time
 - On FreeBSD, the install script installs the dynamic binary when the Linuxulator has a linux_base with glibc 2.17 or newer, such as `linux_base-rl9`
 - The Linux binaries include zlib 1.2.13. The static binary uses musl 1.2.6. Both are pinned and built from source
-- Tasks: a task's `:cli` `:exec-args` add to the runner-level ones, its keys winning. Before, the task's map replaced the runner-level map
-- [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
-- Fix output of custom `clojure.pprint` dispatch functions
-- Tasks: a task's own `:cli` spec no longer replaces the `:tasks {:cli {:spec ...}}` spec. An inherited option keeps its coercion and default, and shows in `--help` under `Inherited options:`
-- Tasks: a task with `:exec-fn` now runs when another task names it in `:depends`. Before, it did nothing
+
+- SCI: call site caching for instance and static methods, constructors and fields. Up to 5x performance.
+
+Tasks:
+
+- A task's `:cli` `:exec-args` add to the runner-level ones, its keys winning. Before, the task's map replaced the runner-level map
+- A task's own `:cli` spec no longer replaces the `:tasks {:cli {:spec ...}}` spec. An inherited option keeps its coercion and default, and shows in `--help` under `Inherited options:`
+- A task with `:exec-fn` now runs when another task names it in `:depends`. Before, it did nothing
 - Tasks: the options of a `:depends` task parse for the task that runs, and show under `Inherited options:` in `--help`
 - Tasks: the handler of a `:depends` task receives the options that it declared
 - Tasks: a CLI task cannot name a `:cmd` task in `:depends`, unless that task also has a `:task` body. A command tree has no single handler to run, and babashka reports this as an error
 - Tasks: `:cmd` may be a symbol naming a def of the command tree, like `:cli`. The def holds the tree as bb.edn would spell it, handlers as symbols
+
+Misc:
+
+- [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
+- Fix output of custom `clojure.pprint` dispatch functions
+- [#1728](https://github.com/babashka/babashka/issues/1728): Add `java.util.TreeMap`
+
+Upgrades:
+
 - Bump GraalVM to `25.0.4`. The macOS amd64 binary stays on `25.0.1`, the last version Oracle ships for that platform
 - [#2021](https://github.com/babashka/babashka/issues/2021): bump http-kit to 2.9.0-beta4, which fixes four security advisories
-- [#1728](https://github.com/babashka/babashka/issues/1728): Add `java.util.TreeMap`
+
 
 ## 1.13.219 (2026-07-27)
 
