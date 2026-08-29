@@ -2,7 +2,8 @@
 
 ## Status
 
-Proposed 2026-08-29. Not implemented. Builds on ADR 0003 (structs by
+Accepted 2026-08-29. Implemented on branch `field-access` of babashka/ffi
+(b0c8cc2). Builds on ADR 0003 (structs by
 value), ADR 0004 (argument order) and ADR 0005 (unions), and on the array
 layouts merged in babashka/ffi#14.
 
@@ -59,7 +60,10 @@ Semantics:
   `(write-field p curl-msg [:data :result] 0)` and
   `(write p curl-msg {... :data [:result 0]})` write the same bytes.
 - A bad path is an error naming the problem: no such member, an index past
-  the array's count, a path that continues past a scalar.
+  the array's count, a path that continues past a scalar. Not `nil`, as
+  `get-in` would give: a map's keys are open, a layout's members are
+  closed, so a member that is not there is a mistake in the program, and
+  `nil` could not be told from a `0` that was read.
 - Resolution is cached per `[layout path]`, bounded as the layout and codec
   caches are, so a call is a lookup plus the slot access.
 
@@ -76,10 +80,18 @@ silently, and a re-stated type. A bad path fails by name. The leaf reuses
 the existing codecs, so nothing is checked differently from `write`.
 Reads stay bounds-checked by the segment.
 
-**Performance.** One field instead of the whole struct: for the 33-slot
-`BoneInfo`, one slot read instead of a 179 ns decode (JVM). Path
-resolution is map lookups over the resolved layout, cached; no new
-`ValueLayout` access site, so no image cost beyond the walk. An accessor
+**Performance.** Measured on the JVM, best of five runs of two million,
+for the 33-slot `BoneInfo`:
+
+    read-field :parent                  26 ns
+    (:parent (read p bone))            138 ns   the whole struct
+    read :int 32                         2 ns   the offset by hand, which the JIT folds
+    read-field [:msgs 1 :data :result]  51 ns
+    write-field :parent                 35 ns   (write :int 3 32: 11 ns)
+
+The cost over the hand form is the `[layout path]` cache lookup; the cost
+saved over the whole-struct read is everything else. No new `ValueLayout`
+access site, so no image cost beyond the walk. An accessor
 form, `(field-reader layout path)` returning a function the way `cfn`
 hoists its work, would be faster still in a hot loop; it is additive and
 deferred until a benchmark asks for it.
