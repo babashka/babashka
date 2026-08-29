@@ -395,13 +395,18 @@
       (is (thrown-with-msg?
            Exception #"Wrong number of args \(1\)"
            (bb `(do ~ffi-require (ffi/alloc 8))))))
-    (testing "free refuses arena memory instead of crashing"
-      (is (= ["belongs to an arena" "belongs to an arena"]
+    (testing "there is no free: an arena or reinterpret owns every lifetime"
+      (is (nil? (bb `(do ~ffi-require (resolve 'ffi/free))))))
+    (testing "reinterpret hands a pointer to an arena with a deallocator"
+      (is (= [42 :released]
              (bb `(do ~ffi-require
-                      (let [msg# (fn [f#] (try (f#) (catch Exception e# (re-find #"belongs to an arena" (ex-message e#)))))]
-                        (with-open [a# (ffi/confined-arena)]
-                          [(msg# #(ffi/free (ffi/alloc a# 8)))
-                           (msg# #(ffi/free (ffi/alloc (ffi/auto-arena) 8)))])))))))))
+                      (let [called# (atom nil)
+                            p# (with-open [a# (ffi/confined-arena)]
+                                 (let [seg# (ffi/alloc (ffi/global-arena) 8)
+                                       view# (ffi/reinterpret seg# 8 a# (fn [_#] (reset! called# :released)))]
+                                   (ffi/write view# :int64 42)
+                                   (ffi/read view# :int64)))]
+                        [p# @called#]))))))))
 
 (deftest memory-test
   (when-not skip?
