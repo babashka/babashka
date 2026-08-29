@@ -19,9 +19,10 @@
 ;; - variadic downcalls (order preserved, not sorted): arity 2..5 over
 ;;   {long,double} with <= 2 doubles, boundary 1..3, returns void/long
 ;; - upcalls: a longs, b doubles with a+b <= 4 and b <= 2, returns
-;;   void/long/double
-;; - reflection: clojure.lang.IFn.invoke arities 0..4, for upcall
-;;   method handles (callbacks take at most 4 arguments)
+;;   void/long/double; pure-integer upcalls additionally up to arity 6
+;;   (FSEvents passes six, GLFW's key callback five)
+;; - reflection: clojure.lang.IFn.invoke arities 0..6, for upcall
+;;   method handles (callbacks take at most 6 arguments)
 ;;
 ;; Type names are JNI ("jlong", "jdouble", "jfloat"): fixed sizes on every
 ;; platform. C "long" is 32-bit on Windows and must not be used here.
@@ -91,24 +92,30 @@
      "options" {"firstVariadicArg" boundary}}))
 
 (def upcalls
-  ;; same family both modes: <= 4 args, <= 2 doubles, no float; Windows
-  ;; needs every ordering (callbacks do not sort there either)
-  (if windows?
-    (for [args (mapcat #(combos-n ["jlong" "jdouble"] %) (range 0 5))
-          :when (<= (count (filter #(= "jdouble" %) args)) 2)
-          ret ["void" "jlong" "jdouble"]]
-      {"returnType" ret "parameterTypes" (vec args)})
-    (for [a (range 0 5)
-          b (range 0 3)
-          :when (<= (+ a b) 4)
-          ret ["void" "jlong" "jdouble"]]
-      {"returnType" ret "parameterTypes" (shape a b 0)})))
+  ;; same family both modes: <= 4 args, <= 2 doubles, no float, plus
+  ;; pure-integer shapes of arity 5 and 6; Windows needs every ordering
+  ;; (callbacks do not sort there either), which for a pure-integer shape
+  ;; is the one ordering
+  (concat
+   (if windows?
+     (for [args (mapcat #(combos-n ["jlong" "jdouble"] %) (range 0 5))
+           :when (<= (count (filter #(= "jdouble" %) args)) 2)
+           ret ["void" "jlong" "jdouble"]]
+       {"returnType" ret "parameterTypes" (vec args)})
+     (for [a (range 0 5)
+           b (range 0 3)
+           :when (<= (+ a b) 4)
+           ret ["void" "jlong" "jdouble"]]
+       {"returnType" ret "parameterTypes" (shape a b 0)}))
+   (for [a (range 5 7)
+         ret ["void" "jlong" "jdouble"]]
+     {"returnType" ret "parameterTypes" (shape a 0 0)})))
 
 (def reflection
   ;; callbacks call the wrapped IFn through a bound MethodHandle; they take
-  ;; at most 4 arguments
+  ;; at most 6 arguments
   [{"type" "clojure.lang.IFn"
-    "methods" (for [n (range 0 5)]
+    "methods" (for [n (range 0 7)]
                 {"name" "invoke"
                  "parameterTypes" (vec (repeat n "java.lang.Object"))})}])
 
