@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems. See ADR 0010
+- Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems
 - Building babashka from source no longer fails when a single upstream host is unreachable: the musl and zlib tarballs are fetched with retries, from mirrors, and cached per machine
 - SCI caches resolved JVM instance methods, static methods, constructors and fields per call site for performance
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries. The namespace is built in and the same library runs on JVM Clojure: see the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
