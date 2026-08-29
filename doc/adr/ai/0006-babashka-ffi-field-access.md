@@ -1,4 +1,4 @@
-# ADR 0006: Read and write one member of a layout by name or path
+# ADR 0006: Access one member of a layout by name or path
 
 ## Status
 
@@ -33,19 +33,39 @@ unions, where the member name is the only thing that fixes the type
 
 ## Decision
 
-Two functions. The place is a member name, or a path of member names and
-array indices; a name is a one-element path.
+Two functions that each return a function. The place is a member name, or
+a path of member names and array indices; a name is a one-element path.
+The path is resolved when the function is made; the function it returns
+only accesses.
 
 ```clojure
-(ffi/read-field p layout path)          ; the value of that member, decoded as its type
-(ffi/write-field p layout path v)       ; writes v there, encoded as its type; returns nil
+(ffi/field-reader layout path)          ; -> (fn [p]), the member decoded as its type
+(ffi/field-writer layout path)          ; -> (fn [p v]), v encoded as its type, returns nil
 
-(ffi/read-field p bone :parent)                       ;=> 7
-(ffi/read-field p curl-msg [:data :result])           ; struct offset 16, union member :result, as :int
-(ffi/read-field p outer [:msgs 1 :data :result])      ; through an array index
-(ffi/write-field p outer [:msgs 1 :data :result] 0)
-(ffi/write-field p outer [:msgs 1] {:msg 1 :easy nil :data [:result 0]})   ; a non-leaf: the struct's encoder
+(def bone-parent (ffi/field-reader bone :parent))
+(bone-parent p)                                            ;=> 7
+((ffi/field-reader curl-msg [:data :result]) p)            ; struct offset 16, union member :result, as :int
+((ffi/field-reader outer [:msgs 1 :data :result]) p)       ; through an array index
+((ffi/field-writer outer [:msgs 1 :data :result]) p 0)
+((ffi/field-writer outer [:msgs 1]) p {:msg 1 :easy nil :data [:result 0]})   ; a non-leaf: the struct's encoder
 ```
+
+There is no per-call form. The rule this API follows, stated here for the
+first time: **a function with a resolve step is made once and kept, and
+has no per-call twin.** `cfn` resolves a symbol and builds a call;
+`field-reader` and `field-writer` resolve a path and pick a codec. `read`
+and `write` stay as the per-call primitives: for a scalar type there is
+nothing to resolve (a keyword is a `case` dispatch), and for a whole layout
+they are the one-off operation itself, fill a struct and hand it to C. A
+one-off member access is a `let`:
+
+```clojure
+(let [parent (ffi/field-reader bone :parent)]
+  (parent p))
+```
+
+which costs the same as a per-call function would, since both do the one
+cached lookup; from the second use on the accessor wins.
 
 Semantics:
 
@@ -59,8 +79,9 @@ Semantics:
   names the member, so `write-field` needs no pair on this route:
   `(write-field p curl-msg [:data :result] 0)` and
   `(write p curl-msg {... :data [:result 0]})` write the same bytes.
-- A bad path is an error naming the problem: no such member, an index past
-  the array's count, a path that continues past a scalar. Not `nil`, as
+- A bad path is an error when the function is made, naming the problem:
+  no such member, an index past the array's count, a path that continues
+  past a scalar. Not `nil`, as
   `get-in` would give: a map's keys are open, a layout's members are
   closed, so a member that is not there is a mistake in the program, and
   `nil` could not be told from a `0` that was read.
@@ -83,15 +104,16 @@ Reads stay bounds-checked by the segment.
 **Performance.** Measured on the JVM, best of five runs of two million,
 for the 33-slot `BoneInfo`:
 
-    read-field :parent                  26 ns
-    (:parent (read p bone))            138 ns   the whole struct
-    read :int 32                         2 ns   the offset by hand, which the JIT folds
-    read-field [:msgs 1 :data :result]  51 ns
-    write-field :parent                 35 ns   (write :int 3 32: 11 ns)
+    hoisted reader, (parent p)                6-19 ns   (JIT-dependent)
+    (let [r (field-reader ..)] (r p)), once     31 ns   the lookup, same as a per-call form
+    (let [r ..] (r p) (r p) (r p))              33 ns   against 85 for three per-call reads
+    (:parent (read p bone)), the whole struct  138 ns
+    read :int 32, the offset by hand             2 ns   the JIT folds a constant offset
 
-The cost over the hand form is the `[layout path]` cache lookup; the cost
-saved over the whole-struct read is everything else. No new `ValueLayout`
-access site, so no image cost beyond the walk. An accessor
+Native image, where nothing folds: hoisted reader in the region of the
+hand read (102 ns), the whole-struct read 1499 ns. The accessor is never
+worse than a per-call form at any use count, which is what made the
+per-call form unnecessary. No new `ValueLayout` access site. An accessor
 form, `(field-reader layout path)` returning a function the way `cfn`
 hoists its work, would be faster still in a hot loop; it is additive and
 deferred until a benchmark asks for it.
@@ -102,7 +124,9 @@ name and a path. Byte-offset addition, the accessor form, and a
 touching these two.
 
 **Tradition.** Every FFI with named layouts reads and writes a member by
-name, and the two that model layouts as data also model the path as data:
+name, and the two that model layouts as data also model the path as data.
+The resolve-once shape is the JDK's own: `layout.varHandle(path...)` is
+obtained once and then used, and it is what `cfn` already does here:
 
 | prior art | read by name | write by name | nested path |
 |---|---|---|---|
@@ -123,6 +147,12 @@ resolved by FFM to the same byte: `byteOffset` of
 
 ## Alternatives not taken
 
+- **A per-call form, `(read-field p layout path)` / `(write-field p layout
+  path v)`.** Built first, then removed before merge. Measured: a `let`
+  that makes the accessor and uses it once costs the same, and every
+  further use is nearly free, so the per-call form had no case where it
+  won. It would also have been the one function in the namespace that
+  resolves on every call, against `cfn`. See the rule under Decision.
 - **`get` / `get-in` / `assoc-in`.** The pure-data names for an effectful
   operation on native memory, with a signature that cannot match
   (`(get m k)` has no layout and has a not-found arity), and they shadow
@@ -148,6 +178,8 @@ resolved by FFM to the same byte: `byteOffset` of
 ## Consequences
 
 - The last place the API says "compute the offset yourself" goes away.
+- The API has a stated rule for resolve-once functions, which any later
+  addition follows: no per-call twin.
 - `babashka.impl.ffi` exposes the two vars through `copy-ns`; the
   library's API.md test and bb's parity test guard the surface.
 - The guide's union section shows `read-field` as the normal way to read
