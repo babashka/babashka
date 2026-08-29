@@ -110,8 +110,13 @@ for the 33-slot `BoneInfo`:
     (:parent (read p bone)), the whole struct  138 ns
     read :int 32, the offset by hand             2 ns   the JIT folds a constant offset
 
-Native image, where nothing folds: hoisted reader in the region of the
-hand read (102 ns), the whole-struct read 1499 ns. The accessor is never
+Native image, where nothing folds, measured on the accessor build:
+
+    read :int 32, the offset by hand          101 ns
+    hoisted reader, (parent p)                102 ns   equal to the hand read
+    hoisted reader, [:msgs 1 :data :result]   102 ns   depth is free once resolved
+    (let [r (field-reader ..)] (r p)), once   157 ns   the lookup
+    (:parent (read p bone)), the whole struct 1466 ns The accessor is never
 worse than a per-call form at any use count, which is what made the
 per-call form unnecessary. No new `ValueLayout` access site. An accessor
 form, `(field-reader layout path)` returning a function the way `cfn`
