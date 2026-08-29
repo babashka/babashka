@@ -573,7 +573,11 @@
            (bb `(do ~ffi-require (ffi/cfn "div" [:int :int] [:struct [[:a :int] [:a :int]]]))))))
     (testing "an unknown layout kind or an extra layout element is an error"
       (is (thrown-with-msg?
-           Exception #"unknown layout kind :array"
+           Exception #"unknown layout kind :matrix"
+           (bb `(do ~ffi-require (ffi/cfn "div" [[:matrix :int 4]] :void)))))
+      ;; an array is a known kind, and C passes one as a pointer
+      (is (thrown-with-msg?
+           Exception #"C passes an array as a pointer"
            (bb `(do ~ffi-require (ffi/cfn "div" [[:array :int 4]] :void)))))
       (is (thrown-with-msg?
            Exception #"is \[:struct fields\]"
