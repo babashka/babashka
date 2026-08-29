@@ -1045,6 +1045,18 @@
                           (ffi/sizeof [:struct [[(keyword (str "g" i#)) :int]]]))
                         (= 8 (ffi/sizeof [:struct [[:x :int] [:y :int]]]))))))))
 
+(deftest ffi-exports-test
+  ;; A public var of the library is invisible in babashka until the sci
+  ;; namespace lists it, and the library suite then skips its test, so a
+  ;; missing export leaves no trace. This compares the library on the
+  ;; classpath with what babashka exposes.
+  (when-not skip?
+    (let [library (set (map name (keys (ns-publics 'babashka.ffi))))
+          exposed (set (map name (bb `(do (require 'babashka.ffi)
+                                          (keys (ns-publics 'babashka.ffi))))))]
+      (is (empty? (sort (remove exposed library)))
+          "public vars of babashka.ffi that babashka.impl.ffi does not export"))))
+
 (deftest layout-kinds-in-sync-test
   (testing "runtime and hook layout kinds match"
     (let [kinds (fn [src]
