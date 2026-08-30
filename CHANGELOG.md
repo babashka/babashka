@@ -22,6 +22,7 @@ FFI:
 
 Tasks:
 
+- `:exec-args` can sit directly on a task, not only under `:cli`, the way `(exec ...)` already reads it. The bare key wins over the one under `:cli`. Before, it was ignored on an `:exec-fn` or `:cmd` task
 - A task's `:cli` `:exec-args` merge over the `:tasks` top level `:exec-args`. Before, the task's map replaced the top level's
 - A task's `:cli` spec adds to the runner-level `:tasks {:cli {:spec ...}}` instead of replacing it. An option from the runner level keeps its coercion and default, and `--help` lists it under `Inherited options`
 - A task with `:exec-fn` runs when another task `:depends` on it. Before, it did nothing
