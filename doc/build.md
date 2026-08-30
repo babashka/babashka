@@ -120,9 +120,14 @@ machine matches the released binary. `BABASHKA_STATIC=true` without
 A fully static binary runs anywhere, but it cannot load a shared library, so
 `babashka.ffi` is not supported in it.
 
+Three versions are pinned. `script/glibc_floor.sh` holds the glibc floor,
+2.28, which the install script mirrors in `min_glibc_version`.
+`script/setup-musl` builds musl 1.2.6 and zlib 1.2.13 from source.
+
 `script/verify_link` runs after each Linux build in CI. It fails the build
-when the binary links a shared library that the mode does not allow, misses
-the pinned zlib, or uses a glibc symbol that is newer than the floor.
+when the binary links a shared library that the mode does not allow, carries
+another zlib than the pinned one, uses a glibc symbol above the floor, or
+when the floor and `min_glibc_version` have drifted apart.
 
 ### Musl and zlib
 
