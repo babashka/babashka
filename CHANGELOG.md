@@ -37,6 +37,7 @@ Misc:
 
 - [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
 - Fix output of custom `clojure.pprint` dispatch functions
+- [#2054](https://github.com/babashka/babashka/issues/2054): a `proxy` of `java.io.Writer` supports the one-argument `write` and `append`, so binding `*out*` to it works. Interop on a proxied `Writer` or `Reader` finds their own methods instead of only the ones on `Closeable`
 - [#1728](https://github.com/babashka/babashka/issues/1728): Add `java.util.TreeMap`
 - Fix: the `%` parameters of a function literal inside a syntax quote are no longer namespace-resolved, through edamame 1.6.43
 - Building babashka from source no longer fails when one upstream host is unreachable. The build fetches the musl and zlib tarballs with retries, from mirrors, and caches them per machine
@@ -52,7 +53,6 @@ Upgrades:
 TODO before the release:
 
 - TODO: decide on branch `tasks-cli-bare-keys`: `:exec-args` directly on a task, not only under `:cli`
-- TODO: [#2054](https://github.com/babashka/babashka/issues/2054): `proxy` of `java.io.Writer` bound to `*out*` throws before user code runs. Fix or defer
 - TODO: `doc/build.md` documents only the static build. It must also document the three Linux link modes, static, static-except-glibc and fully dynamic, with their flags
 - TODO: babashka.ffi guide: one sentence that variadic and string calls are the slow paths, fixed calls about 70 ns
 - TODO: decide whether the announcement names the libffi fallback as roadmap

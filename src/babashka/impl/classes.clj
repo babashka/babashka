@@ -1013,6 +1013,12 @@
                                    org.jline.utils.NonBlockingReader
                                    (instance? org.jline.terminal.spi.TerminalProvider v)
                                    org.jline.terminal.spi.TerminalProvider
+                                   ;; Writer and Reader extend Closeable, which
+                                   ;; has no read or write: check them first
+                                   (instance? java.io.Writer v)
+                                   java.io.Writer
+                                   (instance? java.io.Reader v)
+                                   java.io.Reader
                                    (instance? java.io.Closeable v)
                                    java.io.Closeable
                                    ;; with-open closes an FFI arena through AutoCloseable.
