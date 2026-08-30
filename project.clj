@@ -41,8 +41,8 @@
                  [org.jsoup/jsoup "1.22.2"]
                  [io.github.nextjournal/markdown "0.7.225"]
                  [borkdude/graal.locking "0.0.2"]
-                 [org.jline/jline-terminal-ffm "4.3.1"]
-                 [org.jline/jline-terminal "4.3.1"
+                 [org.jline/jline-terminal-ffm "4.4.0"]
+                 [org.jline/jline-terminal "4.4.0"
                   :exclusions [;; this saves 1mb of native-image size
                                org.jline/jline-native]]
                  #_[org.jline/jansi "3.30.6"
