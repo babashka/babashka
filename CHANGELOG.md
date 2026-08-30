@@ -53,7 +53,6 @@ Upgrades:
 TODO before the release:
 
 - TODO: decide on branch `tasks-cli-bare-keys`: `:exec-args` directly on a task, not only under `:cli`
-- TODO: `doc/build.md` documents only the static build. It must also document the three Linux link modes, static, static-except-glibc and fully dynamic, with their flags
 - TODO: babashka.ffi guide: one sentence that variadic and string calls are the slow paths, fixed calls about 70 ns
 - TODO: decide whether the announcement names the libffi fallback as roadmap
 -->
