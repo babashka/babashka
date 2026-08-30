@@ -50,17 +50,30 @@ args=("-jar" "$BABASHKA_JAR"
 
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 BABASHKA_MUSL=${BABASHKA_MUSL:-}
+BABASHKA_FULLY_DYNAMIC=${BABASHKA_FULLY_DYNAMIC:-}
 
-if [ "$BABASHKA_STATIC" = "true" ]; then
-    if [ "$BABASHKA_MUSL" = "true" ]; then
-        args+=("--static")
-        args+=("--libc=musl"
-               # see https://github.com/oracle/graal/issues/3398
-               "-H:CCompilerOption=-Wl,-z,stack-size=2097152")
+if [ "$BABASHKA_STATIC" = "true" ] && [ "$BABASHKA_MUSL" = "true" ]; then
+    args+=("--static")
+    args+=("--libc=musl"
+           # see https://github.com/oracle/graal/issues/3398
+           "-H:CCompilerOption=-Wl,-z,stack-size=2097152")
+elif [ "$(uname -s)" = "Linux" ] && [ "$BABASHKA_FULLY_DYNAMIC" != "true" ]; then
+    # mostly static: everything linked statically except glibc
+    # see https://github.com/oracle/graal/issues/3737
+    args+=("-H:+UnlockExperimentalVMOptions")
+    args+=("-H:+StaticExecutableWithDynamicLibC")
+fi
+
+# Get the libffi archive for this build.
+# shellcheck source=script/libffi_archive.sh
+. script/libffi_archive.sh
+# Pass the feature setting to image initialization.
+args+=("-EBABASHKA_FEATURE_LIBFFI")
+if [ -n "$libffi_archive" ]; then
+    if [ "$(uname -s)" = "Darwin" ]; then
+        args+=("-H:NativeLinkerOption=-Wl,-force_load,$libffi_archive")
     else
-        # see https://github.com/oracle/graal/issues/3737
-        args+=("-H:+UnlockExperimentalVMOptions")
-        args+=("-H:+StaticExecutableWithDynamicLibC")
+        args+=("-H:NativeLinkerOption=-Wl,--whole-archive,$libffi_archive,--no-whole-archive")
     fi
 fi
 

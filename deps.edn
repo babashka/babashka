@@ -1,4 +1,4 @@
-{:paths ["src" "feature-xml"
+{:paths ["src" "ffi/src" "feature-xml"
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
          "feature-httpkit-client" "feature-httpkit-server"
@@ -48,7 +48,7 @@
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.4"}
         org.clojure/core.rrb-vector {:mvn/version "0.2.0"}
-        org.babashka/cli {:mvn/version "0.12.86"}
+        org.babashka/cli {:mvn/version "0.12.87"}
         org.babashka/http-client {:mvn/version "0.4.24"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.22.2"}
@@ -62,6 +62,10 @@
            {:extra-deps {babashka/babashka {:local/root "."}}
             :main-opts ["-m" "babashka.main"]
             :jvm-opts ["--enable-native-access=ALL-UNNAMED" "-Duser.language=en" "-Duser.country=US"]}
+           ;; macOS only: GLFW/Cocoa windows (e.g. raylib over babashka.ffi)
+           ;; need Java main on the first thread: clojure -M:babashka/dev:macos
+           :macos
+           {:jvm-opts ["-XstartOnFirstThread"]}
            :profile
            {:extra-deps
             {com.clojure-goes-fast/clj-async-profiler {:mvn/version "0.5.0"}}
@@ -70,7 +74,7 @@
                        "-Dclojure.compiler.direct-linking=true"]
             :main-opts ["-m" "babashka.profile"]}
            :lib-tests
-           {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
+           {:extra-paths ["process/src" "process/test" "ffi/test" "test-resources/lib_tests"]
             :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
                          #_#_org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
                                                       :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}

@@ -151,7 +151,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                  platform
                                  (if (= "aarch64" arch)
                                    "aarch64-"
-                                   ""))]
+                                   ""))
+        ;; The static musl binary cannot load shared libraries.
+        musl-static?     (and static? musl? (not= "aarch64" arch))]
     (gen-job shorted?
              (merge
               executor-conf
@@ -162,8 +164,6 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                :steps (gen-steps shorted?
                                  (filter some?
                                          [:checkout
-                                          (when (contains? #{"linux" "linux-aarch64"} platform)
-                                            (run "Check max glibc version" "script/check_glibc.sh"))
                                           {:attach_workspace {:at "/tmp"}}
                                           (run "Pull Submodules" "git submodule init\ngit submodule update")
                                           {:restore_cache
@@ -175,14 +175,28 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                             (run "Install Leiningen" "script/install-leiningen"))
                                           (when (not= "mac" platform)
                                             (run "Install native dev tools"
-                                              (if (and static? musl? (not= "aarch64" arch))
-                                                (str base-install-cmd "\nsudo -E script/setup-musl")
-                                                base-install-cmd)))
+                                              ;; the cache directory belongs to
+                                              ;; this user: the setup scripts run
+                                              ;; under sudo, and a directory root
+                                              ;; creates locks out the later build
+                                              ;; step. sudo -E keeps the variable.
+                                              (str base-install-cmd
+                                                   "\nexport BABASHKA_TARBALL_CACHE=\"$HOME/.cache/babashka-tarballs\""
+                                                   "\nmkdir -p \"$BABASHKA_TARBALL_CACHE\""
+                                                   (if musl-static?
+                                                     "\nsudo -E script/setup-musl"
+                                                     ;; Other Linux builds link zlib statically.
+                                                     "\nsudo -E script/setup-zlib"))))
+                                          ;; after dev tools: the probe needs cc
+                                          (when (not= "mac" platform)
+                                            (run "Check glibc floor" "script/check_glibc.sh"))
                                           (run "Download GraalVM" "script/install-graalvm")
                                           #_(run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'")
                                           (run "Build binary" (if (= "aarch64" arch)
                                                                 "script/uberjar\nscript/compile -H:PageSize=64K # --pgo=default.iprof"
                                                                 "script/uberjar\nscript/compile # --pgo=default.iprof") "30m")
+                                          (when (not= "mac" platform)
+                                            (run "Verify linking" "script/verify_link"))
                                           (run "Release" ".circleci/script/release")
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}
@@ -191,7 +205,11 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                             (str/join "\n" ["export BABASHKA_RELEASE=true"
                                                             ".circleci/script/release"]))
                                           {:save_cache
-                                           {:paths ["~/.m2" "~/graalvm"]
+                                           {:paths ["~/.m2" "~/graalvm"
+                                                    ;; source tarballs, so a
+                                                    ;; dead upstream only hurts
+                                                    ;; on a cache miss
+                                                    "~/.cache/babashka-tarballs"]
                                             :key   cache-key}}
                                           {:store_artifacts {:path        "/tmp/release"
                                                              :destination "release"}}

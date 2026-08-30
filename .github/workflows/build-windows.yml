@@ -63,6 +63,7 @@ jobs:
         uses: DeLaGuardo/setup-clojure@13.4
         with:
           cli: latest
+          bb: latest
           # lein: latest -- skipped because this uses some PS bullshit
 
       - name: Babashka version
@@ -79,6 +80,10 @@ jobs:
               call lein self-install
 
               set GRAALVM_HOME=%JAVA_HOME%
+
+              rem ordered FFI shapes: the Win64 ABI assigns registers by position
+              call bb script\gen_ffi_metadata.clj windows
+
               call script/uberjar.bat
 
               call script/compile.bat
@@ -109,5 +114,9 @@ jobs:
         run: |
           set BABASHKA_CLASSPATH=
           set BABASHKA_TEST_ENV=native
+          rem The struct tests build a small C library and need cl on PATH.
+          rem Find MSVC with vswhere, as native-image does.
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do set VSPATH=%%i
+          if defined VSPATH call "%VSPATH%\VC\Auxiliary\Build\vcvars64.bat"
           call script/test.bat :windows || exit /B 1
           call script/run_lib_tests.bat || exit /B 1

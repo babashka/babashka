@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+# Builds a pinned static zlib for builds that link zlib into the binary
+# via -H:+StaticExecutableWithDynamicLibC. The version follows the zlib in
+# the musl toolchain that the setup-graalvm GitHub action installs, so both
+# build paths bundle the same one. Keep it equal to script/setup-musl.
+
+set -euo pipefail
+
+# shellcheck source=script/fetch_tarball.sh
+. "$(dirname "${BASH_SOURCE[0]:-$0}")/fetch_tarball.sh"
+
+ZLIB_VERSION="1.2.13"
+ZLIB_SHA256="b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30"
+
+fetch_tarball "zlib-${ZLIB_VERSION}.tar.gz" "$ZLIB_SHA256" \
+    "https://zlib.net/fossils/zlib-${ZLIB_VERSION}.tar.gz" \
+    "https://github.com/madler/zlib/releases/download/v${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz"
+
+tar xf "zlib-${ZLIB_VERSION}.tar.gz"
+
+cd "zlib-${ZLIB_VERSION}"
+./configure --static --prefix="/usr/local"
+make
+make install
+cd ..
+
+# Shadow the distro libz.a so the linker picks the pinned one
+multiarch=$(gcc -print-multiarch)
+install -Dm644 "/usr/local/lib/libz.a" "/usr/lib/$multiarch/libz.a"

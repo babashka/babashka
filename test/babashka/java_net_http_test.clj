@@ -515,6 +515,49 @@
                    contents (slurp temp-file-path)]
                (str/includes? contents "babashka")))))))
 
+;; Decompression
+
+(def ^:dynamic *gzip-port* 1235)
+
+(def gzip-body "babashka gzip decompression")
+
+(defn gzip-bytes ^bytes [^String s]
+  (let [bos (java.io.ByteArrayOutputStream.)]
+    (with-open [gos (java.util.zip.GZIPOutputStream. bos)]
+      (.write gos (.getBytes s "UTF-8")))
+    (.toByteArray bos)))
+
+(defn gzip-handler [_req]
+  {:status 200
+   :headers {"Content-Encoding" "gzip"
+             "Content-Type" "text/plain"}
+   :body (java.io.ByteArrayInputStream. (gzip-bytes gzip-body))})
+
+(defmacro with-gzip-server [& body]
+  `(let [s# (httpkit.server/run-server gzip-handler {:port ~*gzip-port*})]
+     (try ~@body (finally (s# :timeout 100)))))
+
+(deftest gzip-decompression-test
+  (with-gzip-server
+    (is (= ["gzip" gzip-body]
+           (bb
+            '(do
+               (ns net
+                 (:import
+                  (java.net URI)
+                  (java.net.http HttpClient
+                                 HttpRequest
+                                 HttpResponse$BodyHandlers)
+                  (java.util.zip GZIPInputStream)))
+
+               (let [req (-> (HttpRequest/newBuilder (URI. "http://localhost:1235"))
+                             (.GET)
+                             (.build))
+                     client (HttpClient/newHttpClient)
+                     res (.send client req (HttpResponse$BodyHandlers/ofInputStream))
+                     encoding (-> res (.headers) (.firstValue "content-encoding") (.orElse nil))]
+                 [encoding (slurp (GZIPInputStream. (.body res)))])))))))
+
 ;; WebSockets
 
 (defn ws-handler [{:keys [init] :as opts} req]

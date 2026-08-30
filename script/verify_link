@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+# Post-build check that a linux binary links the intended glibc and zlib.
+# The glibc floor comes from script/glibc_floor.sh; keep the zlib version
+# in sync with script/setup-zlib and script/setup-musl.
+
+set -euo pipefail
+
+. "$(dirname "$0")/glibc_floor.sh"
+
+bin="${1:-bb}"
+zlib_version="1.2.13"
+
+fail() {
+    echo "verify_link: $1" >&2
+    exit 1
+}
+
+# the install script mirrors the floor for its runtime fallback choice
+install_floor="$(grep -m1 '^min_glibc_version=' "$(dirname "$0")/../install" | grep -oE '[0-9]+\.[0-9]+')"
+if [ "$install_floor" != "$glibc_floor" ]; then
+    fail "install script min_glibc_version $install_floor does not match floor $glibc_floor"
+fi
+
+banners="$(grep -ao "inflate [0-9.]* Copyright" "$bin" | sort -u || true)"
+echo "zlib banners in $bin:"
+echo "$banners"
+
+needed=$(readelf -d "$bin" 2>/dev/null | grep NEEDED || true)
+
+if [ "${BABASHKA_FULLY_DYNAMIC:-}" != "true" ]; then
+    # exactly the pinned zlib and nothing else: a second banner means some
+    # dependency bundled its own copy
+    if [ "$banners" != "inflate $zlib_version Copyright" ]; then
+        fail "expected exactly zlib $zlib_version, found: ${banners:-none}"
+    fi
+    case "$needed" in
+        *libz*) fail "libz linked dynamically";;
+    esac
+fi
+
+if [ "${BABASHKA_MUSL:-}" = "true" ]; then
+    if [ -n "$needed" ]; then
+        fail "musl static binary has dynamic dependencies"
+    fi
+    echo "verify_link: fully static, zlib $zlib_version: OK"
+    exit 0
+fi
+
+echo "dynamic dependencies:"
+echo "$needed"
+
+if [ "${BABASHKA_FULLY_DYNAMIC:-}" != "true" ]; then
+    allowed='libc\.so|libm\.so|libpthread\.so|libdl\.so|librt\.so|ld-linux'
+    if echo "$needed" | grep -v '^$' | grep -Ev "$allowed" | grep -q .; then
+        fail "unexpected dynamic dependency"
+    fi
+fi
+
+max_found=$(max_glibc_symbol "$bin")
+echo "max glibc symbol version: ${max_found:-none} (floor $glibc_floor)"
+if ! printf '%s\n%s' "$max_found" "$glibc_floor" | sort -C -V; then
+    fail "glibc symbol version $max_found exceeds floor $glibc_floor"
+fi
+echo "verify_link: OK"

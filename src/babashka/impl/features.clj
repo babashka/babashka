@@ -28,9 +28,14 @@
 (def lanterna? (= "true" (System/getenv "BABASHKA_FEATURE_LANTERNA")))
 (def spec-alpha? (= "true" (System/getenv "BABASHKA_FEATURE_SPEC_ALPHA")))
 (def rrb-vector? (= "true" (System/getenv "BABASHKA_FEATURE_RRB_VECTOR")))
+;; script/libffi_archive.sh sets this value when the build links libffi.
+(def libffi?         (= "true" (System/getenv "BABASHKA_FEATURE_LIBFFI")))
 
 (when xml?
   (require '[babashka.impl.xml]))
+
+(when libffi?
+  (require '[babashka.impl.libffi]))
 
 (when yaml?
   (require '[babashka.impl.yaml]

@@ -1,0 +1,48 @@
+name: freebsd install script, dynamic binary and FFI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, ffi-lib64]
+    paths:
+      - install
+      - src/babashka/ffi.clj
+      - .github/workflows/freebsd.yml
+
+jobs:
+  linuxulator:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run linux bb under the Linuxulator
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "14.3"
+          usesh: true
+          prepare: |
+            pkg install -y bash curl
+            sysrc linux_enable=YES
+            service linux start
+            kldstat
+            pkg install -y linux_base-rl9
+          run: |
+            set -ex
+            # no --dynamic: the script must detect the Linuxulator and pick
+            # the dynamic binary by itself
+            bash install --dev-build --dir . 2>&1 | tee install.log
+            grep -q 'linux-amd64.tar.gz' install.log
+            if grep -q 'static' install.log; then exit 1; fi
+            ./bb --version
+            ./bb -e '(+ 1 2 3)'
+            # the linux base ships zlib in /compat/linux/usr/lib64; the
+            # Linuxulator translates the /usr/lib64 probe to that path
+            ls -l /compat/linux/usr/lib64/libz.so.1
+            cat > /tmp/ffi_test.clj <<'EOF'
+            (require '[babashka.ffi :as ffi])
+            (def z (ffi/load-system-library "z"))
+            (println "loaded from:" (:path z))
+            (println "zlib version:" ((ffi/cfn z "zlibVersion" [] :string)))
+            EOF
+            ./bb /tmp/ffi_test.clj

@@ -175,6 +175,20 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
+# The feature profile puts the libffi bindings (babashka.impl.libffi, a
+# @CFunction class) on the classpath for every build that may link libffi:
+# all but the musl static one and BABASHKA_LIBFFI=none. Whether the archive
+# is there is script/compile's question, see script/libffi_archive.sh: it
+# passes BABASHKA_FEATURE_LIBFFI to the builder, and without it the bindings
+# stay unreachable, so an unused class in the jar costs nothing. This keeps
+# uberjar free of the libffi build, which the JVM test job has no compiler
+# for.
+if [ "${BABASHKA_MUSL:-}" = "true" ] || [ "${BABASHKA_LIBFFI:-}" = "none" ]; then
+    BABASHKA_LEIN_PROFILES+=",-feature/libffi"
+else
+    BABASHKA_LEIN_PROFILES+=",+feature/libffi"
+fi
+
 #lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" deps :tree
 #exit 0
 

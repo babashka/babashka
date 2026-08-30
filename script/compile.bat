@@ -26,6 +26,29 @@ if "%BABASHKA_SHA%"=="" (
     )
 )
 
+Rem Select the libffi archive. script\uberjar.bat must use the same setting.
+set "LIBFFI_ARG="
+if "%BABASHKA_LIBFFI%"=="none" goto :libffi_done
+set "LIBFFI_LIB=%BABASHKA_LIBFFI%"
+if "%LIBFFI_LIB%"=="" (
+  for /f "usebackq delims=" %%i in (`call script\setup-libffi.bat`) do set "LIBFFI_LIB=%%i"
+)
+if "%LIBFFI_LIB%"=="" (
+  if defined CI (
+    echo compile.bat: script\setup-libffi.bat produced no archive, and a CI build links libffi 1>&2
+    exit /b 1
+  )
+  echo compile.bat: script\setup-libffi.bat produced no archive, building without libffi 1>&2
+  echo compile.bat: set BABASHKA_LIBFFI to a library to link, or to none to skip this attempt 1>&2
+  goto :libffi_done
+)
+Rem quoted as a whole: a vcpkg under Program Files has a space in its path
+set LIBFFI_ARG="-H:NativeLinkerOption=/WHOLEARCHIVE:%LIBFFI_LIB%"
+:libffi_done
+Rem Pass the feature setting to image initialization.
+Rem "if defined", not a string compare: the value carries its own quotes
+if defined LIBFFI_ARG (set BABASHKA_FEATURE_LIBFFI=true) else (set BABASHKA_FEATURE_LIBFFI=false)
+
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
   "-H:Name=bb" ^
@@ -33,6 +56,8 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--verbose" ^
   "--no-fallback" ^
   "--install-exit-handlers" ^
+  %LIBFFI_ARG% ^
+  -EBABASHKA_FEATURE_LIBFFI ^
   %*
 
 if %errorlevel% neq 0 exit /b %errorlevel%

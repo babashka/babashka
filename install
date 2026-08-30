@@ -5,6 +5,7 @@ set -euo pipefail
 version=""
 checksum=""
 static_binary="false"
+static_binary_override=""
 default_install_dir="/usr/local/bin"
 install_dir="$default_install_dir"
 download_dir=""
@@ -14,7 +15,7 @@ print_help() {
     echo "Installs latest (or specific) version of babashka. Installation directory defaults to /usr/local/bin."
     echo -e
     echo "Usage:"
-    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>] [--checksum <checksum>] [--static]"
+    echo "install [--dir <dir>] [--download-dir <download-dir>] [--version <version>] [--checksum <checksum>] [--static] [--dynamic]"
     echo -e
     echo "Defaults:"
     echo " * Installation directory: ${default_install_dir}"
@@ -31,6 +32,62 @@ print_help() {
 
 has() {
   command -v "$1" >/dev/null 2>&1
+}
+
+# glibc floor of the dynamic linux build; mirrors script/glibc_floor.sh,
+# script/verify_link checks the two stay equal
+min_glibc_version="2.28"
+
+# Pick the static binary when the dynamic one cannot run: musl libcs,
+# glibc older than the build floor, FreeBSD without a recent Linuxulator.
+default_linux_static() {
+    local loader target glibc_version
+    case "$(uname -s)" in
+        Linux*)
+            loader=/lib64/ld-linux-x86-64.so.2
+            target=/bin/sh
+            ;;
+        FreeBSD*)
+            # the Linuxulator only translates paths for linux binaries, so
+            # from this shell the compat paths must be spelled out
+            loader=/compat/linux/lib64/ld-linux-x86-64.so.2
+            target=/compat/linux/bin/sh
+            ;;
+        *)
+            echo "true"
+            return
+            ;;
+    esac
+    if compgen -G "/lib/ld-musl-*" >/dev/null 2>&1; then
+        echo "true"
+        return
+    fi
+    # the dynamic binary hardcodes this interpreter, absent on some systems
+    # and a stub that only prints an error on NixOS, so execute it
+    if ! "$loader" --verify "$target" >/dev/null 2>&1; then
+        echo "true"
+        return
+    fi
+    if [[ "$loader" == /compat/* ]]; then
+        # FreeBSD's getconf and ldd describe FreeBSD's libc, so ask the
+        # linux loader itself; glibc older than 2.33 lacks --version and
+        # correctly ends up below the floor
+        glibc_version="$("$loader" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+' | head -1)"
+    else
+        glibc_version="$(getconf GNU_LIBC_VERSION 2>/dev/null | awk '{print $2}')"
+        if [[ -z "$glibc_version" ]]; then
+            glibc_version="$(ldd --version 2>/dev/null | head -1 | awk '{print $NF}')"
+        fi
+    fi
+    if [[ -z "$glibc_version" ]]; then
+        echo "true"
+        return
+    fi
+    if printf '%s\n%s' "$min_glibc_version" "$glibc_version" | sort -C -V 2>/dev/null; then
+        echo "false"
+    else
+        echo "true"
+    fi
 }
 
 fetch() {
@@ -81,6 +138,12 @@ do
             ;;
         --static)
             static_binary="true"
+            static_binary_override="true"
+            shift
+            ;;
+        --dynamic)
+            static_binary="false"
+            static_binary_override="true"
             shift
             ;;
         --dev-build)
@@ -129,7 +192,7 @@ vernum=$(printf "%03d%03d%03d" "${VER[0]}" "${VER[1]}" "${VER[2]}")
 
 case "$(uname -m)" in
     aarch64) arch=aarch64
-             if [[ "$platform" == "linux" ]]; then
+             if [[ "$platform" == "linux" ]] && [[ -z "$static_binary_override" ]]; then
                  static_binary="true"
              fi
              ;;
@@ -140,9 +203,12 @@ case "$(uname -m)" in
            fi
            ;;
     *) arch=amd64
-       # always use static image on linux
-       if [[ "$platform" == "linux" ]]; then
-           static_binary="true"
+       # dynamic image by default on linux, static fallback for musl and old glibc
+       if [[ "$platform" == "linux" ]] && [[ -z "$static_binary_override" ]]; then
+           static_binary="$(default_linux_static)"
+           if [[ "$static_binary" == "true" ]]; then
+               echo "System cannot run the dynamic binary, using the static one"
+           fi
        fi
        ;;
 esac

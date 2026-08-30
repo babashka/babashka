@@ -40,16 +40,6 @@
                               (assoc ::test (:test %))
                               (dissoc :test)))))))
 
-(defn current-branch []
-  (or (System/getenv "APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH")
-      (System/getenv "APPVEYOR_REPO_BRANCH")
-      (System/getenv "CIRCLE_BRANCH")
-      (System/getenv "GITHUB_REF_NAME")
-      (System/getenv "CIRRUS_BRANCH")
-      (-> (sh "git" "rev-parse" "--abbrev-ref" "HEAD")
-          :out
-          str/trim)))
-
 (defn test-namespaces [& namespaces]
   (let [namespaces (seq (filter test-namespace? namespaces))]
     (when (seq namespaces)
@@ -75,9 +65,11 @@
                   (alter-meta! (resolve 'promesa.tests.core-test/compose-with-race-2) assoc :flaky true)
                   (alter-meta! (resolve 'promesa.tests.core-test/timeout-test-1) assoc :flaky true)))
               (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
+                                                              ;; upstream libs mark tests that need
+                                                              ;; the network with :integration
+                                                              :integration
                                                               :test-check-slow
-                                                              (fn [m]
-                                                                (and (:flaky m) (#{"main" "master"} (current-branch))))))
+                                                              :flaky))
                                              not))
               (let [m (apply t/run-tests [n])]
                 (swap! status (fn [status]
@@ -98,8 +90,8 @@
       (doseq [p test-paths]
         (add-classpath (str (fs/file git-dir p)))))
     (when-not (and skip-windows (windows?))
-      (if (and flaky (#{"main" "master"} (current-branch)))
-        (println "Skipping" tns "for main branch because it's marked flaky")
+      (if flaky
+        (println "Skipping" tns "because it's marked flaky")
         (swap! test-nss into tns))))
   ;; Bind *ns* to prevent libs from mutating it as a side effect (e.g.
   ;; cloverage's instrument evals (ns ...) forms from sample files).
@@ -128,6 +120,14 @@
   (require '[babashka.process] :reload)
   (System/setProperty "babashka.process.test.reload" "true")
   (test-namespaces 'babashka.process-test 'babashka.process-exec-test))
+
+;;;; babashka.ffi
+;; The library ships its own suite; run it against the built-in namespace.
+;; Unlike babashka.process, this one cannot be reloaded from source here: it
+;; is a skin over java.lang.foreign, and those classes are not exposed to the
+;; interpreter, so a :reload throws on the Arena import. The submodule source
+;; is covered by being compiled into the binary under test.
+(test-namespaces 'babashka.ffi-test)
 
 ;;;; clerk (native only - needs to run from Clerk's checkout dir)
 ;; Clerk tests shell out to a bb process in Clerk's gitlibs checkout.

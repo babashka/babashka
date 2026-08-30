@@ -7,7 +7,7 @@
         :url "https://github.com/babashka/babashka"}
   :license {:name "Eclipse Public License 1.0"
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
-  :source-paths ["src" "sci/src" "babashka.curl/src" "fs/src" "pods/src"
+  :source-paths ["src" "ffi/src" "sci/src" "babashka.curl/src" "fs/src" "pods/src"
                  "babashka.core/src"
                  "babashka.nrepl/src" "depstar/src"
                  "process/src" "process/resources"
@@ -36,7 +36,7 @@
                  [org.babashka/impl-graal-features "0.0.1"]
                  [rewrite-clj/rewrite-clj "1.2.55"]
                  [insn/insn "0.5.4"]
-                 [org.babashka/cli "0.12.86"]
+                 [org.babashka/cli "0.12.87"]
                  [org.babashka/http-client "0.4.24"]
                  [org.jsoup/jsoup "1.22.2"]
                  [io.github.nextjournal/markdown "0.7.225"]
@@ -54,7 +54,10 @@
                  [org.jline/jline-reader "4.3.1"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
-  :profiles {:feature/xml  {:source-paths ["feature-xml"]
+  :profiles {;; compile-time only: the SVM API for src-java/babashka/impl/FfiTrampoline.java;
+             ;; the native-image builder provides these classes at image build
+             :provided {:dependencies [[org.graalvm.sdk/nativeimage "25.0.2"]]}
+             :feature/xml  {:source-paths ["feature-xml"]
                             :dependencies [[org.clojure/data.xml "0.2.0-alpha11"]]}
              :feature/yaml {:source-paths ["feature-yaml"]
                             :dependencies [[clj-commons/clj-yaml "1.0.29"
@@ -96,6 +99,8 @@
                                     :dependencies [[org.clojure/data.priority-map "1.1.0"]]}
              :feature/rrb-vector {:source-paths ["feature-rrb-vector"]
                                   :dependencies [[org.clojure/core.rrb-vector "0.2.0"]]}
+             ;; This profile adds the libffi bindings.
+             :feature/libffi {:source-paths ["feature-libffi"]}
              :test/deps {:dependencies [[borkdude/rewrite-edn "0.4.6"]
                                         [com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                         [com.opentable.components/otj-pg-embedded "0.13.3"]

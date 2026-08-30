@@ -1015,6 +1015,9 @@
                                    org.jline.terminal.spi.TerminalProvider
                                    (instance? java.io.Closeable v)
                                    java.io.Closeable
+                                   ;; with-open closes an FFI arena through AutoCloseable.
+                                   (instance? java.lang.AutoCloseable v)
+                                   java.lang.AutoCloseable
                                    (instance? java.util.Collection v)
                                    java.util.Collection
                                    (instance? java.lang.Throwable v)
