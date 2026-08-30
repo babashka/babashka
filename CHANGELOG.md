@@ -12,35 +12,51 @@ A preview of the next release can be installed from
 FFI:
 
 - Add experimental [`babashka.ffi`](https://github.com/babashka/ffi): call C functions in shared libraries straight from babashka and JVM Clojure! See the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
-- Linux: dynamic binaries now require glibc 2.28. The install script selects the static binary on older systems
-- On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
+- Linux: dynamic binaries require glibc 2.28. The install script selects the static binary on older systems
+- On Linux, the install script installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
 - The dynamic binary for Linux amd64 links every library statically except glibc. It no longer needs `libz.so.1` at run time
 - On FreeBSD, the install script installs the dynamic binary when the Linuxulator has a linux_base with glibc 2.17 or newer, such as `linux_base-rl9`
-- The Linux binaries include zlib 1.2.13. The static binary uses musl 1.2.6. Both are pinned and built from source
+- The Linux binaries include zlib 1.2.13. The static binary uses musl 1.2.6. The build pins both versions and compiles them from source
 
-- SCI: call site caching for instance and static methods, constructors and fields. Up to 5x performance.
+- SCI: call site caching for instance and static methods, constructors and fields. Interop calls are up to 5x faster
 
 Tasks:
 
-- A task's `:cli` `:exec-args` add to the runner-level ones, its keys winning. Before, the task's map replaced the runner-level map
-- A task's own `:cli` spec no longer replaces the `:tasks {:cli {:spec ...}}` spec. An inherited option keeps its coercion and default, and shows in `--help` under `Inherited options:`
-- A task with `:exec-fn` now runs when another task names it in `:depends`. Before, it did nothing
-- Tasks: the options of a `:depends` task parse for the task that runs, and show under `Inherited options:` in `--help`
-- Tasks: the handler of a `:depends` task receives the options that it declared
-- Tasks: a CLI task cannot name a `:cmd` task in `:depends`, unless that task also has a `:task` body. A command tree has no single handler to run, and babashka reports this as an error
-- Tasks: `:cmd` may be a symbol naming a def of the command tree, like `:cli`. The def holds the tree as bb.edn would spell it, handlers as symbols
+- A task's `:cli` `:exec-args` merge over the `:tasks` top level `:exec-args`. Before, the task's map replaced the top level's
+- A task's `:cli` spec adds to the runner-level `:tasks {:cli {:spec ...}}` instead of replacing it. An option from the runner level keeps its coercion and default, and `--help` lists it under `Inherited options`
+- A task with `:exec-fn` runs when another task `:depends` on it. Before, it did nothing
+- Options declared by an `:exec-fn` task named in `:depends` also parse for the CLI task that runs, with their coercion and default. `--help` lists them under `Inherited options`
+- A `:depends` task's `:exec-fn` receives only the options that task declared, with its defaults, not everything the command line parsed
+- A CLI task cannot name a `:cmd` task in `:depends`, unless that task also has a `:task` body: nothing says which of its subcommands to run
+- `:cmd` can be a symbol naming a var that holds the command tree, like `:cli`. Its namespace loads on demand
+- Shell completion offers inherited options (via `:depends`) too
+- `bb tasks` and `--help` still describe a task when a dependency's namespace does not load. Running the task reports the error
 
 Misc:
 
 - [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
 - Fix output of custom `clojure.pprint` dispatch functions
 - [#1728](https://github.com/babashka/babashka/issues/1728): Add `java.util.TreeMap`
+- Fix: the `%` parameters of a function literal inside a syntax quote are no longer namespace-resolved, through edamame 1.6.43
+- Building babashka from source no longer fails when one upstream host is unreachable. The build fetches the musl and zlib tarballs with retries, from mirrors, and caches them per machine
+- Building from source: the `BABASHKA_DYNAMIC` build flag is `BABASHKA_FULLY_DYNAMIC`, because it named a different axis than the install script's `--dynamic`
 
 Upgrades:
 
 - Bump GraalVM to `25.0.4`. The macOS amd64 binary stays on `25.0.1`, the last version Oracle ships for that platform
 - [#2021](https://github.com/babashka/babashka/issues/2021): bump http-kit to 2.9.0-beta4, which fixes four security advisories
+- Bump babashka.cli to 0.12.86: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options
 
+<!--
+TODO before the release:
+
+- TODO: release babashka.cli with its Unreleased entries: the fish snippet's `--keep-order`, and a command's `:exec-args` winning over its ancestors'. Bump it here in `deps.edn`, `project.clj` and `resources/META-INF/babashka/deps.edn`. Its CHANGELOG also lacks a `0.12.86` heading
+- TODO: decide on branch `tasks-cli-bare-keys`: `:exec-args` directly on a task, not only under `:cli`
+- TODO: [#2054](https://github.com/babashka/babashka/issues/2054): `proxy` of `java.io.Writer` bound to `*out*` throws before user code runs. Fix or defer
+- TODO: `doc/build.md` documents only the static build. It must also document the three Linux link modes, static, static-except-glibc and fully dynamic, with their flags
+- TODO: babashka.ffi guide: one sentence that variadic and string calls are the slow paths, fixed calls about 70 ns
+- TODO: decide whether the announcement names the libffi fallback as roadmap
+-->
 
 ## 1.13.219 (2026-07-27)
 
