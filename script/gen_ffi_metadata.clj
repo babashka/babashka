@@ -35,8 +35,9 @@
 ;;   downcall handles are interpreted in a native image (~3.4us).
 ;; - src/babashka/impl/ffi_trampolines.clj: shape key -> builder fn map used
 ;;   by babashka.ffi's cfn on the native image.
-;; Variadic calls are excluded (a fixed-convention pointer call has the same
-;; Apple arm64 variadic trap) and stay on FFM.
+;; A trampoline calls with the fixed convention, which is the wrong one for a
+;; variadic function on Apple arm64, so variadic calls get no trampoline and
+;; go through libffi.
 (require '[cheshire.core :as json]
          '[clojure.string :as str])
 
