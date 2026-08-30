@@ -80,6 +80,12 @@ If libffi setup fails, a local build prints a warning and continues without
 libffi. A CI build fails. `bb describe` shows the linked version under
 `:libffi/version`. The value is `nil` if the build has no libffi.
 
+A distribution package usually builds in a sandbox without network access, so
+`script/setup-libffi` cannot fetch the source. Set `BABASHKA_LIBFFI` to the
+static archive the distribution ships, or to `none` to build without libffi on
+purpose. A binary without libffi still has `babashka.ffi`, but a call shape
+outside the compiled set throws instead of going through libffi.
+
 ### Alternative: Build inside Docker
 
 To build a Linux version of babashka, you can use `docker build`, enabling the
