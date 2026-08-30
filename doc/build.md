@@ -118,7 +118,7 @@ machine matches the published binary. `BABASHKA_STATIC=true` without
 `BABASHKA_MUSL=true` builds the default.
 
 A fully static binary runs anywhere, but it cannot load a shared library, so
-it has no `babashka.ffi`.
+`babashka.ffi` is not supported in it.
 
 The install script has a `--dynamic` flag that selects the mostly static
 artifact, and a `--static` flag that selects the musl one. The flag names
