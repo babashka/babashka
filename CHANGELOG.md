@@ -45,12 +45,11 @@ Upgrades:
 
 - Bump GraalVM to `25.0.4`. The macOS amd64 binary stays on `25.0.1`, the last version Oracle ships for that platform
 - [#2021](https://github.com/babashka/babashka/issues/2021): bump http-kit to 2.9.0-beta4, which fixes four security advisories
-- Bump babashka.cli to 0.12.86: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options
+- Bump babashka.cli to 0.12.87: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options, the command named on the command line wins over the `:exec-args` of its ancestors, and the fish completion snippet keeps the emitted option order
 
 <!--
 TODO before the release:
 
-- TODO: release babashka.cli with its Unreleased entries: the fish snippet's `--keep-order`, and a command's `:exec-args` winning over its ancestors'. Bump it here in `deps.edn`, `project.clj` and `resources/META-INF/babashka/deps.edn`. Its CHANGELOG also lacks a `0.12.86` heading
 - TODO: decide on branch `tasks-cli-bare-keys`: `:exec-args` directly on a task, not only under `:cli`
 - TODO: [#2054](https://github.com/babashka/babashka/issues/2054): `proxy` of `java.io.Writer` bound to `*out*` throws before user code runs. Fix or defer
 - TODO: `doc/build.md` documents only the static build. It must also document the three Linux link modes, static, static-except-glibc and fully dynamic, with their flags
