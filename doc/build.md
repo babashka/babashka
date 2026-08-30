@@ -102,10 +102,31 @@ by adding `--build-arg BABASHKA_XMX="-J-Xmx8g"`
 
 Run `script\uberjar.bat` followed by `script\compile.bat`.
 
-## Static
+## Link modes on Linux
 
-To compile babashka as a static binary for linux, set the `BABASHKA_STATIC`
-environment variable to `true`.
+A Linux build links its libraries in one of three ways. Set the environment
+variables before `script/compile`.
+
+| Link mode | Build | Runtime dependency | Published artifact |
+|---|---|---|---|
+| mostly static | the default | glibc | `linux-amd64`, `linux-aarch64-static` |
+| fully static, musl | `BABASHKA_STATIC=true` and `BABASHKA_MUSL=true` | none | `linux-amd64-static` |
+| fully dynamic | `BABASHKA_FULLY_DYNAMIC=true` | glibc, and the system libraries | not published |
+
+The default links everything statically except glibc, so a build on your own
+machine matches the published binary. `BABASHKA_STATIC=true` without
+`BABASHKA_MUSL=true` builds the default.
+
+A fully static binary runs anywhere, but it cannot load a shared library, so
+it has no `babashka.ffi`.
+
+The install script has a `--dynamic` flag that selects the mostly static
+artifact, and a `--static` flag that selects the musl one. The flag names
+predate this table, and they name published artifacts, not link modes.
+
+`script/verify_link` runs after each Linux build in CI. It fails the build
+when the binary links a shared library that the mode does not allow, misses
+the pinned zlib, or uses a glibc symbol that is newer than the floor.
 
 ### Musl and zlib
 
