@@ -260,6 +260,17 @@
                              (close []))]
                      {:appended (do (.append w \x) (.append w "y") (str sb))
                       :same-writer (identical? w (.append w ""))})))))))
+  (testing "interop on a proxied Reader finds read, not only the Closeable methods"
+    (is (= [\a 2]
+           (bb (with-out-str
+                 (clojure.pprint/pprint
+                  '(let [r (proxy [java.io.Reader] []
+                             (read
+                               ([] (int \a))
+                               ([cbuf] 1)
+                               ([cbuf off len] 2))
+                             (close []))]
+                     [(char (.read r)) (.read r (char-array 4) 0 4)])))))))
   (testing "an implemented append is used instead"
     (is (= "APPENDED:z"
            (bb (with-out-str
