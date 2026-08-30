@@ -121,8 +121,14 @@ A fully static binary runs anywhere, but it cannot load a shared library, so
 `babashka.ffi` is not supported in it.
 
 Three versions are pinned. `script/glibc_floor.sh` holds the glibc floor,
-2.28, which the install script mirrors in `min_glibc_version`.
-`script/setup-musl` builds musl 1.2.6 and zlib 1.2.13 from source.
+2.28, which the install script mirrors in `min_glibc_version`. musl is 1.2.6
+and zlib is 1.2.13.
+
+`script/compile` gets libffi itself: it runs `script/setup-libffi`, which
+fetches the pinned source and builds a static archive. zlib is not automatic.
+Run `sudo script/setup-zlib` before a mostly static build, or
+`sudo script/setup-musl` before a musl build, which builds both. Without
+that step the binary links whatever zlib the system has, which CI rejects.
 
 `script/verify_link` runs after each Linux build in CI. It fails the build
 when the binary links a shared library that the mode does not allow, carries
