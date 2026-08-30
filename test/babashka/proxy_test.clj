@@ -219,23 +219,27 @@
 
 (deftest writer-test
   (testing "binding *out* to a proxied Writer, which println and prn write to"
+    ;; println and prn end lines with the platform newline, so normalize
+    ;; before comparing
     (is (= {:out "hello\n{:a 1}\n" :flushed true :closed true}
-           (bb (with-out-str
-                 (clojure.pprint/pprint
-                  '(let [chunks (atom [])
-                         flushed (atom false)
-                         closed (atom false)
-                         w (proxy [java.io.Writer] []
-                             (write [s] (swap! chunks conj s))
-                             (flush [] (reset! flushed true))
-                             (close [] (reset! closed true)))]
-                     (binding [*out* w]
-                       (println "hello")
-                       (prn {:a 1}))
-                     (.close w)
-                     {:out (apply str @chunks)
-                      :flushed @flushed
-                      :closed @closed})))))))
+           (update
+            (bb (with-out-str
+                  (clojure.pprint/pprint
+                   '(let [chunks (atom [])
+                          flushed (atom false)
+                          closed (atom false)
+                          w (proxy [java.io.Writer] []
+                              (write [s] (swap! chunks conj s))
+                              (flush [] (reset! flushed true))
+                              (close [] (reset! closed true)))]
+                      (binding [*out* w]
+                        (println "hello")
+                        (prn {:a 1}))
+                      (.close w)
+                      {:out (apply str @chunks)
+                       :flushed @flushed
+                       :closed @closed}))))
+            :out test-utils/normalize))))
   (testing "a three-argument write, the signature the JDK calls with a char array"
     (is (= "abc"
            (bb (with-out-str
