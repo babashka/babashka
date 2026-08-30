@@ -40,9 +40,9 @@
         datascript/datascript {:mvn/version "1.0.1"}
         http-kit/http-kit {:mvn/version "2.9.0-beta4"}
         org.clojure/core.match {:mvn/version "1.0.0"}
-        hiccup/hiccup {:mvn/version "2.0.0-RC1"}
-        rewrite-clj/rewrite-clj {:mvn/version "1.2.55"}
-        selmer/selmer {:mvn/version "1.12.70"}
+        hiccup/hiccup {:mvn/version "2.0.0"}
+        rewrite-clj/rewrite-clj {:mvn/version "1.2.57"}
+        selmer/selmer {:mvn/version "1.13.5"}
         com.taoensso/timbre {:mvn/version "6.8.0"}
         org.clojure/tools.logging {:mvn/version "1.3.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
@@ -51,7 +51,7 @@
         org.babashka/cli {:mvn/version "0.12.87"}
         org.babashka/http-client {:mvn/version "0.4.24"}
         org.flatland/ordered {:mvn/version "1.15.12"}
-        org.jsoup/jsoup {:mvn/version "1.22.2"}
+        org.jsoup/jsoup {:mvn/version "1.23.2"}
         io.github.nextjournal/markdown {:mvn/version "0.7.225"}
         org.jline/jline-terminal-ffm {:mvn/version "4.3.1"}
         org.jline/jline-terminal {:mvn/version "4.3.1"

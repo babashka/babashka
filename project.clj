@@ -23,7 +23,7 @@
                    :flaky :flaky}
   :jvm-opts ["--enable-preview" "--enable-native-access=ALL-UNNAMED"]
   :dependencies [[org.clojure/clojure "1.12.5"]
-                 [borkdude/edamame "1.6.42"]
+                 [borkdude/edamame "1.6.43"]
                  [org.clojure/tools.cli "1.4.256"]
                  [cheshire "6.2.0"]
                  [nrepl/bencode "1.2.0"]
@@ -34,11 +34,11 @@
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "1.0.5"]
                  [org.babashka/impl-graal-features "0.0.1"]
-                 [rewrite-clj/rewrite-clj "1.2.55"]
+                 [rewrite-clj/rewrite-clj "1.2.57"]
                  [insn/insn "0.5.4"]
                  [org.babashka/cli "0.12.87"]
                  [org.babashka/http-client "0.4.24"]
-                 [org.jsoup/jsoup "1.22.2"]
+                 [org.jsoup/jsoup "1.23.2"]
                  [io.github.nextjournal/markdown "0.7.225"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.jline/jline-terminal-ffm "4.3.1"]
@@ -87,11 +87,11 @@
              :feature/core-match {:source-paths ["feature-core-match"]
                                   :dependencies [[org.clojure/core.match "1.0.0"]]}
              :feature/hiccup {:source-paths ["feature-hiccup"]
-                              :dependencies [[hiccup/hiccup "2.0.0-RC1"]]}
+                              :dependencies [[hiccup/hiccup "2.0.0"]]}
              :feature/test-check {:source-paths ["feature-test-check"]}
              :feature/spec-alpha {:source-paths ["feature-spec-alpha"]}
              :feature/selmer {:source-paths ["feature-selmer"]
-                              :dependencies [[selmer/selmer "1.13.1"]]}
+                              :dependencies [[selmer/selmer "1.13.5"]]}
              :feature/logging {:source-paths ["feature-logging"]
                                :dependencies [[com.taoensso/timbre "6.8.0"]
                                               [org.clojure/tools.logging "1.3.0"]]}
