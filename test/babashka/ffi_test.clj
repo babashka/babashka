@@ -1096,9 +1096,8 @@
             (let [meta (json/parse-string (slurp (first generated-files)))
                   downcalls (get-in meta ["foreign" "downcalls"])
                   java-src (slurp (second generated-files))]
-              (testing "every registered downcall is variadic"
-                (is (seq downcalls))
-                (is (every? #(get % "options") downcalls)))
+              (testing "no FFM downcall descriptors: a trampoline or libffi makes every call"
+                (is (empty? downcalls)))
               (testing "upcalls respect the 2-double family limit"
                 (is (every? #(<= (count (filter #{"jdouble"} (get % "parameterTypes"))) 2)
                             (get-in meta ["foreign" "upcalls"]))))

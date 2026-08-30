@@ -9,15 +9,9 @@
 ;; COUNT-shaped descriptors need registration, not orderings. See the ABI
 ;; note in babashka.ffi. Shapes:
 ;;
-;; - downcalls: a longs followed by an FP sequence, a+len <= 6 (x86-64 has 6
-;;   integer argument registers); FP sequences are the mixed ones up to three
-;;   plus the uniform four; returns void/long/double, plus float for shapes
-;;   of <= 4 args
-;; - pure-integer downcalls additionally up to arity 10 (EVP_PBE_scrypt
-;;   takes 10): with a single carrier class the sort is the identity, so
-;;   stack-passed arguments keep their declared order and any arity is sound
-;; - variadic downcalls (order preserved, not sorted): arity 2..5 over
-;;   {long,double} with <= 2 doubles, boundary 1..3, returns void/long
+;; - downcalls: none. Every fixed shape goes through a generated trampoline,
+;;   and a variadic call goes through libffi, so a native image needs no FFM
+;;   downcall descriptor at all
 ;; - upcalls: a longs, b doubles with a+b <= 4 and b <= 2, returns
 ;;   void/long/double; pure-integer upcalls additionally up to arity 6
 ;;   (FSEvents passes six, GLFW's key callback five)
@@ -41,8 +35,9 @@
 ;;   downcall handles are interpreted in a native image (~3.4us).
 ;; - src/babashka/impl/ffi_trampolines.clj: shape key -> builder fn map used
 ;;   by babashka.ffi's cfn on the native image.
-;; Variadic calls are excluded (a fixed-convention pointer call has the same
-;; Apple arm64 variadic trap) and stay on FFM.
+;; A trampoline calls with the fixed convention, which is the wrong one for a
+;; variadic function on Apple arm64, so variadic calls get no trampoline and
+;; go through libffi.
 (require '[cheshire.core :as json]
          '[clojure.string :as str])
 
@@ -79,17 +74,11 @@
    (map #(vec (repeat % "jlong")) (range 7 11))))
 
 (def downcalls
-  ;; Non-variadic downcalls never need FFM descriptors: every fixed shape
-  ;; goes through a generated trampoline in both modes. Variadic calls
-  ;; always use FFM.
-  ;; boundary == n covers the empty-tail call of a variadic function
-  (for [n (range 1 6)
-         args (combos-n ["jlong" "jdouble"] n)
-         :when (<= (count (filter #(= "jdouble" %) args)) 2)
-         boundary (range 1 (inc (min 3 n)))
-         ret ["void" "jlong"]]
-    {"returnType" ret "parameterTypes" (vec args)
-     "options" {"firstVariadicArg" boundary}}))
+  ;; A native image makes no FFM downcall: a fixed shape goes through a
+  ;; generated trampoline, a variadic call and a struct call through libffi.
+  ;; A build without libffi refuses those calls rather than carrying the
+  ;; descriptors for them.
+  [])
 
 (def upcalls
   ;; same family both modes: <= 4 args, <= 2 doubles, no float, plus
