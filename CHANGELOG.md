@@ -11,7 +11,7 @@ A preview of the next release can be installed from
 
 Read the release blog post [here](https://blog.michielborkent.nl/babashka-ffi.html).
 
-FFI:
+### FFI:
 
 - Add experimental [`babashka.ffi`](https://github.com/babashka/ffi): call C functions in shared libraries straight from babashka and JVM Clojure! See the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
 - Linux: dynamic binaries require glibc 2.28. The install script selects the static binary on older systems
@@ -23,7 +23,7 @@ FFI:
 - SCI: call site caching for instance and static methods, constructors and fields. Interop calls are up to 5x faster
 - The binary is about 130 KB smaller: a native image registers no FFM downcall descriptors, since a trampoline or libffi makes every call. A build without libffi refuses a variadic call instead of falling back to FFM
 
-Tasks:
+### Tasks:
 
 - `:exec-args` can sit directly on a task, not only under `:cli`, the way `(exec ...)` already reads it. The bare key wins over the one under `:cli`. Before, it was ignored on an `:exec-fn` or `:cmd` task
 - A task's `:cli` `:exec-args` merge over the `:tasks` top level `:exec-args`. Before, the task's map replaced the top level's
@@ -36,7 +36,7 @@ Tasks:
 - Shell completion offers inherited options (via `:depends`) too
 - `bb tasks` and `--help` still describe a task when a dependency's namespace does not load. Running the task reports the error
 
-Misc:
+### Misc:
 
 - [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
 - Fix output of custom `clojure.pprint` dispatch functions
@@ -46,7 +46,7 @@ Misc:
 - Building babashka from source no longer fails when one upstream host is unreachable. The build fetches the musl and zlib tarballs with retries, from mirrors, and caches them per machine
 - Building from source: the `BABASHKA_DYNAMIC` build flag is `BABASHKA_FULLY_DYNAMIC`, because it named a different axis than the install script's `--dynamic`
 
-Upgrades:
+### Upgrades:
 
 - Bump jline to 4.4.0: security hardening, a rewritten signal path for the FFM terminal, Kitty keyboard protocol. The ambiguous key binding timeout in the REPL drops from 1000 ms to 100 ms
 - Bump GraalVM to `25.0.4`. The macOS amd64 binary stays on `25.0.1`, the last version Oracle ships for that platform
