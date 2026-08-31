@@ -20,9 +20,6 @@ Read the release blog post [here](https://blog.michielborkent.nl/babashka-ffi.ht
 - On FreeBSD, the install script installs the dynamic binary when the Linuxulator has a linux_base with glibc 2.17 or newer, such as `linux_base-rl9`
 - The Linux binaries include zlib 1.2.13. The static binary uses musl 1.2.6. The build pins both versions and compiles them from source
 
-- SCI: call site caching for instance and static methods, constructors and fields. Interop calls are up to 5x faster
-- The binary is about 130 KB smaller: a native image registers no FFM downcall descriptors, since a trampoline or libffi makes every call. A build without libffi refuses a variadic call instead of falling back to FFM
-
 ### Tasks:
 
 - `:exec-args` can sit directly on a task, not only under `:cli`, the way `(exec ...)` already reads it. The bare key wins over the one under `:cli`. Before, it was ignored on an `:exec-fn` or `:cmd` task
@@ -38,6 +35,7 @@ Read the release blog post [here](https://blog.michielborkent.nl/babashka-ffi.ht
 
 ### Misc:
 
+- SCI: call site caching for instance and static methods, constructors and fields. Interop calls are up to 5x faster
 - [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
 - Fix output of custom `clojure.pprint` dispatch functions
 - [#2054](https://github.com/babashka/babashka/issues/2054): a `proxy` of `java.io.Writer` supports the one-argument `write` and `append`, so binding `*out*` to it works. Interop on a proxied `Writer` or `Reader` finds their own methods instead of only the ones on `Closeable`
