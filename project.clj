@@ -41,8 +41,8 @@
                  [org.jsoup/jsoup "1.22.2"]
                  [io.github.nextjournal/markdown "0.7.225"]
                  [borkdude/graal.locking "0.0.2"]
-                 [org.jline/jline-terminal-ffm "4.3.1"]
-                 [org.jline/jline-terminal "4.3.1"
+                 [org.jline/jline-terminal-ffm "4.4.0"]
+                 [org.jline/jline-terminal "4.4.0"
                   :exclusions [;; this saves 1mb of native-image size
                                org.jline/jline-native]]
                  #_[org.jline/jansi "3.30.6"
@@ -51,7 +51,7 @@
                  #_[org.jline/jansi-core "3.30.6"
                   :exclusions [;; this saves 1mb of native-image size
                                org.jline/jline-native]]
-                 [org.jline/jline-reader "4.3.1"]]
+                 [org.jline/jline-reader "4.4.0"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {;; compile-time only: the SVM API for src-java/babashka/impl/FfiTrampoline.java;

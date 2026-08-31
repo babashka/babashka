@@ -46,6 +46,7 @@ Misc:
 
 Upgrades:
 
+- Bump jline to 4.4.0: security hardening, a rewritten signal path for the FFM terminal, Kitty keyboard protocol. The ambiguous key binding timeout in the REPL drops from 1000 ms to 100 ms
 - Bump GraalVM to `25.0.4`. The macOS amd64 binary stays on `25.0.1`, the last version Oracle ships for that platform
 - [#2021](https://github.com/babashka/babashka/issues/2021): bump http-kit to 2.9.0-beta4, which fixes four security advisories
 - Bump babashka.cli to 0.12.88: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options, the command named on the command line wins over the `:exec-args` of its ancestors, and the fish completion snippet keeps the emitted option order
