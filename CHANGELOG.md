@@ -51,6 +51,11 @@ Upgrades:
 - [#2021](https://github.com/babashka/babashka/issues/2021): bump http-kit to 2.9.0-beta4, which fixes four security advisories
 - Bump babashka.cli to 0.12.88: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options, the command named on the command line wins over the `:exec-args` of its ancestors, and the fish completion snippet keeps the emitted option order
 - babashka.cli 0.12.88 also adds `:cmd-aliases`, alternative names for a command that dispatch like the command itself, and attached short option values: `-J-Dfoo=bar` binds `"-Dfoo=bar"` when `:J` declares a non-boolean `:coerce`. An interior hyphen in a cluster of flags is an error instead of silently ending option parsing
+- Bump edamame to 1.6.43, which carries the syntax-quote fix listed above
+- Bump jsoup to 1.23.2: W3C namespace fixes, URL validation per RFC 9110, CR and LF escaping in multipart form names
+- Bump hiccup to 2.0.0 final, from 2.0.0-RC1
+- Bump rewrite-clj to 1.2.57
+- Bump selmer to 1.13.5: Twig-style `{% embed %}`, multiline tags. The shipped `deps.edn` said 1.12.70 while the binary carried 1.13.1; both now agree
 
 
 ## 1.13.219 (2026-07-27)
