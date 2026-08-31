@@ -48,16 +48,16 @@
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.4"}
         org.clojure/core.rrb-vector {:mvn/version "0.2.0"}
-        org.babashka/cli {:mvn/version "0.12.87"}
+        org.babashka/cli {:mvn/version "0.12.88"}
         org.babashka/http-client {:mvn/version "0.4.24"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.23.2"}
         io.github.nextjournal/markdown {:mvn/version "0.7.225"}
-        org.jline/jline-terminal-ffm {:mvn/version "4.3.1"}
-        org.jline/jline-terminal {:mvn/version "4.3.1"
+        org.jline/jline-terminal-ffm {:mvn/version "4.4.0"}
+        org.jline/jline-terminal {:mvn/version "4.4.0"
                                   :exclusions [;; this saves 1mb of native-image size
                                                org.jline/jline-native]}
-        org.jline/jline-reader {:mvn/version "4.3.1"}}
+        org.jline/jline-reader {:mvn/version "4.4.0"}}
  :aliases {:babashka/dev
            {:extra-deps {babashka/babashka {:local/root "."}}
             :main-opts ["-m" "babashka.main"]

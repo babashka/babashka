@@ -46,25 +46,17 @@ Misc:
 
 Upgrades:
 
+- Bump jline to 4.4.0: security hardening, a rewritten signal path for the FFM terminal, Kitty keyboard protocol. The ambiguous key binding timeout in the REPL drops from 1000 ms to 100 ms
 - Bump GraalVM to `25.0.4`. The macOS amd64 binary stays on `25.0.1`, the last version Oracle ships for that platform
 - [#2021](https://github.com/babashka/babashka/issues/2021): bump http-kit to 2.9.0-beta4, which fixes four security advisories
+- Bump babashka.cli to 0.12.88: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options, the command named on the command line wins over the `:exec-args` of its ancestors, and the fish completion snippet keeps the emitted option order
+- babashka.cli 0.12.88 also adds `:cmd-aliases`, alternative names for a command that dispatch like the command itself, and attached short option values: `-J-Dfoo=bar` binds `"-Dfoo=bar"` when `:J` declares a non-boolean `:coerce`. An interior hyphen in a cluster of flags is an error instead of silently ending option parsing
 - Bump edamame to 1.6.43, which carries the syntax-quote fix listed above
 - Bump jsoup to 1.23.2: W3C namespace fixes, URL validation per RFC 9110, CR and LF escaping in multipart form names
 - Bump hiccup to 2.0.0 final, from 2.0.0-RC1
 - Bump rewrite-clj to 1.2.57
 - Bump selmer to 1.13.5: Twig-style `{% embed %}`, multiline tags. The shipped `deps.edn` said 1.12.70 while the binary carried 1.13.1; both now agree
-- Bump babashka.cli to 0.12.87: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options, the command named on the command line wins over the `:exec-args` of its ancestors, and the fish completion snippet keeps the emitted option order
 
-<!--
-TODO, image size now that libffi ships in every build that can load a library:
-
-- TODO: the FFM runtime is about 191 KB. Measure what is left of it once the
-  variadic descriptors are gone, and whether callbacks alone still pull it in
-- TODO: trim the trampoline set, in particular the ordered family that
-  Windows compiles, about 2.9 MB there. libffi now covers every shape outside
-  the set at about 1 microsecond, so the set only has to hold the hot ones.
-  Measure the shapes real libraries call before cutting
--->
 
 ## 1.13.219 (2026-07-27)
 
