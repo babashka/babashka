@@ -48,7 +48,8 @@ Upgrades:
 
 - Bump GraalVM to `25.0.4`. The macOS amd64 binary stays on `25.0.1`, the last version Oracle ships for that platform
 - [#2021](https://github.com/babashka/babashka/issues/2021): bump http-kit to 2.9.0-beta4, which fixes four security advisories
-- Bump babashka.cli to 0.12.87: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options, the command named on the command line wins over the `:exec-args` of its ancestors, and the fish completion snippet keeps the emitted option order
+- Bump babashka.cli to 0.12.88: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options, the command named on the command line wins over the `:exec-args` of its ancestors, and the fish completion snippet keeps the emitted option order
+- babashka.cli 0.12.88 also adds `:cmd-aliases`, alternative names for a command that dispatch like the command itself, and attached short option values: `-J-Dfoo=bar` binds `"-Dfoo=bar"` when `:J` declares a non-boolean `:coerce`. An interior hyphen in a cluster of flags is an error instead of silently ending option parsing
 
 <!--
 TODO, image size now that libffi ships in every build that can load a library:
