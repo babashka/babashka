@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## 1.13.220 (2026-08-31)
 
+Read the release blog post [here](https://blog.michielborkent.nl/babashka-ffi.html).
+
 FFI:
 
 - Add experimental [`babashka.ffi`](https://github.com/babashka/ffi): call C functions in shared libraries straight from babashka and JVM Clojure! See the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
