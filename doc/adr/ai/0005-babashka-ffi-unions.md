@@ -9,7 +9,9 @@ order), and on the array layouts merged in babashka/ffi#14.
 ## Context
 
 `babashka.ffi` describes memory with layouts: `[:struct [[name type] ...]]`
-and `[:array type n]`. A C union cannot be described. A survey of twenty
+and `[:array type n]`. The array order, element type before count, follows
+coffi and C declaration order. jolt and FFM's `sequenceLayout` put the
+count first. A C union cannot be described. A survey of twenty
 headers on this machine (macOS SDK, Homebrew: duckdb, curl, SDL2, libuv,
 glib, and the Linux and Windows headers through GitHub) found unions in
 every event and IO API:
