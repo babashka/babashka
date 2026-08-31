@@ -51,16 +51,6 @@ Upgrades:
 - Bump babashka.cli to 0.12.88: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options, the command named on the command line wins over the `:exec-args` of its ancestors, and the fish completion snippet keeps the emitted option order
 - babashka.cli 0.12.88 also adds `:cmd-aliases`, alternative names for a command that dispatch like the command itself, and attached short option values: `-J-Dfoo=bar` binds `"-Dfoo=bar"` when `:J` declares a non-boolean `:coerce`. An interior hyphen in a cluster of flags is an error instead of silently ending option parsing
 
-<!--
-TODO, image size now that libffi ships in every build that can load a library:
-
-- TODO: the FFM runtime is about 191 KB. Measure what is left of it once the
-  variadic descriptors are gone, and whether callbacks alone still pull it in
-- TODO: trim the trampoline set, in particular the ordered family that
-  Windows compiles, about 2.9 MB there. libffi now covers every shape outside
-  the set at about 1 microsecond, so the set only has to hold the hot ones.
-  Measure the shapes real libraries call before cutting
--->
 
 ## 1.13.219 (2026-07-27)
 
