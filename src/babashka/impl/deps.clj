@@ -69,11 +69,6 @@
       (do (make-classpath! dir args)
           {:exit 0}))))
 
-;; deps.clj looks up java before the aux process, which never runs here.
-(defn- getenv-with-java-cmd [k]
-  (or (System/getenv k)
-      (when (= "JAVA_CMD" k) "java")))
-
 ;; We are optimizing for the 1-file script with deps scenario where people can
 ;; call this function to include e.g. {:deps {medley/medley
 ;; {:mvn/version "1.3.3"}}}. Optionally they can include aliases, to modify the
@@ -135,8 +130,7 @@
                               #'deps/*exit-fn* (fn [{:keys [message]}]
                                                  (when message
                                                    (throw (Exception. message))))}
-                              deps-root (assoc #'deps/*dir* (str deps-root))
-                              make-classpath! (assoc #'deps/*getenv-fn* getenv-with-java-cmd))
+                              deps-root (assoc #'deps/*dir* (str deps-root)))
                    cp (with-out-str (with-bindings bindings
                                       (apply deps/-main args)))
                    cp (str/trim cp)

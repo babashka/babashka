@@ -57,11 +57,11 @@ Three details. deps.clj passes `--config-user nil`, which a subprocess would
 stringify to an empty string and `blank-to-nil` would drop, so the arguments are
 `str`ed first. Relative file arguments are resolved against the project dir,
 and `clojure.tools.deps.util.dir/*the-dir*` is rebound to it with `with-dir`,
-because the image bakes the builder's cwd into that var. deps.clj resolves
-`java` before the aux call and throws when it is missing, so `*getenv-fn*` is
-bound to answer `JAVA_CMD` with a placeholder. deps.clj also downloads the
-Clojure tools jar when it is missing, which the hook never uses. Making both
-lazy belongs in deps.clj.
+because the image bakes the builder's cwd into that var. deps.clj used to
+resolve `java` at startup and throw when it was missing. It now looks java up
+when a process starts, so the hook needs no workaround for it. deps.clj still
+downloads the Clojure tools jar when it is missing, which the hook never uses.
+Making that lazy belongs in deps.clj too.
 
 Verified with `JAVA_CMD=/nonexistent/java`, which makes any subprocess fail:
 `add-deps` with `:force true`, `-Sdeps`, bb.edn `:deps` through `--config`, and
