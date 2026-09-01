@@ -15,9 +15,9 @@
 ;; contributions and suggestions.
 
 (ns
-    ^{:author "Stuart Sierra, with contributions and suggestions by
+ ^{:author "Stuart Sierra, with contributions and suggestions by
   Chas Emerick, Allen Rohner, and Stuart Halloway",
-      :doc "A unit testing framework.
+   :doc "A unit testing framework.
 
    ASSERTIONS
 
@@ -231,10 +231,10 @@
 
    For additional event types, see the examples in the code.
 "}
-    babashka.impl.clojure.test
+ babashka.impl.clojure.test
   (:require
    [babashka.impl.common :refer [ctx]]
-   [clojure.stacktrace :as stack]
+   [babashka.impl.clojure.stacktrace :as bbstack]
    [clojure.template :as temp]
    [sci.core :as sci]
    [sci.impl.namespaces :as sci-namespaces]
@@ -251,10 +251,10 @@
 ;;; USER-MODIFIABLE GLOBALS
 
 (defonce
-  ^{:doc "True by default.  If set to false, no test functions will
+ ^{:doc "True by default.  If set to false, no test functions will
    be created by deftest, set-test, or with-test.  Use this to omit
    tests when compiling or loading production code."}
-  load-tests
+ load-tests
   (sci/new-dynamic-var '*load-tests* true {:ns tns}))
 
 (def
@@ -263,7 +263,6 @@
   complete stack trace."}
   stack-trace-depth
   (sci/new-dynamic-var '*stack-trace-depth* nil {:ns tns}))
-
 
 ;;; GLOBALS USED BY THE REPORTING FUNCTIONS
 
@@ -345,7 +344,7 @@
   [m]
   (report
    (case
-       (:type m)
+    (:type m)
      :fail m
      :error m
      m)))
@@ -375,7 +374,7 @@
     (print "  actual: ")
     (let [actual (:actual m)]
       (if (instance? Throwable actual)
-        (stack/print-cause-trace actual @stack-trace-depth)
+        (bbstack/print-cause-trace actual @stack-trace-depth)
         (prn actual)))))
 
 (defmethod report-impl :summary [m]
@@ -392,8 +391,6 @@
 (defmethod report-impl :end-test-ns [m])
 (defmethod report-impl :begin-test-var [m])
 (defmethod report-impl :end-test-var [m])
-
-
 
 ;;; UTILITIES FOR ASSERTIONS
 
@@ -455,8 +452,6 @@
                                 :line ~(:line (meta form))
                                 :expected '~form, :actual value#}))
      value#))
-
-
 
 ;;; ASSERTION METHODS
 
@@ -533,20 +528,17 @@
                                          :expected '~form, :actual e#})))
             e#))))
 
-
 (defmacro try-expr
   "Used by the 'is' macro to catch unexpected exceptions.
   You don't call this."
   {:added "1.1"}
   [msg form]
   `(try ~(assert-expr msg form)
-        (catch Throwable t#
+        (catch ~(with-meta 'Exception {:sci/error true}) t#
           (clojure.test/do-report {:file clojure.core/*file*
                                    :line ~(:line (meta form))
                                    :type :error, :message ~msg,
                                    :expected '~form, :actual t#}))))
-
-
 
 ;;; ASSERTION MACROS
 
@@ -605,8 +597,6 @@
   `(binding [clojure.test/*testing-contexts* (conj clojure.test/*testing-contexts* ~string)]
      ~@body))
 
-
-
 ;;; DEFINING TESTS
 
 (defmacro with-test
@@ -620,7 +610,6 @@
   (if @load-tests
     `(doto ~definition (alter-meta! assoc :test (fn [] ~@body)))
     definition))
-
 
 (defmacro deftest
   "Defines a test function with no arguments.  Test functions may call
@@ -647,7 +636,6 @@
     `(def ~(vary-meta name assoc :test `(fn [] ~@body) :private true)
        (fn [] (test-var (var ~name))))))
 
-
 (defmacro set-test
   "Experimental.
   Sets :test metadata of the named var to a fn with the given body.
@@ -658,8 +646,6 @@
   [name & body]
   (when @load-tests
     `(alter-meta! (var ~name) assoc :test (fn [] ~@body))))
-
-
 
 ;;; DEFINING FIXTURES
 
@@ -702,9 +688,6 @@
   {:added "1.1"}
   [fixtures]
   (reduce compose-fixtures default-fixture fixtures))
-
-
-
 
 ;;; RUNNING TESTS: LOW-LEVEL FUNCTIONS
 
@@ -768,8 +751,6 @@
           (test-all-vars ctx ns-obj)))
       (do-report {:type :end-test-ns, :ns ns-obj}))
     @@report-counters))
-
-
 
 ;;; RUNNING TESTS: HIGH-LEVEL FUNCTIONS
 
