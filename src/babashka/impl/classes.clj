@@ -696,7 +696,20 @@
                       {:name "getExecutableName"}]})
 
     features/tools-deps?
-    (merge tools-deps-methods)))
+    (merge tools-deps-methods)
+
+    ;; Maven's model interpolator reflects over the model getters itself.
+    features/tools-deps?
+    (merge (zipmap '[org.apache.maven.model.Build
+                     org.apache.maven.model.Dependency
+                     org.apache.maven.model.Exclusion
+                     org.apache.maven.model.License
+                     org.apache.maven.model.Model
+                     org.apache.maven.model.Parent
+                     org.apache.maven.model.Plugin
+                     org.apache.maven.model.PluginExecution
+                     org.apache.maven.model.Resource]
+                   (repeat {:allPublicMethods true})))))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"

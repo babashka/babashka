@@ -148,18 +148,26 @@ adapter as a fallback for sci's `:reify-fn`.
 | name only, by mistake | 70.71 MB | 28.88 MiB | 21,838 |
 | all public methods | 75.15 MB | 31.14 MiB | 23,192 |
 | used methods only | 74.99 MB | 31.00 MiB | 23,187 |
+| same, model classes all public | 75.05 MB | 31.06 MiB | |
 
-With the used-methods lists, `add-deps` with `:force true`, `-Sdeps`, bb.edn
-`:deps` and a `:git/sha` dep all resolve natively. A forced `add-deps` of
-medley takes 60 ms wall against 33 ms compiled, the difference being sci
-loading the tools.deps sources.
+The last row is the working configuration. `add-deps` with `:force true`,
+`-Sdeps`, bb.edn `:deps`, a `:git/sha` dep and `babashka.deps/clojure` with
+`-Sforce -Spath` on bb's own deps.edn all resolve natively, with no java on
+the machine. A forced `add-deps` of medley takes 51 ms wall against 33 ms
+compiled, the difference being sci loading the tools.deps sources.
 
 The 70.71 MB build had the Maven classes registered without members, so the
 Maven code was not in the image and resolution failed at the first method
 call. With the classes registered properly the interpreted variant costs the
 same as the compiled one, 75.07 MB. Narrowing to the methods used saves 160
-KB. The 5 MB is the Maven code that tools.deps executes, and how tools.deps
+KB, and the model classes take 60 KB of that back. The 5 MB is the Maven code that tools.deps executes, and how tools.deps
 itself is packaged does not move it.
+
+The used-methods lists cover what the sources call, not what Maven calls on
+itself. Resolving bb's own deps.edn, a larger POM graph than medley's, reaches
+`StringVisitorModelInterpolator`, which reflects over the model getters, and
+failed on `Model.getDescription`. The `org.apache.maven.model` classes get
+`allPublicMethods` for that, by hand, next to the generated lists.
 
 Two GraalVM details cost a build each. A `:methods` entry without
 `parameterTypes` means the zero-argument overload under
