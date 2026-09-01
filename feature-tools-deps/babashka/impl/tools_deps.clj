@@ -49,18 +49,27 @@
 
 (def ^:private make-classpath-ns 'clojure.tools.deps.script.make-classpath2)
 
-(defn- sci-var [ctx ns sym]
-  (sci/eval-form ctx (list 'ns-resolve (list 'quote ns) (list 'quote sym))))
+;; Appended to the bundled sources when bb's load-fn serves them, so every
+;; require gets them, not only the one from make-classpath!.
+;; MIMA picks its runtime with a ServiceLoader, which native-image does not
+;; register. Only one provider ships. The root deps.edn is a jar resource,
+;; invisible to bb's classpath.
+(def ^:private source-patches
+  {'clojure.tools.deps.util.maven
+   (str "\n(alter-var-root #'the-runtime (constantly (delay (" (.getName StandaloneStaticRuntime) ".))))\n")
+   'clojure.tools.deps.edn
+   (binding [*print-namespace-maps* false]
+     (str "\n(alter-var-root #'root-deps (constantly (fn [] '" (pr-str root-deps-edn) ")))\n"))})
+
+(defn patch-source
+  "The bundled source of namespace, with the patches for it appended."
+  [namespace source]
+  (if-let [patch (get source-patches namespace)]
+    (str source patch)
+    source))
 
 (defn- prepare! [ctx]
-  (sci/eval-form ctx (list 'require (list 'quote make-classpath-ns)))
-  ;; MIMA picks its runtime with a ServiceLoader, which native-image does not
-  ;; register. Only one provider ships.
-  (sci/alter-var-root (sci-var ctx 'clojure.tools.deps.util.maven 'the-runtime)
-                      (constantly (delay (StandaloneStaticRuntime.))))
-  ;; The root deps.edn is a jar resource, invisible to bb's classpath.
-  (sci/alter-var-root (sci-var ctx 'clojure.tools.deps.edn 'root-deps)
-                      (constantly (fn [] root-deps-edn))))
+  (sci/eval-form ctx (list 'require (list 'quote make-classpath-ns))))
 
 (def ^:private file-opts
   [:config-user :config-project :cp-file :jvm-file :main-file :manifest-file :basis-file])

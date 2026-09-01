@@ -1,0 +1,20 @@
+{:paths []
+ :aliases {:dev {:extra-paths ["lib/src"
+                               "cli/src"]
+                 :extra-deps {clojure-lsp/lib {:local/root "lib"}
+                              clojure-lsp/cli {:local/root "cli"}
+                              io.github.clojure/tools.build {:git/url "https://github.com/clojure/tools.build.git"
+                                                             :tag "v0.10.7"
+                                                             :sha "573711e"}}}
+           :test {:extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}}
+                  :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
+                  :extra-paths ["lib/src"
+                                "cli/src"
+                                "test-helper/src"
+                                "lib/test"
+                                "cli/test"]
+                  :main-opts ["-m" "kaocha.runner"]}
+           :debug {:extra-paths ["cli/dev"]
+                   :extra-deps {com.clojure-goes-fast/clj-async-profiler {:mvn/version "1.6.1"}
+                                com.clojure-goes-fast/clj-memory-meter {:mvn/version "0.4.0"}
+                                criterium/criterium {:mvn/version "0.4.6"}}}}}

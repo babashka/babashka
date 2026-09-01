@@ -1,0 +1,74 @@
+{:paths ["src" "parser" "resources" "inlined"]
+ :deps {com.cognitect/transit-clj {:mvn/version "1.0.333"}
+        io.replikativ/datalog-parser {:mvn/version "0.2.30"}
+        cheshire/cheshire {:mvn/version "5.13.0"}
+        nrepl/bencode {:mvn/version "1.2.0"}
+        org.babashka/sci {:mvn/version "0.15.56"}
+        babashka/fs {:mvn/version "0.5.31"}
+        org.ow2.asm/asm {:mvn/version "9.7"}
+        com.github.javaparser/javaparser-core {:mvn/version "3.26.1"}}
+ :aliases {:cider {:extra-deps {org.clojure/clojure {:mvn/version "1.11.4"}}}
+           :dev
+           ;; :paths so a user level alias of the same name cannot replace them
+           {:paths ["src" "parser" "resources" "inlined"]
+            :main-opts ["-m" "clj-kondo.main"]
+            :extra-deps
+            {org.clojure/clojure {:mvn/version "1.11.4"}}
+            :jvm-opts ["-Dclojure.main.report=stderr"]}
+           :extract
+           {:extra-paths ["extract" "classes"]
+            :extra-deps {clj-commons/conch {:mvn/version "0.9.2"}
+                         jonase/eastwood {:mvn/version "1.4.3"}
+                         org.clojure/tools.deps {:mvn/version "0.24.1523"
+                                                 :neil/pinned true}}}
+           :built-in-cache
+           {:extra-deps
+            {org.clojure/data.json {:mvn/version "2.5.0"}}}
+           :test
+           {:extra-deps
+            {org.clojure/clojurescript {:mvn/version "1.12.145"} ;; for extraction
+             cognitect/test-runner
+             {:git/url "https://github.com/cognitect-labs/test-runner"
+              :git/sha "9d36f36ff541dac680a05010e4348c744333f191"}
+             clj-commons/conch {:mvn/version "0.9.2"}
+             jonase/eastwood {:mvn/version "1.4.3"}
+             borkdude/missing.test.assertions {:mvn/version "0.0.2"}
+             babashka/process {:mvn/version "0.5.22"}
+             org.clojure/tools.deps {:mvn/version "0.24.1523"
+                                     :neil/pinned true}
+             nubank/matcher-combinators {:mvn/version "3.9.1" :exclusions [midje/midje]}
+             io.github.borkdude/deflet {:mvn/version "0.1.0"}}
+            :extra-paths ["test" "extract"]
+            :main-opts ["-m" "cognitect.test-runner"]}
+           :clojure-1.11.4 {:extra-deps {org.clojure/clojure {:mvn/version "1.11.4"
+                                                              :neil/pinned true}}}
+           :clojure-1.12.1 {:extra-deps {org.clojure/clojure {:mvn/version "1.12.1"
+                                                              :neil/pinned true}}}
+           :test-regression {:extra-paths ["test-regression"]
+                             :extra-deps {lambdaisland/deep-diff2 {:mvn/version "2.12.219"}}
+                             :exec-args {:dirs ["test-regression/clj_kondo"]}
+                             :exec-fn cognitect.test-runner.api/test}
+           :profiler
+           {:extra-deps
+            {com.clojure-goes-fast/clj-async-profiler {:mvn/version "1.7.0"}}
+            :extra-paths ["src-profile"]
+            :jvm-opts ["-Djdk.attach.allowAttachSelf"]
+            :main-opts ["-m" "clj-kondo.profile"]}
+           :cljs ;; for performance and regression testing
+           {:extra-deps
+            {org.clojure/clojurescript {:mvn/version "1.12.145"}}}
+           :pod-test
+           {:extra-paths ["pod-test"]
+            :extra-deps
+            {babashka/pods {#_#_:local/root "/Users/borkdude/Dropbox/dev/clojure/babashka/babashka.pods"
+                            :git/url "https://github.com/babashka/babashka.pods"
+                            :git/sha "47e55fe5e728578ff4dbf7d2a2caf00efea87b1e"}}}
+           :eastwood
+           {:main-opts ["-m" "eastwood.lint" {:source-paths ["src" "test"]
+                                              :exclude-linters [:unused-ret-vals
+                                                                :implicit-dependencies
+                                                                :local-shadows-var
+                                                                :constant-test]}]}
+           :bench
+           {:extra-deps {com.github.clojure-lsp/clojure-lsp {:mvn/version "2026.02.20-16.08.58"}}
+            :main-opts []}}}

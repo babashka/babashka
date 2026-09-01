@@ -83,9 +83,12 @@
 
 (def windows? (fs/windows?))
 
-;; Resolved at build time, see babashka.impl.tools-deps/reify-fn.
+;; Resolved at build time, see babashka.impl.tools-deps.
 (def ^:private tools-deps-reify-fn
   (when features/tools-deps? @(resolve 'babashka.impl.tools-deps/reify-fn)))
+
+(def ^:private tools-deps-patch-source
+  (when features/tools-deps? @(resolve 'babashka.impl.tools-deps/patch-source)))
 
 (if-not windows?
   (do ;; see https://github.com/oracle/graal/issues/1784
@@ -1013,7 +1016,10 @@ Use bb run --help to show this help output.
                          (let [rps (cp/resource-paths namespace)
                                rps (mapv #(str "src/babashka/" %) rps)]
                            (when-let [url (some #(io/resource % common/jvm-loader) rps)]
-                             (let [source (slurp url)]
+                             (let [source (slurp url)
+                                   source (if tools-deps-patch-source
+                                            (tools-deps-patch-source namespace source)
+                                            source)]
                                {:file (str url)
                                 :source source})))
                          (case namespace
