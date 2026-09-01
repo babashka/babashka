@@ -101,6 +101,9 @@
                                   :dependencies [[org.clojure/core.rrb-vector "0.2.0"]]}
              ;; This profile adds the libffi bindings.
              :feature/libffi {:source-paths ["feature-libffi"]}
+             :feature/tools-deps {:source-paths ["feature-tools-deps"]
+                                  :dependencies [[org.clojure/tools.deps "0.31.1638"
+                                                  :exclusions [org.clojure/tools.deps.maven-s3-transporter]]]}
              :test/deps {:dependencies [[borkdude/rewrite-edn "0.4.6"]
                                         [com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                         [com.opentable.components/otj-pg-embedded "0.13.3"]

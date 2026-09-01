@@ -175,6 +175,13 @@ else
     BABASHKA_LEIN_PROFILES+=",-feature/rrb-vector"
 fi
 
+if [ "$BABASHKA_FEATURE_TOOLS_DEPS" = "true" ]
+then
+    BABASHKA_LEIN_PROFILES+=",+feature/tools-deps"
+else
+    BABASHKA_LEIN_PROFILES+=",-feature/tools-deps"
+fi
+
 # The feature profile puts the libffi bindings (babashka.impl.libffi, a
 # @CFunction class) on the classpath for every build that may link libffi:
 # all but the musl static one and BABASHKA_LIBFFI=none. Whether the archive

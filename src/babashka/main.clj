@@ -505,6 +505,7 @@ Use bb run --help to show this help output.
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace)
                           'next.jdbc.result-set @(resolve 'babashka.impl.jdbc/result-set-namespace))
     features/csv? (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
+    features/tools-deps? (assoc 'clojure.tools.deps @(resolve 'babashka.impl.tools-deps/tools-deps-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace)
                                 'datascript.db @(resolve 'babashka.impl.datascript/datascript-db-namespace))
