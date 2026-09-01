@@ -1,20 +1,45 @@
-{:paths []
- :aliases {:dev {:extra-paths ["lib/src"
-                               "cli/src"]
-                 :extra-deps {clojure-lsp/lib {:local/root "lib"}
-                              clojure-lsp/cli {:local/root "cli"}
-                              io.github.clojure/tools.build {:git/url "https://github.com/clojure/tools.build.git"
-                                                             :tag "v0.10.7"
-                                                             :sha "573711e"}}}
-           :test {:extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}}
+{:deps {org.clojure/clojure {:mvn/version "1.12.0"}
+        rewrite-clj/rewrite-clj {:mvn/version "1.2.50"}
+        borkdude/rewrite-edn {:mvn/version "0.4.9" :exclusions [rewrite-clj/rewrite-clj]}
+        org.clojure/core.async {:mvn/version "1.6.681"}
+        dev.weavejester/cljfmt {:mvn/version "0.15.5"
+                                :exclusions [rewrite-clj/rewrite-clj
+                                             com.googlecode.java-diff-utils/diffutils]}
+        com.googlecode.java-diff-utils/diffutils {:mvn/version "1.3.0"}
+        medley/medley {:mvn/version "1.4.0"}
+        anonimitoraf/clj-flx {:mvn/version "1.2.0"}
+        clj-kondo/clj-kondo {:mvn/version "2025.10.24-20251120.193408-8"
+                             #_#_:local/root "../../clj-kondo"
+                             :exclude [com.cognitect/transit-clj
+                                       babashka/fs]}
+        com.fabiodomingues/clj-depend {:mvn/version "0.11.1"}
+        com.cognitect/transit-clj {:mvn/version "1.0.333"}
+        com.github.clj-easy/stub {:mvn/version "0.2.3"}
+        org.benf/cfr {:mvn/version "0.152"}
+        io.forward/semver {:mvn/version "0.1.0"}
+        babashka/fs {:mvn/version "0.5.28"}
+        org.babashka/sci {:mvn/version "0.9.45"}
+        com.github.clojure-lsp/lsp4clj {:mvn/version "1.13.1"
+                                        #_#_:local/root "../../lsp4clj"
+                                        :exclusions [funcool/promesa]}}
+ :paths ["src" "resources"]
+ :aliases {:test {:extra-deps {clojure-lsp/test-helper {:local/root "../test-helper"}
+                               lambdaisland/kaocha {:mvn/version "1.91.1392"}
+                               com.taoensso/timbre {:mvn/version "6.7.0-alpha1"}
+                               org.clojure/test.check {:mvn/version "1.1.1"}
+                               nubank/matcher-combinators {:mvn/version "3.9.1"}}
                   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"]
-                  :extra-paths ["lib/src"
-                                "cli/src"
-                                "test-helper/src"
-                                "lib/test"
-                                "cli/test"]
+                  :extra-paths ["test"]
                   :main-opts ["-m" "kaocha.runner"]}
-           :debug {:extra-paths ["cli/dev"]
-                   :extra-deps {com.clojure-goes-fast/clj-async-profiler {:mvn/version "1.6.1"}
-                                com.clojure-goes-fast/clj-memory-meter {:mvn/version "0.4.0"}
-                                criterium/criterium {:mvn/version "0.4.6"}}}}}
+           :cognitest {:extra-paths ["test"]
+                       :extra-deps {clojure-lsp/test-helper {:local/root "../test-helper"}
+                                    io.github.cognitect-labs/test-runner
+                                    {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+                       :main-opts ["-m" "cognitect.test-runner"]
+                       :exec-fn cognitect.test-runner.api/test}
+           :build {:extra-paths ["resources"]
+                   :deps {io.github.clojure/tools.build {:git/url "https://github.com/clojure/tools.build.git"
+                                                         :tag "v0.10.7"
+                                                         :sha "573711e"}
+                          slipset/deps-deploy {:mvn/version "0.2.2"}}
+                   :ns-default build}}}

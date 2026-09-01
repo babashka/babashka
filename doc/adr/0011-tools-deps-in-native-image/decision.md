@@ -234,6 +234,27 @@ Package attribution comes from `script/compile --emit build-report`. Extract
 label and value pairs from the HTML and diff two builds. ADR 0007 covers the
 JSON report route for totals.
 
+Branch `mvn-clj` carries an oracle harness for the Clojure Maven procurer
+that will replace the Java stack. `script/mvn_oracle/oracle.clj` resolves
+one corpus entry with tools.deps and prints versions, repo-relative paths,
+dependents and per-artifact `coord-deps` as EDN. It runs under `./bb` and
+under `clojure`. `script/mvn_oracle/run.clj` runs both and diffs:
+
+```bash
+bb script/mvn_oracle/run.clj            # every corpus entry, warm repo
+bb script/mvn_oracle/run.clj --cold medley guava   # bb downloads, JVM must accept
+```
+
+The corpus in `script/mvn_oracle/corpus.edn` holds deps.edn snapshots of
+babashka, clj-kondo, quickblog and clojure-lsp, plus libraries with hard
+POMs. With the Aether-backed tools.deps on both sides all 17 entries match,
+warm and cold, which is the harness's own check.
+
+On this branch the bundled sources get their patches from the load-fn:
+`babashka.impl.tools-deps/patch-source` appends the MIMA runtime binding to
+`util/maven.clj` and the embedded root deps.edn to `edn.clj` as they are
+served, so a script that requires `clojure.tools.deps` directly works too.
+
 To regenerate the reflection lists on the `tools-deps-sci` branch after a
 tools.deps bump, from the repository root:
 
