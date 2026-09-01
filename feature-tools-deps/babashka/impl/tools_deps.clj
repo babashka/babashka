@@ -1,17 +1,66 @@
 (ns babashka.impl.tools-deps
   {:no-doc true}
   (:require [babashka.fs :as fs]
+            [babashka.impl.common :as common]
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.tools.deps :as deps]
-            [clojure.tools.deps.script.make-classpath2 :as mc2]
-            [clojure.tools.deps.util.dir :as dir]
-            [clojure.tools.deps.util.maven :as mvn]
             [sci.core :as sci])
-  (:import [eu.maveniverse.maven.mima.runtime.standalonestatic StandaloneStaticRuntime]))
+  (:import [eu.maveniverse.maven.mima.runtime.standalonestatic StandaloneStaticRuntime]
+           [org.eclipse.aether.transfer TransferListener]))
 
-;; MIMA picks its runtime with a ServiceLoader, which native-image does not
-;; register. Only one provider ships, so bind it here, at build time.
-(alter-var-root #'mvn/the-runtime (constantly (delay (StandaloneStaticRuntime.))))
+;; clojure.tools.deps.util.maven reifies TransferListener at load time. bb's
+;; reify registry does not carry it, so this adapter serves that one case.
+(defn- transfer-listener [{:keys [methods]}]
+  (let [call (fn [name this ev]
+               (when-let [f (get methods name)]
+                 (f this ev)))]
+    (reify TransferListener
+      (transferInitiated [this ev] (call 'transferInitiated this ev))
+      (transferStarted [this ev] (call 'transferStarted this ev))
+      (transferProgressed [this ev] (call 'transferProgressed this ev))
+      (transferCorrupted [this ev] (call 'transferCorrupted this ev))
+      (transferSucceeded [this ev] (call 'transferSucceeded this ev))
+      (transferFailed [this ev] (call 'transferFailed this ev)))))
+
+(defn reify-fn
+  "Fallback for bb's reify-fn. Returns nil for anything it does not handle."
+  [{:keys [interfaces] :as m}]
+  (when (= #{TransferListener} interfaces)
+    (transfer-listener m)))
+
+;; tools.deps runs interpreted, from the sources under resources/src/babashka.
+;; Nothing in this namespace requires it, so none of it is compiled in.
+
+;; The real clojure.tools.deps.specs is built on clojure.spec, which bb leaves
+;; out. clojure.tools.deps.edn calls only these two.
+(defn- valid-deps? [_deps-edn] true)
+(defn- explain-deps [_deps-edn] nil)
+
+(def sns (sci/create-ns 'clojure.tools.deps.specs nil))
+
+(def specs-namespace
+  {'valid-deps? (sci/copy-var valid-deps? sns)
+   'explain-deps (sci/copy-var explain-deps sns)})
+
+;; Read at build time from the tools.deps.edn jar.
+(def ^:private root-deps-edn
+  (edn/read-string (slurp (io/resource "clojure/tools/deps/deps.edn"))))
+
+(def ^:private make-classpath-ns 'clojure.tools.deps.script.make-classpath2)
+
+(defn- sci-var [ctx ns sym]
+  (sci/eval-form ctx (list 'ns-resolve (list 'quote ns) (list 'quote sym))))
+
+(defn- prepare! [ctx]
+  (sci/eval-form ctx (list 'require (list 'quote make-classpath-ns)))
+  ;; MIMA picks its runtime with a ServiceLoader, which native-image does not
+  ;; register. Only one provider ships.
+  (sci/alter-var-root (sci-var ctx 'clojure.tools.deps.util.maven 'the-runtime)
+                      (constantly (delay (StandaloneStaticRuntime.))))
+  ;; The root deps.edn is a jar resource, invisible to bb's classpath.
+  (sci/alter-var-root (sci-var ctx 'clojure.tools.deps.edn 'root-deps)
+                      (constantly (fn [] root-deps-edn))))
 
 (def ^:private file-opts
   [:config-user :config-project :cp-file :jvm-file :main-file :manifest-file :basis-file])
@@ -24,43 +73,20 @@
           opts
           file-opts))
 
-;; bb's script classloader hides image resources such as the root deps.edn.
-;; tools.deps reads those through the context classloader, so run it with the
-;; parent loader, which sees them.
-(defn- with-image-loader* [f]
-  (let [t (Thread/currentThread)
-        loader (.getContextClassLoader t)]
-    (try
-      (.setContextClassLoader t (.getParent loader))
-      (f)
-      (finally
-        (.setContextClassLoader t loader)))))
-
 (defn make-classpath!
   "Runs clojure.tools.deps.script.make-classpath2 in this process with the
   arguments deps.clj passes to it. dir is the project directory."
   [dir args]
-  (let [args (mapv str args)
-        {:keys [options errors]} (mc2/parse-opts args)
+  (let [ctx (common/ctx)
+        args (mapv str args)
         dir (fs/file (or dir (System/getProperty "user.dir")))]
-    (when (seq errors)
-      (throw (ex-info (str/join "\n" errors) {:args args})))
-    (with-image-loader*
-      (fn []
-        (dir/with-dir dir
-          (mc2/run (absolutize-files dir options)))))))
-
-(def tns (sci/create-ns 'clojure.tools.deps nil))
-
-(def tools-deps-namespace
-  {'calc-basis (sci/copy-var deps/calc-basis tns)
-   'create-basis (sci/copy-var deps/create-basis tns)
-   'find-latest-version (sci/copy-var deps/find-latest-version tns)
-   'join-classpath (sci/copy-var deps/join-classpath tns)
-   'lib-location (sci/copy-var deps/lib-location tns)
-   'make-classpath-map (sci/copy-var deps/make-classpath-map tns)
-   'print-tree (sci/copy-var deps/print-tree tns)
-   'resolve-added-libs (sci/copy-var deps/resolve-added-libs tns)
-   'resolve-deps (sci/copy-var deps/resolve-deps tns)
-   'root-deps (sci/copy-var deps/root-deps tns)
-   'user-deps-path (sci/copy-var deps/user-deps-path tns)})
+    (prepare! ctx)
+    (let [{:keys [options errors]}
+          (sci/eval-form ctx (list (symbol (str make-classpath-ns) "parse-opts")
+                                   (list 'quote args)))]
+      (when (seq errors)
+        (throw (ex-info (str/join "\n" errors) {:args args})))
+      (sci/eval-form ctx (list 'clojure.tools.deps.util.dir/with-dir
+                               (list 'clojure.java.io/file (str dir))
+                               (list (symbol (str make-classpath-ns) "run")
+                                     (list 'quote (absolutize-files dir options))))))))

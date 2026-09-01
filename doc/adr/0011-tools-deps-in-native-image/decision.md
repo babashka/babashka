@@ -128,6 +128,45 @@ tools.deps' own Clojure code is 170 KB. An earlier reading attributed 1.1 MB to
 it. That number was `clojure.tools.analyzer` sharing the `tools` label in the
 report tree.
 
+## Interpreted variant: same size
+
+Branch `tools-deps-sci`. tools.deps, tools.deps.edn and tools.gitlibs ship as
+source under `resources/src/babashka/clojure/tools`, the place bb already
+keeps spec.alpha and test.junit, and sci interprets them. Nothing compiled
+requires tools.deps. The Java classes the sources touch are registered in
+`classes.clj`: `tools-deps-methods` lists, per class, the public methods whose
+names the sources use, with parameter types per overload, and `<init>` where
+the sources construct the class. `tools-deps-name-only` holds the five types
+that are only referenced. Both are generated, see the scripts in the ADR
+directory. `clojure.tools.deps.specs` is a built-in sci namespace with the two
+stubbed functions. `TransferListener` is reified by the sources at load time
+and is not in bb's reify registry, so the feature namespace supplies a compiled
+adapter as a fallback for sci's `:reify-fn`.
+
+| registration | size | code area | reachable types |
+| --- | --- | --- | --- |
+| name only, by mistake | 70.71 MB | 28.88 MiB | 21,838 |
+| all public methods | 75.15 MB | 31.14 MiB | 23,192 |
+| used methods only | 74.99 MB | 31.00 MiB | 23,187 |
+
+With the used-methods lists, `add-deps` with `:force true`, `-Sdeps`, bb.edn
+`:deps` and a `:git/sha` dep all resolve natively. A forced `add-deps` of
+medley takes 60 ms wall against 33 ms compiled, the difference being sci
+loading the tools.deps sources.
+
+The 70.71 MB build had the Maven classes registered without members, so the
+Maven code was not in the image and resolution failed at the first method
+call. With the classes registered properly the interpreted variant costs the
+same as the compiled one, 75.07 MB. Narrowing to the methods used saves 160
+KB. The 5 MB is the Maven code that tools.deps executes, and how tools.deps
+itself is packaged does not move it.
+
+Two GraalVM details cost a build each. A `:methods` entry without
+`parameterTypes` means the zero-argument overload under
+`--future-defaults=all`, and the build fails when there is none. And the xml
+class splice near the end of the `classes` map is in `:instance-checks`,
+which registers a name and nothing else.
+
 ## Ruled out: run-time resolve
 
 Run-time `resolve` or `requiring-resolve` in bb code makes the Clojure compiler
@@ -186,3 +225,21 @@ JAVA_CMD=/nonexistent/java ./bb -Sdeps '{:deps {medley/medley {:mvn/version "1.3
 Package attribution comes from `script/compile --emit build-report`. Extract
 label and value pairs from the HTML and diff two builds. ADR 0007 covers the
 JSON report route for totals.
+
+To regenerate the reflection lists on the `tools-deps-sci` branch after a
+tools.deps bump, from the repository root:
+
+```bash
+A=doc/adr/0011-tools-deps-in-native-image
+mkdir -p target/tools-deps
+bb $A/method-names.clj > target/tools-deps/method-names.txt
+clojure -Sdeps '{:deps {org.clojure/tools.deps {:mvn/version "0.31.1638"}}}' -M $A/precise-methods.clj > target/tools-deps/precise.edn
+bb $A/render-defs.clj
+bb $A/replace-defs.clj
+```
+
+The first script lists the method names the sources call. The second keeps,
+per registered class, the public methods with those names, with parameter
+types. The last two render them as the two defs and replace those in
+`classes.clj`. A class the sources start using has to be added to one of the
+defs by hand first, the scripts take the class list from there.

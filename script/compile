@@ -74,7 +74,6 @@ args+=("-EBABASHKA_FEATURE_TOOLS_DEPS")
 if [ "${BABASHKA_FEATURE_TOOLS_DEPS:-}" = "true" ]; then
     args+=("--initialize-at-build-time=org.slf4j,com.google.gson,org.eclipse.aether.util.version.GenericVersionScheme")
     args+=("-H:IncludeResources=org/apache/maven/model/pom-4.0.0.xml")
-    args+=("-H:IncludeResources=clojure/tools/deps/deps.edn")
 fi
 if [ -n "$libffi_archive" ]; then
     if [ "$(uname -s)" = "Darwin" ]; then

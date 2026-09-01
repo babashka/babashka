@@ -83,6 +83,10 @@
 
 (def windows? (fs/windows?))
 
+;; Resolved at build time, see babashka.impl.tools-deps/reify-fn.
+(def ^:private tools-deps-reify-fn
+  (when features/tools-deps? @(resolve 'babashka.impl.tools-deps/reify-fn)))
+
 (if-not windows?
   (do ;; see https://github.com/oracle/graal/issues/1784
     (require 'babashka.impl.pipe-signal-handler)
@@ -505,7 +509,7 @@ Use bb run --help to show this help output.
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace)
                           'next.jdbc.result-set @(resolve 'babashka.impl.jdbc/result-set-namespace))
     features/csv? (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
-    features/tools-deps? (assoc 'clojure.tools.deps @(resolve 'babashka.impl.tools-deps/tools-deps-namespace))
+    features/tools-deps? (assoc 'clojure.tools.deps.specs @(resolve 'babashka.impl.tools-deps/specs-namespace))
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace)
                                 'datascript.db @(resolve 'babashka.impl.datascript/datascript-db-namespace))
@@ -1038,7 +1042,9 @@ Use bb run --help to show this help output.
                   :load-fn load-fn
                   :uberscript uberscript
                   ;; :readers core/data-readers
-                  :reify-fn reify-fn
+                  :reify-fn (if tools-deps-reify-fn
+                              (fn [m] (or (reify-fn m) (tools-deps-reify-fn m)))
+                              reify-fn)
                   :proxy-fn proxy-fn
                   :deftype-fn deftype-fn
                   :unrestricted true
