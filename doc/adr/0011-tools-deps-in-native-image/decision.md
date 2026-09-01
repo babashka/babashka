@@ -1,6 +1,8 @@
 # ADR 0011: tools.deps in the native image
 
-Status: experiment. The branch builds and resolves deps. Shipping is not decided.
+Status: experiment. The branch builds, and `babashka.deps/add-deps`, `-Sdeps`
+and bb.edn `:deps` resolve Maven and git deps in-process, without a JVM.
+Shipping is not decided.
 
 ## Question
 
@@ -28,13 +30,56 @@ GraalVM 25.1.3, darwin aarch64.
 | baseline | 70.02 MB | 28.84 MiB | 74,306 | 40.13 MiB | 547,067 |
 | tools.deps | 103.92 MB | 36.00 MiB | 92,538 | 66.56 MiB | 1,132,463 |
 | tools.deps, specs stubbed | 75.02 MB | 31.08 MiB | 79,391 | 42.81 MiB | 575,286 |
+| same, in-process make-classpath | 75.07 MB | 31.13 MiB | 79,482 | 42.81 MiB | 576,090 |
 
 Reachable types: 21,587 baseline, 27,428 with tools.deps, 23,423 with the stub.
 
 The uberjar grows from 23.83 MB to 28.30 MB.
 
 Resolving `medley/medley 1.3.0` takes 20 ms. `clojure -Sforce -Sdeps ... -Spath`
-takes 504 ms for the same map.
+takes 504 ms for the same map. A forced `add-deps` of the same map through the
+in-process hook takes 33 ms wall for the whole bb invocation.
+
+## In-process make-classpath
+
+`babashka.impl.deps/add-deps` drives deps.clj, which keeps the cache-key
+hashing, `.cpcache` staleness check, `-Sforce` and alias handling. Its one JVM
+step is `*aux-process-fn*` running
+`clojure.main -m clojure.tools.deps.script.make-classpath2 ...`. With the
+feature on, bb binds that var to a function that recognises the
+`make-classpath2` command and calls `babashka.impl.tools-deps/make-classpath!`
+with the arguments after it. That function parses them with
+`make-classpath2/parse-opts` and calls `make-classpath2/run`, which writes the
+same cache files the subprocess would. Both are public, and `System/exit` lives
+only in `-main`. Other scripts, `-Spom` and `-Stree`, still go to `java`.
+
+Three details. deps.clj passes `--config-user nil`, which a subprocess would
+stringify to an empty string and `blank-to-nil` would drop, so the arguments are
+`str`ed first. Relative file arguments are resolved against the project dir,
+and `clojure.tools.deps.util.dir/*the-dir*` is rebound to it with `with-dir`,
+because the image bakes the builder's cwd into that var. deps.clj resolves
+`java` before the aux call and throws when it is missing, so `*getenv-fn*` is
+bound to answer `JAVA_CMD` with a placeholder. deps.clj also downloads the
+Clojure tools jar when it is missing, which the hook never uses. Making both
+lazy belongs in deps.clj.
+
+Verified with `JAVA_CMD=/nonexistent/java`, which makes any subprocess fail:
+`add-deps` with `:force true`, `-Sdeps`, bb.edn `:deps` through `--config`, and
+a `:git/sha` dep all resolve and load.
+
+## Image resources
+
+`clojure.tools.deps.edn/root-deps` reads `clojure/tools/deps/deps.edn` through
+`clojure.java.io/resource`, which uses the thread context classloader. bb sets
+that to its own `URLClassLoader`, whose `getResource` only delegates JLine paths
+to a parent. The resource is in the image and the parent loader returns it.
+`make-classpath!` runs tools.deps with the context classloader swapped to the
+parent for the duration of the call. tools.deps loads no user classes, so it
+loses nothing.
+
+Editing `impl-java/src-java/babashka/impl/URLClassLoader.java` does nothing
+for a local build. That directory is the source of the published
+`org.babashka/babashka.impl.java` artifact, which `project.clj` pins.
 
 ## The cost is clojure.spec, not Maven
 
@@ -113,12 +158,10 @@ The specs stub skips deps.edn validation. A malformed deps.edn gets a worse
 error instead of a spec explanation. The upstream fix is to load specs lazily in
 `clojure.tools.deps.edn` and pull spec in only to explain a failure.
 
-Git deps need the `clojure/tools/deps/deps.edn` resource, read through
-`clojure.java.io/resource`. bb's `URLClassLoader` restricts parent delegation of
-resource lookups to JLine paths. Adding the tools.deps prefix to that allowlist
-did not help, because the fallback loader does not have the resource either.
-Putting the file on the script classpath with `-cp` makes git deps resolve, so
-the remaining work is making that one 478 byte resource visible.
+The `clojure.tools.deps` vars exposed to scripts are plain copies and do not
+swap the context classloader, so a git dep resolved by calling
+`clojure.tools.deps/resolve-deps` directly still needs the root deps.edn on the
+script classpath. `add-deps` and friends do not.
 
 Direct linking is on for the uberjar, so patching `root-deps` with
 `alter-var-root` cannot reach the compiled call site.
@@ -128,7 +171,8 @@ Direct linking is on for the uberjar, so patching `root-deps` with
 ```bash
 BABASHKA_FEATURE_TOOLS_DEPS=true script/uberjar
 BABASHKA_FEATURE_TOOLS_DEPS=true script/compile
-./bb -cp <dir with clojure/tools/deps/deps.edn> -e "(require '[clojure.tools.deps :as deps]) (prn (keys (deps/resolve-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}} :mvn/repos {\"central\" {:url \"https://repo1.maven.org/maven2/\"} \"clojars\" {:url \"https://repo.clojars.org/\"}}} nil)))"
+JAVA_CMD=/nonexistent/java ./bb -e "(babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}} {:force true}) (require '[medley.core :as m]) (prn (m/map-vals inc {:a 1}))"
+JAVA_CMD=/nonexistent/java ./bb -Sdeps '{:deps {medley/medley {:mvn/version "1.3.0"}}}' -e "(require '[medley.core :as m]) (prn (m/map-keys name {:a 1}))"
 ```
 
 Package attribution comes from `script/compile --emit build-report`. Extract
