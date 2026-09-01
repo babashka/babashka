@@ -3,7 +3,6 @@
             [babashka.fs :as fs]
             [babashka.impl.classpath :as cp]
             [babashka.impl.common :refer [bb-edn]]
-            [babashka.impl.features :as features]
             [babashka.process :as process]
             [borkdude.deps :as deps]
             [clojure.string :as str]
@@ -51,23 +50,6 @@
 
 ;;;; end merge edn files
 
-;; With tools.deps in the image, make-classpath2 runs in this process instead
-;; of in a java subprocess. Resolved at build time.
-(def ^:private make-classpath!
-  (when features/tools-deps? @(resolve 'babashka.impl.tools-deps/make-classpath!)))
-
-(def ^:private make-classpath-ns "clojure.tools.deps.script.make-classpath2")
-
-(defn- make-classpath-args [cmd]
-  (when (some #{make-classpath-ns} cmd)
-    (vec (rest (drop-while #(not= make-classpath-ns %) cmd)))))
-
-(defn- run-make-classpath! [deps-root args out]
-  (let [dir (when deps-root (str deps-root))]
-    (if (= :string out)
-      {:exit 0 :out (with-out-str (make-classpath! dir args))}
-      (do (make-classpath! dir args)
-          {:exit 0}))))
 
 ;; We are optimizing for the 1-file script with deps scenario where people can
 ;; call this function to include e.g. {:deps {medley/medley
@@ -118,15 +100,15 @@
                    args (if force (cons "-Sforce" args) args)
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
                    bindings (cond->
-                             {#'deps/*aux-process-fn* (fn [{:keys [cmd out]}]
-                                                        (if-let [args (and make-classpath! (make-classpath-args cmd))]
-                                                          (run-make-classpath! deps-root args out)
-                                                          (process/shell
-                                                           {:cmd cmd
-                                                            :out out
-                                                            :env env
-                                                            :dir (when deps-root (str deps-root))
-                                                            :extra-env extra-env})))
+                             {#'deps/*aux-process-fn* (bdeps/aux-process-fn
+                                                       (when deps-root (str deps-root))
+                                                       (fn [{:keys [cmd out]}]
+                                                         (process/shell
+                                                          {:cmd cmd
+                                                           :out out
+                                                           :env env
+                                                           :dir (when deps-root (str deps-root))
+                                                           :extra-env extra-env})))
                               #'deps/*exit-fn* (fn [{:keys [message]}]
                                                  (when message
                                                    (throw (Exception. message))))}

@@ -63,9 +63,17 @@ when a process starts, so the hook needs no workaround for it. deps.clj still
 downloads the Clojure tools jar when it is missing, which the hook never uses.
 Making that lazy belongs in deps.clj too.
 
+`babashka.deps/clojure` binds the same function, built by
+`babashka.deps/aux-process-fn`, so `bb clojure -Spath` and `-Stree` resolve
+in-process too. Only starting clojure.main spawns `java`. When no java is
+found the process functions raise deps.clj's own message through
+`borkdude.deps/check-java-cmd!` instead of spawning an empty string.
+
 Verified with `JAVA_CMD=/nonexistent/java`, which makes any subprocess fail:
 `add-deps` with `:force true`, `-Sdeps`, bb.edn `:deps` through `--config`, and
-a `:git/sha` dep all resolve and load.
+a `:git/sha` dep all resolve and load. Verified again with `PATH=/bin` and no
+`JAVA_HOME`, where deps.clj finds no java at all: `add-deps`, `-Sdeps` and
+`babashka.deps/clojure` with `-Sforce -Spath` resolve.
 
 ## Image resources
 
