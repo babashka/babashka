@@ -250,6 +250,18 @@ babashka, clj-kondo, quickblog and clojure-lsp, plus libraries with hard
 POMs. With the Aether-backed tools.deps on both sides all 17 entries match,
 warm and cold, which is the harness's own check.
 
+The floor for the procurer, measured on this branch with the Maven
+registrations in `classes.clj` switched off and nothing else changed:
+
+| build | size | code area | reachable types |
+| --- | --- | --- | --- |
+| baseline | 70.02 MB | 28.84 MiB | 21,587 |
+| interpreted tools.deps, no Maven | 70.05 MB | 28.85 MiB | 21,610 |
+
+The bundled sources, the reify adapter and the load-fn patches cost 30 KB.
+Everything else in the 5 MB is Maven. A Clojure procurer adds its own source
+on top of 70.05 MB.
+
 On this branch the bundled sources get their patches from the load-fn:
 `babashka.impl.tools-deps/patch-source` appends the MIMA runtime binding to
 `util/maven.clj` and the embedded root deps.edn to `edn.clj` as they are
