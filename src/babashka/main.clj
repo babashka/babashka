@@ -1006,12 +1006,15 @@ Use bb run --help to show this help output.
                                (pods/load-pod (:pod-spec pod) (:opts pod)))))
                          (when loader
                            (when-let [res (cp/source-for-namespace loader namespace nil)]
+                             (let [res (if tools-deps-patch-source
+                                         (update res :source #(tools-deps-patch-source namespace %))
+                                         res)]
                              (if uberscript
                                (do (swap! uberscript-sources conj (:source res))
                                    (uberscript/uberscript {:ctx (common/ctx)
                                                            :expressions [(:source res)]})
                                    {})
-                               res)))
+                               res))))
                          ;; built-in deps
                          (let [rps (cp/resource-paths namespace)
                                rps (mapv #(str "src/babashka/" %) rps)]

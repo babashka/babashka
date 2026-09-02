@@ -55,7 +55,11 @@
 ;; register. Only one provider ships. The root deps.edn is a jar resource,
 ;; invisible to bb's classpath.
 (def ^:private source-patches
-  {'clojure.tools.deps.util.maven
+  {;; The Clojure procurer overrides the :mvn extension methods, so it loads
+   ;; after tools.deps loaded its own.
+   'clojure.tools.deps
+   "\n(require 'babashka.mvn.tools-deps)\n"
+   'clojure.tools.deps.util.maven
    (str "\n(alter-var-root #'the-runtime (constantly (delay (" (.getName StandaloneStaticRuntime) ".))))\n")
    'clojure.tools.deps.edn
    (binding [*print-namespace-maps* false]

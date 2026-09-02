@@ -23,8 +23,12 @@
 (defn- run-side [entry side]
   (let [out (str out-dir "/" entry "." (name side) ".edn")
         res (case side
-              :bb (p/shell {:out :string :err :inherit :continue true}
-                           "./bb" (str dir "/oracle.clj") corpus-file entry local-repo)
+              ;; MVN_ORACLE_CP puts a source tree before the bundled one, for
+              ;; iterating without a native build.
+              :bb (apply p/shell {:out :string :err :inherit :continue true}
+                         (concat ["./bb"]
+                                 (when-let [cp (System/getenv "MVN_ORACLE_CP")] ["-cp" cp])
+                                 [(str dir "/oracle.clj") corpus-file entry local-repo]))
               :jvm (p/shell {:out :string :err :inherit :continue true}
                             "clojure" "-Sdeps" (pr-str jvm-deps) "-M:o" "-m" "mvn-oracle.oracle"
                             corpus-file entry local-repo))]
