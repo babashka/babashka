@@ -40,17 +40,22 @@
         :else (throw (ex-info (str "HTTP " status " for " url) {:url url :status status}))))))
 
 (defn- fetch-to-file
-  "GET url into dest. true when written, false when absent."
-  [url dest opts]
+  "GET url into dest. true when written, false when absent. Says so on
+  stderr once the repository has answered, like Aether's transfer
+  listener."
+  [url dest {:keys [repo-id label] :as opts}]
   (if (file-url? url)
     (let [f (file-url->path url)]
       (if (fs/exists? f)
-        (do (fs/copy f dest {:replace-existing true}) true)
+        (do (printerrln "Downloading:" label "from" repo-id)
+            (fs/copy f dest {:replace-existing true})
+            true)
         false))
     (let [{:keys [status body]} (http/get url (request-opts opts))]
       (cond
-        (= 200 status) (with-open [in body]
-                         (io/copy in (io/file dest)))
+        (= 200 status) (do (printerrln "Downloading:" label "from" repo-id)
+                           (with-open [in body]
+                             (io/copy in (io/file dest))))
         (#{404 410} status) false
         :else (throw (ex-info (str "HTTP " status " for " url) {:url url :status status})))
       (= 200 status))))
@@ -102,11 +107,10 @@
   policy in opts. Returns dest, or nil when the repository has no such file.
   opts: :auth [user pass], :proxy, :checksum :warn/:fail/:ignore, :repo-id
   and :label for messages."
-  [url dest {:keys [repo-id label] :as opts}]
+  [url dest opts]
   (let [dest (str dest)
         part (str dest ".part")]
     (fs/create-dirs (fs/parent dest))
-    (printerrln "Downloading:" label "from" repo-id)
     (try
       (when (fetch-to-file url part opts)
         (verify! url part opts)

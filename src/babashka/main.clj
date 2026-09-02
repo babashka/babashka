@@ -967,10 +967,8 @@ Use bb run --help to show this help output.
             uberscript-sources (atom ())
             classpath (or classpath
                           (System/getenv "BABASHKA_CLASSPATH"))
-            _ (if classpath
-                (cp/add-classpath classpath)
-                ;; when classpath isn't set, we calculate it from bb.edn, if present
-                (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
+            _ (when classpath
+                (cp/add-classpath classpath))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (sci/alter-var-root sci/file (constantly abs-path))
@@ -1056,6 +1054,11 @@ Use bb run --help to show this help output.
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (ctx-store/reset-ctx! sci-ctx)
+            ;; when classpath isn't set, we calculate it from bb.edn, if
+            ;; present. After the context exists: with tools.deps in the
+            ;; image the resolver runs interpreted, through the context.
+            _ (when-not classpath
+                (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
             _ (when-let [pods (:pods @common/bb-edn)]
                 (when-let [pod-metadata (pods/load-pods-metadata
                                          pods {:download-only (download-only?)})]
