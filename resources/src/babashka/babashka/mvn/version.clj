@@ -1,132 +1,148 @@
 (ns babashka.mvn.version
-  "Maven version ordering, a port of ComparableVersion from maven-artifact
-  3.9.16. Items are numbers, qualifier strings, or vectors for the parts
-  after a dash."
+  "Maven version ordering, a port of GenericVersion from maven-resolver-util
+  1.9.27, the scheme tools.deps compares with. Items are maps of :kind and
+  :value."
   (:require [clojure.string :as str]))
 
-(def ^:private qualifiers ["alpha" "beta" "milestone" "rc" "snapshot" "" "sp"])
-(def ^:private aliases {"ga" "" "final" "" "release" "" "cr" "rc"})
-(def ^:private release-index (str (.indexOf ^java.util.List qualifiers "")))
+;; Item kinds, ordered. Min and max are the "min" and "max" tokens.
+(def ^:private kind-min 0)
+(def ^:private kind-qualifier 2)
+(def ^:private kind-string 3)
+(def ^:private kind-int 4)
+(def ^:private kind-bigint 5)
+(def ^:private kind-max 8)
 
-(defn- comparable-qualifier [q]
-  (let [i (.indexOf ^java.util.List qualifiers q)]
-    (if (neg? i)
-      (str (count qualifiers) "-" q)
-      (str i))))
+(def ^:private qualifiers
+  {"alpha" -5 "beta" -4 "milestone" -3 "cr" -2 "rc" -2 "snapshot" -1
+   "ga" 0 "final" 0 "release" 0 "" 0 "sp" 1})
 
-(defn- string-item [s followed-by-digit?]
-  (let [s (if (and followed-by-digit? (= 1 (count s)))
-            (case s "a" "alpha" "b" "beta" "m" "milestone" s)
-            s)]
-    (get aliases s s)))
+(defn- number-kind? [{:keys [kind]}]
+  (zero? (bit-and kind 2)))
 
-(defn- number-item [s]
-  (let [s (str/replace s #"^0+(?=\d)" "")]
-    (if (<= (count s) 18)
-      (parse-long s)
-      (bigint s))))
+(defn- item [kind value]
+  {:kind kind :value value})
 
-(defn- parse-item [digit? s]
-  (if digit? (number-item s) (string-item s false)))
+(defn- number-item [token]
+  (if (< (count token) 10)
+    (item kind-int (parse-long token))
+    (item kind-bigint (bigint token))))
 
-(defn- null-item? [item]
+(defn- text-item [token at-end? terminated-by-number?]
+  (let [lower (str/lower-case token)]
+    (cond
+      (and at-end? (= "min" lower)) (item kind-min "min")
+      (and at-end? (= "max" lower)) (item kind-max "max")
+      (and terminated-by-number? (= 1 (count token)) (#{"a" "b" "m"} lower))
+      (item kind-qualifier (get qualifiers (case lower "a" "alpha" "b" "beta" "milestone")))
+      (contains? qualifiers lower) (item kind-qualifier (get qualifiers lower))
+      :else (item kind-string lower))))
+
+(defn- tokenize
+  "The items of a version string, before padding is trimmed."
+  [version]
+  (let [s (if (= "" version) "0" version)
+        n (count s)]
+    (loop [index 0 items []]
+      (if (>= index n)
+        items
+        ;; state: -2 start, -1 in text, 0 in leading zeros, 1 in a number
+        (let [[index start end state terminated-by-number?]
+              (loop [i index start index end n state -2]
+                (if (>= i n)
+                  [i start end state false]
+                  (let [c (.charAt s i)]
+                    (if (or (= \. c) (= \- c) (= \_ c))
+                      [(inc i) start i state false]
+                      (let [digit (Character/digit c 10)]
+                        (if (>= digit 0)
+                          (cond
+                            (= -1 state) [i start i state true]
+                            :else (recur (inc i)
+                                         (if (= 0 state) (inc start) start)
+                                         end
+                                         (if (or (> state 0) (> digit 0)) 1 0)))
+                          (if (>= state 0)
+                            [i start i state false]
+                            (recur (inc i) start end -1))))))))
+              token (if (> (- end start) 0) (subs s start end) "0")
+              number? (if (> (- end start) 0) (>= state 0) true)
+              it (if number?
+                   (number-item token)
+                   (text-item token (>= index n) terminated-by-number?))]
+          (recur index (conj items it)))))))
+
+(defn- compare-to-nil [{:keys [kind value]}]
   (cond
-    (number? item) (zero? item)
-    (string? item) (= release-index (comparable-qualifier item))
-    :else (empty? item)))
+    (= kind kind-min) -1
+    (or (= kind kind-max) (= kind kind-bigint) (= kind kind-string)) 1
+    :else value))
 
-(defn- normalize
-  "Drops trailing null items, looking past non-null sublists as Maven does."
-  [items]
+(defn- compare-items [{ka :kind va :value} {kb :kind vb :value}]
+  (let [rel (- ka kb)]
+    (if (zero? rel)
+      (cond
+        (or (= ka kind-max) (= ka kind-min)) 0
+        (= ka kind-string) (compare (str/lower-case va) (str/lower-case vb))
+        :else (compare va vb))
+      rel)))
+
+(defn- remove-at [v i]
+  (into (subvec v 0 i) (subvec v (inc i))))
+
+(defn- trim-padding [items]
   (loop [items items
-         i (dec (count items))]
-    (if (neg? i)
+         i (dec (count items))
+         end (dec (count items))
+         number nil]
+    (if (<= i 0)
       items
-      (let [item (nth items i)]
-        (cond
-          (null-item? item) (recur (into (subvec items 0 i) (subvec items (inc i))) (dec i))
-          (vector? item) (recur items (dec i))
-          :else items)))))
+      (let [it (nth items i)
+            n? (number-kind? it)
+            [end number] (if (not= n? number) [i n?] [end number])]
+        (if (and (= end i)
+                 (or (= i (dec (count items)))
+                     (= (number-kind? (nth items (dec i))) n?))
+                 (zero? (compare-to-nil it)))
+          (recur (remove-at items i) (dec i) (dec end) number)
+          (recur items (dec i) end number))))))
 
 (defn parse
-  "The item tree for a version string."
+  "The items of a version string."
   [version]
-  (let [s (str/lower-case version)
-        n (count s)]
-    (loop [i 0
-           start 0
-           digit? false
-           ;; the stack of open lists, deepest last, each a vector of items
-           stack [[]]]
-      (let [add (fn [stack item] (update stack (dec (count stack)) conj item))
-            push (fn [stack] (conj stack []))]
-        (if (< i n)
-          (let [c (.charAt s i)]
-            (cond
-              (= \. c)
-              (recur (inc i) (inc i) digit?
-                     (add stack (if (= i start) 0 (parse-item digit? (subs s start i)))))
+  (trim-padding (tokenize version)))
 
-              (= \- c)
-              (recur (inc i) (inc i) digit?
-                     (push (add stack (if (= i start) 0 (parse-item digit? (subs s start i))))))
+(defn- compare-padding [items index number]
+  (loop [i index]
+    (if (>= i (count items))
+      0
+      (let [it (nth items i)]
+        (if (and (some? number) (not= number (number-kind? it)))
+          (recur (inc i))
+          (let [rel (compare-to-nil it)]
+            (if (zero? rel) (recur (inc i)) rel)))))))
 
-              (Character/isDigit c)
-              (if (and (not digit?) (> i start))
-                (let [stack (if (seq (peek stack)) (push stack) stack)
-                      stack (add stack (string-item (subs s start i) true))]
-                  (recur (inc i) i true (push stack)))
-                (recur (inc i) start true stack))
-
-              :else
-              (if (and digit? (> i start))
-                (recur (inc i) i false
-                       (push (add stack (parse-item true (subs s start i)))))
-                (recur (inc i) start false stack))))
-          (let [stack (if (> n start)
-                        (let [stack (if (and (not digit?) (seq (peek stack))) (push stack) stack)]
-                          (add stack (parse-item digit? (subs s start))))
-                        stack)]
-            ;; close the lists, deepest first, normalizing each
-            (loop [stack stack]
-              (if (= 1 (count stack))
-                (normalize (peek stack))
-                (let [child (normalize (peek stack))
-                      stack (pop stack)]
-                  (recur (update stack (dec (count stack)) conj child)))))))))))
-
-(declare compare-items)
-
-(defn- compare-to-nil [item]
-  (cond
-    (number? item) (if (zero? item) 0 1)
-    (string? item) (compare (comparable-qualifier item) release-index)
-    :else (or (some #(let [r (compare-to-nil %)] (when-not (zero? r) r)) item) 0)))
-
-(defn- compare-items [a b]
-  (cond
-    (nil? b) (compare-to-nil a)
-    (number? a) (cond (number? b) (compare a b)
-                      :else 1)
-    (string? a) (cond (string? b) (compare (comparable-qualifier a) (comparable-qualifier b))
-                      :else -1)
-    :else (cond (number? b) -1
-                (string? b) 1
-                :else (loop [l (seq a) r (seq b)]
-                        (if (or l r)
-                          (let [x (first l) y (first r)
-                                result (if (nil? x)
-                                         (- (compare-items y nil))
-                                         (compare-items x y))]
-                            (if (zero? result)
-                              (recur (next l) (next r))
-                              result))
-                          0)))))
+(defn- compare-parsed [these those]
+  (loop [index 0 number true]
+    (cond
+      (and (>= index (count these)) (>= index (count those))) 0
+      (>= index (count these)) (- (compare-padding those index nil))
+      (>= index (count those)) (compare-padding these index nil)
+      :else
+      (let [a (nth these index)
+            b (nth those index)]
+        (if (not= (number-kind? a) (number-kind? b))
+          (if (= number (number-kind? a))
+            (compare-padding these index number)
+            (- (compare-padding those index number)))
+          (let [rel (compare-items a b)]
+            (if (zero? rel)
+              (recur (inc index) (number-kind? a))
+              rel)))))))
 
 (defn compare-versions
-  "Negative, zero or positive, as Maven orders a before b."
+  "Negative, zero or positive, as tools.deps orders a before b."
   [a b]
-  (let [r (compare-items (parse a) (parse b))]
+  (let [r (compare-parsed (parse a) (parse b))]
     (cond (neg? r) -1 (pos? r) 1 :else 0)))
 
 (defn- parse-bound

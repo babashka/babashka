@@ -36,10 +36,12 @@
   (into {} (filter (fn [[_ c]] (or (:mvn/version c) (:git/sha c) (:git/url c)))) deps))
 
 (defn- find-versions
-  "The release versions of a top-level :mvn dep, as find-versions sees them."
+  "The release versions of a top-level :mvn dep, as find-versions sees them.
+  A set: versions that compare equal, 2.0-rc1 and 2.0.0-RC1, come out of
+  Aether in hash order. The bb side checks its own ordering separately."
   [config [lib coord]]
   (when (:mvn/version coord)
-    [lib (mapv :mvn/version (ext/find-versions lib coord :mvn config))]))
+    [lib (into (sorted-set) (map :mvn/version) (ext/find-versions lib coord :mvn config))]))
 
 (defn run [{:keys [deps local-repo]}]
   (let [deps-map (-> deps

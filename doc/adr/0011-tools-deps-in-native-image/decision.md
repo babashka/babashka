@@ -175,6 +175,73 @@ Two GraalVM details cost a build each. A `:methods` entry without
 class splice near the end of the `classes` map is in `:instance-checks`,
 which registers a name and nothing else.
 
+## The Clojure procurer: 70.02 MB
+
+Branch `mvn-clj`. `babashka.mvn` replaces Maven Resolver, MIMA,
+maven-model-builder, plexus, httpclient4 and gson behind tools.deps' own
+`:mvn` and `:pom` extension methods, on data.xml and babashka.http-client.
+tools.deps keeps expansion, version selection, aliases, classpath and cache.
+The sources are bundled and interpreted, like tools.deps itself.
+
+| build | size | code area | reachable types |
+| --- | --- | --- | --- |
+| baseline | 70.02 MB | 28.84 MiB | 21,587 |
+| tools.deps compiled, with Maven | 75.07 MB | 31.13 MiB | 23,423 |
+| tools.deps interpreted, with Maven | 75.05 MB | 31.06 MiB | |
+| tools.deps interpreted, babashka.mvn | 70.02 MB | 28.84 MiB | 21,601 |
+
+Same size as baseline to the reported precision, 14 more reachable types.
+The uberjar shrinks from 23.83 MB to 22.82 MB: the only Maven artifact left
+is `tools.deps.edn`, for the root deps.edn resource read at build time.
+
+Namespaces, under `resources/src/babashka/babashka/mvn`:
+
+- `coords`: lib symbols, packaging types, the repository layout, base
+  versions of timestamped snapshots.
+- `settings`: `~/.m2/settings.xml`, mirrors with Maven's `mirrorOf`
+  grammar, servers, proxies, active profile repositories.
+- `http`: downloads with `.sha1` verification under the tools.deps checksum
+  policy, atomic writes, `file:` repositories.
+- `repo`: `:mvn/repos` in tools.deps order with policies, mirrors and auth
+  applied, the local repository, one download per path across tools.deps'
+  parallel resolution, `_remote.repositories` markers for the JVM path, and
+  `_babashka.snapshots` recording which build a snapshot file holds.
+- `metadata`: `maven-metadata.xml` cached under Aether's names with the
+  update policy, versions, and the timestamped file behind a `-SNAPSHOT`.
+- `version`: a port of maven-resolver-util 1.9.27 `GenericVersion`, the
+  scheme tools.deps compares with, checked against its own test suite, 155
+  ordering assertions and 5 sequences. Not maven-artifact's
+  `ComparableVersion`: the two differ, `_` is a separator in one and not
+  the other, and `5.0_ALPHA` sorts before `5.0` only in `GenericVersion`.
+  The oracle caught a first port of the wrong one through `find-versions`.
+  Version ranges on top.
+- `pom`: raw model, profile activation with all five activators, inheritance
+  and profile injection after `ModelMerger`, interpolation, BOM imports,
+  dependency management, relocation, build-helper source paths.
+- `tools-deps`: the extension methods, `coord-deps`, `coord-paths`,
+  `canonicalize`, `find-versions`, `compare-versions`, `license-info`,
+  `lib-location` for `:mvn`, and `coord-deps`, `coord-paths`,
+  `manifest-file`, `license-info-mf` for `:pom`.
+
+Four upstream namespaces have stand-ins at their own paths, so the vendored
+tree loads without a single Maven class: `util/maven.clj` carries the small
+surface other namespaces use, `extensions/maven.clj` is empty,
+`extensions/pom.clj` delegates `read-model` and `model-deps`, and
+`extensions/local.clj` is upstream with its `:jar` methods reading the POM
+text out of the jar. `babashka.mvn.tools-deps` loads after tools.deps through
+the load-fn patch, so its methods win. The vendor script skips those four.
+
+Verified against the oracle: all 20 corpus entries match the JVM tools.deps
+with the source tree on `-cp`, warm and cold, including bb's own deps.edn,
+the aws graph, BOM imports, relocation, a pom.xml manifest from git, a
+timestamped snapshot pin, a floating `-SNAPSHOT`, and a version range.
+`add-deps`, `-Sdeps`, bb.edn `:deps`, a git dep and `bb clojure -Spath`
+resolve natively with no java on the machine. A forced `add-deps` of medley
+takes 64 ms.
+
+Not done: encrypted settings.xml passwords fail with a plain 401, and the
+`LATEST` and `RELEASE` versions are resolved but not in the corpus.
+
 ## Ruled out: run-time resolve
 
 Run-time `resolve` or `requiring-resolve` in bb code makes the Clojure compiler
