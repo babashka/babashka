@@ -101,9 +101,10 @@
                                   :dependencies [[org.clojure/core.rrb-vector "0.2.0"]]}
              ;; This profile adds the libffi bindings.
              :feature/libffi {:source-paths ["feature-libffi"]}
+             ;; tools.deps itself is bundled as source under resources/src/babashka
+             ;; and interpreted. The jar is only here for the root deps.edn resource.
              :feature/tools-deps {:source-paths ["feature-tools-deps"]
-                                  :dependencies [[org.clojure/tools.deps "0.31.1638"
-                                                  :exclusions [org.clojure/tools.deps.maven-s3-transporter]]]}
+                                  :dependencies [[org.clojure/tools.deps.edn "0.9.42"]]}
              :test/deps {:dependencies [[borkdude/rewrite-edn "0.4.6"]
                                         [com.clojure-goes-fast/clj-async-profiler "0.5.0"]
                                         [com.opentable.components/otj-pg-embedded "0.13.3"]

@@ -8,6 +8,9 @@
 
 (ns ^{:skip-wiki true}
   clojure.tools.deps.extensions.local
+  "babashka's copy of the tools.deps namespace of the same name. The :jar
+  methods read a jar's pom.xml as text for babashka.mvn instead of through
+  Maven's model source. Everything else is upstream."
   (:require
     [clojure.java.io :as jio]
     [clojure.string :as str]
@@ -18,11 +21,7 @@
     [clojure.tools.deps.util.session :as session])
   (:import
     [java.io File IOException]
-    [java.net URL]
-    [java.util.jar JarFile JarEntry]
-    ;; maven-builder-support
-    [org.apache.maven.model.building UrlModelSource]
-    [org.apache.maven.model License]))
+    [java.util.jar JarFile JarEntry]))
 
 (defmethod ext/coord-type-keys :local
   [_type]
@@ -84,16 +83,20 @@
             (recur entries)))))
     (catch IOException _t nil)))
 
+(defn- pom-text [^JarFile jar ^String path]
+  (slurp (.getInputStream jar (.getEntry jar path))))
+
+(defn- jar-model [lib root config]
+  (with-open [jar (JarFile. (ensure-file lib root))]
+    (when-let [path (find-pom jar)]
+      (let [settings (session/retrieve :mvn/settings #(maven/get-settings))]
+        (pom/read-model (pom-text jar path) config settings)))))
+
 (defmethod ext/coord-deps :jar
   [lib {:keys [local/root] :as _coord} _manifest config]
-  (let [jar (JarFile. (ensure-file lib root))]
-    (if-let [path (find-pom jar)]
-      (let [url (URL. (str "jar:file:" root "!/" path))
-            src (UrlModelSource. url)
-            settings (session/retrieve :mvn/settings #(maven/get-settings))
-            model (pom/read-model src config settings)]
-        (pom/model-deps model))
-      [])))
+  (if-let [model (jar-model lib root config)]
+    (pom/model-deps model)
+    []))
 
 (defmethod ext/coord-paths :jar
   [_lib coord _manifest _config]
@@ -113,21 +116,12 @@
 
 (defmethod ext/license-info-mf :jar
   [lib {:keys [local/root] :as _coord} _mf config]
-  (let [jar (JarFile. (ensure-file lib root))]
-    (when-let [path (find-pom jar)]
-      (let [url (URL. (str "jar:file:" root "!/" path))
-            src (UrlModelSource. url)
-            settings (session/retrieve :mvn/settings #(maven/get-settings))
-            model (pom/read-model src config settings)
-            licenses (.getLicenses model)
-            ^License license (when (and licenses (pos? (count licenses))) (first licenses))]
-        (when license
-          (let [name (.getName license)
-                url (.getUrl license)]
-            (when (or name url)
-              (cond-> {}
-                name (assoc :name name)
-                url (assoc :url url)))))))))
+  (when-let [model (jar-model lib root config)]
+    (let [{:keys [name url]} (first (:licenses model))]
+      (when (or name url)
+        (cond-> {}
+          name (assoc :name name)
+          url (assoc :url url))))))
 
 (defmethod ext/coord-usage :jar
   [_lib _coord _manifest-type _config]

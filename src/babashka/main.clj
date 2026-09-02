@@ -84,9 +84,6 @@
 (def windows? (fs/windows?))
 
 ;; Resolved at build time, see babashka.impl.tools-deps.
-(def ^:private tools-deps-reify-fn
-  (when features/tools-deps? @(resolve 'babashka.impl.tools-deps/reify-fn)))
-
 (def ^:private tools-deps-patch-source
   (when features/tools-deps? @(resolve 'babashka.impl.tools-deps/patch-source)))
 
@@ -1051,9 +1048,7 @@ Use bb run --help to show this help output.
                   :load-fn load-fn
                   :uberscript uberscript
                   ;; :readers core/data-readers
-                  :reify-fn (if tools-deps-reify-fn
-                              (fn [m] (or (reify-fn m) (tools-deps-reify-fn m)))
-                              reify-fn)
+                  :reify-fn reify-fn
                   :proxy-fn proxy-fn
                   :deftype-fn deftype-fn
                   :unrestricted true

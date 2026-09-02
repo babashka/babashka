@@ -5,32 +5,11 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [sci.core :as sci])
-  (:import [eu.maveniverse.maven.mima.runtime.standalonestatic StandaloneStaticRuntime]
-           [org.eclipse.aether.transfer TransferListener]))
+            [sci.core :as sci]))
 
-;; clojure.tools.deps.util.maven reifies TransferListener at load time. bb's
-;; reify registry does not carry it, so this adapter serves that one case.
-(defn- transfer-listener [{:keys [methods]}]
-  (let [call (fn [name this ev]
-               (when-let [f (get methods name)]
-                 (f this ev)))]
-    (reify TransferListener
-      (transferInitiated [this ev] (call 'transferInitiated this ev))
-      (transferStarted [this ev] (call 'transferStarted this ev))
-      (transferProgressed [this ev] (call 'transferProgressed this ev))
-      (transferCorrupted [this ev] (call 'transferCorrupted this ev))
-      (transferSucceeded [this ev] (call 'transferSucceeded this ev))
-      (transferFailed [this ev] (call 'transferFailed this ev)))))
-
-(defn reify-fn
-  "Fallback for bb's reify-fn. Returns nil for anything it does not handle."
-  [{:keys [interfaces] :as m}]
-  (when (= #{TransferListener} interfaces)
-    (transfer-listener m)))
-
-;; tools.deps runs interpreted, from the sources under resources/src/babashka.
-;; Nothing in this namespace requires it, so none of it is compiled in.
+;; tools.deps runs interpreted, from the sources under resources/src/babashka,
+;; with babashka.mvn as its Maven procurer. Nothing in this namespace
+;; requires either, so none of it is compiled in.
 
 ;; The real clojure.tools.deps.specs is built on clojure.spec, which bb leaves
 ;; out. clojure.tools.deps.edn calls only these two.
@@ -49,18 +28,13 @@
 
 (def ^:private make-classpath-ns 'clojure.tools.deps.script.make-classpath2)
 
-;; Appended to the bundled sources when bb's load-fn serves them, so every
-;; require gets them, not only the one from make-classpath!.
-;; MIMA picks its runtime with a ServiceLoader, which native-image does not
-;; register. Only one provider ships. The root deps.edn is a jar resource,
+;; Appended to the bundled sources when bb's load-fn serves them.
+;; The procurer overrides the :mvn and :pom extension methods, so it loads
+;; after tools.deps loaded its own. The root deps.edn is a jar resource,
 ;; invisible to bb's classpath.
 (def ^:private source-patches
-  {;; The Clojure procurer overrides the :mvn extension methods, so it loads
-   ;; after tools.deps loaded its own.
-   'clojure.tools.deps
+  {'clojure.tools.deps
    "\n(require 'babashka.mvn.tools-deps)\n"
-   'clojure.tools.deps.util.maven
-   (str "\n(alter-var-root #'the-runtime (constantly (delay (" (.getName StandaloneStaticRuntime) ".))))\n")
    'clojure.tools.deps.edn
    (binding [*print-namespace-maps* false]
      (str "\n(alter-var-root #'root-deps (constantly (fn [] '" (pr-str root-deps-edn) ")))\n"))})

@@ -83,7 +83,57 @@
        optional (assoc :optional true)
        (seq exclusions) (assoc :exclusions (into #{} (map #(symbol (:group %) (:artifact %))) exclusions)))]))
 
+(defn model-from-text
+  "The effective model of a POM given as text, parents and BOMs from the
+  repositories in config."
+  [text config]
+  (pom/effective-model (pom/parse text) (pom-ctx config)))
+
+(defn model-deps
+  "The compile and runtime dependencies of a model, as tools.deps data."
+  [model]
+  (into []
+        (comp (filter #(contains? #{"compile" "runtime"} (:scope %)))
+              (map dep->data))
+        (pom/dependencies model)))
+
 ;; Extension methods
+
+(defmethod ext/coord-type-keys :mvn
+  [_type]
+  #{:mvn/version})
+
+(defmethod ext/dep-id :mvn
+  [_lib coord _config]
+  (select-keys coord [:mvn/version]))
+
+(defmethod ext/manifest-type :mvn
+  [_lib _coord _config]
+  {:deps/manifest :mvn})
+
+(defmethod ext/coord-summary :mvn
+  [lib {:keys [mvn/version]}]
+  (str lib " " version))
+
+(defmethod ext/manifest-file :mvn
+  [_lib _coord _manifest _config]
+  nil)
+
+(defmethod ext/coord-usage :mvn
+  [_lib _coord _manifest _config]
+  nil)
+
+(defmethod ext/prep-command :mvn
+  [_lib _coord _manifest _config]
+  nil)
+
+(defmethod ext/coord-usage :pom
+  [_lib _coord _manifest _config]
+  nil)
+
+(defmethod ext/prep-command :pom
+  [_lib _coord _manifest _config]
+  nil)
 
 (defmethod ext/lib-location :mvn
   [lib {:keys [mvn/version]} config]
