@@ -43,8 +43,8 @@
       (println "  " label)
       (doseq [k (sort (distinct (concat (keys only-a) (keys only-b))))]
         (println "    " k)
-        (println "       bb :" (pr-str (get only-a k)))
-        (println "       jvm:" (pr-str (get only-b k))))
+        (println "       bb :" (pr-str (get a k)))
+        (println "       jvm:" (pr-str (get b k))))
       true)))
 
 (let [args *command-line-args*
@@ -64,8 +64,9 @@
           (:error jvm) (do (println "   jvm failed, exit" (:error jvm)) (swap! failed conj entry))
           :else
           (let [d1 (report-diff ":libs" (:libs bb) (:libs jvm))
-                d2 (report-diff ":coord-deps" (:coord-deps bb) (:coord-deps jvm))]
-            (if (or d1 d2)
+                d2 (report-diff ":coord-deps" (:coord-deps bb) (:coord-deps jvm))
+                d3 (report-diff ":find-versions" (:find-versions bb) (:find-versions jvm))]
+            (if (or d1 d2 d3)
               (swap! failed conj entry)
               (println "   ok," (count (:libs bb)) "libs"))))))
     (println)

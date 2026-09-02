@@ -3,6 +3,7 @@
   loaded its own, so these methods win."
   (:require [babashka.fs :as fs]
             [babashka.mvn.coords :as coords]
+            [babashka.mvn.metadata :as metadata]
             [babashka.mvn.pom :as pom]
             [babashka.mvn.repo :as repo]
             [babashka.mvn.settings :as settings]
@@ -110,6 +111,51 @@
       [(or (repo/resolve-file! (local-repo config) (repos config) artifact)
            (throw (ex-info (str "Unable to download: [" lib (pr-str (:mvn/version coord)) "]")
                            {:lib lib :coord coord})))])))
+
+;; Versions from metadata
+
+(defn- artifact-versions [lib config]
+  (let [[group artifact] (coords/lib->names lib)]
+    (session/retrieve [:babashka.mvn/versions lib]
+                      #(metadata/versions (local-repo config) (repos config)
+                                          {:group group :artifact artifact}))))
+
+(defn- unresolved [lib coord]
+  (ex-info (str "Unable to resolve " lib " version: " (:mvn/version coord))
+           {:lib lib :coord coord}))
+
+(defmethod ext/find-versions :mvn
+  [lib _coord _coord-type config]
+  (let [{:keys [versions]} (artifact-versions lib config)]
+    (when (seq versions)
+      (into []
+            (comp (remove #(str/ends-with? % "-SNAPSHOT"))
+                  (map #(hash-map :mvn/version %)))
+            versions))))
+
+(defmethod ext/canonicalize :mvn
+  [lib {:keys [mvn/version] :as coord} config]
+  (let [specific (second (re-matches #"^\[([^,]*)]$" version))]
+    (cond
+      (contains? #{"RELEASE" "LATEST"} version)
+      (let [{:keys [latest release]} (artifact-versions lib config)
+            resolved (if (= "RELEASE" version) release latest)]
+        (if resolved
+          [lib (assoc coord :mvn/version resolved)]
+          (throw (unresolved lib coord))))
+
+      specific
+      [lib (assoc coord :mvn/version specific)]
+
+      (coords/version-range? version)
+      (let [{:keys [versions]} (artifact-versions lib config)
+            highest (last (filter #(version/in-range? % version) versions))]
+        (if highest
+          [lib (assoc coord :mvn/version highest)]
+          (throw (unresolved lib coord))))
+
+      :else
+      [lib coord])))
 
 (defmethod ext/compare-versions [:mvn :mvn]
   [lib coord-x coord-y _config]

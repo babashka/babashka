@@ -4,6 +4,7 @@
   (:require [babashka.fs :as fs]
             [babashka.mvn.coords :as coords]
             [babashka.mvn.http :as http]
+            [babashka.mvn.metadata :as metadata]
             [babashka.mvn.settings :as settings]
             [clojure.string :as str]))
 
@@ -86,33 +87,74 @@
   (or (get @locks path)
       (get (swap! locks update path #(or % (Object.))) path)))
 
+(defn- remote-file-name
+  "The file's name in repo. A -SNAPSHOT version names its timestamped file
+  through the repository's metadata, nil when the repository has none."
+  [local-repo repo {:keys [version] :as artifact}]
+  (if (str/ends-with? version "-SNAPSHOT")
+    (metadata/snapshot-file-name local-repo repo artifact)
+    (coords/file-name artifact)))
+
+;; A snapshot's local file carries the base version, so _babashka.snapshots
+;; in the version directory records which remote file it holds.
+
+(defn- snapshots-file [dir]
+  (fs/file dir "_babashka.snapshots"))
+
+(defn- recorded-snapshot [dir local-name]
+  (let [f (snapshots-file dir)]
+    (when (fs/exists? f)
+      (some (fn [line]
+              (let [[l r] (str/split line #">" 2)]
+                (when (= l local-name) r)))
+            (str/split-lines (slurp f))))))
+
+(defn- record-snapshot! [dir local-name remote-name]
+  (let [f (snapshots-file dir)
+        lines (if (fs/exists? f) (str/split-lines (slurp f)) [])
+        lines (remove #(str/starts-with? % (str local-name ">")) lines)]
+    (spit f (str (str/join "\n" (conj (vec lines) (str local-name ">" remote-name))) "\n"))))
+
+(defn- download-from!
+  "Downloads the artifact's file from repo to dest. nil when the repository
+  has no such file, or already has it."
+  [local-repo repo artifact dest policy]
+  (let [local-name (coords/local-file-name artifact)
+        dir (fs/parent dest)
+        snapshot? (coords/snapshot? (:version artifact))
+        remote-name (remote-file-name local-repo repo artifact)]
+    (when remote-name
+      (if (and (fs/exists? dest)
+               (or (not snapshot?)
+                   (= remote-name (recorded-snapshot dir local-name))))
+        dest
+        (let [rel (str (coords/version-dir artifact) "/" remote-name)]
+          (when (http/download! (str (:url repo) rel) dest
+                                {:auth (:auth repo)
+                                 :proxy (:proxy repo)
+                                 :checksum (get-in repo [policy :checksum])
+                                 :repo-id (:id repo)
+                                 :label rel})
+            (record-remote! dir local-name (:id repo))
+            (when snapshot? (record-snapshot! dir local-name remote-name))
+            dest))))))
+
 (defn resolve-file!
   "The artifact's file in the local repository, downloaded from the first
-  repository that has it. nil when none does. A timestamped snapshot
-  version is a plain file, a -SNAPSHOT version needs the metadata, which is
-  not there yet."
+  repository that has it. nil when none does. A snapshot is refreshed when
+  the repository's metadata names a newer build."
   [local-repo repos {:keys [version] :as artifact}]
-  (when (str/ends-with? version "-SNAPSHOT")
-    (throw (ex-info (str "SNAPSHOT versions are not supported yet: " (coords/file-name artifact))
-                    {:artifact artifact})))
-  (let [rel (coords/relative-path artifact)
-        dest (str (fs/path local-repo (coords/local-relative-path artifact)))
+  (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))
         policy (if (coords/snapshot? version) :snapshots :releases)]
+    #_{:clj-kondo/ignore [:locking-suspicious-lock]}
     (locking (lock-for dest)
-      (if (fs/exists? dest)
+      (if (and (fs/exists? dest) (not (coords/snapshot? version)))
         dest
         (loop [[repo & more] repos]
           (when repo
-            (if (and (get-in repo [policy :enabled])
-                     (http/download! (str (:url repo) rel) dest
-                                     {:auth (:auth repo)
-                                      :proxy (:proxy repo)
-                                      :checksum (get-in repo [policy :checksum])
-                                      :repo-id (:id repo)
-                                      :label rel}))
-              (do (record-remote! (fs/parent dest) (coords/local-file-name artifact) (:id repo))
-                  dest)
-              (recur more))))))))
+            (or (when (get-in repo [policy :enabled])
+                  (download-from! local-repo repo artifact dest policy))
+                (recur more))))))))
 
 (defn fetch-text!
   "A repository file as a string, from the first repository that has it,

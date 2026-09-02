@@ -35,6 +35,12 @@
   [deps]
   (into {} (filter (fn [[_ c]] (or (:mvn/version c) (:git/sha c) (:git/url c)))) deps))
 
+(defn- find-versions
+  "The release versions of a top-level :mvn dep, as find-versions sees them."
+  [config [lib coord]]
+  (when (:mvn/version coord)
+    [lib (mapv :mvn/version (ext/find-versions lib coord :mvn config))]))
+
 (defn run [{:keys [deps local-repo]}]
   (let [deps-map (-> deps
                      (update :deps remote-only)
@@ -42,7 +48,8 @@
                      (assoc :mvn/local-repo local-repo))
         libs (deps/resolve-deps deps-map nil)]
     {:libs (into (sorted-map) (map #(normalize-lib local-repo %)) libs)
-     :coord-deps (into (sorted-map) (keep #(coord-deps deps-map %)) libs)}))
+     :coord-deps (into (sorted-map) (keep #(coord-deps deps-map %)) libs)
+     :find-versions (into (sorted-map) (keep #(find-versions deps-map %)) (:deps deps-map))}))
 
 (defn -main [& [corpus-file entry-name local-repo]]
   (let [corpus (edn/read-string (slurp corpus-file))
