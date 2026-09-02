@@ -231,8 +231,9 @@ surface other namespaces use, `extensions/maven.clj` is empty,
 text out of the jar. `babashka.mvn.tools-deps` loads after tools.deps through
 the load-fn patch, so its methods win. The vendor script skips those four.
 
-Verified against the oracle: all 20 corpus entries match the JVM tools.deps
-with the source tree on `-cp`, warm and cold, including bb's own deps.edn,
+Verified against the oracle: all 20 corpus entries match the JVM tools.deps,
+both with the source tree on `-cp` and with the sources bundled in the
+image, warm and cold, including bb's own deps.edn,
 the aws graph, BOM imports, relocation, a pom.xml manifest from git, a
 timestamped snapshot pin, a floating `-SNAPSHOT`, and a version range.
 `add-deps`, `-Sdeps`, bb.edn `:deps`, a git dep and `bb clojure -Spath`
