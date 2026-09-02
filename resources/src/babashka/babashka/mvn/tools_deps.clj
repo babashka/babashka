@@ -1,7 +1,8 @@
 (ns babashka.mvn.tools-deps
   "The :mvn procurer for tools.deps, without Maven. Loaded after tools.deps
   loaded its own, so these methods win."
-  (:require [babashka.mvn.coords :as coords]
+  (:require [babashka.fs :as fs]
+            [babashka.mvn.coords :as coords]
             [babashka.mvn.pom :as pom]
             [babashka.mvn.repo :as repo]
             [babashka.mvn.settings :as settings]
@@ -116,9 +117,81 @@
   (check-version lib coord-y)
   (version/compare-versions (:mvn/version coord-x) (:mvn/version coord-y)))
 
+(defn- license [model]
+  (let [{:keys [name url]} (first (:licenses model))]
+    (when (or name url)
+      (cond-> {} name (assoc :name name) url (assoc :url url)))))
+
 (defmethod ext/license-info :mvn
   [lib coord config]
   (check-version lib coord)
-  (let [{:keys [name url]} (first (:licenses (effective-model lib coord config)))]
-    (when (or name url)
-      (cond-> {} name (assoc :name name) url (assoc :url url)))))
+  (license (effective-model lib coord config)))
+
+;; Local pom.xml manifests, for :local/root and git deps without a deps.edn
+
+(defn- read-local-pom
+  "read-pom for a POM on disk: a parent named by relativePath comes from
+  disk when its coordinates match, the rest from the repositories."
+  [config root]
+  (fn [{:keys [group artifact version relative-path] :as gav} declared-repos]
+    (let [rel (or relative-path "../pom.xml")
+          f (let [f (fs/file root rel)] (if (fs/directory? f) (fs/file f "pom.xml") f))
+          on-disk (when (fs/exists? f)
+                    (let [text (slurp f)
+                          raw (pom/parse text)]
+                      (when (= [group artifact version]
+                               [(or (:group raw) (get-in raw [:parent :group]))
+                                (:artifact raw)
+                                (or (:version raw) (get-in raw [:parent :version]))])
+                        text)))]
+      (or on-disk (read-pom config gav declared-repos)))))
+
+(defn- local-model [{:keys [deps/root]} config]
+  (let [root (str (fs/canonicalize root))
+        text (slurp (fs/file root "pom.xml"))]
+    (pom/effective-model (pom/parse text)
+                         {:read-pom (read-local-pom config root)
+                          :cache (model-cache)
+                          :basedir root})))
+
+(defmethod ext/coord-deps :pom
+  [_lib coord _manifest config]
+  (into []
+        (comp (filter #(contains? #{"compile" "runtime"} (:scope %)))
+              (map dep->data))
+        (pom/dependencies (local-model coord config))))
+
+(defn- build-helper-paths
+  "Source and resource directories the build-helper-maven-plugin adds."
+  [{:keys [build]}]
+  (let [plugin (first (filter #(and (= "org.codehaus.mojo" (:group %))
+                                    (= "build-helper-maven-plugin" (:artifact %)))
+                              (:plugins build)))
+        with-goal (fn [goal k]
+                    (mapcat k (filter #(some #{goal} (:goals %)) (:executions plugin))))]
+    (when plugin
+      (concat (with-goal "add-source" :sources)
+              (with-goal "add-resource" :resources)))))
+
+(defmethod ext/coord-paths :pom
+  [_lib {:keys [deps/root] :as coord} _manifest config]
+  (let [root (str (fs/canonicalize root))
+        model (local-model coord config)
+        build (:build model)
+        canonical (fn [p] (str (fs/canonicalize (if (fs/absolute? p) p (fs/file root p)))))
+        resources (let [rs (:resources build)] (if (seq rs) rs ["src/main/resources"]))]
+    (->> (concat [(or (:source-directory build) "src/main/java")
+                  "src/main/clojure"]
+                 resources
+                 (build-helper-paths model))
+         (remove nil?)
+         (map canonical)
+         distinct)))
+
+(defmethod ext/manifest-file :pom
+  [_lib {:keys [deps/root]} _manifest _config]
+  (str (fs/absolutize (fs/file root "pom.xml"))))
+
+(defmethod ext/license-info-mf :pom
+  [_lib coord _manifest config]
+  (license (local-model coord config)))

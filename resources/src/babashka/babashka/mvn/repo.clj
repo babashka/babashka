@@ -78,6 +78,14 @@
     (when-not (str/includes? existing line)
       (spit marker (str existing line "\n")))))
 
+;; tools.deps resolves in parallel, and parents and BOMs are shared, so two
+;; threads can want the same file. One monitor per path.
+(def ^:private locks (atom {}))
+
+(defn- lock-for [path]
+  (or (get @locks path)
+      (get (swap! locks update path #(or % (Object.))) path)))
+
 (defn resolve-file!
   "The artifact's file in the local repository, downloaded from the first
   repository that has it. nil when none does. A timestamped snapshot
@@ -88,22 +96,23 @@
     (throw (ex-info (str "SNAPSHOT versions are not supported yet: " (coords/file-name artifact))
                     {:artifact artifact})))
   (let [rel (coords/relative-path artifact)
-        dest (str (fs/path local-repo rel))
+        dest (str (fs/path local-repo (coords/local-relative-path artifact)))
         policy (if (coords/snapshot? version) :snapshots :releases)]
-    (if (fs/exists? dest)
-      dest
-      (loop [[repo & more] repos]
-        (when repo
-          (if (and (get-in repo [policy :enabled])
-                   (http/download! (str (:url repo) rel) dest
-                                   {:auth (:auth repo)
-                                    :proxy (:proxy repo)
-                                    :checksum (get-in repo [policy :checksum])
-                                    :repo-id (:id repo)
-                                    :label rel}))
-            (do (record-remote! (fs/parent dest) (coords/file-name artifact) (:id repo))
-                dest)
-            (recur more)))))))
+    (locking (lock-for dest)
+      (if (fs/exists? dest)
+        dest
+        (loop [[repo & more] repos]
+          (when repo
+            (if (and (get-in repo [policy :enabled])
+                     (http/download! (str (:url repo) rel) dest
+                                     {:auth (:auth repo)
+                                      :proxy (:proxy repo)
+                                      :checksum (get-in repo [policy :checksum])
+                                      :repo-id (:id repo)
+                                      :label rel}))
+              (do (record-remote! (fs/parent dest) (coords/local-file-name artifact) (:id repo))
+                  dest)
+              (recur more))))))))
 
 (defn fetch-text!
   "A repository file as a string, from the first repository that has it,

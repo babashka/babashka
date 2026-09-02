@@ -42,7 +42,9 @@
              :extension extension}
       classifier (assoc :classifier classifier))))
 
-(defn file-name [{:keys [artifact version classifier extension]}]
+(defn file-name
+  "The file name in a remote repository, timestamped for a snapshot."
+  [{:keys [artifact version classifier extension]}]
   (str artifact "-" version (when classifier (str "-" classifier)) "." extension))
 
 (defn artifact-dir
@@ -64,10 +66,21 @@
   [{:keys [version] :as a}]
   (str (artifact-dir a) "/" (base-version version)))
 
+(defn local-file-name
+  "The file name in the local repository. Aether keeps a timestamped
+  snapshot under its base version."
+  [a]
+  (file-name (update a :version base-version)))
+
 (defn relative-path
-  "Path of the artifact file, relative to a repository root."
+  "Path of the artifact file in a remote repository."
   [a]
   (str (version-dir a) "/" (file-name a)))
+
+(defn local-relative-path
+  "Path of the artifact file in the local repository."
+  [a]
+  (str (version-dir a) "/" (local-file-name a)))
 
 (defn version-range? [version]
   (boolean (when version (re-find #"\[|\(" version))))

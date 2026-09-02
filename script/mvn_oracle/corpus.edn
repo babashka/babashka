@@ -21,4 +21,7 @@
  {:name "xml-apis" :deps {xml-apis/xml-apis {:mvn/version "2.0.2"}}}
  ;; git dep next to mvn deps
  {:name "integrant-git" :deps {integrant/integrant {:git/url "https://github.com/weavejester/integrant"
-                                                   :git/sha "a9fd7c02bd7201f36344b47142badc3c3ef22f88"}}}]
+                                                   :git/sha "a9fd7c02bd7201f36344b47142badc3c3ef22f88"}}}
+ ;; git dep with a pom.xml manifest, contrib parent from the repositories
+ {:name "tools-cli-git" :deps {org.clojure/tools.cli {:git/url "https://github.com/clojure/tools.cli"
+                                                       :git/sha "717e187ec98e6a75c7f26a3120fbe9eecc434f05"}}}]
