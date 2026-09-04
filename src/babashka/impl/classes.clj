@@ -244,6 +244,9 @@
                {:name "setParser"}]
      :inherit [org.jline.reader.LineReader]}})
 
+(def nio-buffer-get-put
+  {:methods [{:name "get"} {:name "put"}]})
+
 (def custom-map
   (cond->
    (merge base-custom-map
@@ -259,7 +262,15 @@
     has-graal-process-properties?
     (assoc `org.graalvm.nativeimage.ProcessProperties
            {:methods [{:name "exec"}
-                      {:name "getExecutableName"}]})))
+                      {:name "getExecutableName"}]})
+
+    ;; #2040: asFloatBuffer already exists; SCI needs .get/.put on the view
+    features/java-nio?
+    (assoc `java.nio.DoubleBuffer nio-buffer-get-put
+           `java.nio.FloatBuffer nio-buffer-get-put
+           `java.nio.IntBuffer nio-buffer-get-put
+           `java.nio.LongBuffer nio-buffer-get-put
+           `java.nio.ShortBuffer nio-buffer-get-put)))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"
@@ -461,14 +472,9 @@
               '[java.nio.ByteBuffer
                 java.nio.ByteOrder
                 java.nio.CharBuffer
-                java.nio.DoubleBuffer
                 java.nio.DirectByteBuffer
                 java.nio.DirectByteBufferR
-                java.nio.FloatBuffer
-                java.nio.IntBuffer
-                java.nio.LongBuffer
                 java.nio.MappedByteBuffer
-                java.nio.ShortBuffer
                 java.nio.file.OpenOption
                 java.nio.file.StandardOpenOption
                 java.nio.channels.ByteChannel
@@ -695,6 +701,7 @@
           ~(symbol "[F")
           ~(symbol "[J")
           ~(symbol "[D")
+          ~(symbol "[S")
           ~(symbol "[Ljava.lang.Object;")
           ~(symbol "[Ljava.lang.Double;")
           ~@(when features/datascript?
