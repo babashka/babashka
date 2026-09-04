@@ -232,6 +232,30 @@ nope/nope                        :probe nil
 sci's `resolve` and `find-ns` in scripts use sci's own registry and are
 unaffected in both builds.
 
+### The remaining 1.3 MB is run-time require
+
+S1 and S2 sit 1.3 MB above E, the build with spec's three run-time lookups
+stubbed at the source. Bisected the same way, on top of the substitution:
+
+| build | change                                                     | image    | types  |
+|-------|------------------------------------------------------------|----------|--------|
+| S1    | substitution, spec untouched                               | 77.31 MB | 23,944 |
+| S3    | S1, `gen/dynaload` throws                                  | 76.03 MB | 23,832 |
+| S4    | S1, `RT.load` substituted to throw                         | 76.57 MB | 23,860 |
+| S5    | S4, `clojure.core/require`, `use`, `load` substituted too  | 76.05 MB | 23,834 |
+
+So once the mapping tables are fixed, the two `resolve` calls cost nothing
+and the whole 1.3 MB is the `require` in `dynaload`: `RT.load` and the
+reader and compiler behind it, about 0.7 MB, and the `load-libs`,
+`load-lib`, `load-one` plumbing above it in clojure.core, about 0.5 MB.
+`Target_clojure_lang_RT.java` and `Target_clojure_core_require.java` close
+both, at the entry points, with the same loud error. Every run-time
+`require` in bb's compiled code would be a bug anyway; scripts require
+through sci.
+
+With all three substitutions an untouched spec.alpha with the real specs
+namespace costs 1 MB over the stubbed build, which is spec's own code.
+
 What S2 does not cover: a var whose only reference is inside another heap
 object rather than a static field, and class mappings, which the pruned
 table drops, so `(resolve 'String)` gives nil in the image. Both could be

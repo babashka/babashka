@@ -41,7 +41,8 @@
           src pairs))
 
 (def variants
-  {"C" {"clojure/spec/gen/alpha.clj" [[dynaload-old dynaload-new]]
+  {"B" {"clojure/spec/gen/alpha.clj" [[dynaload-old dynaload-new]]}
+   "C"{"clojure/spec/gen/alpha.clj" [[dynaload-old dynaload-new]]
         "clojure/spec/alpha.clj" [[exercise-old exercise-new]]}
    "D" {"clojure/spec/alpha.clj" [[exercise-old exercise-new]]}
    "E" {"clojure/spec/gen/alpha.clj" [[dynaload-old dynaload-new]]
