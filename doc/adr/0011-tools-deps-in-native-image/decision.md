@@ -139,6 +139,27 @@ tools.deps loads its extensions with top-level `(load ...)`, which runs at build
 time. Its only `requiring-resolve` sits inside a string passed to a `java -cp`
 subprocess.
 
+The lazy loader in `clojure.spec.gen.alpha` is not the driver either. Its
+`dynaload` does a run-time `require` and `resolve` and is reachable once spec
+is. Two builds on branch `spec-dynaload-exp`, identical except for that one
+function:
+
+| build | dynaload         | image     | reachable types |
+|-------|------------------|-----------|-----------------|
+| A     | as shipped       | 103.97 MB | 27,477          |
+| B     | stubbed to throw | 103.95 MB | 27,468          |
+
+Build B swaps spec.alpha 0.5.238 for a jar compiled from the same sources with
+`dynaload` replaced by a throw; the scripts are in `spec-experiment/`.
+Shadowing the namespace from a source path does not work: the jar ships AOT
+classes, and a source copy gets evaluated during Clojure's own startup, where
+the `ns` spec check cycles back into the half-loaded `clojure.spec.alpha`. The
+replacement jar has to be compiled with `clojure.lang.Compile`, and its classes
+must be newer than the bundled `.clj` files or Clojure loads the sources.
+
+What ties spec to timbre, core.async and tools.analyzer is still open. The
+signal remains the megamorphic `IFn.invoke` site in the call tree.
+
 ## Build flags
 
 ```
