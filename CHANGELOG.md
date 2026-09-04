@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Fix interop for `(Boolean. false)` which picked the wrong overload
+- Bump Clojure to `1.12.6`
 
 ## 1.13.220 (2026-08-31)
 
