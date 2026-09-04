@@ -244,6 +244,9 @@
                {:name "setParser"}]
      :inherit [org.jline.reader.LineReader]}})
 
+(def nio-buffer-get-put
+  {:methods [{:name "get"} {:name "put"}]})
+
 (def custom-map
   (cond->
    (merge base-custom-map
@@ -259,7 +262,15 @@
     has-graal-process-properties?
     (assoc `org.graalvm.nativeimage.ProcessProperties
            {:methods [{:name "exec"}
-                      {:name "getExecutableName"}]})))
+                      {:name "getExecutableName"}]})
+
+    ;; #2040: asFloatBuffer already exists; SCI needs .get/.put on the view
+    features/java-nio?
+    (assoc `java.nio.DoubleBuffer nio-buffer-get-put
+           `java.nio.FloatBuffer nio-buffer-get-put
+           `java.nio.IntBuffer nio-buffer-get-put
+           `java.nio.LongBuffer nio-buffer-get-put
+           `java.nio.ShortBuffer nio-buffer-get-put)))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"
@@ -687,6 +698,10 @@
           sun.misc.SignalHandler
           ~(symbol "[B")
           ~(symbol "[I")
+          ~(symbol "[F")
+          ~(symbol "[J")
+          ~(symbol "[D")
+          ~(symbol "[S")
           ~(symbol "[Ljava.lang.Object;")
           ~(symbol "[Ljava.lang.Double;")
           ~@(when features/datascript?
@@ -936,6 +951,16 @@
                                    java.nio.charset.CharsetDecoder
                                    (instance? java.nio.CharBuffer v)
                                    java.nio.CharBuffer
+                                   (instance? java.nio.IntBuffer v)
+                                   java.nio.IntBuffer
+                                   (instance? java.nio.FloatBuffer v)
+                                   java.nio.FloatBuffer
+                                   (instance? java.nio.LongBuffer v)
+                                   java.nio.LongBuffer
+                                   (instance? java.nio.DoubleBuffer v)
+                                   java.nio.DoubleBuffer
+                                   (instance? java.nio.ShortBuffer v)
+                                   java.nio.ShortBuffer
                                    (instance? java.nio.channels.FileChannel v)
                                    java.nio.channels.FileChannel
                                    (instance? java.nio.channels.Selector v)
