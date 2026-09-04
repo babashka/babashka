@@ -4,6 +4,7 @@
 # the classpath), and install it in ~/.m2 as version 0.5.238-dynaload-stub.
 set -eo pipefail
 CLJ_VERSION="${1:?clojure version}"
+VARIANT="${2:?variant dir with replacement files}"
 P=/Users/borkdude/dev/babashka/.claude/worktrees/tools-deps-native/poc-logs
 S=/private/tmp/claude-501/-Users-borkdude-dev-babashka/c243b13f-6132-4416-881f-356589f6723c/scratchpad/specalpha
 M2=$HOME/.m2/repository/org/clojure
@@ -13,8 +14,11 @@ V=0.5.238-dynaload-stub
 
 rm -rf "$S"; mkdir -p "$S/src" "$S/classes"
 unzip -q "$UP" -d "$S/src" 'clojure/*.clj'
-cp "$P/spec-gen-alpha-stub.clj" "$S/src/clojure/spec/gen/alpha.clj"
-grep -c "dynaload stubbed" "$S/src/clojure/spec/gen/alpha.clj"
+cp -R "$VARIANT/." "$S/src/"
+# Jar entries have 2-second timestamps; sources must be clearly older than
+# the classes or Clojure loads the .clj instead of the __init.class.
+find "$S/src" -name '*.clj' -exec touch -t 202401010000 {} +
+find "$VARIANT" -name '*.clj' | sort
 
 CORE_SPECS=$(ls "$M2"/core.specs.alpha/*/*.jar | sort | tail -1)
 java -cp "$CLJ:$S/src:$CORE_SPECS" -Dclojure.spec.skip-macros=true \

@@ -128,10 +128,10 @@ tools.deps' own Clojure code is 170 KB. An earlier reading attributed 1.1 MB to
 it. That number was `clojure.tools.analyzer` sharing the `tools` label in the
 report tree.
 
-## Ruled out: run-time resolve
+## Ruled out: the compiler
 
 Run-time `resolve` or `requiring-resolve` in bb code makes the Clojure compiler
-reachable and has cost 30 MB before. That is not what happened here.
+reachable and has cost 30 MB before. That path is not what happened here; the next section has the one that did.
 `clojure.lang.Compiler` goes from 16,017 to 75,969 bytes against a total code
 area delta of 7.16 MiB, and it is present in the baseline binary already.
 
@@ -139,26 +139,48 @@ tools.deps loads its extensions with top-level `(load ...)`, which runs at build
 time. Its only `requiring-resolve` sits inside a string passed to a `java -cp`
 subprocess.
 
-The lazy loader in `clojure.spec.gen.alpha` is not the driver either. Its
-`dynaload` does a run-time `require` and `resolve` and is reachable once spec
-is. Two builds on branch `spec-dynaload-exp`, identical except for that one
-function:
+## The trigger: a run-time read of Namespace.mappings
 
-| build | dynaload         | image     | reachable types |
-|-------|------------------|-----------|-----------------|
-| A     | as shipped       | 103.97 MB | 27,477          |
-| B     | stubbed to throw | 103.95 MB | 27,468          |
+The single call that grows the image is the `resolve` in spec's `res`
+helper, the one that qualifies symbols for `describe` output. Bisected on
+branch `spec-dynaload-exp` with the real `clojure.tools.deps.specs` in every
+build and spec.alpha 0.5.238 swapped for a jar compiled from patched sources.
+Every build below is identical apart from the named function.
 
-Build B swaps spec.alpha 0.5.238 for a jar compiled from the same sources with
-`dynaload` replaced by a throw; the scripts are in `spec-experiment/`.
-Shadowing the namespace from a source path does not work: the jar ships AOT
-classes, and a source copy gets evaluated during Clojure's own startup, where
-the `ns` spec check cycles back into the half-loaded `clojure.spec.alpha`. The
-replacement jar has to be compiled with `clojure.lang.Compile`, and its classes
-must be newer than the bundled `.clj` files or Clojure loads the sources.
+| build | change                                                       | image     | types  |
+|-------|--------------------------------------------------------------|-----------|--------|
+| A     | none                                                         | 103.97 MB | 27,477 |
+| B     | `gen/dynaload` throws                                        | 103.95 MB | 27,468 |
+| C     | B, and `exercise-fn` no longer resolves its symbol           | 103.95 MB | 27,476 |
+| E     | C, and `res` no longer resolves                              | 76.01 MB  | 23,808 |
+| G     | C, `res` calls `Compiler/maybeResolveIn` directly            | 103.95 MB | 27,476 |
+| H     | C, `res` does `find-ns` plus `findInternedVar` or `getMapping` | 103.97 MB | 27,476 |
+| I1    | C, `res` does only `find-ns`                                 | 76.03 MB  | 23,810 |
+| I2    | C, `res` does only `(.getMapping *ns* form)`                 | 103.95 MB | 27,476 |
 
-What ties spec to timbre, core.async and tools.analyzer is still open. The
-signal remains the megamorphic `IFn.invoke` site in the call tree.
+So it is not the run-time `require`, not `Class.forName`, not `find-ns`. It
+is any read of a namespace's mapping table: `getMapping`, `findInternedVar`,
+and through them `ns-resolve`, `resolve`, `ns-publics`, `ns-map`, `var-get`
+on a looked-up symbol, and so on.
+
+Why that read costs 28 MB: native-image follows an instance field during heap
+scanning only when reachable code reads that field. bb never reads
+`Namespace.mappings` at run time, because sci keeps its own registry, so the
+Clojure vars in those maps and the function objects in their roots are dead
+heap. One reachable read makes every var of every loaded namespace live, every
+function object counts as instantiated, and every megamorphic `IFn.invoke`
+site now has to compile them all. That is the timbre, core.async,
+tools.analyzer and ASM code in the delta, and the 26 MB of extra heap.
+
+The recipe for such a bisection: `spec-experiment/spec-variants.clj` writes
+the patched sources, `spec-exp-run.sh <label> <variant>` builds the jar and
+the image. Shadowing the namespace from a source path does not work. The jar
+ships AOT classes, and a source copy gets evaluated during Clojure's own
+startup, where the `ns` spec check cycles into the half-loaded
+`clojure.spec.alpha`. The replacement jar is compiled with
+`clojure.lang.Compile`, and its `.clj` entries are stamped 2024 so the classes
+are strictly newer; jar timestamps have two-second resolution, and Clojure
+loads the source when it is not older.
 
 ## Build flags
 
