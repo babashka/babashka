@@ -1,24 +1,12 @@
 (ns babashka.impl.ffi
   {:no-doc true}
-  (:require [babashka.ffi :as ffi]
-            [sci.core :as sci :refer [copy-var]]))
+  (:require [babashka.ffi]
+            [sci.core :as sci]))
 
 (def tns (sci/create-ns 'babashka.ffi nil))
 
+;; Every public var of the library, so a new one cannot be forgotten here.
+;; What must not be public is kept private in the library, and a var with
+;; :no-doc or :skip-wiki metadata is left out, as copy-ns does by default.
 (def ffi-namespace
-  {'load-library (copy-var ffi/load-library tns)
-   'load-system-library (copy-var ffi/load-system-library tns)
-   'find-symbol (copy-var ffi/find-symbol tns)
-   'cfn (copy-var ffi/cfn tns)
-   'defcfn (copy-var ffi/defcfn tns)
-   'alloc (copy-var ffi/alloc tns)
-   'free (copy-var ffi/free tns)
-   'sizeof (copy-var ffi/sizeof tns)
-   'read (copy-var ffi/read tns)
-   'write (copy-var ffi/write tns)
-   'ptr->string (copy-var ffi/ptr->string tns)
-   'string->ptr (copy-var ffi/string->ptr tns)
-   'null (copy-var ffi/null tns)
-   'null? (copy-var ffi/null? tns)
-   'callback (copy-var ffi/callback tns)
-   'free-callback (copy-var ffi/free-callback tns)})
+  (sci/copy-ns babashka.ffi tns))

@@ -165,10 +165,25 @@
         (cursor [] ((method-or-bust methods 'cursor) this)))
 
       ["java.io.Writer" #{}]
+      ;; Writer.append delegates to write on the JVM, so an unimplemented
+      ;; append does the same here
       (proxy [java.io.Writer] []
         (flush [] ((method-or-bust methods 'flush) this))
         (close [] ((method-or-bust methods 'close) this))
+        (append
+          ([x]
+           (if-let [m (get methods 'append)]
+             (m this x)
+             ((method-or-bust methods 'write) this (str x)))
+           this)
+          ([csq start end]
+           (if-let [m (get methods 'append)]
+             (m this csq start end)
+             ((method-or-bust methods 'write) this
+              (str (.subSequence ^CharSequence csq start end))))
+           this))
         (write
+          ([x] ((method-or-bust methods 'write) this x))
           ([str-cbuf off len]
            ((method-or-bust methods 'write) this str-cbuf off len))))
 

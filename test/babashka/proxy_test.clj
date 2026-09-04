@@ -216,3 +216,74 @@
                    {:instance? (instance? java.io.PipedOutputStream outs)
                     :arr (seq arr)
                     :arr2 (seq arr2)})))))))
+
+(deftest writer-test
+  (testing "binding *out* to a proxied Writer, which println and prn write to"
+    ;; println and prn end lines with the platform newline, so normalize
+    ;; before comparing
+    (is (= {:out "hello\n{:a 1}\n" :flushed true :closed true}
+           (update
+            (bb (with-out-str
+                  (clojure.pprint/pprint
+                   '(let [chunks (atom [])
+                          flushed (atom false)
+                          closed (atom false)
+                          w (proxy [java.io.Writer] []
+                              (write [s] (swap! chunks conj s))
+                              (flush [] (reset! flushed true))
+                              (close [] (reset! closed true)))]
+                      (binding [*out* w]
+                        (println "hello")
+                        (prn {:a 1}))
+                      (.close w)
+                      {:out (apply str @chunks)
+                       :flushed @flushed
+                       :closed @closed}))))
+            :out test-utils/normalize))))
+  (testing "a three-argument write, the signature the JDK calls with a char array"
+    (is (= "abc"
+           (bb (with-out-str
+                 (clojure.pprint/pprint
+                  '(let [sb (StringBuilder.)
+                         w (proxy [java.io.Writer] []
+                             (write
+                               ([x] (.append sb (str x)))
+                               ([cbuf off len] (.append sb (String. cbuf off len))))
+                             (flush [])
+                             (close []))]
+                     (.write w (char-array [\a \b \c]) 0 3)
+                     (str sb))))))))
+  (testing "append returns the writer and reaches write when it is not implemented"
+    (is (= {:appended "xy" :same-writer true}
+           (bb (with-out-str
+                 (clojure.pprint/pprint
+                  '(let [sb (StringBuilder.)
+                         w (proxy [java.io.Writer] []
+                             (write [s] (.append sb (str s)))
+                             (flush [])
+                             (close []))]
+                     {:appended (do (.append w \x) (.append w "y") (str sb))
+                      :same-writer (identical? w (.append w ""))})))))))
+  (testing "interop on a proxied Reader finds read, not only the Closeable methods"
+    (is (= [\a 2]
+           (bb (with-out-str
+                 (clojure.pprint/pprint
+                  '(let [r (proxy [java.io.Reader] []
+                             (read
+                               ([] (int \a))
+                               ([cbuf] 1)
+                               ([cbuf off len] 2))
+                             (close []))]
+                     [(char (.read r)) (.read r (char-array 4) 0 4)])))))))
+  (testing "an implemented append is used instead"
+    (is (= "APPENDED:z"
+           (bb (with-out-str
+                 (clojure.pprint/pprint
+                  '(let [sb (StringBuilder.)
+                         w (proxy [java.io.Writer] []
+                             (write [s] (.append sb (str s)))
+                             (append [x] (.append sb (str "APPENDED:" x)))
+                             (flush [])
+                             (close []))]
+                     (.append w \z)
+                     (str sb)))))))))

@@ -4,7 +4,7 @@
 # script/verify_link on the binary. The install script mirrors this value
 # in min_glibc_version; verify_link fails on drift.
 
-glibc_floor="2.17"
+glibc_floor="2.28"
 
 # prints the highest GLIBC_x.y symbol version a binary references
 max_glibc_symbol() {

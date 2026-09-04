@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+# shellcheck source=script/fetch_tarball.sh
+. "$(dirname "${BASH_SOURCE[0]:-$0}")/fetch_tarball.sh"
+
 if  [[ -z "${BABASHKA_STATIC:-}" ]]; then
     echo "BABASHKA_STATIC wasn't set, skipping musl installation."
     exit 0
@@ -25,8 +28,12 @@ fi
 MUSL_VERSION="1.2.6"
 MUSL_SHA256="d585fd3b613c66151fc3249e8ed44f77020cb5e6c1e635a616d3f9f82460512a"
 
-curl -O -sL --fail --show-error "https://musl.libc.org/releases/musl-${MUSL_VERSION}.tar.gz"
-echo "${MUSL_SHA256} musl-${MUSL_VERSION}.tar.gz" | sha256sum --check
+fetch_tarball "musl-${MUSL_VERSION}.tar.gz" "$MUSL_SHA256" \
+    "https://musl.libc.org/releases/musl-${MUSL_VERSION}.tar.gz" \
+    "https://sources.buildroot.net/musl/musl-${MUSL_VERSION}.tar.gz" \
+    "https://sources.openwrt.org/musl-${MUSL_VERSION}.tar.gz" \
+    "http://deb.debian.org/debian/pool/main/m/musl/musl_${MUSL_VERSION}.orig.tar.gz"
+
 tar xf "musl-${MUSL_VERSION}.tar.gz"
 
 cd "musl-${MUSL_VERSION}"
@@ -47,10 +54,10 @@ ln -sf /usr/local/musl/bin/musl-gcc /usr/bin/musl-gcc
 ZLIB_VERSION="1.2.13"
 ZLIB_SHA256="b3a24de97a8fdbc835b9833169501030b8977031bcb54b3b3ac13740f846ab30"
 
-# stable archive path
-curl -O -sL --fail --show-error "https://zlib.net/fossils/zlib-${ZLIB_VERSION}.tar.gz"
+fetch_tarball "zlib-${ZLIB_VERSION}.tar.gz" "$ZLIB_SHA256" \
+    "https://zlib.net/fossils/zlib-${ZLIB_VERSION}.tar.gz" \
+    "https://github.com/madler/zlib/releases/download/v${ZLIB_VERSION}/zlib-${ZLIB_VERSION}.tar.gz"
 
-echo "${ZLIB_SHA256} zlib-${ZLIB_VERSION}.tar.gz" | sha256sum --check
 tar xf "zlib-${ZLIB_VERSION}.tar.gz"
 
 arch=${BABASHKA_ARCH:-"x86_64"}

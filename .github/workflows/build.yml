@@ -172,6 +172,10 @@ jobs:
           echo "##[set-output name=version;]${BABASHKA_VERSION}"
 
       - name: Build uberjar
+        env:
+          # the musl build links no libffi, and uberjar has to know that
+          # as well as compile: see script/libffi_archive.sh
+          BABASHKA_MUSL: ${{ matrix.static }}
         run: script/uberjar
 
       - name: Build native image

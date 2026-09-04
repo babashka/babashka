@@ -288,12 +288,29 @@ Supported options:
 Use bb run --help to show this help output.
 ")))
 
+(def ^:private libffi-version-fn
+  ;; Resolved at build time, like the other feature namespaces. A resolve at
+  ;; run time makes the Clojure compiler reachable and grows the image by
+  ;; 30MB.
+  (when features/libffi?
+    @(resolve 'babashka.impl.libffi/version)))
+
+(defn- libffi-version
+  "Returns the linked libffi version.
+  Returns nil on the JVM or when the binary has no libffi."
+  []
+  (when (and libffi-version-fn
+             (System/getProperty "org.graalvm.nativeimage.imagecode"))
+    (try (libffi-version-fn)
+         (catch Throwable _ nil))))
+
 (defn print-describe []
   (println
    (format
     (str/trim "
 {:babashka/version   \"%s\"
  :git/sha            \"%s\"
+ :libffi/version     %s
  :feature/csv        %s
  :feature/java-nio   %s
  :feature/java-time  %s
@@ -315,6 +332,7 @@ Use bb run --help to show this help output.
  :feature/priority-map %s}")
     version
     build-commit-sha
+    (pr-str (libffi-version))
     features/csv?
     features/java-nio?
     features/java-time?

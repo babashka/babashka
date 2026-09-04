@@ -36,7 +36,7 @@ has() {
 
 # glibc floor of the dynamic linux build; mirrors script/glibc_floor.sh,
 # script/verify_link checks the two stay equal
-min_glibc_version="2.17"
+min_glibc_version="2.28"
 
 # Pick the static binary when the dynamic one cannot run: musl libcs,
 # glibc older than the build floor, FreeBSD without a recent Linuxulator.

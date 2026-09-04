@@ -26,3 +26,6 @@
 [submodule "babashka.core"]
 	path = babashka.core
 	url = https://github.com/babashka/babashka.core.git
+[submodule "ffi"]
+	path = ffi
+	url = https://github.com/babashka/ffi

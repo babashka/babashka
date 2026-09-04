@@ -1,13 +1,12 @@
 # babashka.ffi examples
 
-Run each with `bb <file>`. See doc/ffi.md for the API.
+The examples moved to the library, in the
+[babashka/ffi](https://github.com/babashka/ffi) repository:
+[examples](https://github.com/babashka/ffi/tree/main/examples).
 
-- `sqlite.clj` - queries an in-memory sqlite database. Needs the sqlite3
-  shared library, present by default on macOS and most Linux systems.
-- `helitorus.clj` - a helix around a torus, drawn with raylib
-  (`brew install raylib` or the raylib package of your distro).
-- `doom.clj` - a raycaster with textures and sprites, drawn with raylib.
-- `python.clj` - embeds CPython: evaluates Python expressions and registers
-  a bb function as a Python callable. Needs libpython3.
-- `libffi.clj` - binds libffi through babashka.ffi itself and calls a
-  function that returns a struct by value, which the bundled shapes cannot.
+They cover SQLite, structs by value, libffi, embedded CPython, and two
+raylib demos. Each one requires only `babashka.ffi`, so `bb <file>` runs it
+here and the same file runs on JVM Clojure.
+
+The API is documented in
+[doc/guide.md](https://github.com/babashka/ffi/blob/main/doc/guide.md).

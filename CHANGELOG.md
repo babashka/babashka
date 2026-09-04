@@ -13,21 +13,59 @@ A preview of the next release can be installed from
 - [#2040](https://github.com/babashka/babashka/issues/2040): allowlist `.get`/`.put` on typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`) and primitive arrays `[F]`, `[J]`, `[D]`, `[S]` so SCI can call bulk `Buffer.get(primitive[])` / `.put`
 - Add experimental [`babashka.ffi`](doc/ffi.md) for calling functions in native shared libraries
 - On Linux, the install script now installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
+- Fix interop for `(Boolean. false)` which picked the wrong overload
+- Bump Clojure to `1.12.6`
+
+## 1.13.220 (2026-08-31)
+
+Read the release blog post [here](https://blog.michielborkent.nl/babashka-ffi.html).
+
+### FFI:
+
+- Add experimental [`babashka.ffi`](https://github.com/babashka/ffi): call C functions in shared libraries straight from babashka and JVM Clojure! See the [guide](https://github.com/babashka/ffi/blob/main/doc/guide.md)
+- Linux: dynamic binaries require glibc 2.28. The install script selects the static binary on older systems
+- On Linux, the install script installs the dynamic binary by default. It installs the static binary on musl systems and on systems with glibc older than 2.17. The `--static` and `--dynamic` options override the automatic selection
 - The dynamic binary for Linux amd64 links every library statically except glibc. It no longer needs `libz.so.1` at run time
 - On FreeBSD, the install script installs the dynamic binary when the Linuxulator has a linux_base with glibc 2.17 or newer, such as `linux_base-rl9`
-- The Linux binaries include zlib 1.2.13. The static binary uses musl 1.2.6. Both are pinned and built from source
-- Tasks: a task's `:cli` `:exec-args` add to the runner-level ones, its keys winning. Before, the task's map replaced the runner-level map
+- The Linux binaries include zlib 1.2.13. The static binary uses musl 1.2.6. The build pins both versions and compiles them from source
+
+### Tasks:
+
+- `:exec-args` can sit directly on a task, not only under `:cli`, the way `(exec ...)` already reads it. The bare key wins over the one under `:cli`. Before, it was ignored on an `:exec-fn` or `:cmd` task
+- A task's `:cli` `:exec-args` merge over the `:tasks` top level `:exec-args`. Before, the task's map replaced the top level's
+- A task's `:cli` spec adds to the runner-level `:tasks {:cli {:spec ...}}` instead of replacing it. An option from the runner level keeps its coercion and default, and `--help` lists it under `Inherited options`
+- A task with `:exec-fn` runs when another task `:depends` on it. Before, it did nothing
+- Options declared by an `:exec-fn` task named in `:depends` also parse for the CLI task that runs, with their coercion and default. `--help` lists them under `Inherited options`
+- A `:depends` task's `:exec-fn` receives only the options that task declared, with its defaults, not everything the command line parsed
+- A CLI task cannot name a `:cmd` task in `:depends`, unless that task also has a `:task` body: nothing says which of its subcommands to run
+- `:cmd` can be a symbol naming a var that holds the command tree, like `:cli`. Its namespace loads on demand
+- Shell completion offers inherited options (via `:depends`) too
+- `bb tasks` and `--help` still describe a task when a dependency's namespace does not load. Running the task reports the error
+
+### Misc:
+
+- SCI: call site caching for instance and static methods, constructors and fields. Interop calls are up to 5x faster
 - [#1321](https://github.com/babashka/babashka/issues/1321): support implementing the `clojure.core/Inst` protocol on records, types and reify, and with `extend-protocol` and `extend-type`
 - Fix output of custom `clojure.pprint` dispatch functions
-- Tasks: a task's own `:cli` spec no longer replaces the `:tasks {:cli {:spec ...}}` spec. An inherited option keeps its coercion and default, and shows in `--help` under `Inherited options:`
-- Tasks: a task with `:exec-fn` now runs when another task names it in `:depends`. Before, it did nothing
-- Tasks: the options of a `:depends` task parse for the task that runs, and show under `Inherited options:` in `--help`
-- Tasks: the handler of a `:depends` task receives the options that it declared
-- Tasks: a CLI task cannot name a `:cmd` task in `:depends`, unless that task also has a `:task` body. A command tree has no single handler to run, and babashka reports this as an error
-- Tasks: `:cmd` may be a symbol naming a def of the command tree, like `:cli`. The def holds the tree as bb.edn would spell it, handlers as symbols
+- [#2054](https://github.com/babashka/babashka/issues/2054): a `proxy` of `java.io.Writer` supports the one-argument `write` and `append`, so binding `*out*` to it works. Interop on a proxied `Writer` or `Reader` finds their own methods instead of only the ones on `Closeable`
+- [#1728](https://github.com/babashka/babashka/issues/1728): Add `java.util.TreeMap`
+- Fix: the `%` parameters of a function literal inside a syntax quote are no longer namespace-resolved, through edamame 1.6.43
+- Building babashka from source no longer fails when one upstream host is unreachable. The build fetches the musl and zlib tarballs with retries, from mirrors, and caches them per machine
+- Building from source: the `BABASHKA_DYNAMIC` build flag is `BABASHKA_FULLY_DYNAMIC`, because it named a different axis than the install script's `--dynamic`
+
+### Upgrades:
+
+- Bump jline to 4.4.0: security hardening, a rewritten signal path for the FFM terminal, Kitty keyboard protocol. The ambiguous key binding timeout in the REPL drops from 1000 ms to 100 ms
 - Bump GraalVM to `25.0.4`. The macOS amd64 binary stays on `25.0.1`, the last version Oracle ships for that platform
 - [#2021](https://github.com/babashka/babashka/issues/2021): bump http-kit to 2.9.0-beta4, which fixes four security advisories
-- [#1728](https://github.com/babashka/babashka/issues/1728): Add `java.util.TreeMap`
+- Bump babashka.cli to 0.12.88: help shows the dispatch-level spec under `Inherited options`, `format-command-help` accepts `:spec`, completion no longer offers `:positional` keys as options, the command named on the command line wins over the `:exec-args` of its ancestors, and the fish completion snippet keeps the emitted option order
+- babashka.cli 0.12.88 also adds `:cmd-aliases`, alternative names for a command that dispatch like the command itself, and attached short option values: `-J-Dfoo=bar` binds `"-Dfoo=bar"` when `:J` declares a non-boolean `:coerce`. An interior hyphen in a cluster of flags is an error instead of silently ending option parsing
+- Bump edamame to 1.6.43, which carries the syntax-quote fix listed above
+- Bump jsoup to 1.23.2: W3C namespace fixes, URL validation per RFC 9110, CR and LF escaping in multipart form names
+- Bump hiccup to 2.0.0 final, from 2.0.0-RC1
+- Bump rewrite-clj to 1.2.57
+- Bump selmer to 1.13.5: Twig-style `{% embed %}`, multiline tags. The shipped `deps.edn` said 1.12.70 while the binary carried 1.13.1; both now agree
+
 
 ## 1.13.219 (2026-07-27)
 

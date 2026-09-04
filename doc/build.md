@@ -6,6 +6,9 @@
 - Download [GraalVM](https://www.graalvm.org/downloads/). Currently we use *Oracle GraalVM 25.0.4*.
 - For Windows, installing Visual Studio 2019 with the "Desktop development
 with C++" workload is recommended.
+- A C compiler and `make`. `script/setup-libffi` builds a static libffi.
+  On Windows, `script\setup-libffi.bat` installs libffi through vcpkg. Set
+  `VCPKG_ROOT` to the vcpkg directory.
 - Set `$GRAALVM_HOME` to the GraalVM distribution directory. On macOS this can look like:
 
   ``` shell
@@ -60,6 +63,29 @@ $ export BABASHKA_XMX="-J-Xmx6500m"
 Note: setting the max heap size to a low value can cause the build to crash or
 take long to complete.
 
+Builds link libffi for calls outside the fixed set of native call shapes.
+`script/setup-libffi` builds the library and stores it under `.libffi/`.
+You can override this behavior:
+
+```
+$ export BABASHKA_LIBFFI=/path/to/libffi.a   # link this archive instead
+$ export BABASHKA_LIBFFI=none                # leave libffi out
+```
+
+The first setting supports system libraries and builds without network access.
+The static musl build does not link libffi because it cannot load shared
+libraries.
+
+If libffi setup fails, a local build prints a warning and continues without
+libffi. A CI build fails. `bb describe` shows the linked version under
+`:libffi/version`. The value is `nil` if the build has no libffi.
+
+A distribution package usually builds in a sandbox without network access, so
+`script/setup-libffi` cannot fetch the source. Set `BABASHKA_LIBFFI` to the
+static archive the distribution ships, or to `none` to build without libffi on
+purpose. A binary without libffi still has `babashka.ffi`, but a call shape
+outside the compiled set throws instead of going through libffi.
+
 ### Alternative: Build inside Docker
 
 To build a Linux version of babashka, you can use `docker build`, enabling the
@@ -82,10 +108,38 @@ by adding `--build-arg BABASHKA_XMX="-J-Xmx8g"`
 
 Run `script\uberjar.bat` followed by `script\compile.bat`.
 
-## Static
+## Link modes on Linux
 
-To compile babashka as a static binary for linux, set the `BABASHKA_STATIC`
-environment variable to `true`.
+A Linux build links its libraries in one of three ways. Set the environment
+variables before `script/compile`.
+
+| Link mode | Build | Runtime dependency |
+|---|---|---|
+| mostly static | the default | glibc |
+| fully static, musl | `BABASHKA_STATIC=true` and `BABASHKA_MUSL=true` | none |
+| fully dynamic | `BABASHKA_FULLY_DYNAMIC=true` | glibc, and the system libraries |
+
+The default links everything statically except glibc, so a build on your own
+machine matches the released binary. `BABASHKA_STATIC=true` without
+`BABASHKA_MUSL=true` builds the default.
+
+A fully static binary runs anywhere, but it cannot load a shared library, so
+`babashka.ffi` is not supported in it.
+
+Three versions are pinned. `script/glibc_floor.sh` holds the glibc floor,
+2.28, which the install script mirrors in `min_glibc_version`. musl is 1.2.6
+and zlib is 1.2.13.
+
+`script/compile` gets libffi itself: it runs `script/setup-libffi`, which
+fetches the pinned source and builds a static archive. zlib is not automatic.
+Run `sudo script/setup-zlib` before a mostly static build, or
+`sudo script/setup-musl` before a musl build, which builds both. Without
+that step the binary links whatever zlib the system has, which CI rejects.
+
+`script/verify_link` runs after each Linux build in CI. It fails the build
+when the binary links a shared library that the mode does not allow, carries
+another zlib than the pinned one, uses a glibc symbol above the floor, or
+when the floor and `min_glibc_version` have drifted apart.
 
 ### Musl and zlib
 

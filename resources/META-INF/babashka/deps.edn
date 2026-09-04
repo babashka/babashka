@@ -1,4 +1,4 @@
-{:paths ["src" "feature-xml"
+{:paths ["src" "ffi/src" "feature-xml"
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
          "feature-httpkit-client" "feature-httpkit-server"
@@ -18,7 +18,7 @@
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"
          "impl-java/src"],
- :deps {org.clojure/clojure {:mvn/version "1.12.5"},
+ :deps {org.clojure/clojure {:mvn/version "1.12.6"},
         org.babashka/sci {:local/root "sci"}
         org.babashka/babashka.impl.java {:mvn/version "0.1.20"}
         org.babashka/sci.impl.types {:mvn/version "0.0.3"}
@@ -40,24 +40,24 @@
         datascript/datascript {:mvn/version "1.0.1"}
         http-kit/http-kit {:mvn/version "2.9.0-beta4"}
         org.clojure/core.match {:mvn/version "1.0.0"}
-        hiccup/hiccup {:mvn/version "2.0.0-RC1"}
-        rewrite-clj/rewrite-clj {:mvn/version "1.2.55"}
-        selmer/selmer {:mvn/version "1.12.70"}
+        hiccup/hiccup {:mvn/version "2.0.0"}
+        rewrite-clj/rewrite-clj {:mvn/version "1.2.57"}
+        selmer/selmer {:mvn/version "1.13.5"}
         com.taoensso/timbre {:mvn/version "6.8.0"}
         org.clojure/tools.logging {:mvn/version "1.3.0"}
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.4"}
         org.clojure/core.rrb-vector {:mvn/version "0.2.0"}
-        org.babashka/cli {:mvn/version "0.12.86"}
+        org.babashka/cli {:mvn/version "0.12.88"}
         org.babashka/http-client {:mvn/version "0.4.24"}
         org.flatland/ordered {:mvn/version "1.15.12"}
-        org.jsoup/jsoup {:mvn/version "1.22.2"}
+        org.jsoup/jsoup {:mvn/version "1.23.2"}
         io.github.nextjournal/markdown {:mvn/version "0.7.225"}
-        org.jline/jline-terminal-ffm {:mvn/version "4.3.1"}
-        org.jline/jline-terminal {:mvn/version "4.3.1"
+        org.jline/jline-terminal-ffm {:mvn/version "4.4.0"}
+        org.jline/jline-terminal {:mvn/version "4.4.0"
                                   :exclusions [;; this saves 1mb of native-image size
                                                org.jline/jline-native]}
-        org.jline/jline-reader {:mvn/version "4.3.1"}}
+        org.jline/jline-reader {:mvn/version "4.4.0"}}
  :aliases {:babashka/dev
            {:extra-deps {babashka/babashka {:local/root "."}}
             :main-opts ["-m" "babashka.main"]
@@ -74,7 +74,7 @@
                        "-Dclojure.compiler.direct-linking=true"]
             :main-opts ["-m" "babashka.profile"]}
            :lib-tests
-           {:extra-paths ["process/src" "process/test" "test-resources/lib_tests"]
+           {:extra-paths ["process/src" "process/test" "ffi/test" "test-resources/lib_tests"]
             :extra-deps {org.clj-commons/clj-http-lite {:mvn/version "0.4.392"}
                          #_#_org.babashka/spec.alpha {:git/url "https://github.com/babashka/spec.alpha"
                                                       :sha "0dec1f88cbde74a0470b454396f09a03adb4ae39"}

@@ -64,6 +64,19 @@ elif [ "$(uname -s)" = "Linux" ] && [ "$BABASHKA_FULLY_DYNAMIC" != "true" ]; the
     args+=("-H:+StaticExecutableWithDynamicLibC")
 fi
 
+# Get the libffi archive for this build.
+# shellcheck source=script/libffi_archive.sh
+. script/libffi_archive.sh
+# Pass the feature setting to image initialization.
+args+=("-EBABASHKA_FEATURE_LIBFFI")
+if [ -n "$libffi_archive" ]; then
+    if [ "$(uname -s)" = "Darwin" ]; then
+        args+=("-H:NativeLinkerOption=-Wl,-force_load,$libffi_archive")
+    else
+        args+=("-H:NativeLinkerOption=-Wl,--whole-archive,$libffi_archive,--no-whole-archive")
+    fi
+fi
+
 BABASHKA_FEATURE_HSQLDB=${BABASHKA_FEATURE_HSQLDB:-}
 
 if [ "$BABASHKA_FEATURE_HSQLDB" = "true" ]; then

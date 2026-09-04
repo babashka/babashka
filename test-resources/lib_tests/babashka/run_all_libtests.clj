@@ -121,6 +121,14 @@
   (System/setProperty "babashka.process.test.reload" "true")
   (test-namespaces 'babashka.process-test 'babashka.process-exec-test))
 
+;;;; babashka.ffi
+;; The library ships its own suite; run it against the built-in namespace.
+;; Unlike babashka.process, this one cannot be reloaded from source here: it
+;; is a skin over java.lang.foreign, and those classes are not exposed to the
+;; interpreter, so a :reload throws on the Arena import. The submodule source
+;; is covered by being compiled into the binary under test.
+(test-namespaces 'babashka.ffi-test)
+
 ;;;; clerk (native only - needs to run from Clerk's checkout dir)
 ;; Clerk tests shell out to a bb process in Clerk's gitlibs checkout.
 ;; The missing-hashes test is skipped: Clerk's analyzer treats files under
