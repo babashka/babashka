@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Fix interop for `(Boolean. false)` which picked the wrong overload
+
 ## 1.13.220 (2026-08-31)
 
 Read the release blog post [here](https://blog.michielborkent.nl/babashka-ffi.html).
