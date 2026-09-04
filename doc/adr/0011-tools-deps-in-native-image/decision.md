@@ -182,6 +182,64 @@ startup, where the `ns` spec check cycles into the half-loaded
 are strictly newer; jar timestamps have two-second resolution, and Clojure
 loads the source when it is not older.
 
+## Workaround: keep the mapping tables out of the image
+
+Two build-time mechanisms fix this generically, without touching spec or any
+other library, and both leave build-time `resolve` intact because they only
+change what goes into the image. Both measured with the real
+`clojure.tools.deps.specs` and the upstream spec.alpha jar.
+
+| build | mechanism                                                   | image    | types  |
+|-------|-------------------------------------------------------------|----------|--------|
+| S1    | substitution: `mappings` reset, every reader throws         | 77.31 MB | 23,944 |
+| S2    | feature: `mappings` pruned to the vars the image holds      | 77.31 MB | 23,945 |
+
+S1 is `spec-experiment/Target_clojure_lang_Namespace.java`: an `@Alias` on
+`Namespace.mappings` with `RecomputeFieldValue(Reset)`, and `@Substitute`
+bodies for `getMapping`, `findInternedVar`, `intern`, `refer`, `reference`,
+`referenceClass`, `importClass`, `unmap` and `getMappings` that throw an
+`UnsupportedOperationException` naming the symbol and namespace. A run-time
+lookup fails loudly, in the test suite, instead of adding 28 MB to a release.
+
+S2 is `src-java/babashka/impl/NamespaceFeature.java`, enabled with
+`--features=babashka.impl.NamespaceFeature`. Compiled Clojure keeps every var
+it references in a `static final Var const__N` field of the referencing
+class. The feature walks the uberjar before analysis, finds 21,347 such
+fields, and registers a reachability handler on each; a handler fires when
+reachable code reads its field, and records the var. A field value
+transformer on `Namespace.mappings` reports itself unavailable until
+`afterAnalysis`, so the analysis assumes nothing about the table's contents,
+and then replaces each table with a persistent map of that namespace's
+recorded vars: 1,903 vars in 225 namespaces. Those objects are in the image
+regardless, so the tables add nothing.
+
+With S2 a run-time `resolve` in the binary answers correctly for what is
+there. Probed through a hook in `main` that resolves a symbol from the
+environment (`spec-experiment/add-probe.clj`):
+
+```
+clojure.core/*ns*                :probe #'clojure.core/*ns*
+clojure.core/inc                 :probe #'clojure.core/inc
+clojure.string/blank?            :probe #'clojure.string/blank?
+clojure.tools.deps/resolve-deps  :probe #'clojure.tools.deps/resolve-deps
+clojure.spec.alpha/valid?        :probe #'clojure.spec.alpha/valid?
+clojure.core/unchecked-add-int   :probe nil
+taoensso.timbre/info             :probe nil
+clojure.core.async/go            :probe nil
+nope/nope                        :probe nil
+```
+
+sci's `resolve` and `find-ns` in scripts use sci's own registry and are
+unaffected in both builds.
+
+What S2 does not cover: a var whose only reference is inside another heap
+object rather than a static field, and class mappings, which the pruned
+table drops, so `(resolve 'String)` gives nil in the image. Both could be
+added. The remaining 1.3 MB over the stubbed build is the resolve machinery
+itself, now reachable but cheap. The two mechanisms compose: S2's table plus
+a substituted `getMapping` that throws for a symbol the build knew and
+dropped would give correct answers and loud failures.
+
 ## Build flags
 
 ```
