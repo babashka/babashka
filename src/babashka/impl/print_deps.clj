@@ -18,6 +18,8 @@
                     'babashka/babashka.curl {:mvn/version "0.1.2"}
                     'babashka/babashka.core {:git/url "https://github.com/babashka/babashka.core"
                                              :git/sha "52a6037bd4b632bffffb04394fb4efd0cdab6b1e"}
+                    'babashka/ffi {:git/url "https://github.com/babashka/ffi"
+                                   :git/sha "18e1ea1b13b0c6e2e8c170ee60628829c88aecbb"}
                     'babashka/process {:mvn/version "0.6.25"})
         deps (dissoc deps
                      'borkdude/sci
