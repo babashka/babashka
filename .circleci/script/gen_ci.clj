@@ -200,7 +200,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                           (run "Release" ".circleci/script/release")
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}
-                                          (run "Run tests" "script/test\nscript/run_lib_tests")
+                                          (run "Run tests" (if static?
+                                                             "script/test\nscript/run_lib_tests"
+                                                             "script/test\nscript/run_lib_tests\nscript/run_ffi_tests"))
                                           (run "Release + publish"
                                             (str/join "\n" ["export BABASHKA_RELEASE=true"
                                                             ".circleci/script/release"]))

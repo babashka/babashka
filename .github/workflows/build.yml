@@ -207,6 +207,10 @@ jobs:
           script/test
           script/run_lib_tests
 
+      - name: Test babashka.ffi suite
+        if: "matrix.static == false"
+        run: script/run_ffi_tests
+
       - name: Release
         env:
           BABASHKA_RELEASE: true
