@@ -99,19 +99,19 @@
                               "-Sdeps-file" "__babashka_no_deps_file__.edn") ;; we reset deps file so the local deps.edn isn't used
                    args (if force (cons "-Sforce" args) args)
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
+                   make-classpath-fn (bdeps/make-classpath-fn (when deps-root (str deps-root)))
                    bindings (cond->
-                             {#'deps/*aux-process-fn* (bdeps/aux-process-fn
-                                                       (when deps-root (str deps-root))
-                                                       (fn [{:keys [cmd out]}]
-                                                         (process/shell
-                                                          {:cmd cmd
-                                                           :out out
-                                                           :env env
-                                                           :dir (when deps-root (str deps-root))
-                                                           :extra-env extra-env})))
+                             {#'deps/*aux-process-fn* (fn [{:keys [cmd out]}]
+                                                       (process/shell
+                                                        {:cmd cmd
+                                                         :out out
+                                                         :env env
+                                                         :dir (when deps-root (str deps-root))
+                                                         :extra-env extra-env}))
                               #'deps/*exit-fn* (fn [{:keys [message]}]
                                                  (when message
                                                    (throw (Exception. message))))}
+                              make-classpath-fn (assoc #'deps/*make-classpath-fn* make-classpath-fn)
                               deps-root (assoc #'deps/*dir* (str deps-root)))
                    cp (with-out-str (with-bindings bindings
                                       (apply deps/-main args)))
