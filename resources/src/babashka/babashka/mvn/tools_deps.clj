@@ -1,6 +1,7 @@
 (ns babashka.mvn.tools-deps
-  "The :mvn procurer for tools.deps, without Maven. Loaded after tools.deps
-  loaded its own, so these methods win."
+  "The :mvn and :pom procurers for tools.deps, without Maven. Required by
+  bb's stand-ins for clojure.tools.deps.extensions.maven and .pom, which
+  tools.deps loads in place of its own."
   (:require [babashka.fs :as fs]
             [babashka.mvn.coords :as coords]
             [babashka.mvn.metadata :as metadata]
