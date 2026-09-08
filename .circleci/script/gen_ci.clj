@@ -146,6 +146,10 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
         env              (if (= "mac" platform)
                            (assoc env :MACOSX_DEPLOYMENT_TARGET 10.13)
                            env)
+        ;; one leg resolves deps in-process, the others through java
+        env              (if (and (= "linux" platform) (= "amd64" arch) (not static?))
+                           (assoc env :BABASHKA_DEPS_RESOLVER "bb")
+                           env)
         ;; bullseye is EOL, its security repo is dead; the image stays for glibc
         base-install-cmd (str "sudo sed -i '/bullseye-security/d' /etc/apt/sources.list\n"
                               "sudo apt-get -o Acquire::Check-Valid-Until=false update\n"

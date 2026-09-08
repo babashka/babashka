@@ -54,6 +54,19 @@
           (pr-str {:lib (symbol "my" name) :coord {:local/root (str tool-root)}}))
     [(str config) (str (fs/file tool-root "src"))]))
 
+(deftest resolver-from-process-env-test
+  ;; the CI leg that sets BABASHKA_DEPS_RESOLVER=bb must actually resolve
+  ;; in-process: with no java to be found, only that resolver can succeed.
+  ;; JAVA_CMD "" keeps deps.clj from looking for java and gives it nothing
+  ;; runnable.
+  (when (= "bb" (System/getenv "BABASHKA_DEPS_RESOLVER"))
+    (is (= 3 (bb "
+(babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}}
+                        {:force true :extra-env {\"PATH\" \"/nonexistent\" \"JAVA_HOME\" \"\" \"JAVA_CMD\" \"\"}})
+(require '[medley.core :as m])
+(m/find-first odd? [2 3 4])
+")))))
+
 (deftest tool-descriptor-in-per-call-config-test
   ;; a named tool resolves through <config-dir>/tools/<name>.edn, and the
   ;; config dir of the resolve comes from its own environment, CLJ_CONFIG
