@@ -146,11 +146,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
         env              (if (= "mac" platform)
                            (assoc env :MACOSX_DEPLOYMENT_TARGET 10.13)
                            env)
-        ;; bullseye left LTS on 2026-08-31: its security repository no
-        ;; longer re-signs its Release file, so apt refuses to update. The
-        ;; image stays, for the glibc floor; main still serves bullseye and
-        ;; has the two packages, so the dead source goes and the validity
-        ;; check is skipped.
+        ;; bullseye is EOL, its security repo is dead; the image stays for glibc
         base-install-cmd (str "sudo sed -i '/bullseye-security/d' /etc/apt/sources.list\n"
                               "sudo apt-get -o Acquire::Check-Valid-Until=false update\n"
                               "sudo apt-get -y install build-essential zlib1g-dev")
