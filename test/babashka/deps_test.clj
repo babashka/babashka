@@ -2,6 +2,7 @@
   (:require
    [babashka.fs :as fs]
    [babashka.test-utils :as test-utils]
+   [borkdude.deps :as deps]
    [clojure.edn :as edn]
    [clojure.string :as str]
    [clojure.test :as test :refer [deftest is testing]]))
@@ -40,23 +41,71 @@
                 (test-utils/bb nil "--config" (str bb-edn) "-e"
                                "(require '[medley.core :as m]) (m/find-first odd? [2 3 4])")))))))
 
-(deftest tool-descriptor-in-per-call-config-test
-  ;; a named tool resolves through <config-dir>/tools/<name>.edn, and the
-  ;; config dir of the resolve comes from its own environment, CLJ_CONFIG
-  ;; included, not from bb's process environment
-  (let [tmp (fs/create-temp-dir)
-        config (fs/file tmp "config")
-        tool-root (fs/file tmp "mytool")]
+(defn- tool-config!
+  "A config dir under tmp with one tool named name, rooted at a fresh
+  project. Returns [config-dir src-dir]."
+  [tmp name]
+  (let [config (fs/file tmp (str "config-" name))
+        tool-root (fs/file tmp name)]
     (fs/create-dirs (fs/file config "tools"))
     (fs/create-dirs (fs/file tool-root "src"))
     (spit (fs/file tool-root "deps.edn") "{:paths [\"src\"]}")
-    (spit (fs/file config "tools" "mytool.edn")
-          (pr-str {:lib 'my/tool :coord {:local/root (str tool-root)}}))
-    (let [cp (bb (pr-str `(with-out-str
-                            (babashka.deps/clojure ["-Sforce" "-Spath" "-Tmytool"]
-                                                   {:extra-env {"CLJ_CONFIG" ~(str config)
-                                                                "BABASHKA_DEPS_RESOLVER" "bb"}}))))]
-      (is (str/includes? (str cp) (str (fs/file tool-root "src")))))))
+    (spit (fs/file config "tools" (str name ".edn"))
+          (pr-str {:lib (symbol "my" name) :coord {:local/root (str tool-root)}}))
+    [(str config) (str (fs/file tool-root "src"))]))
+
+(deftest tool-descriptor-in-per-call-config-test
+  ;; a named tool resolves through <config-dir>/tools/<name>.edn, and the
+  ;; config dir of the resolve comes from its own environment, CLJ_CONFIG
+  ;; included, not from bb's process environment. -Srepro drops the user
+  ;; deps.edn, not the config dir.
+  (let [tmp (fs/create-temp-dir)
+        [config src] (tool-config! tmp "mytool")]
+    (doseq [args [["-Sforce" "-Spath" "-Tmytool"]
+                  ["-Srepro" "-Sforce" "-Spath" "-Tmytool"]]]
+      (testing (str/join " " args)
+        (let [cp (bb (pr-str `(with-out-str
+                                (babashka.deps/clojure ~args
+                                                       {:extra-env {"CLJ_CONFIG" ~config
+                                                                    "BABASHKA_DEPS_RESOLVER" "bb"}}))))]
+          (is (str/includes? (str cp) src)))))))
+
+(deftest concurrent-config-dirs-test
+  ;; two resolves with their own CLJ_CONFIG at the same time each find
+  ;; their own tool
+  (let [tmp (fs/create-temp-dir)
+        [config-a src-a] (tool-config! tmp "toola")
+        [config-b src-b] (tool-config! tmp "toolb")
+        [outs-a outs-b]
+        (bb (pr-str `(let [run# (fn [config# tool#]
+                                  (with-out-str
+                                    (babashka.deps/clojure ["-Sforce" "-Spath" (str "-T" tool#)]
+                                                           {:extra-env {"CLJ_CONFIG" config#
+                                                                        "BABASHKA_DEPS_RESOLVER" "bb"}})))
+                           a# (future (vec (repeatedly 3 #(run# ~config-a "toola"))))
+                           b# (future (vec (repeatedly 3 #(run# ~config-b "toolb"))))]
+                       [@a# @b#])))]
+    (is (every? #(str/includes? % src-a) outs-a))
+    (is (every? #(str/includes? % src-b) outs-b))))
+
+(deftest task-inherits-resolver-test
+  ;; a task's :extra-deps carry no :deps-resolver; the project's setting in
+  ;; bb.edn applies. The ambient make-classpath fn throws, so only the
+  ;; in-process resolver gets the task running. The fresh :local/root keeps
+  ;; the classpath cache out of it.
+  (let [tmp (fs/create-temp-dir)
+        lib (fs/file tmp "lib")
+        bb-edn (fs/file tmp "bb.edn")]
+    (fs/create-dirs (fs/file lib "src" "my"))
+    (spit (fs/file lib "deps.edn") "{:paths [\"src\"]}")
+    (spit (fs/file lib "src" "my" "lib.clj") "(ns my.lib) (def x 3)")
+    (spit bb-edn (pr-str {:deps-resolver :bb
+                          :tasks {'find-x {:extra-deps {'my/lib {:local/root (str lib)}}
+                                           :requires '([my.lib :as l])
+                                           :task '(prn l/x)}}}))
+    (is (= 3 (edn/read-string
+              (binding [deps/*make-classpath-fn* (fn [_] (throw (Exception. "the java resolver ran")))]
+                (test-utils/bb nil "--config" (str bb-edn) "find-x")))))))
 
 (deftest dependency-test
   (is (= #{:a :c :b} (bb "

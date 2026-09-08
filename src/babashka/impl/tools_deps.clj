@@ -61,12 +61,18 @@
           opts
           file-opts))
 
+(def ^:private run-lock (Object.))
+
 (defn make-classpath!
   "Runs clojure.tools.deps.script.make-classpath2 in this process with the
-  arguments deps.clj passes to it. dir is the project directory."
-  [dir args]
+  arguments deps.clj passes to it. dir is the project directory.
+  :config-dir in opts is the user config dir of this call, which
+  tools.deps would otherwise take from the process environment."
+  [dir args {:keys [config-dir]}]
   (let [ctx (common/ctx)
-        args (mapv str args)
+        ;; deps.clj passes nil for --config-user under -Srepro, the CLI
+        ;; script passes the empty string
+        args (mapv #(if (nil? %) "" (str %)) args)
         dir (fs/absolutize (fs/file (or dir (System/getProperty "user.dir"))))]
     (prepare! ctx)
     (let [{:keys [options errors]}
@@ -75,21 +81,18 @@
       (when (seq errors)
         (throw (ex-info (str/join "\n" errors) {:args args})))
       (let [options (absolutize-files dir options)
-            ;; deps.clj derived the user config dir from the resolve's own
-            ;; environment, CLJ_CONFIG included, and named it in
-            ;; --config-user. tools.deps reads the process environment for
-            ;; the same thing when it looks up a named tool's descriptor, so
-            ;; for this run its answer is deps.clj's.
-            config-dir (some-> (:config-user options) fs/parent str)
             run (list 'clojure.tools.deps.util.dir/with-dir
                       (list 'clojure.java.io/file (str dir))
                       (list (symbol (str make-classpath-ns) "run")
                             (list 'quote options)))]
-        (sci/eval-form ctx
-                       (if config-dir
-                         (list 'let ['v (list 'ns-resolve ''clojure.tools.deps.edn ''user-config-dir)
-                                     'orig (list 'deref 'v)]
-                               (list 'alter-var-root 'v (list 'constantly (list 'constantly config-dir)))
-                               (list 'try run
-                                     (list 'finally (list 'alter-var-root 'v (list 'constantly 'orig)))))
-                         run))))))
+        ;; user-config-dir is a var root shared by every call in this
+        ;; process, so calls run one at a time
+        (locking run-lock
+          (sci/eval-form ctx
+                         (if config-dir
+                           (list 'let ['v (list 'ns-resolve ''clojure.tools.deps.edn ''user-config-dir)
+                                       'orig (list 'deref 'v)]
+                                 (list 'alter-var-root 'v (list 'constantly (list 'constantly config-dir)))
+                                 (list 'try run
+                                       (list 'finally (list 'alter-var-root 'v (list 'constantly 'orig)))))
+                           run)))))))

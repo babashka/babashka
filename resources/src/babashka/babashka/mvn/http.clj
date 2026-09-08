@@ -65,10 +65,8 @@
   (str/starts-with? url "file:"))
 
 (defn- file-url->path
-  "The file behind a file: URL. A well-formed URL goes through the file
-  system's own URI handling, which decodes %20 and the like and knows
-  Windows drives; one with a bare space or other characters a URI rejects
-  is taken as a path."
+  "Converts a file: URL to a decoded file path.
+  Falls back to the literal path if URI conversion fails."
   [url]
   (or (try (str (java.nio.file.Paths/get (java.net.URI. url)))
            (catch Exception _ nil))

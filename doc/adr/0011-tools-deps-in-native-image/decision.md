@@ -55,9 +55,9 @@ with the arguments after it. That function parses them with
 same cache files the subprocess would. Both are public, and `System/exit` lives
 only in `-main`. Other scripts, `-Spom` and `-Stree`, still go to `java`.
 
-Three details. deps.clj passes `--config-user nil`, which a subprocess would
-stringify to an empty string and `blank-to-nil` would drop, so the arguments are
-`str`ed first. Relative file arguments are resolved against the project dir,
+Three details. deps.clj passes `--config-user nil` under `-Srepro`, where the
+CLI script passes an empty string that `blank-to-nil` drops, so nil becomes the
+empty string first. Relative file arguments are resolved against the project dir,
 and `clojure.tools.deps.util.dir/*the-dir*` is rebound to it with `with-dir`,
 because the image bakes the builder's cwd into that var. deps.clj used to
 resolve `java` at startup and throw when it was missing. It now looks java up

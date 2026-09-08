@@ -28,15 +28,18 @@ Layers, top to bottom, with what is ours and what is not:
    deps.clj as a library, Cursive among them, see no change.
 2. `babashka.deps` and `babashka.impl.deps` bind `*make-classpath-fn*` to an
    in-process run when the resolver is `bb`, and leave it alone when it is
-   `jvm` or unset. `:deps-resolver` in the deps map says it, which is how
-   bb.edn says it too; without that `BABASHKA_DEPS_RESOLVER` decides, read
-   through the resolve's environment view, so `:env` and `:extra-env` on
-   `add-deps` and `clojure` count, and a test can run both paths in one
-   process.
+   `jvm` or unset. `:deps-resolver` in the deps map says it, then the one
+   in bb.edn, which a task's `:extra-deps` inherit; without either
+   `BABASHKA_DEPS_RESOLVER` decides, read through the resolve's
+   environment view, so `:env` and `:extra-env` on `add-deps` and
+   `clojure` count, and a test can run both paths in one process.
 3. `babashka.impl.tools-deps`, compiled: requires `make-classpath2` into the
    script's sci context, absolutizes the file paths deps.clj hands over, and
-   runs `parse-opts` and `run` under `with-dir`. Also holds the specs stub
-   and the one source patch.
+   runs `parse-opts` and `run` under `with-dir`, one call at a time, with
+   tools.deps' `user-config-dir` answering the config dir deps.clj found in
+   the call's environment, so a named tool's descriptor comes from the
+   call's `CLJ_CONFIG`, `-Srepro` or not. Also holds the specs stub and
+   the one source patch.
 4. tools.deps 0.31.1638, tools.deps.edn 0.9.42 and gitlibs 2.6.217, bundled
    as source under `resources/src/babashka/clojure/tools/` and interpreted by
    sci: `make-classpath2`, the basis, `expand-deps`, the session cache, the

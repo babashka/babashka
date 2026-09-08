@@ -44,9 +44,7 @@
                {:id (:id mirror) :url (with-slash (:url mirror))}
                repo)
         {:keys [username password]} (get servers (:id repo))]
-    ;; tools.deps reads s3:// through aws-api, which needs a JVM. Not
-    ;; ported. A mirror in settings.xml may stand in for the bucket, so the
-    ;; effective URL is what counts.
+    ;; Check the repository URL after applying mirrors.
     (when (str/starts-with? (:url repo) "s3:")
       (throw (ex-info (str "S3 repository " (:id repo) " (" (:url repo) ") requires the JVM resolver."
                            " Set BABASHKA_DEPS_RESOLVER=jvm.")

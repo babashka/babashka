@@ -56,19 +56,18 @@
 ;; {:mvn/version "1.3.3"}}}. Optionally they can include aliases, to modify the
 ;; classpath.
 (defn add-deps
-  "Takes deps edn map and optionally a map with :aliases (seq of
-  keywords) which will used to calculate classpath. The classpath is
-  then used to resolve dependencies in babashka.
+  "Resolves dependencies from a deps.edn map and adds them to the classpath.
+  Options: :aliases selects aliases by keyword, :force recomputes the
+  classpath, :env replaces the environment, and :extra-env adds overrides.
 
-  Other options: :force recomputes the classpath; :env and :extra-env
-  are the environment of the resolve. The deps map may carry
-  :deps-resolver, as bb.edn may: :bb resolves in this process without a
-  JVM, :jvm through the java deps.clj spawns. Without it
-  BABASHKA_DEPS_RESOLVER decides, and without that the JVM."
+  Set :deps-resolver in the deps map to :bb for in-process resolution or
+  :jvm to use Java. Defaults to :deps-resolver in bb.edn, then
+  BABASHKA_DEPS_RESOLVER, then jvm."
   ([deps-map] (add-deps deps-map nil))
   ([deps-map {:keys [:aliases :env :extra-env :force]}]
    (let [deps-root (:deps-root @bb-edn)
-         resolver (:deps-resolver deps-map)]
+         ;; tasks and scripts inherit the project's resolver
+         resolver (or (:deps-resolver deps-map) (:deps-resolver @bb-edn))]
      (when-let [paths (:paths deps-map)]
        (let [paths (if deps-root
                      (let [deps-root (fs/absolutize deps-root)
