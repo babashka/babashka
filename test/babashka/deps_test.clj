@@ -52,7 +52,9 @@
     (spit (fs/file tool-root "deps.edn") "{:paths [\"src\"]}")
     (spit (fs/file config "tools" (str name ".edn"))
           (pr-str {:lib (symbol "my" name) :coord {:local/root (str tool-root)}}))
-    [(str config) (str (fs/file tool-root "src"))]))
+    ;; canonical: tools.deps canonicalizes a :local/root, and the temp dir
+    ;; is a symlink on macOS and an 8.3 short name on Windows runners
+    [(str config) (str (fs/canonicalize (fs/file tool-root "src")))]))
 
 (deftest resolver-from-process-env-test
   ;; the CI leg that sets BABASHKA_DEPS_RESOLVER=bb must actually resolve
@@ -106,9 +108,11 @@
   ;; mirror URL from :extra-env names the repository in the message
   (let [tmp (fs/create-temp-dir)
         home (fs/file tmp "home")
-        mirror (fs/file tmp "mirror")]
-    (fs/create-dirs (fs/file home ".m2"))
-    (fs/create-dirs mirror)
+        mirror (fs/file tmp "mirror")
+        _ (fs/create-dirs (fs/file home ".m2"))
+        _ (fs/create-dirs mirror)
+        ;; a file URL the way java writes one, so it holds on Windows too
+        mirror-url (str (.toURI (fs/file mirror)))]
     (spit (fs/file home ".m2" "settings.xml")
           "<settings><mirrors><mirror><id>m</id><url>${env.MIRROR_URL}</url><mirrorOf>*</mirrorOf></mirror></mirrors></settings>")
     (let [message (bb (pr-str `(let [real-home# (System/getProperty "user.home")]
@@ -117,14 +121,14 @@
                                    (babashka.deps/add-deps '{:deps {nope/nope {:mvn/version "1.0.0"}}}
                                                            {:force true
                                                             :extra-env {"BABASHKA_DEPS_RESOLVER" "bb"
-                                                                        "MIRROR_URL" ~(str "file://" mirror "/")}})
+                                                                        "MIRROR_URL" ~mirror-url}})
                                    (catch Exception e# (ex-message e#))
                                    (finally (System/setProperty "user.home" real-home#))))))]
       ;; the first artifact tools.deps asks for is not the one under
       ;; test but a root dep, so only the repository list is checked;
       ;; central and clojars behind one mirror are one entry
       (is (str/starts-with? (str message) "Could not find artifact "))
-      (is (str/ends-with? (str message) (str " in m (file://" mirror "/)"))))))
+      (is (str/ends-with? (str message) (str " in m (" mirror-url ")"))))))
 
 (deftest task-inherits-resolver-test
   ;; a task's :extra-deps carry no :deps-resolver; the project's setting in
