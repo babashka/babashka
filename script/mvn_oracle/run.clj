@@ -3,14 +3,15 @@
   "Resolves corpus entries with ./bb and with the JVM tools.deps and diffs
   the results. Usage: bb script/mvn_oracle/run.clj [--cold] [entry ...]
   --cold wipes the shared local repo first, so bb downloads and the JVM
-  then has to accept what bb wrote."
+  then has to accept what bb wrote. MVN_ORACLE_CORPUS names another corpus
+  file, e.g. corpus-scale.edn from build_corpus.clj."
   (:require [babashka.fs :as fs]
             [babashka.process :as p]
             [clojure.data :as data]
             [clojure.edn :as edn]))
 
 (def dir "script/mvn_oracle")
-(def corpus-file (str dir "/corpus.edn"))
+(def corpus-file (or (System/getenv "MVN_ORACLE_CORPUS") (str dir "/corpus.edn")))
 (def out-dir "target/mvn-oracle")
 (def local-repo (str (fs/absolutize (str out-dir "/m2"))))
 

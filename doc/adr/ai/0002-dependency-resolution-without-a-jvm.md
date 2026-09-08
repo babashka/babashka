@@ -47,7 +47,7 @@ Layers, top to bottom, with what is ours and what is not:
 4. tools.deps 0.31.1638, tools.deps.edn 0.9.42 and gitlibs 2.6.217, bundled
    as source under `resources/src/babashka/clojure/tools/` and interpreted by
    sci: `make-classpath2`, the basis, `expand-deps`, the session cache, the
-   extension multimethods. 36 files verbatim. Four namespaces that import
+   extension multimethods. 17 namespaces verbatim, plus the root deps.edn. Four namespaces that import
    Maven classes when they load have stand-ins at their own paths;
    `NOTICE.md` next to them says which and why. The root deps.edn, a jar
    resource the image cannot see, is vendored as a file and appended to
@@ -160,7 +160,7 @@ It has no settings.xml support, and its version scheme adapts
 |---|---|---|
 | Source | 5,326 lines, 17 namespaces, plus a 1,227-line CLI | 1,643 lines, 12 namespaces |
 | Tests | 2,079 lines; an oracle against tools.deps 0.31.1642 | 499 assertions in scripts; an oracle against tools.deps 0.31.1638, warm and cold, 22 entries |
-| tools.deps core | ported: `deps.clj` from `excluded?` to `expand-deps` becomes `expander.cljc` and `basis.cljc`, gitlibs becomes `gitlibs.cljc`, by unified patches over pinned revisions with SHA-256 ledgers | unchanged: 36 files verbatim, interpreted by sci; four stand-ins for the Maven-bound namespaces; one patch, the root deps.edn |
+| tools.deps core | ported: `deps.clj` from `excluded?` to `expand-deps` becomes `expander.cljc` and `basis.cljc`, gitlibs becomes `gitlibs.cljc`, by unified patches over pinned revisions with SHA-256 ledgers | unchanged: 17 namespaces verbatim, interpreted by sci; four stand-ins for the Maven-bound namespaces; one patch, the root deps.edn |
 | Maven layer | its own: coordinates, POM model, metadata, sha1 sidecars, `LATEST` | its own: the same, plus settings.xml with mirrors, servers, encrypted passwords, proxies with credentials |
 | settings.xml | none | full, because `bb clojure` must answer as `clojure` does on the same machine |
 | Version ordering | adapted from `ComparableVersion`, Apache Maven 3.9.16 | ported from `GenericVersion`, maven-resolver-util 1.9.27 |
