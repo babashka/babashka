@@ -94,13 +94,17 @@
             true)
         false))
     (let [{:keys [status body]} (get! url (assoc (request-opts opts) :repo-id repo-id :label label))]
-      (cond
-        (= 200 status) (do (printerrln "Downloading:" label "from" repo-id)
-                           (with-open [in body]
-                             (io/copy in (io/file dest))))
-        (#{404 410} status) false
-        :else (throw (ex-info (str "HTTP " status " for " url) {:url url :status status})))
-      (= 200 status))))
+      ;; the body is a stream for every status; a miss must close it too
+      (try
+        (cond
+          (= 200 status) (do (printerrln "Downloading:" label "from" repo-id)
+                             (io/copy body (io/file dest))
+                             true)
+          (#{404 410} status) false
+          :else (throw (ex-info (str "HTTP " status " for " url) {:url url :status status})))
+        (finally
+          (when (instance? java.io.Closeable body)
+            (.close ^java.io.Closeable body)))))))
 
 (defn- hex [^bytes bs]
   (apply str (map #(format "%02x" (bit-and % 0xff)) bs)))

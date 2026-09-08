@@ -1,5 +1,6 @@
 (ns babashka.deps
-  (:require [babashka.impl.process :as pp]
+  (:require [babashka.impl.common :as common]
+            [babashka.impl.process :as pp]
             [babashka.impl.tools-deps :as tools-deps]
             [babashka.process :as p]
             [borkdude.deps :as deps]
@@ -26,12 +27,25 @@
       (get (merge env extra-env) k)
       (or (get extra-env k) (System/getenv k)))))
 
+(def ^:private gitlibs-dir-set (atom nil))
+
 (defn ^:no-doc gitlibs-dir!
-  "Sets clojure.gitlibs.dir from GITLIBS when present in getenv.
-  tools.gitlibs reads this property once per process."
+  "Points tools.gitlibs at the GITLIBS in getenv through the
+  clojure.gitlibs.dir property, and clears it again when a later resolve
+  has none. gitlibs reads its configuration once into a delay, so a change
+  also replaces that delay in the interpreter."
   [getenv]
-  (when-let [dir (getenv "GITLIBS")]
-    (System/setProperty "clojure.gitlibs.dir" dir)))
+  (let [dir (getenv "GITLIBS")]
+    (when (not= dir @gitlibs-dir-set)
+      (if dir
+        (System/setProperty "clojure.gitlibs.dir" dir)
+        (System/clearProperty "clojure.gitlibs.dir"))
+      (reset! gitlibs-dir-set dir)
+      (sci/eval-string*
+       (common/ctx)
+       "(when (find-ns 'clojure.tools.gitlibs.config)
+          (alter-var-root (ns-resolve 'clojure.tools.gitlibs.config 'CONFIG)
+                          (constantly (delay ((deref (ns-resolve 'clojure.tools.gitlibs.config 'init-config)))))))"))))
 
 (defn clojure
   "Starts clojure similar to CLI. Use `rlwrap bb` for `clj`-like invocation.

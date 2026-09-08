@@ -55,6 +55,16 @@
                                                {:force true
                                                 :extra-env {"GITLIBS" ~(str libs-dir2)}}) nil)))
       (is (fs/exists? libs-dir))
+      (is (fs/exists? libs-dir2))))
+  (testing "GITLIBS can change between two resolves in one process"
+    (let [tmp-dir (fs/create-temp-dir)
+          libs-dir (fs/file tmp-dir ".gitlibs-a")
+          libs-dir2 (fs/file tmp-dir ".gitlibs-b")
+          dep '{:deps {babashka/process {:git/url "https://github.com/babashka/process" :sha "4c6699d06b49773d3e5c5b4c11d3334fb78cc996"}}}]
+      (bb (pr-str `(do (babashka.deps/add-deps '~dep {:force true :extra-env {"GITLIBS" ~(str libs-dir) "BABASHKA_DEPS_RESOLVER" "native"}})
+                       (babashka.deps/add-deps '~dep {:force true :extra-env {"GITLIBS" ~(str libs-dir2) "BABASHKA_DEPS_RESOLVER" "native"}})
+                       nil)))
+      (is (fs/exists? libs-dir))
       (is (fs/exists? libs-dir2)))))
 
 (deftest clojure-test
