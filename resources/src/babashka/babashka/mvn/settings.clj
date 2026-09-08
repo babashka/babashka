@@ -131,11 +131,10 @@
             (and user pass) (assoc :username user :password pass)))))))
 
 (defn proxy-for
-  "The proxy to reach url through, or nil for a direct connection. The
-  first active proxy in settings for the url's protocol decides, its
-  nonProxyHosts included; without one, http_proxy or https_proxy from the
-  environment, minus no_proxy. Keys :host :port, and :username :password
-  when the proxy wants them."
+  "Returns the first active proxy for the URL protocol, respecting
+  nonProxyHosts. Falls back to http_proxy or https_proxy and no_proxy.
+  Returns nil for a direct connection, or a map with :host and :port.
+  Includes :username and :password when configured."
   [{:keys [proxies]} url]
   (let [uri (java.net.URI. url)
         protocol (.getScheme uri)

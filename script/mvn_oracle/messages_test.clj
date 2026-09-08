@@ -11,7 +11,7 @@
 (defn- failure
   "The message add-deps throws for deps, or nil."
   [deps]
-  (try (deps/add-deps deps {:force true}) nil
+  (try (deps/add-deps deps {:force true :extra-env {"BABASHKA_DEPS_RESOLVER" "native"}}) nil
        (catch Exception e (ex-message e))))
 
 (defn- bad-repo!
@@ -34,6 +34,11 @@
   (is (= "Could not transfer nope/nope/1.0.0/nope-1.0.0.pom from dead (https://nonexistent.invalid/maven2/): nonexistent.invalid"
          (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
                     :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2/"}}}))))
+
+(deftest s3-test
+  (is (= "Repository private (s3://bucket/releases/) is an s3:// repository, which the in-process resolver does not support. Set BABASHKA_DEPS_RESOLVER=jvm to resolve through a JVM."
+         (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
+                    :mvn/repos {"private" {:url "s3://bucket/releases/"}}}))))
 
 (deftest bad-coordinate-test
   (is (= "No :mvn/version specified for medley/medley"

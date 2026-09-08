@@ -39,7 +39,7 @@
      (str "\n(alter-var-root #'root-deps (constantly (fn [] '" (pr-str root-deps-edn) ")))\n"))})
 
 (defn patch-source
-  "The bundled source of namespace, with the patches for it appended."
+  "Returns source with the patches for namespace appended."
   [namespace source]
   (if-let [patch (get source-patches namespace)]
     (str source patch)
@@ -52,10 +52,7 @@
   [:config-user :config-project :cp-file :jvm-file :main-file :manifest-file :basis-file])
 
 (defn- absolutize-files
-  "deps.clj hands over file paths relative to the project directory, the way
-  a java started there would want them. They have to come out absolute:
-  tools.deps resolves a relative path against *the-dir* once more, and a
-  project file resolved twice silently does not exist."
+  "Resolves file options to absolute paths relative to dir."
   [dir opts]
   (reduce (fn [opts k]
             (if-let [p (get opts k)]

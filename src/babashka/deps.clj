@@ -6,11 +6,9 @@
             [sci.core :as sci]))
 
 (defn ^:no-doc make-classpath-fn
-  "Returns a value for deps.clj's *make-classpath-fn* that runs
-  make-classpath2 in this process, or nil to let deps.clj spawn java for it.
-  BABASHKA_DEPS_RESOLVER decides: native for in-process, jvm for the java,
-  unset means jvm. getenv is the environment view of the resolve, so :env
-  and :extra-env count. dir is the project directory."
+  "Returns an in-process classpath resolver when getenv returns native for
+  BABASHKA_DEPS_RESOLVER, or nil to use the JVM resolver.
+  dir is the project directory. getenv maps environment names to values."
   [dir getenv]
   (when (= "native" (getenv "BABASHKA_DEPS_RESOLVER"))
     (fn [{:keys [args out]}]
@@ -20,9 +18,8 @@
             {:out nil})))))
 
 (defn ^:no-doc getenv-fn
-  "deps.clj's view of the environment for an in-process resolve: env
-  replaces the process environment when given, extra-env adds to it, the
-  way they would for a spawned java."
+  "Returns an environment lookup function for deps.clj.
+  env replaces the process environment. extra-env supplies overrides."
   [env extra-env]
   (fn [k]
     (if env
@@ -30,9 +27,8 @@
       (or (get extra-env k) (System/getenv k)))))
 
 (defn ^:no-doc gitlibs-dir!
-  "tools.gitlibs reads the clojure.gitlibs.dir property before GITLIBS, so a
-  GITLIBS given through env or extra-env reaches an in-process resolve
-  through the property. gitlibs reads it once per process."
+  "Sets clojure.gitlibs.dir from GITLIBS when present in getenv.
+  tools.gitlibs reads this property once per process."
   [getenv]
   (when-let [dir (getenv "GITLIBS")]
     (System/setProperty "clojure.gitlibs.dir" dir)))

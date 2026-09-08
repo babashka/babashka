@@ -1,5 +1,5 @@
 (ns babashka.mvn.http
-  "Fetching repository files, with checksums."
+  "Repository downloads and checksum verification."
   (:require [babashka.fs :as fs]
             [babashka.http-client :as http]
             [clojure.java.io :as io]
@@ -69,7 +69,7 @@
   (-> url (str/replace-first #"^file:(//)?" "") (str/replace #"^/+" "/")))
 
 (defn fetch
-  "GET url as a string. nil when the server has no such file."
+  "Returns the contents of url as a string, or nil when the file is absent."
   [url opts]
   (if (file-url? url)
     (let [f (file-url->path url)]
@@ -146,8 +146,8 @@
             (printerrln message)))))))
 
 (defn download!
-  "Downloads url to dest, atomically, and verifies the checksum per the
-  policy in opts. Returns dest, or nil when the repository has no such file.
+  "Downloads url to dest atomically and verifies the checksum using opts.
+  Returns dest, or nil when the file is absent.
   opts: :auth [user pass], :proxy, :checksum :warn/:fail/:ignore, :repo-id
   and :label for messages."
   [url dest opts]

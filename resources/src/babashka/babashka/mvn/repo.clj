@@ -1,6 +1,5 @@
 (ns babashka.mvn.repo
-  "Remote repositories, the local repository, and getting files from one
-  into the other."
+  "Artifact resolution and local repository caching."
   (:require [babashka.fs :as fs]
             [babashka.mvn.cipher :as cipher]
             [babashka.mvn.coords :as coords]
@@ -39,6 +38,12 @@
   [{:keys [mirrors servers] :as settings} [name {:keys [url snapshots releases] :as config}]]
   (when (and (str/starts-with? url "http:") (nil? (System/getenv "CLOJURE_CLI_ALLOW_HTTP_REPO")))
     (throw (ex-info (str "Invalid repo url (http not supported): " url) (or config {}))))
+  ;; tools.deps reads s3:// through aws-api, which needs a JVM. Not ported.
+  (when (str/starts-with? url "s3:")
+    (throw (ex-info (str "Repository " name " (" url ") is an s3:// repository, which the"
+                         " in-process resolver does not support. Set BABASHKA_DEPS_RESOLVER=jvm"
+                         " to resolve through a JVM.")
+                    {:repo name :url url})))
   (let [repo {:id name :url (with-slash url)}
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
@@ -119,8 +124,7 @@
     (spit f (str (str/join "\n" (conj (vec lines) (str local-name ">" remote-name))) "\n"))))
 
 (defn- download-from!
-  "Downloads the artifact's file from repo to dest. nil when the repository
-  has no such file, or already has it."
+  "Returns dest if cached or downloaded from repo, or nil if unavailable."
   [local-repo repo artifact dest policy]
   (let [local-name (coords/local-file-name artifact)
         dir (fs/parent dest)

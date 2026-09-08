@@ -67,7 +67,7 @@
          {:deps {'auth-test/lib {:mvn/version "1.0.0"}}
           :mvn/repos {"authrepo" {:url (str "http://localhost:" port "/")}}
           :mvn/local-repo (str (fs/file dir "local-repo"))}
-         {:force true})
+         {:force true :extra-env {"BABASHKA_DEPS_RESOLVER" "native"}})
         (require 'auth-test.lib)
         (is (= 42 @(resolve 'auth-test.lib/answer)))
         (testing "the server saw the decrypted password, never the blob"
