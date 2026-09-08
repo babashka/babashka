@@ -1,7 +1,9 @@
 FROM clojure:openjdk-11-lein-2.9.6-bullseye AS BASE
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update
+# bullseye is EOL, its security repo is dead; the image stays for glibc
+RUN sed -i '/bullseye-security/d' /etc/apt/sources.list && \
+    apt -o Acquire::Check-Valid-Until=false update
 RUN apt install --no-install-recommends -yy build-essential zlib1g-dev
 WORKDIR "/opt"
 
