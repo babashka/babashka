@@ -48,7 +48,8 @@
   [local-repo {:keys [id url auth proxy]} rel policy]
   (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))]
     (if (stale? file policy)
-      (when-let [text (http/fetch (str url rel "/maven-metadata.xml") {:auth auth :proxy proxy})]
+      (when-let [text (http/fetch (str url rel "/maven-metadata.xml")
+                                  {:auth auth :proxy proxy :repo-id id :label (str rel "/maven-metadata.xml")})]
         (fs/create-dirs (fs/parent file))
         (spit file text)
         text)

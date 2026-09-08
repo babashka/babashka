@@ -164,5 +164,6 @@
   (loop [[repo & more] repos]
     (when repo
       (or (when (get-in repo [:releases :enabled])
-            (http/fetch (str (:url repo) rel) {:auth (:auth repo) :proxy (:proxy repo)}))
+            (http/fetch (str (:url repo) rel) {:auth (:auth repo) :proxy (:proxy repo)
+                                                :repo-id (:id repo) :label rel}))
           (recur more)))))

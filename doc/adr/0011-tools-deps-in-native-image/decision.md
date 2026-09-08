@@ -261,7 +261,11 @@ namespace, run together by `script/mvn_oracle/tests.clj`: the version
 scheme against the 160 cases extracted from maven-resolver-util's
 GenericVersionTest, coordinates and layout, settings and mirror matching,
 the effective POM model from in-memory POMs, the cipher against JVM
-vectors, and the end-to-end resolve behind basic auth.
+vectors, the end-to-end resolve behind basic auth, and the failure messages,
+worded like the CLI's: a missing artifact names its coordinates and every
+repository asked, an unreachable host names the repository and the host, a
+checksum problem names the file and both sums. At startup bb prints one
+"Error building classpath" line, as make-classpath2 does in its own java.
 
 ## Ruled out: run-time resolve
 

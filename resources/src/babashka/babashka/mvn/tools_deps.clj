@@ -24,9 +24,21 @@
 (defn- model-cache []
   (session/retrieve :babashka.mvn/models #(atom {})))
 
-(defn- check-version [lib {:keys [mvn/version]}]
-  (when (nil? version)
-    (throw (ex-info (str "No :mvn/version specified for " lib) {}))))
+(defn- check-version [lib {:keys [mvn/version] :as coord}]
+  (cond
+    (nil? version)
+    (throw (ex-info (str "No :mvn/version specified for " lib) {:lib lib :coord coord}))
+
+    (not (string? version))
+    (throw (ex-info (str "Invalid :mvn/version for " lib ": " (pr-str version))
+                    {:lib lib :coord coord}))))
+
+(defn- not-found-message
+  "Aether's wording: the artifact and every repository that was asked."
+  [{:keys [group artifact extension classifier version]} repos]
+  (str "Could not find artifact " group ":" artifact ":" extension
+       (when classifier (str ":" classifier)) ":" version
+       " in " (str/join ", " (map #(str (:id %) " (" (:url %) ")") repos))))
 
 ;; POMs
 
@@ -62,7 +74,7 @@
            hops 0]
       (let [text (read-pom config gav [])
             _ (when-not text
-                (throw (ex-info (str "Unable to download: [" lib (pr-str (:mvn/version coord)) "]")
+                (throw (ex-info (not-found-message (assoc gav :extension "pom") (repos config))
                                 {:lib lib :coord coord})))
             model (pom/effective-model (pom/parse text) ctx)
             relocation (:relocation model)]
@@ -159,7 +171,7 @@
   (when (= "jar" extension)
     (let [artifact (coords/artifact lib coord)]
       [(or (repo/resolve-file! (local-repo config) (repos config) artifact)
-           (throw (ex-info (str "Unable to download: [" lib (pr-str (:mvn/version coord)) "]")
+           (throw (ex-info (not-found-message artifact (repos config))
                            {:lib lib :coord coord})))])))
 
 ;; Versions from metadata
@@ -185,6 +197,7 @@
 
 (defmethod ext/canonicalize :mvn
   [lib {:keys [mvn/version] :as coord} config]
+  (check-version lib coord)
   (let [specific (second (re-matches #"^\[([^,]*)]$" version))]
     (cond
       (contains? #{"RELEASE" "LATEST"} version)

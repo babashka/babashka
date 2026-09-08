@@ -1058,7 +1058,15 @@ Use bb run --help to show this help output.
             ;; present. After the context exists: with tools.deps in the
             ;; image the resolver runs interpreted, through the context.
             _ (when-not classpath
-                (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
+                (when-let [bb-edn @common/bb-edn]
+                  (try (deps/add-deps bb-edn {:force force?})
+                       (catch Exception e
+                         ;; what make-classpath2 prints when it runs in its own java
+                         (binding [*out* *err*]
+                           (println "Error building classpath." (ex-message e))
+                           (when-not (instance? clojure.lang.IExceptionInfo e)
+                             (.printStackTrace e)))
+                         (System/exit 1)))))
             _ (when-let [pods (:pods @common/bb-edn)]
                 (when-let [pod-metadata (pods/load-pods-metadata
                                          pods {:download-only (download-only?)})]
