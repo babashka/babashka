@@ -285,7 +285,7 @@
            {:methods [{:name "exec"}
                       {:name "getExecutableName"}]})
 
-    features/tools-deps?
+    true
     (merge tools-deps-methods)))
 
 (def java-net-http-classes
@@ -789,7 +789,7 @@
 
     :fields [clojure.lang.PersistentQueue
              ~@(when features/postgresql? '[org.postgresql.PGProperty])
-             ~@(when features/tools-deps? '[java.lang.ProcessBuilder$Redirect])]
+             java.lang.ProcessBuilder$Redirect]
     ;; this just adds the class without any methods also suitable for private
     ;; classes: add the privage class here and the public class to the normal
     ;; list above and then everything reachable via the public class will be
@@ -884,7 +884,7 @@
                                               'clojure.data.xml.event.CDataEvent
                                               'clojure.data.xml.event.CommentEvent
                                               'clojure.data.xml.event.QNameEvent])
-                      ~@(when features/tools-deps? tools-deps-name-only)]
+                      ~@tools-deps-name-only]
     :custom ~custom-map})
 
 (defn compiler-load

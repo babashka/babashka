@@ -1,25 +1,22 @@
 (ns babashka.deps
-  (:require [babashka.impl.features :as features]
-            [babashka.impl.process :as pp]
+  (:require [babashka.impl.process :as pp]
+            [babashka.impl.tools-deps :as tools-deps]
             [babashka.process :as p]
             [borkdude.deps :as deps]
             [sci.core :as sci]))
 
-;; With tools.deps in the image, make-classpath2 runs in this process instead
-;; of in a java subprocess. Resolved at build time.
-(def ^:private make-classpath!
-  (when features/tools-deps? @(resolve 'babashka.impl.tools-deps/make-classpath!)))
-
 (defn ^:no-doc make-classpath-fn
   "Returns a value for deps.clj's *make-classpath-fn* that runs
-  make-classpath2 in this process, or nil when tools.deps is not in the
-  image. dir is the project directory."
-  [dir]
-  (when make-classpath!
+  make-classpath2 in this process, or nil to let deps.clj spawn java for it.
+  BABASHKA_DEPS_RESOLVER decides: native for in-process, jvm for the java,
+  unset means jvm. getenv is the environment view of the resolve, so :env
+  and :extra-env count. dir is the project directory."
+  [dir getenv]
+  (when (= "native" (getenv "BABASHKA_DEPS_RESOLVER"))
     (fn [{:keys [args out]}]
       (if (= :string out)
-        {:out (with-out-str (make-classpath! dir args))}
-        (do (make-classpath! dir args)
+        {:out (with-out-str (tools-deps/make-classpath! dir args))}
+        (do (tools-deps/make-classpath! dir args)
             {:out nil})))))
 
 (defn ^:no-doc getenv-fn
@@ -77,7 +74,7 @@
               *err* @sci/err
               deps/*dir* (:dir opts)
               deps/*getenv-fn* getenv
-              deps/*make-classpath-fn* (or (make-classpath-fn (:dir opts))
+              deps/*make-classpath-fn* (or (make-classpath-fn (:dir opts) getenv)
                                            deps/*make-classpath-fn*)
               deps/*aux-process-fn* (fn [{:keys [cmd out]}]
                                       (pp/shell (assoc opts :out out :cmd cmd)))

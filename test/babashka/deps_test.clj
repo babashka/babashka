@@ -13,6 +13,19 @@
       :eof nil}
      edn-str)))
 
+(deftest resolver-switch-test
+  ;; BABASHKA_DEPS_RESOLVER picks the resolver; unset means the java that
+  ;; deps.clj spawns, native means tools.deps in this process. Both resolve
+  ;; the same dependency.
+  (doseq [resolver ["jvm" "native"]]
+    (testing resolver
+      (is (= 3 (bb (format "
+(babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}}
+                        {:force true :extra-env {\"BABASHKA_DEPS_RESOLVER\" \"%s\"}})
+(require '[medley.core :as m])
+(m/find-first odd? [2 3 4])
+" resolver)))))))
+
 (deftest dependency-test
   (is (= #{:a :c :b} (bb "
 (require '[babashka.deps :as deps])

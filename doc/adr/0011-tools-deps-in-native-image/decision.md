@@ -16,10 +16,12 @@ with native-image. This experiment measures what tools.deps costs inside bb.
 
 ## Wiring
 
-A `feature/tools-deps` lein profile with tools.deps 0.31.1638, the s3
-transporter excluded. `BABASHKA_FEATURE_TOOLS_DEPS` gates it. The feature
-namespace `babashka.impl.tools-deps` exposes 11 vars of `clojure.tools.deps`
-to sci.
+At first a `feature/tools-deps` lein profile with tools.deps 0.31.1638, the
+s3 transporter excluded, gated by `BABASHKA_FEATURE_TOOLS_DEPS`. The flag and
+the profile are gone since the resolver costs nothing: `babashka.impl.tools-deps`
+is ordinary compiled code, and `BABASHKA_DEPS_RESOLVER` picks at run time
+between `jvm`, the java deps.clj spawns and the default for now, and
+`native`, tools.deps in this process.
 
 ## Measurements
 
@@ -106,9 +108,9 @@ Code area deltas against baseline, in build-report bytes:
 | org.ow2.asm | +284,934 | +0 |
 
 `clojure.tools.deps.edn` calls two functions from that namespace,
-`valid-deps?` and `explain-deps`. `feature-tools-deps/clojure/tools/deps/specs.clj`
-shadows the namespace with a stub that has no spec dependency. Source paths
-come before jars, so bb's copy wins at AOT time. That file is 15 lines and
+`valid-deps?` and `explain-deps`. A stub of the namespace with no spec
+dependency, first a shadowing source file and now a built-in sci namespace in
+`babashka.impl.tools-deps`, replaces it. That stub is two functions and
 removes 28.9 MB.
 
 Maven itself is cheap. After the stub the remaining 5.00 MB is:
@@ -376,8 +378,9 @@ Direct linking is on for the uberjar, so patching `root-deps` with
 ## Reproducing
 
 ```bash
-BABASHKA_FEATURE_TOOLS_DEPS=true script/uberjar
-BABASHKA_FEATURE_TOOLS_DEPS=true script/compile
+script/uberjar
+script/compile
+export BABASHKA_DEPS_RESOLVER=native
 JAVA_CMD=/nonexistent/java ./bb -e "(babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}} {:force true}) (require '[medley.core :as m]) (prn (m/map-vals inc {:a 1}))"
 JAVA_CMD=/nonexistent/java ./bb -Sdeps '{:deps {medley/medley {:mvn/version "1.3.0"}}}' -e "(require '[medley.core :as m]) (prn (m/map-keys name {:a 1}))"
 ```

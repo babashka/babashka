@@ -99,8 +99,8 @@
                               "-Sdeps-file" "__babashka_no_deps_file__.edn") ;; we reset deps file so the local deps.edn isn't used
                    args (if force (cons "-Sforce" args) args)
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
-                   make-classpath-fn (bdeps/make-classpath-fn (when deps-root (str deps-root)))
                    getenv (bdeps/getenv-fn env extra-env)
+                   make-classpath-fn (bdeps/make-classpath-fn (when deps-root (str deps-root)) getenv)
                    _ (bdeps/gitlibs-dir! getenv)
                    bindings (cond->
                              {#'deps/*getenv-fn* getenv

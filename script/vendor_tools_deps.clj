@@ -27,6 +27,12 @@
 (let [tmp (fs/create-temp-dir)]
   (doseq [jar jars]
     (fs/unzip jar tmp {:replace-existing true}))
+  ;; the root deps.edn, a resource in the tools.deps.edn jar, embedded into
+  ;; edn.clj by babashka.impl.tools-deps at build time
+  (fs/copy (fs/file tmp "clojure/tools/deps/deps.edn")
+           (fs/file target "clojure/tools/deps/deps.edn")
+           {:replace-existing true})
+  (println "clojure/tools/deps/deps.edn")
   (doseq [f (fs/glob tmp "clojure/tools/**.clj")
           :let [rel (str (fs/relativize tmp f))]
           :when (not (skip rel))]

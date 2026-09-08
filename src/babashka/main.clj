@@ -61,6 +61,7 @@
    [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
+   [babashka.impl.tools-deps :as tools-deps]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.impl.uberscript :as uberscript]
@@ -83,9 +84,8 @@
 
 (def windows? (fs/windows?))
 
-;; Resolved at build time, see babashka.impl.tools-deps.
-(def ^:private tools-deps-patch-source
-  (when features/tools-deps? @(resolve 'babashka.impl.tools-deps/patch-source)))
+;; The root deps.edn patch, see babashka.impl.tools-deps.
+(def ^:private tools-deps-patch-source tools-deps/patch-source)
 
 (if-not windows?
   (do ;; see https://github.com/oracle/graal/issues/1784
@@ -509,7 +509,7 @@ Use bb run --help to show this help output.
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace)
                           'next.jdbc.result-set @(resolve 'babashka.impl.jdbc/result-set-namespace))
     features/csv? (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
-    features/tools-deps? (assoc 'clojure.tools.deps.specs @(resolve 'babashka.impl.tools-deps/specs-namespace))
+    true (assoc 'clojure.tools.deps.specs tools-deps/specs-namespace)
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace)
                                 'datascript.db @(resolve 'babashka.impl.datascript/datascript-db-namespace))

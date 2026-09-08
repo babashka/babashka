@@ -9,7 +9,8 @@
 
 ;; tools.deps runs interpreted, from the sources under resources/src/babashka,
 ;; with babashka.mvn as its Maven procurer. Nothing in this namespace
-;; requires either, so none of it is compiled in.
+;; requires either, so none of it is compiled in. This is the compiled glue:
+;; the specs stub, the one source patch, and make-classpath2 in-process.
 
 ;; The real clojure.tools.deps.specs is built on clojure.spec, which bb leaves
 ;; out. clojure.tools.deps.edn calls only these two.
@@ -22,9 +23,10 @@
   {'valid-deps? (sci/copy-var valid-deps? sns)
    'explain-deps (sci/copy-var explain-deps sns)})
 
-;; Read at build time from the tools.deps.edn jar.
+;; Read at build time: the root deps.edn of tools.deps.edn, vendored next to
+;; its sources.
 (def ^:private root-deps-edn
-  (edn/read-string (slurp (io/resource "clojure/tools/deps/deps.edn"))))
+  (edn/read-string (slurp (io/resource "src/babashka/clojure/tools/deps/deps.edn"))))
 
 (def ^:private make-classpath-ns 'clojure.tools.deps.script.make-classpath2)
 

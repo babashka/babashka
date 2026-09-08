@@ -22,7 +22,8 @@
                  (not image?) (conj "-cp" "resources/src/babashka")
                  true (conj t))
            {:keys [exit out]} (apply p/shell {:out :string :err :out :continue true
-                                              :extra-env {"CLOJURE_CLI_ALLOW_HTTP_REPO" "true"}}
+                                              :extra-env {"CLOJURE_CLI_ALLOW_HTTP_REPO" "true"
+                                                          "BABASHKA_DEPS_RESOLVER" "native"}}
                                      cmd)
            summary (or (last (re-seq #"Ran \d+ tests containing \d+ assertions\.\n\d+ failures, \d+ errors\." out))
                        "no summary")]
