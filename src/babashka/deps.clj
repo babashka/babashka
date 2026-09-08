@@ -7,13 +7,13 @@
             [sci.core :as sci]))
 
 (defn ^:no-doc make-classpath-fn
-  "Returns an in-process classpath resolver when the resolver is native,
-  or nil to use the JVM resolver. resolver comes from the :resolver
-  option or bb.edn's :deps-resolver, else BABASHKA_DEPS_RESOLVER from
-  getenv, else jvm. dir is the project directory. getenv maps environment
-  names to values."
+  "Returns an in-process classpath resolver when the resolver is bb, or
+  nil to use the JVM resolver. resolver is :deps-resolver from the deps
+  map, bb.edn's included; without one BABASHKA_DEPS_RESOLVER from getenv
+  decides, and without that the JVM. dir is the project directory. getenv
+  maps environment names to values."
   [dir getenv resolver]
-  (when (= "native" (some-> (or resolver (getenv "BABASHKA_DEPS_RESOLVER")) name))
+  (when (= "bb" (some-> (or resolver (getenv "BABASHKA_DEPS_RESOLVER")) name))
     (fn [{:keys [args out]}]
       (if (= :string out)
         {:out (with-out-str (tools-deps/make-classpath! dir args))}
@@ -84,7 +84,8 @@
               *err* @sci/err
               deps/*dir* (:dir opts)
               deps/*getenv-fn* getenv
-              deps/*make-classpath-fn* (or (make-classpath-fn (:dir opts) getenv (:resolver opts))
+              deps/*make-classpath-fn* (or (make-classpath-fn (:dir opts) getenv
+                                                              (:deps-resolver @common/bb-edn))
                                            deps/*make-classpath-fn*)
               deps/*aux-process-fn* (fn [{:keys [cmd out]}]
                                       (pp/shell (assoc opts :out out :cmd cmd)))

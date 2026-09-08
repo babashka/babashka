@@ -61,16 +61,14 @@
   then used to resolve dependencies in babashka.
 
   Other options: :force recomputes the classpath; :env and :extra-env
-  are the environment of the resolve; :resolver :native resolves in this
-  process without a JVM, :jvm through the java deps.clj spawns. The deps
-  map may carry :deps-resolver instead, which is how bb.edn says it. Both
-  default to BABASHKA_DEPS_RESOLVER, then jvm."
+  are the environment of the resolve. The deps map may carry
+  :deps-resolver, as bb.edn may: :bb resolves in this process without a
+  JVM, :jvm through the java deps.clj spawns. Without it
+  BABASHKA_DEPS_RESOLVER decides, and without that the JVM."
   ([deps-map] (add-deps deps-map nil))
-  ([deps-map {:keys [:aliases :env :extra-env :force :resolver]}]
+  ([deps-map {:keys [:aliases :env :extra-env :force]}]
    (let [deps-root (:deps-root @bb-edn)
-         ;; :resolver in the options wins, then :deps-resolver in the map,
-         ;; which is bb.edn's way to say it; the env var is read later
-         resolver (or resolver (:deps-resolver deps-map))]
+         resolver (:deps-resolver deps-map)]
      (when-let [paths (:paths deps-map)]
        (let [paths (if deps-root
                      (let [deps-root (fs/absolutize deps-root)

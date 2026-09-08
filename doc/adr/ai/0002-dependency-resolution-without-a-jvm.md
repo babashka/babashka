@@ -27,10 +27,12 @@ Layers, top to bottom, with what is ours and what is not:
    spawned-java behaviour is the default of that var, so existing users of
    deps.clj as a library, Cursive among them, see no change.
 2. `babashka.deps` and `babashka.impl.deps` bind `*make-classpath-fn*` to an
-   in-process run when `BABASHKA_DEPS_RESOLVER` is `native`, and leave it
-   alone when it is `jvm` or unset. The variable is read through the
-   resolve's environment view, so `:env` and `:extra-env` on `add-deps` and
-   `clojure` count, and a test can run both paths in one process.
+   in-process run when the resolver is `bb`, and leave it alone when it is
+   `jvm` or unset. `:deps-resolver` in the deps map says it, which is how
+   bb.edn says it too; without that `BABASHKA_DEPS_RESOLVER` decides, read
+   through the resolve's environment view, so `:env` and `:extra-env` on
+   `add-deps` and `clojure` count, and a test can run both paths in one
+   process.
 3. `babashka.impl.tools-deps`, compiled: requires `make-classpath2` into the
    script's sci context, absolutizes the file paths deps.clj hands over, and
    runs `parse-opts` and `run` under `with-dir`. Also holds the specs stub
@@ -108,7 +110,7 @@ accept what bb wrote.
 
 - No build feature. It cost nothing in the image and an untested "off"
   configuration goes stale.
-- `jvm` stays the default for the first release, `native` is a dated flip
+- `jvm` stays the default for the first release, `bb` is a dated flip
   after it, and the same variable is the way back.
 - deps.edn validation is skipped: the specs namespace is a stub, since
   clojure.spec stays out of the image. Accepted.

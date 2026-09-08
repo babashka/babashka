@@ -15,9 +15,9 @@
 
 (deftest resolver-switch-test
   ;; BABASHKA_DEPS_RESOLVER picks the resolver; unset means the java that
-  ;; deps.clj spawns, native means tools.deps in this process. Both resolve
+  ;; deps.clj spawns, bb means tools.deps in this process. Both resolve
   ;; the same dependency.
-  (doseq [resolver ["jvm" "native"]]
+  (doseq [resolver ["jvm" "bb"]]
     (testing resolver
       (is (= 3 (bb (format "
 (babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}}
@@ -25,17 +25,17 @@
 (require '[medley.core :as m])
 (m/find-first odd? [2 3 4])
 " resolver))))))
-  (testing "the :resolver option, no environment needed"
+  (testing ":deps-resolver in the deps map, no environment needed"
     (is (= 3 (bb "
-(babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}}
-                        {:force true :resolver :native})
+(babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}} :deps-resolver :bb}
+                        {:force true})
 (require '[medley.core :as m])
 (m/find-first odd? [2 3 4])
 "))))
   (testing ":deps-resolver in bb.edn"
     (let [tmp (fs/create-temp-dir)
           bb-edn (fs/file tmp "bb.edn")]
-      (spit bb-edn "{:deps {medley/medley {:mvn/version \"1.3.0\"}} :deps-resolver :native}")
+      (spit bb-edn "{:deps {medley/medley {:mvn/version \"1.3.0\"}} :deps-resolver :bb}")
       (is (= 3 (edn/read-string
                 (test-utils/bb nil "--config" (str bb-edn) "-e"
                                "(require '[medley.core :as m]) (m/find-first odd? [2 3 4])")))))))
@@ -55,7 +55,7 @@
     (let [cp (bb (pr-str `(with-out-str
                             (babashka.deps/clojure ["-Sforce" "-Spath" "-Tmytool"]
                                                    {:extra-env {"CLJ_CONFIG" ~(str config)
-                                                                "BABASHKA_DEPS_RESOLVER" "native"}}))))]
+                                                                "BABASHKA_DEPS_RESOLVER" "bb"}}))))]
       (is (str/includes? (str cp) (str (fs/file tool-root "src")))))))
 
 (deftest dependency-test
@@ -93,8 +93,8 @@
           libs-dir (fs/file tmp-dir ".gitlibs-a")
           libs-dir2 (fs/file tmp-dir ".gitlibs-b")
           dep '{:deps {babashka/process {:git/url "https://github.com/babashka/process" :sha "4c6699d06b49773d3e5c5b4c11d3334fb78cc996"}}}]
-      (bb (pr-str `(do (babashka.deps/add-deps '~dep {:force true :extra-env {"GITLIBS" ~(str libs-dir) "BABASHKA_DEPS_RESOLVER" "native"}})
-                       (babashka.deps/add-deps '~dep {:force true :extra-env {"GITLIBS" ~(str libs-dir2) "BABASHKA_DEPS_RESOLVER" "native"}})
+      (bb (pr-str `(do (babashka.deps/add-deps '~dep {:force true :extra-env {"GITLIBS" ~(str libs-dir) "BABASHKA_DEPS_RESOLVER" "bb"}})
+                       (babashka.deps/add-deps '~dep {:force true :extra-env {"GITLIBS" ~(str libs-dir2) "BABASHKA_DEPS_RESOLVER" "bb"}})
                        nil)))
       (is (fs/exists? libs-dir))
       (is (fs/exists? libs-dir2)))))

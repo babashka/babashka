@@ -116,7 +116,7 @@
          {:deps {'proxied/lib {:mvn/version "1.0.0"}}
           :mvn/repos {"proxied" {:url "http://repo.invalid/"}}
           :mvn/local-repo (str (fs/file dir "local-repo"))}
-         {:force true :extra-env {"BABASHKA_DEPS_RESOLVER" "native"}})
+         {:force true :extra-env {"BABASHKA_DEPS_RESOLVER" "bb"}})
         (require 'proxied.lib)
         (is (= 43 @(resolve 'proxied.lib/answer)))
         (testing "the proxy was challenged once and then saw the decrypted password"

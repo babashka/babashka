@@ -11,7 +11,7 @@
 (defn- failure
   "The message add-deps throws for deps, or nil."
   [deps]
-  (try (deps/add-deps deps {:force true :extra-env {"BABASHKA_DEPS_RESOLVER" "native"}}) nil
+  (try (deps/add-deps deps {:force true :extra-env {"BABASHKA_DEPS_RESOLVER" "bb"}}) nil
        (catch Exception e (ex-message e))))
 
 (defn- bad-repo!
