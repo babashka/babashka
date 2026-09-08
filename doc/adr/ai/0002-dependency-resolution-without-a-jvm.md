@@ -186,8 +186,9 @@ the harness: the same corpus run against both finds divergences in either.
 
 ## Open
 
-- Corpus at scale, the top few hundred Clojars and Central artifacts,
-  nightly.
+- The corpus at scale, 239 roots, runs offline after procurer changes;
+  each finding becomes a test in `script/mvn_oracle`. First run 2026-09-08:
+  one bug, duplicate dependency declarations in a flattened POM.
 - Effective-POM and effective-settings oracles against Maven's own
   `help:effective-pom` and `help:effective-settings`.
 - A Maven-literate human review.
