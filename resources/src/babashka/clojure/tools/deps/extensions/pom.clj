@@ -1,7 +1,7 @@
 (ns ^{:skip-wiki true}
   clojure.tools.deps.extensions.pom
-  "babashka's stand-in for the tools.deps namespace of the same name. The
-  :pom extension methods live in babashka.mvn.tools-deps. read-model and
+  "BB-STAND-IN for the tools.deps namespace of the same name. The :pom
+  extension methods live in babashka.mvn.tools-deps. read-model and
   model-deps are here for extensions.local."
   (:require [babashka.mvn.tools-deps :as mvn]))
 

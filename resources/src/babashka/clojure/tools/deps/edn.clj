@@ -138,12 +138,19 @@
 
 ;;;; Dep chain lookups
 
-(defn root-deps
+;; BB-PATCH the root deps.edn is a jar resource the image cannot see
+#_(defn root-deps
   "Read the root deps.edn resource from the classpath at the path
   clojure/tools/deps/deps.edn"
   []
   (let [url (jio/resource "clojure/tools/deps/deps.edn")]
     (read-edn (BufferedReader. (InputStreamReader. (.openStream url))))))
+
+(defn root-deps
+  "The root deps.edn of tools.deps.edn 0.9.42, embedded by script/vendor_tools_deps.clj."
+  []
+  '{:paths ["src"], :deps {org.clojure/clojure {:mvn/version "1.12.5"}}, :aliases {:deps {:replace-paths [], :replace-deps {org.clojure/tools.deps.cli {:mvn/version "0.31.158"}}, :ns-default clojure.tools.deps.cli.api, :ns-aliases {help clojure.tools.deps.cli.help}}, :test {:extra-paths ["test"]}}, :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}, "clojars" {:url "https://repo.clojars.org/"}}})
+;; END-BB-PATCH
 
 (defn user-config-dir
   "Use the same logic as clj to calculate the location of the user config dir.

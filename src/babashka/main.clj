@@ -85,7 +85,6 @@
 (def windows? (fs/windows?))
 
 ;; The root deps.edn patch, see babashka.impl.tools-deps.
-(def ^:private tools-deps-patch-source tools-deps/patch-source)
 
 (if-not windows?
   (do ;; see https://github.com/oracle/graal/issues/1784
@@ -1001,25 +1000,18 @@ Use bb run --help to show this help output.
                                (pods/load-pod (:pod-spec pod) (:opts pod)))))
                          (when loader
                            (when-let [res (cp/source-for-namespace loader namespace nil)]
-                             (let [res (if tools-deps-patch-source
-                                         (update res :source #(tools-deps-patch-source namespace %))
-                                         res)]
                              (if uberscript
                                (do (swap! uberscript-sources conj (:source res))
                                    (uberscript/uberscript {:ctx (common/ctx)
                                                            :expressions [(:source res)]})
                                    {})
-                               res))))
+                               res)))
                          ;; built-in deps
                          (let [rps (cp/resource-paths namespace)
                                rps (mapv #(str "src/babashka/" %) rps)]
                            (when-let [url (some #(io/resource % common/jvm-loader) rps)]
-                             (let [source (slurp url)
-                                   source (if tools-deps-patch-source
-                                            (tools-deps-patch-source namespace source)
-                                            source)]
-                               {:file (str url)
-                                :source source})))
+                             {:file (str url)
+                              :source (slurp url)}))
                          (case namespace
                            clojure.spec.alpha
                            (binding [*out* *err*]

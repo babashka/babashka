@@ -3,21 +3,25 @@
 ;; resources/src/babashka, where bb's load-fn serves bundled namespaces from.
 ;; Only the files listed in `shipped` are copied; anything else in the jars
 ;; is reported, so an upgrade shows every upstream addition for a decision.
+;; The one patch to a shipped file, root-deps in edn.clj, is written here
+;; between BB-PATCH markers with the upstream form kept under #_.
 (require '[babashka.fs :as fs]
          '[clojure.set :as set]
-         '[clojure.string :as str])
+         '[clojure.string :as str]
+         '[rewrite-clj.zip :as z])
 
 (def m2 (str (fs/expand-home "~/.m2/repository/org/clojure")))
 
+(def tools-deps-edn-version "0.9.42")
+
 (def jars
   [(str m2 "/tools.deps/0.31.1638/tools.deps-0.31.1638.jar")
-   (str m2 "/tools.deps.edn/0.9.42/tools.deps.edn-0.9.42.jar")
+   (str m2 "/tools.deps.edn/" tools-deps-edn-version "/tools.deps.edn-" tools-deps-edn-version ".jar")
    (str m2 "/tools.gitlibs/2.6.217/tools.gitlibs-2.6.217.jar")])
 
-;; Upstream files shipped verbatim.
+;; Upstream files shipped verbatim, edn.clj with the patch below.
 (def shipped
   #{"clojure/tools/deps.clj"
-    "clojure/tools/deps/deps.edn" ; root deps.edn, embedded into edn.clj by babashka.impl.tools-deps at build time
     "clojure/tools/deps/edn.clj"
     "clojure/tools/deps/extensions.clj"
     "clojure/tools/deps/extensions/deps.clj"
@@ -43,15 +47,37 @@
     "clojure/tools/deps/extensions/pom.clj"
     "clojure/tools/deps/util/maven.clj"})
 
-;; Upstream files bb does not ship: specs is a built-in stub, the rest is
-;; not needed for make-classpath2.
+;; Upstream files bb does not ship: specs is a built-in stub, deps.edn is
+;; embedded into edn.clj below, the rest is not needed for make-classpath2.
 (def dropped
   #{"clojure/tools/deps/specs.clj"
+    "clojure/tools/deps/deps.edn"
     "clojure/tools/deps/gen/pom.clj"
     "clojure/tools/deps/script/generate_manifest2.clj"
     "clojure/tools/deps/license-abbrev.edn"}) ; read by nothing shipped
 
 (def target "resources/src/babashka")
+
+(defn patch-root-deps
+  "edn.clj with root-deps replaced: upstream reads the root deps.edn as a
+  jar resource, which the image cannot see, so the data is embedded."
+  [source root-deps-edn]
+  (let [zloc (-> (z/of-string source)
+                 (z/find-value z/next 'root-deps)
+                 z/up)
+        upstream (z/string zloc)
+        _ (assert (str/starts-with? upstream "(defn root-deps") upstream)
+        ours (binding [*print-namespace-maps* false]
+               (str "(defn root-deps\n"
+                    "  \"The root deps.edn of tools.deps.edn " tools-deps-edn-version
+                    ", embedded by script/vendor_tools_deps.clj.\"\n"
+                    "  []\n"
+                    "  '" (pr-str root-deps-edn) ")"))
+        block (str ";; BB-PATCH the root deps.edn is a jar resource the image cannot see\n"
+                   "#_" upstream "\n\n"
+                   ours "\n"
+                   ";; END-BB-PATCH")]
+    (str/replace-first source upstream block)))
 
 (let [tmp (fs/create-temp-dir)]
   (doseq [jar jars]
@@ -62,10 +88,13 @@
                       (remove #(str/ends-with? % ".class"))
                       set)
         missing (remove upstream (concat shipped stand-ins dropped))
-        new (sort (remove (set/union shipped stand-ins dropped) upstream))]
+        new (sort (remove (set/union shipped stand-ins dropped) upstream))
+        root-deps-edn (read-string (slurp (fs/file tmp "clojure/tools/deps/deps.edn")))]
     (doseq [rel (sort shipped)]
       (fs/create-dirs (fs/parent (fs/file target rel)))
-      (fs/copy (fs/file tmp rel) (fs/file target rel) {:replace-existing true})
+      (if (= rel "clojure/tools/deps/edn.clj")
+        (spit (fs/file target rel) (patch-root-deps (slurp (fs/file tmp rel)) root-deps-edn))
+        (fs/copy (fs/file tmp rel) (fs/file target rel) {:replace-existing true}))
       (println rel))
     (when (seq new)
       (println "\nUpstream files not shipped, decide per file:")

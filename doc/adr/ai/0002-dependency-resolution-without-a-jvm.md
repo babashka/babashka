@@ -43,16 +43,21 @@ Layers, top to bottom, with what is ours and what is not:
    procurer reads the environment for `${env.NAME}` in settings.xml and
    POMs, `http_proxy`, `no_proxy` and `CLOJURE_CLI_ALLOW_HTTP_REPO`, is
    the call's lookup. All three are process-wide state, hence the lock.
-   Also holds the specs stub and the one source patch.
+   Also holds the specs stub.
 4. tools.deps 0.31.1638, tools.deps.edn 0.9.42 and gitlibs 2.6.217, bundled
    as source under `resources/src/babashka/clojure/tools/` and interpreted by
    sci: `make-classpath2`, the basis, `expand-deps`, the session cache, the
-   extension multimethods. 17 namespaces verbatim, plus the root deps.edn. Four namespaces that import
-   Maven classes when they load have stand-ins at their own paths;
-   `NOTICE.md` next to them says which and why. The root deps.edn, a jar
-   resource the image cannot see, is vendored as a file and appended to
-   `edn.clj` as data when the load-fn serves it. `script/vendor_tools_deps.clj`
-   makes the copies.
+   extension multimethods. 16 namespaces verbatim. Four namespaces that
+   import Maven classes when they load have stand-ins at their own paths,
+   marked `BB-STAND-IN` in their docstrings. Two files carry patches
+   between `BB-PATCH` and `END-BB-PATCH` markers, the upstream form kept
+   under `#_` next to each: `local.clj`, whose `:jar` methods read the POM
+   as text, and `edn.clj`, whose `root-deps` returns the root deps.edn as
+   data, since the image cannot see the jar resource. The vendor script,
+   `script/vendor_tools_deps.clj`, copies only the files it lists, writes
+   the `edn.clj` patch itself, and reports every other file in the jars, so
+   an upgrade shows each upstream addition. One grep for the two markers
+   lists every deviation.
 5. `babashka.mvn`, 12 namespaces, 1,643 lines, plain Clojure over
    babashka.fs, babashka.http-client, data.xml and javax.crypto. The `:mvn`
    and `:pom` procurer registered through tools.deps' `ext/` multimethods,
@@ -133,8 +138,8 @@ accept what bb wrote.
 
 ## What is borrowed, and how it is credited
 
-tools.deps unchanged but for the stand-ins and the one patch, both named in
-the NOTICE next to the copies. `babashka.mvn` ports behaviour from Maven and
+tools.deps unchanged but for the stand-ins and two marked patches, all named
+in the NOTICE next to the copies. `babashka.mvn` ports behaviour from Maven and
 its libraries where the behaviour is an algorithm, and says so in the
 namespaces and in its own NOTICE, with the Apache License 2.0 text alongside.
 The version scheme is the one tools.deps compares with, `GenericVersion`

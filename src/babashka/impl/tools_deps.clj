@@ -2,15 +2,14 @@
   {:no-doc true}
   (:require [babashka.fs :as fs]
             [babashka.impl.common :as common]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
             [clojure.string :as str]
             [sci.core :as sci]))
 
 ;; tools.deps runs interpreted, from the sources under resources/src/babashka,
 ;; with babashka.mvn as its Maven procurer. Nothing in this namespace
 ;; requires either, so none of it is compiled in. This is the compiled glue:
-;; the specs stub, the one source patch, and make-classpath2 in-process.
+;; the specs stub and make-classpath2 in-process. The sources' own deviations
+;; from upstream are marked BB-PATCH and BB-STAND-IN in the tree.
 
 ;; The real clojure.tools.deps.specs is built on clojure.spec, which bb leaves
 ;; out. clojure.tools.deps.edn calls only these two.
@@ -23,27 +22,7 @@
   {'valid-deps? (sci/copy-var valid-deps? sns)
    'explain-deps (sci/copy-var explain-deps sns)})
 
-;; Read at build time: the root deps.edn of tools.deps.edn, vendored next to
-;; its sources.
-(def ^:private root-deps-edn
-  (edn/read-string (slurp (io/resource "src/babashka/clojure/tools/deps/deps.edn"))))
-
 (def ^:private make-classpath-ns 'clojure.tools.deps.script.make-classpath2)
-
-;; Appended to the bundled sources when bb's load-fn serves them. The root
-;; deps.edn is a jar resource the image cannot see, so it travels as data.
-;; The procurer itself is required by the stand-in extensions/maven.clj.
-(def ^:private source-patches
-  {'clojure.tools.deps.edn
-   (binding [*print-namespace-maps* false]
-     (str "\n(alter-var-root #'root-deps (constantly (fn [] '" (pr-str root-deps-edn) ")))\n"))})
-
-(defn patch-source
-  "Returns source with the patches for namespace appended."
-  [namespace source]
-  (if-let [patch (get source-patches namespace)]
-    (str source patch)
-    source))
 
 (defn- prepare! [ctx]
   (sci/eval-form ctx (list 'require (list 'quote make-classpath-ns)

@@ -32,13 +32,16 @@ Maven classes when they load:
   `babashka.mvn`.
 - `clojure/tools/deps/extensions/maven.clj`: requires
   `babashka.mvn.tools-deps`, which registers the `:mvn` and `:pom`
-  extension methods. tools.deps loads this file last, so they win.
+  extension methods. clojure.tools.deps loads this path in place of its own.
 - `clojure/tools/deps/extensions/pom.clj`: `read-model` and `model-deps`
   over `babashka.mvn.pom`.
 - `clojure/tools/deps/extensions/local.clj`: the original, with its `:jar`
   methods reading the POM text out of the jar instead of through Maven's
   model builder.
 
-One patch is appended when `clojure/tools/deps/edn.clj` is served: the
-root deps.edn, a jar resource the binary cannot see, embedded as data.
+Each stand-in says `BB-STAND-IN` in its docstring. Two files carry patches
+between `BB-PATCH` and `END-BB-PATCH` markers, the upstream form kept under
+`#_` next to each: `local.clj` as above, and `clojure/tools/deps/edn.clj`,
+whose `root-deps` returns the root deps.edn as data, since the binary cannot
+see the jar resource; `script/vendor_tools_deps.clj` writes that one.
 Everything else is verbatim.

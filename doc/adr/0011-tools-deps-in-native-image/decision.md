@@ -232,8 +232,10 @@ surface other namespaces use, `extensions/maven.clj` is empty,
 `extensions/local.clj` is upstream with its `:jar` methods reading the POM
 text out of the jar. The stand-in `extensions/maven.clj` requires
 `babashka.mvn.tools-deps`, and tools.deps loads that file last, so its
-methods win. The vendor script skips those four. One patch is appended when
-`edn.clj` is served: the root deps.edn, a jar resource the image cannot see.
+methods win. The vendor script never copies those four. It writes the one
+patch to a shipped file itself, `root-deps` in `edn.clj` returning the root
+deps.edn as data, since the image cannot see the jar resource; upstream's
+form stays under `#_` between BB-PATCH markers.
 `NOTICE.md` next to the copies says all of this; `babashka/mvn/NOTICE.md`
 names what the procurer ports from Maven and under which license.
 
