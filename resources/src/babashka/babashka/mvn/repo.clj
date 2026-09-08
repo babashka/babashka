@@ -3,6 +3,7 @@
   (:require [babashka.fs :as fs]
             [babashka.mvn.cipher :as cipher]
             [babashka.mvn.coords :as coords]
+            [babashka.mvn.env :as env]
             [babashka.mvn.http :as http]
             [babashka.mvn.metadata :as metadata]
             [babashka.mvn.settings :as settings]
@@ -36,7 +37,7 @@
   "One repository map from a :mvn/repos entry, with the mirror, auth and
   proxy from settings applied."
   [{:keys [mirrors servers] :as settings} [name {:keys [url snapshots releases] :as config}]]
-  (when (and (str/starts-with? url "http:") (nil? (System/getenv "CLOJURE_CLI_ALLOW_HTTP_REPO")))
+  (when (and (str/starts-with? url "http:") (nil? (env/getenv "CLOJURE_CLI_ALLOW_HTTP_REPO")))
     (throw (ex-info (str "Invalid repo url (http not supported): " url) (or config {}))))
   (let [repo {:id name :url (with-slash url)}
         mirror (settings/mirror-for mirrors repo)
@@ -63,10 +64,17 @@
                         (dissoc repos "central" "clojars")
                         (map (fn [{:keys [id url]}] [id {:url url}])
                              (settings/active-profile-repositories settings)))]
-    (into []
-          (comp (remove (fn [[_ config]] (nil? config)))
-                (map #(remote-repo settings %)))
-          entries)))
+    ;; Two repositories behind one mirror are one repository, as Aether
+    ;; merges them, so the second is dropped.
+    (reduce (fn [repos repo]
+              (if (some #(= (:id %) (:id repo)) repos)
+                repos
+                (conj repos repo)))
+            []
+            (into []
+                  (comp (remove (fn [[_ config]] (nil? config)))
+                        (map #(remote-repo settings %)))
+                  entries))))
 
 (def default-local-repo
   (str (fs/path (System/getProperty "user.home") ".m2" "repository")))

@@ -88,6 +88,31 @@
     (is (every? #(str/includes? % src-a) outs-a))
     (is (every? #(str/includes? % src-b) outs-b))))
 
+(deftest settings-read-the-call-environment-test
+  ;; ${env.NAME} in settings.xml reads the environment of the call, so a
+  ;; mirror URL from :extra-env names the repository in the message
+  (let [tmp (fs/create-temp-dir)
+        home (fs/file tmp "home")
+        mirror (fs/file tmp "mirror")]
+    (fs/create-dirs (fs/file home ".m2"))
+    (fs/create-dirs mirror)
+    (spit (fs/file home ".m2" "settings.xml")
+          "<settings><mirrors><mirror><id>m</id><url>${env.MIRROR_URL}</url><mirrorOf>*</mirrorOf></mirror></mirrors></settings>")
+    (let [message (bb (pr-str `(let [real-home# (System/getProperty "user.home")]
+                                 (System/setProperty "user.home" ~(str home))
+                                 (try
+                                   (babashka.deps/add-deps '{:deps {nope/nope {:mvn/version "1.0.0"}}}
+                                                           {:force true
+                                                            :extra-env {"BABASHKA_DEPS_RESOLVER" "bb"
+                                                                        "MIRROR_URL" ~(str "file://" mirror "/")}})
+                                   (catch Exception e# (ex-message e#))
+                                   (finally (System/setProperty "user.home" real-home#))))))]
+      ;; the first artifact tools.deps asks for is not the one under
+      ;; test but a root dep, so only the repository list is checked;
+      ;; central and clojars behind one mirror are one entry
+      (is (str/starts-with? (str message) "Could not find artifact "))
+      (is (str/ends-with? (str message) (str " in m (file://" mirror "/)"))))))
+
 (deftest task-inherits-resolver-test
   ;; a task's :extra-deps carry no :deps-resolver; the project's setting in
   ;; bb.edn applies. The ambient make-classpath fn throws, so only the

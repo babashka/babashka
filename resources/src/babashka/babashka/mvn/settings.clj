@@ -3,6 +3,7 @@
   selection after Maven's DefaultMirrorSelector and DefaultProxySelector,
   Apache License 2.0, see NOTICE.md."
   (:require [babashka.fs :as fs]
+            [babashka.mvn.env :as env]
             [babashka.mvn.xml :refer [child child-text children elements text]]
             [clojure.string :as str]))
 
@@ -13,7 +14,7 @@
     (str/replace s #"\$\{([^}]+)\}"
                  (fn [[whole key]]
                    (or (when (str/starts-with? key "env.")
-                         (System/getenv (subs key 4)))
+                         (env/getenv (subs key 4)))
                        (System/getProperty key)
                        whole)))))
 
@@ -122,8 +123,8 @@
   scheme://[user:pass@]host:port. nil without a numeric port, as deps.clj
   reads them."
   [protocol]
-  (when-let [value (or (System/getenv (str protocol "_proxy"))
-                       (System/getenv (str/upper-case (str protocol "_proxy"))))]
+  (when-let [value (or (env/getenv (str protocol "_proxy"))
+                       (env/getenv (str/upper-case (str protocol "_proxy"))))]
     (let [uri (try (java.net.URI. value) (catch Exception _ nil))]
       (when (and uri (.getHost uri) (pos? (.getPort uri)))
         (let [[user pass] (some-> (.getUserInfo uri) (str/split #":" 2))]
@@ -145,8 +146,8 @@
           (cond-> {:host (:host p) :port (:port p)}
             (:username p) (assoc :username (:username p) :password (:password p))))
         (when-let [p (env-proxy protocol)]
-          (when-not (non-proxy-host? (split-patterns (or (System/getenv "no_proxy")
-                                                         (System/getenv "NO_PROXY"))
+          (when-not (non-proxy-host? (split-patterns (or (env/getenv "no_proxy")
+                                                         (env/getenv "NO_PROXY"))
                                                      #",")
                                      host)
             p))))))

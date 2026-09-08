@@ -16,7 +16,8 @@
     (fn [{:keys [args out]}]
       ;; deps.clj has bound *getenv-fn* by now, so this is the config dir
       ;; of the call's own environment, -Srepro or not
-      (let [opts {:config-dir (deps/get-config-dir)}]
+      (let [opts {:config-dir (deps/get-config-dir)
+                  :getenv deps/*getenv-fn*}]
         (if (= :string out)
           {:out (with-out-str (tools-deps/make-classpath! dir args opts))}
           (do (tools-deps/make-classpath! dir args opts)
@@ -30,24 +31,6 @@
     (if env
       (get (merge env extra-env) k)
       (or (get extra-env k) (System/getenv k)))))
-
-(def ^:private gitlibs-dir-set (atom nil))
-
-(defn ^:no-doc gitlibs-dir!
-  "Updates the gitlibs directory from GITLIBS in getenv.
-  Clears the override when GITLIBS is removed and refreshes cached config."
-  [getenv]
-  (let [dir (getenv "GITLIBS")]
-    (when (not= dir @gitlibs-dir-set)
-      (if dir
-        (System/setProperty "clojure.gitlibs.dir" dir)
-        (System/clearProperty "clojure.gitlibs.dir"))
-      (reset! gitlibs-dir-set dir)
-      (sci/eval-string*
-       (common/ctx)
-       "(when (find-ns 'clojure.tools.gitlibs.config)
-          (alter-var-root (ns-resolve 'clojure.tools.gitlibs.config 'CONFIG)
-                          (constantly (delay ((deref (ns-resolve 'clojure.tools.gitlibs.config 'init-config)))))))"))))
 
 (defn clojure
   "Starts clojure similar to CLI. Use `rlwrap bb` for `clj`-like invocation.
@@ -79,8 +62,7 @@
                      :err :inherit
                      :shutdown p/destroy-tree}
                     opts)
-        getenv (getenv-fn (:env opts) (:extra-env opts))
-        _ (gitlibs-dir! getenv)]
+        getenv (getenv-fn (:env opts) (:extra-env opts))]
     (binding [*in* @sci/in
               *out* @sci/out
               *err* @sci/err

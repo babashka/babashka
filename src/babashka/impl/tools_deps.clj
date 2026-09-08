@@ -46,7 +46,36 @@
     source))
 
 (defn- prepare! [ctx]
-  (sci/eval-form ctx (list 'require (list 'quote make-classpath-ns))))
+  (sci/eval-form ctx (list 'require (list 'quote make-classpath-ns)
+                           ''babashka.mvn.env)))
+
+(def ^:private gitlibs-dir-set (atom nil))
+
+(defn- gitlibs-dir!
+  "Points gitlibs at dir, or back at its default when dir is nil, and
+  refreshes the config gitlibs read once into a delay."
+  [ctx dir]
+  (when (not= dir @gitlibs-dir-set)
+    (if dir
+      (System/setProperty "clojure.gitlibs.dir" dir)
+      (System/clearProperty "clojure.gitlibs.dir"))
+    (reset! gitlibs-dir-set dir)
+    (sci/eval-string*
+     ctx
+     "(when (find-ns 'clojure.tools.gitlibs.config)
+        (alter-var-root (ns-resolve 'clojure.tools.gitlibs.config 'CONFIG)
+                        (constantly (delay ((deref (ns-resolve 'clojure.tools.gitlibs.config 'init-config)))))))")))
+
+(defn- override-form
+  "A form that runs body with each var, named by a qualified symbol, set
+  to its value for the run and restored after."
+  [[[var-sym value] & more] body]
+  (if var-sym
+    (list 'let ['v (list 'var var-sym) 'orig (list 'deref 'v)]
+          (list 'alter-var-root 'v (list 'constantly value))
+          (list 'try (override-form more body)
+                (list 'finally (list 'alter-var-root 'v (list 'constantly 'orig)))))
+    body))
 
 (def ^:private file-opts
   [:config-user :config-project :cp-file :jvm-file :main-file :manifest-file :basis-file])
@@ -65,10 +94,11 @@
 
 (defn make-classpath!
   "Runs clojure.tools.deps.script.make-classpath2 in this process with the
-  arguments deps.clj passes to it. dir is the project directory.
-  :config-dir in opts is the user config dir of this call, which
-  tools.deps would otherwise take from the process environment."
-  [dir args {:keys [config-dir]}]
+  arguments deps.clj passes to it. dir is the project directory. opts
+  carry the call's environment: :getenv, its lookup function, and
+  :config-dir, the user config dir deps.clj found in it, which tools.deps
+  would otherwise take from the process environment."
+  [dir args {:keys [config-dir getenv]}]
   (let [ctx (common/ctx)
         ;; deps.clj passes nil for --config-user under -Srepro, the CLI
         ;; script passes the empty string
@@ -85,14 +115,13 @@
                       (list 'clojure.java.io/file (str dir))
                       (list (symbol (str make-classpath-ns) "run")
                             (list 'quote options)))]
-        ;; user-config-dir is a var root shared by every call in this
-        ;; process, so calls run one at a time
+        ;; the gitlibs dir, user-config-dir and the environment are
+        ;; process-wide state, so calls run one at a time
         (locking run-lock
+          (gitlibs-dir! ctx (getenv "GITLIBS"))
           (sci/eval-form ctx
-                         (if config-dir
-                           (list 'let ['v (list 'ns-resolve ''clojure.tools.deps.edn ''user-config-dir)
-                                       'orig (list 'deref 'v)]
-                                 (list 'alter-var-root 'v (list 'constantly (list 'constantly config-dir)))
-                                 (list 'try run
-                                       (list 'finally (list 'alter-var-root 'v (list 'constantly 'orig)))))
-                           run)))))))
+                         (override-form
+                          (cond-> [['babashka.mvn.env/getenv getenv]]
+                            config-dir (conj ['clojure.tools.deps.edn/user-config-dir
+                                              (constantly config-dir)]))
+                          run)))))))

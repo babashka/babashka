@@ -35,11 +35,15 @@ Layers, top to bottom, with what is ours and what is not:
    `clojure` count, and a test can run both paths in one process.
 3. `babashka.impl.tools-deps`, compiled: requires `make-classpath2` into the
    script's sci context, absolutizes the file paths deps.clj hands over, and
-   runs `parse-opts` and `run` under `with-dir`, one call at a time, with
-   tools.deps' `user-config-dir` answering the config dir deps.clj found in
-   the call's environment, so a named tool's descriptor comes from the
-   call's `CLJ_CONFIG`, `-Srepro` or not. Also holds the specs stub and
-   the one source patch.
+   runs `parse-opts` and `run` under `with-dir`, one call at a time. For
+   the run, tools.deps' `user-config-dir` answers the config dir deps.clj
+   found in the call's environment, so a named tool's descriptor comes
+   from the call's `CLJ_CONFIG`, `-Srepro` or not; gitlibs points at the
+   call's `GITLIBS`; and `babashka.mvn.env/getenv`, the one place the
+   procurer reads the environment for `${env.NAME}` in settings.xml and
+   POMs, `http_proxy`, `no_proxy` and `CLOJURE_CLI_ALLOW_HTTP_REPO`, is
+   the call's lookup. All three are process-wide state, hence the lock.
+   Also holds the specs stub and the one source patch.
 4. tools.deps 0.31.1638, tools.deps.edn 0.9.42 and gitlibs 2.6.217, bundled
    as source under `resources/src/babashka/clojure/tools/` and interpreted by
    sci: `make-classpath2`, the basis, `expand-deps`, the session cache, the
@@ -121,6 +125,11 @@ accept what bb wrote.
 - Maven 4 password blobs: neither side reads them; tools.deps sits on the
   same plexus-sec-dispatcher 2.0.
 - Failure messages are worded like the CLI's, since a user compares the two.
+- The git that gitlibs spawns inherits bb's process environment, not the
+  call's, so `GIT_SSH_COMMAND` or `GITLIBS_COMMAND` in `:extra-env` reach
+  git under `jvm` and not under `bb`. gitlibs builds the process itself,
+  and a patch there is not worth one variable; the process environment is
+  the place for it.
 
 ## What is borrowed, and how it is credited
 

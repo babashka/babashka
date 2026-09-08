@@ -4,6 +4,7 @@
   Maven's DefaultModelBuilder, for what dependency resolution needs; Apache
   License 2.0, see NOTICE.md."
   (:require [babashka.fs :as fs]
+            [babashka.mvn.env :as env]
             [babashka.mvn.version :as version]
             [babashka.mvn.xml :as x]
             [clojure.string :as str]))
@@ -140,7 +141,7 @@
 
 (defn- property-value [name]
   (if (str/starts-with? name "env.")
-    (System/getenv (subs name 4))
+    (env/getenv (subs name 4))
     (System/getProperty name)))
 
 (defn- property-active? [{:keys [name value]}]
