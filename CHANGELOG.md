@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Resolve deps without a JVM: set `:deps-resolver :bb` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=bb`. Default stays `jvm` for now.
 - [#2040](https://github.com/babashka/babashka/issues/2040): allow `.get`/`.put` on typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`) and primitive arrays `[F]`, `[J]`, `[D]`, `[S]` so SCI can call bulk `Buffer.get(primitive[])` / `.put`
 - Fix interop for `(Boolean. false)` which picked the wrong overload
 - Bump Clojure to `1.12.6`
