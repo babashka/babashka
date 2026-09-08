@@ -38,18 +38,19 @@
   [{:keys [mirrors servers] :as settings} [name {:keys [url snapshots releases] :as config}]]
   (when (and (str/starts-with? url "http:") (nil? (System/getenv "CLOJURE_CLI_ALLOW_HTTP_REPO")))
     (throw (ex-info (str "Invalid repo url (http not supported): " url) (or config {}))))
-  ;; tools.deps reads s3:// through aws-api, which needs a JVM. Not ported.
-  (when (str/starts-with? url "s3:")
-    (throw (ex-info (str "Repository " name " (" url ") is an s3:// repository, which the"
-                         " in-process resolver does not support. Set BABASHKA_DEPS_RESOLVER=jvm"
-                         " to resolve through a JVM.")
-                    {:repo name :url url})))
   (let [repo {:id name :url (with-slash url)}
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
                {:id (:id mirror) :url (with-slash (:url mirror))}
                repo)
         {:keys [username password]} (get servers (:id repo))]
+    ;; tools.deps reads s3:// through aws-api, which needs a JVM. Not
+    ;; ported. A mirror in settings.xml may stand in for the bucket, so the
+    ;; effective URL is what counts.
+    (when (str/starts-with? (:url repo) "s3:")
+      (throw (ex-info (str "S3 repository " (:id repo) " (" (:url repo) ") requires the JVM resolver."
+                           " Set BABASHKA_DEPS_RESOLVER=jvm.")
+                      {:repo (:id repo) :url (:url repo)})))
     (cond-> (assoc repo
                    :releases (policy name (or releases {}))
                    :snapshots (policy name (or snapshots {})))

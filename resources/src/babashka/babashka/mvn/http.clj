@@ -40,8 +40,7 @@
     proxy (assoc :client (client-for proxy))))
 
 (defn- root-message
-  "The message of the innermost cause, or its class when it has none, the
-  way an unresolved host shows up."
+  "Returns the message of the innermost cause, or nil."
   [^Throwable e]
   (let [root (loop [t e] (if-let [c (.getCause t)] (recur c) t))]
     (.getMessage root)))
@@ -65,8 +64,15 @@
 (defn- file-url? [url]
   (str/starts-with? url "file:"))
 
-(defn- file-url->path [url]
-  (-> url (str/replace-first #"^file:(//)?" "") (str/replace #"^/+" "/")))
+(defn- file-url->path
+  "The file behind a file: URL. A well-formed URL goes through the file
+  system's own URI handling, which decodes %20 and the like and knows
+  Windows drives; one with a bare space or other characters a URI rejects
+  is taken as a path."
+  [url]
+  (or (try (str (java.nio.file.Paths/get (java.net.URI. url)))
+           (catch Exception _ nil))
+      (-> url (str/replace-first #"^file:(//)?" "") (str/replace #"^/+" "/"))))
 
 (defn fetch
   "Returns the contents of url as a string, or nil when the file is absent."
@@ -94,7 +100,7 @@
             true)
         false))
     (let [{:keys [status body]} (get! url (assoc (request-opts opts) :repo-id repo-id :label label))]
-      ;; the body is a stream for every status; a miss must close it too
+      ;; Close the response body for every status.
       (try
         (cond
           (= 200 status) (do (printerrln "Downloading:" label "from" repo-id)

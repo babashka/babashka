@@ -74,7 +74,22 @@
                                    (list 'quote args)))]
       (when (seq errors)
         (throw (ex-info (str/join "\n" errors) {:args args})))
-      (sci/eval-form ctx (list 'clojure.tools.deps.util.dir/with-dir
-                               (list 'clojure.java.io/file (str dir))
-                               (list (symbol (str make-classpath-ns) "run")
-                                     (list 'quote (absolutize-files dir options))))))))
+      (let [options (absolutize-files dir options)
+            ;; deps.clj derived the user config dir from the resolve's own
+            ;; environment, CLJ_CONFIG included, and named it in
+            ;; --config-user. tools.deps reads the process environment for
+            ;; the same thing when it looks up a named tool's descriptor, so
+            ;; for this run its answer is deps.clj's.
+            config-dir (some-> (:config-user options) fs/parent str)
+            run (list 'clojure.tools.deps.util.dir/with-dir
+                      (list 'clojure.java.io/file (str dir))
+                      (list (symbol (str make-classpath-ns) "run")
+                            (list 'quote options)))]
+        (sci/eval-form ctx
+                       (if config-dir
+                         (list 'let ['v (list 'ns-resolve ''clojure.tools.deps.edn ''user-config-dir)
+                                     'orig (list 'deref 'v)]
+                               (list 'alter-var-root 'v (list 'constantly (list 'constantly config-dir)))
+                               (list 'try run
+                                     (list 'finally (list 'alter-var-root 'v (list 'constantly 'orig)))))
+                         run))))))

@@ -58,10 +58,19 @@
 (defn add-deps
   "Takes deps edn map and optionally a map with :aliases (seq of
   keywords) which will used to calculate classpath. The classpath is
-  then used to resolve dependencies in babashka."
+  then used to resolve dependencies in babashka.
+
+  Other options: :force recomputes the classpath; :env and :extra-env
+  are the environment of the resolve; :resolver :native resolves in this
+  process without a JVM, :jvm through the java deps.clj spawns. The deps
+  map may carry :deps-resolver instead, which is how bb.edn says it. Both
+  default to BABASHKA_DEPS_RESOLVER, then jvm."
   ([deps-map] (add-deps deps-map nil))
-  ([deps-map {:keys [:aliases :env :extra-env :force]}]
-   (let [deps-root (:deps-root @bb-edn)]
+  ([deps-map {:keys [:aliases :env :extra-env :force :resolver]}]
+   (let [deps-root (:deps-root @bb-edn)
+         ;; :resolver in the options wins, then :deps-resolver in the map,
+         ;; which is bb.edn's way to say it; the env var is read later
+         resolver (or resolver (:deps-resolver deps-map))]
      (when-let [paths (:paths deps-map)]
        (let [paths (if deps-root
                      (let [deps-root (fs/absolutize deps-root)
@@ -77,7 +86,7 @@
                                 ;; paths are added manually above
                                 ;; extra-paths are added as :paths in tasks
                                 :paths :tasks :raw :file :deps-root
-                                :min-bb-version)
+                                :min-bb-version :deps-resolver)
                ;; associate deps-root to avoid cache conflict between different
                ;; bb.edns with relative local/roots by the same name NOTE:
                ;; deps-root is nil when bb.edn isn't used, so clashes may still
@@ -100,7 +109,7 @@
                    args (if force (cons "-Sforce" args) args)
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
                    getenv (bdeps/getenv-fn env extra-env)
-                   make-classpath-fn (bdeps/make-classpath-fn (when deps-root (str deps-root)) getenv)
+                   make-classpath-fn (bdeps/make-classpath-fn (when deps-root (str deps-root)) getenv resolver)
                    _ (bdeps/gitlibs-dir! getenv)
                    bindings (cond->
                              {#'deps/*getenv-fn* getenv

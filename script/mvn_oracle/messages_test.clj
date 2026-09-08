@@ -36,9 +36,22 @@
                     :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2/"}}}))))
 
 (deftest s3-test
-  (is (= "Repository private (s3://bucket/releases/) is an s3:// repository, which the in-process resolver does not support. Set BABASHKA_DEPS_RESOLVER=jvm to resolve through a JVM."
+  (is (= "S3 repository private (s3://bucket/releases/) requires the JVM resolver. Set BABASHKA_DEPS_RESOLVER=jvm."
          (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
-                    :mvn/repos {"private" {:url "s3://bucket/releases/"}}}))))
+                    :mvn/repos {"private" {:url "s3://bucket/releases/"}}})))
+  (testing "a mirror in settings.xml can stand in for the bucket"
+    (fs/with-temp-dir [home {}]
+      (let [m2 (fs/file home ".m2")
+            real-home (System/getProperty "user.home")]
+        (fs/create-dirs m2)
+        (spit (fs/file m2 "settings.xml")
+              "<settings><mirrors><mirror><id>bucket-mirror</id><url>https://repo.clojars.org/</url><mirrorOf>private</mirrorOf></mirror></mirrors></settings>")
+        (System/setProperty "user.home" (str home))
+        (try
+          (is (= "Could not find artifact nope:nope:pom:1.0.0 in central (https://repo1.maven.org/maven2/), clojars (https://repo.clojars.org/), bucket-mirror (https://repo.clojars.org/)"
+                 (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
+                            :mvn/repos {"private" {:url "s3://bucket/releases/"}}})))
+          (finally (System/setProperty "user.home" real-home)))))))
 
 (deftest bad-coordinate-test
   (is (= "No :mvn/version specified for medley/medley"

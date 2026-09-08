@@ -24,7 +24,39 @@
                         {:force true :extra-env {\"BABASHKA_DEPS_RESOLVER\" \"%s\"}})
 (require '[medley.core :as m])
 (m/find-first odd? [2 3 4])
-" resolver)))))))
+" resolver))))))
+  (testing "the :resolver option, no environment needed"
+    (is (= 3 (bb "
+(babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}}
+                        {:force true :resolver :native})
+(require '[medley.core :as m])
+(m/find-first odd? [2 3 4])
+"))))
+  (testing ":deps-resolver in bb.edn"
+    (let [tmp (fs/create-temp-dir)
+          bb-edn (fs/file tmp "bb.edn")]
+      (spit bb-edn "{:deps {medley/medley {:mvn/version \"1.3.0\"}} :deps-resolver :native}")
+      (is (= 3 (edn/read-string
+                (test-utils/bb nil "--config" (str bb-edn) "-e"
+                               "(require '[medley.core :as m]) (m/find-first odd? [2 3 4])")))))))
+
+(deftest tool-descriptor-in-per-call-config-test
+  ;; a named tool resolves through <config-dir>/tools/<name>.edn, and the
+  ;; config dir of the resolve comes from its own environment, CLJ_CONFIG
+  ;; included, not from bb's process environment
+  (let [tmp (fs/create-temp-dir)
+        config (fs/file tmp "config")
+        tool-root (fs/file tmp "mytool")]
+    (fs/create-dirs (fs/file config "tools"))
+    (fs/create-dirs (fs/file tool-root "src"))
+    (spit (fs/file tool-root "deps.edn") "{:paths [\"src\"]}")
+    (spit (fs/file config "tools" "mytool.edn")
+          (pr-str {:lib 'my/tool :coord {:local/root (str tool-root)}}))
+    (let [cp (bb (pr-str `(with-out-str
+                            (babashka.deps/clojure ["-Sforce" "-Spath" "-Tmytool"]
+                                                   {:extra-env {"CLJ_CONFIG" ~(str config)
+                                                                "BABASHKA_DEPS_RESOLVER" "native"}}))))]
+      (is (str/includes? (str cp) (str (fs/file tool-root "src")))))))
 
 (deftest dependency-test
   (is (= #{:a :c :b} (bb "
