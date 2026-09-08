@@ -10,7 +10,8 @@
   clojure.tools.deps.extensions.local
   "babashka's copy of the tools.deps namespace of the same name. The :jar
   methods read a jar's pom.xml as text for babashka.mvn instead of through
-  Maven's model source. Everything else is upstream."
+  Maven's model source. Everything else is upstream. Each change sits
+  between BB-PATCH and END-BB-PATCH, the upstream form before it under #_."
   (:require
     [clojure.java.io :as jio]
     [clojure.string :as str]
@@ -21,7 +22,14 @@
     [clojure.tools.deps.util.session :as session])
   (:import
     [java.io File IOException]
-    [java.util.jar JarFile JarEntry]))
+    ;; BB-PATCH the :jar methods read the pom as text, no Maven model
+    #_[java.net URL]
+    [java.util.jar JarFile JarEntry]
+    ;; maven-builder-support
+    #_[org.apache.maven.model.building UrlModelSource]
+    #_[org.apache.maven.model License]
+    ;; END-BB-PATCH
+    ))
 
 (defmethod ext/coord-type-keys :local
   [_type]
@@ -83,6 +91,18 @@
             (recur entries)))))
     (catch IOException _t nil)))
 
+;; BB-PATCH
+#_(defmethod ext/coord-deps :jar
+  [lib {:keys [local/root] :as _coord} _manifest config]
+  (let [jar (JarFile. (ensure-file lib root))]
+    (if-let [path (find-pom jar)]
+      (let [url (URL. (str "jar:file:" root "!/" path))
+            src (UrlModelSource. url)
+            settings (session/retrieve :mvn/settings #(maven/get-settings))
+            model (pom/read-model src config settings)]
+        (pom/model-deps model))
+      [])))
+
 (defn- pom-text [^JarFile jar ^String path]
   (slurp (.getInputStream jar (.getEntry jar path))))
 
@@ -97,6 +117,7 @@
   (if-let [model (jar-model lib root config)]
     (pom/model-deps model)
     []))
+;; END-BB-PATCH
 
 (defmethod ext/coord-paths :jar
   [_lib coord _manifest _config]
@@ -114,6 +135,25 @@
   [_lib {:keys [deps/root] :as _coord} _mf _config]
   nil)
 
+;; BB-PATCH
+#_(defmethod ext/license-info-mf :jar
+  [lib {:keys [local/root] :as _coord} _mf config]
+  (let [jar (JarFile. (ensure-file lib root))]
+    (when-let [path (find-pom jar)]
+      (let [url (URL. (str "jar:file:" root "!/" path))
+            src (UrlModelSource. url)
+            settings (session/retrieve :mvn/settings #(maven/get-settings))
+            model (pom/read-model src config settings)
+            licenses (.getLicenses model)
+            ^License license (when (and licenses (pos? (count licenses))) (first licenses))]
+        (when license
+          (let [name (.getName license)
+                url (.getUrl license)]
+            (when (or name url)
+              (cond-> {}
+                name (assoc :name name)
+                url (assoc :url url)))))))))
+
 (defmethod ext/license-info-mf :jar
   [lib {:keys [local/root] :as _coord} _mf config]
   (when-let [model (jar-model lib root config)]
@@ -122,6 +162,7 @@
         (cond-> {}
           name (assoc :name name)
           url (assoc :url url))))))
+;; END-BB-PATCH
 
 (defmethod ext/coord-usage :jar
   [_lib _coord _manifest-type _config]
