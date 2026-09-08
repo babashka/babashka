@@ -29,8 +29,25 @@
    :optional (x/child-text el "optional")
    :exclusions (mapv exclusion (some-> (x/child el "exclusions") (x/children "exclusion")))})
 
+(defn- dependency-key* [{:keys [group artifact type classifier]}]
+  [group artifact (or type "jar") classifier])
+
+(defn- merge-duplicates
+  "One dependency per key, as Maven's model normalizer leaves it: the last
+  declaration wins, in the place of the first. Flattened POMs declare the
+  same artifact more than once."
+  [deps]
+  (let [[order by-key]
+        (reduce (fn [[order by-key] d]
+                  (let [k (dependency-key* d)]
+                    [(if (contains? by-key k) order (conj order k))
+                     (assoc by-key k d)]))
+                [[] {}]
+                deps)]
+    (mapv by-key order)))
+
 (defn- parse-dependencies [el]
-  (mapv dependency (x/children el "dependency")))
+  (merge-duplicates (mapv dependency (x/children el "dependency"))))
 
 (defn- properties [el]
   (into {} (for [p (x/elements el)]

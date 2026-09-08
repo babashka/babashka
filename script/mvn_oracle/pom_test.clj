@@ -65,6 +65,23 @@
     (is (= 4 (count (:dependencies raw))))
     (is (= ["on" "off"] (mapv :id (:profiles raw))))))
 
+(deftest duplicate-declarations-test
+  ;; netty-all's flattened POM declares one artifact three times; Maven's
+  ;; normalizer keeps the last declaration, in the place of the first
+  (let [deps (:dependencies
+              (pom/parse
+               (pom "<groupId>g</groupId><artifactId>a</artifactId><version>1</version><dependencies>"
+                    "<dependency><groupId>io.netty</groupId><artifactId>epoll</artifactId><version>4.2</version><classifier>linux-riscv64</classifier><scope>runtime</scope>"
+                    "<exclusions><exclusion><groupId>io.netty</groupId><artifactId>common</artifactId></exclusion></exclusions></dependency>"
+                    "<dependency><groupId>io.netty</groupId><artifactId>epoll</artifactId><version>4.2</version><classifier>linux-x86_64</classifier><scope>runtime</scope></dependency>"
+                    "<dependency><groupId>io.netty</groupId><artifactId>epoll</artifactId><version>4.2</version><classifier>linux-riscv64</classifier><scope>runtime</scope></dependency>"
+                    "<dependency><groupId>io.netty</groupId><artifactId>epoll</artifactId><version>4.2</version><classifier>linux-riscv64</classifier><scope>runtime</scope><optional>true</optional>"
+                    "<exclusions><exclusion><groupId>io.netty</groupId><artifactId>buffer</artifactId></exclusion></exclusions></dependency>"
+                    "</dependencies>")))]
+    (is (= ["linux-riscv64" "linux-x86_64"] (mapv :classifier deps)) "the first declaration's place")
+    (is (= "true" (:optional (first deps))) "the last declaration's fields")
+    (is (= ["buffer"] (mapv :artifact (:exclusions (first deps)))) "the last declaration's exclusions, no union")))
+
 (deftest inheritance-test
   (let [model (effective child)]
     (testing "group and version come from the parent"
