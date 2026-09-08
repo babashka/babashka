@@ -142,6 +142,20 @@ files, three mediation strategies, a `require-deps` facade and its own CLI,
 It has no settings.xml support, and its version scheme adapts
 `ComparableVersion`, the choice the oracle rejected here.
 
+| | Grenadine | babashka.mvn |
+|---|---|---|
+| Source | 5,326 lines, 17 namespaces, plus a 1,227-line CLI | 1,643 lines, 12 namespaces |
+| Tests | 2,079 lines; an oracle against tools.deps 0.31.1642 | 499 assertions in scripts; an oracle against tools.deps 0.31.1638, warm and cold, 22 entries |
+| tools.deps core | ported: `deps.clj` from `excluded?` to `expand-deps` becomes `expander.cljc` and `basis.cljc`, gitlibs becomes `gitlibs.cljc`, by unified patches over pinned revisions with SHA-256 ledgers | unchanged: 36 files verbatim, interpreted by sci; four stand-ins for the Maven-bound namespaces; one patch, the root deps.edn |
+| Maven layer | its own: coordinates, POM model, metadata, sha1 sidecars, `LATEST` | its own: the same, plus settings.xml with mirrors, servers, encrypted passwords, proxies with credentials |
+| settings.xml | none | full, because `bb clojure` must answer as `clojure` does on the same machine |
+| Version ordering | adapted from `ComparableVersion`, Apache Maven 3.9.16 | ported from `GenericVersion`, maven-resolver-util 1.9.27 |
+| Beyond tools.deps | lock files, three mediation strategies, `require-deps`, a CLI, a facade across dialects | nothing; `make-classpath2` is the only entry |
+| Portability | `.cljc`, host effects injected, no JVM classes | bb only: babashka.fs, babashka.http-client, data.xml, javax.crypto |
+
+Same problem, opposite halves reimplemented: they redo the model and keep a
+thin transport; bb keeps the model and redoes the transport.
+
 bb can run tools.deps, so it replaced only the half bb cannot have. That is
 why bb did not adopt Grenadine: a second implementation of `expand-deps` to
 keep in step buys nothing when the original runs at 30 KB; bb's users have
