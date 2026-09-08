@@ -57,15 +57,18 @@
      :profiles (into {} (map profile (some-> (child root "profiles") (children "profile"))))
      :active-profiles (mapv text (some-> (child root "activeProfiles") (children "activeProfile")))}))
 
-(def user-settings-file
+(defn user-settings-file
+  "~/.m2/settings.xml, read from user.home at call time."
+  []
   (str (fs/path (System/getProperty "user.home") ".m2" "settings.xml")))
 
 (defn read-settings
   "The user settings, or an empty map when there is no settings.xml."
   []
-  (if (fs/exists? user-settings-file)
-    (parse (slurp user-settings-file))
-    {}))
+  (let [f (user-settings-file)]
+    (if (fs/exists? f)
+      (parse (slurp f))
+      {})))
 
 ;; Mirror matching, after Maven's DefaultMirrorSelector.
 
@@ -93,6 +96,59 @@
   "The first mirror whose mirrorOf matches repo, or nil."
   [mirrors repo]
   (first (filter #(matches-pattern? (or (:mirror-of %) "") repo) mirrors)))
+
+;; Proxies, after Maven's DefaultProxySelector and the JVM's http.proxyHost
+;; properties that deps.clj used to pass to the java it spawned.
+
+(defn- non-proxy-host?
+  "Whether host matches one of the patterns: * is a wildcard, the match is
+  case-insensitive. Maven's nonProxyHosts and Java's http.nonProxyHosts
+  read the same way."
+  [patterns host]
+  (boolean
+   (some (fn [pattern]
+           (let [re (-> (java.util.regex.Pattern/quote pattern)
+                        (str/replace "*" "\\E.*\\Q"))]
+             (re-matches (re-pattern (str "(?i)" re)) host)))
+         patterns)))
+
+(defn- split-patterns [s re]
+  (->> (str/split (or s "") re) (map str/trim) (remove str/blank?)))
+
+(defn- env-proxy
+  "The proxy for protocol from http_proxy or https_proxy, either case:
+  scheme://[user:pass@]host:port. nil without a numeric port, as deps.clj
+  reads them."
+  [protocol]
+  (when-let [value (or (System/getenv (str protocol "_proxy"))
+                       (System/getenv (str/upper-case (str protocol "_proxy"))))]
+    (let [uri (try (java.net.URI. value) (catch Exception _ nil))]
+      (when (and uri (.getHost uri) (pos? (.getPort uri)))
+        (let [[user pass] (some-> (.getUserInfo uri) (str/split #":" 2))]
+          (cond-> {:host (.getHost uri) :port (.getPort uri)}
+            (and user pass) (assoc :username user :password pass)))))))
+
+(defn proxy-for
+  "The proxy to reach url through, or nil for a direct connection. The
+  first active proxy in settings for the url's protocol decides, its
+  nonProxyHosts included; without one, http_proxy or https_proxy from the
+  environment, minus no_proxy. Keys :host :port, and :username :password
+  when the proxy wants them."
+  [{:keys [proxies]} url]
+  (let [uri (java.net.URI. url)
+        protocol (.getScheme uri)
+        host (.getHost uri)]
+    (when host
+      (if-let [p (first (filter #(and (:active %) (= (:protocol %) protocol)) proxies))]
+        (when-not (non-proxy-host? (split-patterns (:non-proxy-hosts p) #"\|") host)
+          (cond-> {:host (:host p) :port (:port p)}
+            (:username p) (assoc :username (:username p) :password (:password p))))
+        (when-let [p (env-proxy protocol)]
+          (when-not (non-proxy-host? (split-patterns (or (System/getenv "no_proxy")
+                                                         (System/getenv "NO_PROXY"))
+                                                     #",")
+                                     host)
+            p))))))
 
 (defn active-profile-repositories
   "Repositories from profiles that are active by default or listed in

@@ -12,6 +12,24 @@
     (print (str (str/join " " xs) "\n"))
     (flush)))
 
+(def ^:private proxy-clients (atom {}))
+
+(defn- client-for
+  "An http client that goes through proxy, one per proxy for the process.
+  Credentials go through an Authenticator, and the JDK's ban on Basic
+  authentication for CONNECT tunnels is lifted for them, as Maven's own
+  transport allows it."
+  [{:keys [host port username password] :as proxy}]
+  (or (get @proxy-clients proxy)
+      (let [credentials? (and username password)
+            _ (when credentials?
+                (System/setProperty "jdk.http.auth.tunneling.disabledSchemes" ""))
+            client (http/client (cond-> {:proxy {:host host :port port}
+                                         :follow-redirects :normal}
+                                  credentials? (assoc :authenticator {:user username :pass password})))]
+        (swap! proxy-clients assoc proxy client)
+        client)))
+
 (defn- request-opts [{:keys [auth proxy]}]
   (cond-> {:as :stream
            :throw false
@@ -19,7 +37,7 @@
            :timeout 120000
            :headers {"User-Agent" "babashka"}}
     auth (assoc :basic-auth auth)
-    proxy (assoc :proxy proxy)))
+    proxy (assoc :client (client-for proxy))))
 
 (defn- root-message
   "The message of the innermost cause, or its class when it has none, the

@@ -252,6 +252,18 @@ are refused. Vectors generated with the JVM libraries sit in
 `script/mvn_oracle/cipher-vectors.edn`; `cipher_test.clj` checks them and
 `auth_test.clj` resolves through an http-kit server behind basic auth.
 
+Proxies follow Maven's DefaultProxySelector: the first active proxy in
+settings.xml for the URL's protocol decides, and its nonProxyHosts mean a
+direct connection. Without one, `http_proxy` or `https_proxy` from the
+environment applies, minus `no_proxy`; that is what deps.clj turned into
+`-Dhttp.proxyHost` options for the java it spawned, and what an in-process
+resolve had been ignoring. Credentials go through an Authenticator on one
+http client per proxy, proxy passwords are decrypted like server passwords,
+and the JDK's ban on Basic authentication for CONNECT tunnels is lifted
+for them, as Maven's transport allows it. `proxy_test.clj` resolves through
+an http-kit proxy that demands Basic auth for a repository host that does
+not resolve, so only the proxy path can succeed.
+
 `LATEST` and `RELEASE` are in the corpus. Aether falls back from `latest`
 to `release` when the metadata names no `latest`, which is what Clojars
 serves; the corpus caught bb not doing that.

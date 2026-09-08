@@ -26,10 +26,12 @@
 (defn- with-slash [url]
   (if (str/ends-with? url "/") url (str url "/")))
 
-(defn- proxy-for [{:keys [proxies]} url]
-  (let [protocol (first (str/split url #":" 2))]
-    (when-let [p (first (filter #(and (:active %) (= (:protocol %) protocol)) proxies))]
-      {:host (:host p) :port (:port p)})))
+(defn- proxy-for
+  "The proxy for url, its password decrypted the way a server's is."
+  [settings url]
+  (when-let [p (settings/proxy-for settings url)]
+    (cond-> p
+      (:password p) (update :password cipher/decrypt-password {:server (str "proxy " (:host p))}))))
 
 (defn remote-repo
   "One repository map from a :mvn/repos entry, with the mirror, auth and
