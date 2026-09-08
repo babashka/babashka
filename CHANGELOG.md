@@ -7,6 +7,13 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#2040](https://github.com/babashka/babashka/issues/2040): allow `.get`/`.put` on typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`) and primitive arrays `[F]`, `[J]`, `[D]`, `[S]` so SCI can call bulk `Buffer.get(primitive[])` / `.put`
+- Fix interop for `(Boolean. false)` which picked the wrong overload
+- Bump Clojure to `1.12.6`
+- Bump `babashka.cli` to `0.12.89`
+
 ## 1.13.220 (2026-08-31)
 
 Read the release blog post [here](https://blog.michielborkent.nl/babashka-ffi.html).

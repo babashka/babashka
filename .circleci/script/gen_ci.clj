@@ -146,7 +146,10 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
         env              (if (= "mac" platform)
                            (assoc env :MACOSX_DEPLOYMENT_TARGET 10.13)
                            env)
-        base-install-cmd "sudo apt-get update\nsudo apt-get -y install build-essential zlib1g-dev"
+        ;; bullseye is EOL, its security repo is dead; the image stays for glibc
+        base-install-cmd (str "sudo sed -i '/bullseye-security/d' /etc/apt/sources.list\n"
+                              "sudo apt-get -o Acquire::Check-Valid-Until=false update\n"
+                              "sudo apt-get -y install build-essential zlib1g-dev")
         cache-key        (format "%s-%s{{ checksum \"project.clj\" }}-{{ checksum \".circleci/config.yml\" }}"
                                  platform
                                  (if (= "aarch64" arch)
@@ -200,7 +203,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                           (run "Release" ".circleci/script/release")
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}
-                                          (run "Run tests" "script/test\nscript/run_lib_tests")
+                                          (run "Run tests" (if static?
+                                                             "script/test\nscript/run_lib_tests"
+                                                             "script/test\nscript/run_lib_tests\nscript/run_ffi_tests"))
                                           (run "Release + publish"
                                             (str/join "\n" ["export BABASHKA_RELEASE=true"
                                                             ".circleci/script/release"]))

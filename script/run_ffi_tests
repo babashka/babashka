@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# The babashka.ffi suite through the native image. The fixture paths in
+# the suite are relative to the submodule.
+
+set -eo pipefail
+
+cd ffi
+../bb -cp test -e "(require 'babashka.ffi-test) (System/exit (if (clojure.test/successful? (clojure.test/run-tests 'babashka.ffi-test)) 0 1))"

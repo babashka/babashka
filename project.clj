@@ -22,7 +22,7 @@
                    :non-flaky (complement :flaky)
                    :flaky :flaky}
   :jvm-opts ["--enable-preview" "--enable-native-access=ALL-UNNAMED"]
-  :dependencies [[org.clojure/clojure "1.12.5"]
+  :dependencies [[org.clojure/clojure "1.12.6"]
                  [borkdude/edamame "1.6.43"]
                  [org.clojure/tools.cli "1.4.256"]
                  [cheshire "6.2.0"]
@@ -36,7 +36,7 @@
                  [org.babashka/impl-graal-features "0.0.1"]
                  [rewrite-clj/rewrite-clj "1.2.57"]
                  [insn/insn "0.5.4"]
-                 [org.babashka/cli "0.12.88"]
+                 [org.babashka/cli "0.12.89"]
                  [org.babashka/http-client "0.4.24"]
                  [org.jsoup/jsoup "1.23.2"]
                  [io.github.nextjournal/markdown "0.7.225"]
