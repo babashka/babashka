@@ -2,6 +2,7 @@
   "Remote repositories, the local repository, and getting files from one
   into the other."
   (:require [babashka.fs :as fs]
+            [babashka.mvn.cipher :as cipher]
             [babashka.mvn.coords :as coords]
             [babashka.mvn.http :as http]
             [babashka.mvn.metadata :as metadata]
@@ -45,7 +46,7 @@
     (cond-> (assoc repo
                    :releases (policy name (or releases {}))
                    :snapshots (policy name (or snapshots {})))
-      username (assoc :auth [username password])
+      username (assoc :auth [username (cipher/decrypt-password password {:server (:id repo)})])
       (proxy-for settings (:url repo)) (assoc :proxy (proxy-for settings (:url repo))))))
 
 (defn remote-repos

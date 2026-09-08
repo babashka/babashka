@@ -240,8 +240,20 @@ timestamped snapshot pin, a floating `-SNAPSHOT`, and a version range.
 resolve natively with no java on the machine. A forced `add-deps` of medley
 takes 64 ms.
 
-Not done: encrypted settings.xml passwords fail with a plain 401, and the
-`LATEST` and `RELEASE` versions are resolved but not in the corpus.
+Encrypted settings.xml passwords: `babashka.mvn.cipher` reads the legacy
+format of plexus-cipher and plexus-sec-dispatcher 2.0, the pair MIMA wires
+for tools.deps. A blob is base64 of an 8-byte salt, a pad length byte and
+AES/CBC/PKCS5 ciphertext; key and IV are one SHA-256 digest of password and
+salt, so no PBKDF2. The master comes from settings-security.xml, itself
+encrypted under the fixed password `settings.security`, with one
+`<relocation>` followed. Decryption runs when a repository with a username
+is built, and an error names the server. `[type=...]` custom dispatchers
+are refused. Vectors generated with the JVM libraries sit in
+`script/mvn_oracle/cipher-vectors.edn`; `cipher_test.clj` checks them and
+`auth_test.clj` resolves through an http-kit server behind basic auth.
+
+Not done: the `LATEST` and `RELEASE` versions are resolved but not in the
+corpus.
 
 ## Ruled out: run-time resolve
 
