@@ -100,8 +100,11 @@
                    args (if force (cons "-Sforce" args) args)
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
                    make-classpath-fn (bdeps/make-classpath-fn (when deps-root (str deps-root)))
+                   getenv (bdeps/getenv-fn env extra-env)
+                   _ (bdeps/gitlibs-dir! getenv)
                    bindings (cond->
-                             {#'deps/*aux-process-fn* (fn [{:keys [cmd out]}]
+                             {#'deps/*getenv-fn* getenv
+                              #'deps/*aux-process-fn* (fn [{:keys [cmd out]}]
                                                        (process/shell
                                                         {:cmd cmd
                                                          :out out

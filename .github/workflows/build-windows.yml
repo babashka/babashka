@@ -120,3 +120,4 @@ jobs:
           if defined VSPATH call "%VSPATH%\VC\Auxiliary\Build\vcvars64.bat"
           call script/test.bat :windows || exit /B 1
           call script/run_lib_tests.bat || exit /B 1
+          bb.exe script/mvn_oracle/tests.clj --image || exit /B 1

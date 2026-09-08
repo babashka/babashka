@@ -52,10 +52,15 @@
 (def ^:private file-opts
   [:config-user :config-project :cp-file :jvm-file :main-file :manifest-file :basis-file])
 
-(defn- absolutize-files [dir opts]
+(defn- absolutize-files
+  "deps.clj hands over file paths relative to the project directory, the way
+  a java started there would want them. They have to come out absolute:
+  tools.deps resolves a relative path against *the-dir* once more, and a
+  project file resolved twice silently does not exist."
+  [dir opts]
   (reduce (fn [opts k]
             (if-let [p (get opts k)]
-              (assoc opts k (str (fs/path dir p)))
+              (assoc opts k (str (fs/absolutize (fs/path dir p))))
               opts))
           opts
           file-opts))
@@ -66,7 +71,7 @@
   [dir args]
   (let [ctx (common/ctx)
         args (mapv str args)
-        dir (fs/file (or dir (System/getProperty "user.dir")))]
+        dir (fs/absolutize (fs/file (or dir (System/getProperty "user.dir"))))]
     (prepare! ctx)
     (let [{:keys [options errors]}
           (sci/eval-form ctx (list (symbol (str make-classpath-ns) "parse-opts")

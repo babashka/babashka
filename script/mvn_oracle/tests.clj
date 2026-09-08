@@ -9,6 +9,8 @@
 
 (def image? (some #{"--image"} *command-line-args*))
 
+(def bb (str (fs/absolutize (if (fs/windows?) "bb.exe" "bb"))))
+
 (def tests (->> (fs/glob "script/mvn_oracle" "*_test.clj")
                 (map str)
                 sort))
@@ -16,7 +18,7 @@
 (def results
   (doall
    (for [t tests]
-     (let [cmd (cond-> ["./bb"]
+     (let [cmd (cond-> [bb]
                  (not image?) (conj "-cp" "resources/src/babashka")
                  true (conj t))
            {:keys [exit out]} (apply p/shell {:out :string :err :out :continue true

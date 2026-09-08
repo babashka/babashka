@@ -110,6 +110,7 @@
                                         [com.opentable.components/otj-pg-embedded "0.13.3"]
                                         [nubank/matcher-combinators "3.6.0"]]}
              :test [:feature/xml
+                    :feature/tools-deps
                     :feature/yaml
                     :feature/postgresql
                     :feature/hsqldb

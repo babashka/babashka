@@ -22,6 +22,24 @@
         (do (make-classpath! dir args)
             {:out nil})))))
 
+(defn ^:no-doc getenv-fn
+  "deps.clj's view of the environment for an in-process resolve: env
+  replaces the process environment when given, extra-env adds to it, the
+  way they would for a spawned java."
+  [env extra-env]
+  (fn [k]
+    (if env
+      (get (merge env extra-env) k)
+      (or (get extra-env k) (System/getenv k)))))
+
+(defn ^:no-doc gitlibs-dir!
+  "tools.gitlibs reads the clojure.gitlibs.dir property before GITLIBS, so a
+  GITLIBS given through env or extra-env reaches an in-process resolve
+  through the property. gitlibs reads it once per process."
+  [getenv]
+  (when-let [dir (getenv "GITLIBS")]
+    (System/setProperty "clojure.gitlibs.dir" dir)))
+
 (defn clojure
   "Starts clojure similar to CLI. Use `rlwrap bb` for `clj`-like invocation.
   Invokes java with babashka.process/process for `-M`, `-X` and `-A`
@@ -51,11 +69,14 @@
                      :out :inherit
                      :err :inherit
                      :shutdown p/destroy-tree}
-                    opts)]
+                    opts)
+        getenv (getenv-fn (:env opts) (:extra-env opts))
+        _ (gitlibs-dir! getenv)]
     (binding [*in* @sci/in
               *out* @sci/out
               *err* @sci/err
               deps/*dir* (:dir opts)
+              deps/*getenv-fn* getenv
               deps/*make-classpath-fn* (or (make-classpath-fn (:dir opts))
                                            deps/*make-classpath-fn*)
               deps/*aux-process-fn* (fn [{:keys [cmd out]}]

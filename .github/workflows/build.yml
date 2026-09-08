@@ -206,6 +206,7 @@ jobs:
         run: |
           script/test
           script/run_lib_tests
+          ./bb script/mvn_oracle/tests.clj --image
 
       - name: Release
         env:
