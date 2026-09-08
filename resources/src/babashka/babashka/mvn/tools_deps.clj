@@ -189,7 +189,9 @@
     (cond
       (contains? #{"RELEASE" "LATEST"} version)
       (let [{:keys [latest release]} (artifact-versions lib config)
-            resolved (if (= "RELEASE" version) release latest)]
+            ;; Aether falls back to release when the metadata names no latest,
+            ;; which is what Clojars serves.
+            resolved (if (= "RELEASE" version) release (or latest release))]
         (if resolved
           [lib (assoc coord :mvn/version resolved)]
           (throw (unresolved lib coord))))

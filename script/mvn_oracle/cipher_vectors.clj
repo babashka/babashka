@@ -4,7 +4,6 @@
 ;; Run: clojure -Sdeps '{:deps {org.codehaus.plexus/plexus-cipher {:mvn/version "2.0"} org.codehaus.plexus/plexus-sec-dispatcher {:mvn/version "2.0"}}}' -M script/mvn_oracle/cipher_vectors.clj
 (import '[org.sonatype.plexus.components.cipher DefaultPlexusCipher]
         '[org.sonatype.plexus.components.sec.dispatcher DefaultSecDispatcher])
-(require '[clojure.java.io :as io])
 
 (def cipher (DefaultPlexusCipher.))
 (def master "s3cr3t-m4ster!")

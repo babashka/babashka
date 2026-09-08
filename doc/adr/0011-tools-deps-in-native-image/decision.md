@@ -252,8 +252,16 @@ are refused. Vectors generated with the JVM libraries sit in
 `script/mvn_oracle/cipher-vectors.edn`; `cipher_test.clj` checks them and
 `auth_test.clj` resolves through an http-kit server behind basic auth.
 
-Not done: the `LATEST` and `RELEASE` versions are resolved but not in the
-corpus.
+`LATEST` and `RELEASE` are in the corpus. Aether falls back from `latest`
+to `release` when the metadata names no `latest`, which is what Clojars
+serves; the corpus caught bb not doing that.
+
+Tests without a repository live next to the harness, one bb script per
+namespace, run together by `script/mvn_oracle/tests.clj`: the version
+scheme against the 160 cases extracted from maven-resolver-util's
+GenericVersionTest, coordinates and layout, settings and mirror matching,
+the effective POM model from in-memory POMs, the cipher against JVM
+vectors, and the end-to-end resolve behind basic auth.
 
 ## Ruled out: run-time resolve
 
@@ -347,20 +355,8 @@ On this branch the bundled sources get their patches from the load-fn:
 `util/maven.clj` and the embedded root deps.edn to `edn.clj` as they are
 served, so a script that requires `clojure.tools.deps` directly works too.
 
-To regenerate the reflection lists on the `tools-deps-sci` branch after a
-tools.deps bump, from the repository root:
-
-```bash
-A=doc/adr/0011-tools-deps-in-native-image
-mkdir -p target/tools-deps
-bb $A/method-names.clj > target/tools-deps/method-names.txt
-clojure -Sdeps '{:deps {org.clojure/tools.deps {:mvn/version "0.31.1638"}}}' -M $A/precise-methods.clj > target/tools-deps/precise.edn
-bb $A/render-defs.clj
-bb $A/replace-defs.clj
-```
-
-The first script lists the method names the sources call. The second keeps,
-per registered class, the public methods with those names, with parameter
-types. The last two render them as the two defs and replace those in
-`classes.clj`. A class the sources start using has to be added to one of the
-defs by hand first, the scripts take the class list from there.
+The reflection lists and the scripts that regenerated them belong to the
+`tools-deps-sci` branch; that branch keeps them. On this branch the
+interpreted tools.deps needs two classes with named methods and one
+instance check, listed in `classes.clj` under `tools-deps-methods` and
+`tools-deps-name-only`.
