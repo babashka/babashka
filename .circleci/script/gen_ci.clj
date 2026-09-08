@@ -85,6 +85,7 @@ tar xzf /tmp/release/babashka-$VERSION-linux-amd64.tar.gz -C .")
     :docker            [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]
     :working_directory "~/repo"
     :environment       {:LEIN_ROOT         "true"
+                        :BABASHKA_DEPS_RESOLVER "bb"
                         :BABASHKA_PLATFORM "linux"
                         :GRAALVM_VERSION   graalvm-version
                         :GRAALVM_HOME      graalvm-home
@@ -126,6 +127,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
 (defn unix
   [shorted? static? musl? arch executor-conf resource-class graalvm-home platform graalvm-version]
   (let [env              {:LEIN_ROOT         "true"
+                          ;; the suite resolves deps in-process; the java
+                          ;; path has its own tests that ask for it by name
+                          :BABASHKA_DEPS_RESOLVER "bb"
                           :GRAALVM_VERSION   graalvm-version
                           :GRAALVM_HOME      graalvm-home
                           :BABASHKA_PLATFORM (if (= "mac" platform)
@@ -145,10 +149,6 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                            env)
         env              (if (= "mac" platform)
                            (assoc env :MACOSX_DEPLOYMENT_TARGET 10.13)
-                           env)
-        ;; one leg resolves deps in-process, the others through java
-        env              (if (and (= "linux" platform) (= "amd64" arch) (not static?))
-                           (assoc env :BABASHKA_DEPS_RESOLVER "bb")
                            env)
         ;; bullseye is EOL, its security repo is dead; the image stays for glibc
         base-install-cmd (str "sudo sed -i '/bullseye-security/d' /etc/apt/sources.list\n"

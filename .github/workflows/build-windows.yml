@@ -30,6 +30,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       LEIN_ROOT: "true"
+      BABASHKA_DEPS_RESOLVER: bb
       GRAALVM_VERSION: "25.0.4"
       BABASHKA_PLATFORM: ${{ matrix.name }} # used in release script
       BABASHKA_TEST_ENV: native
