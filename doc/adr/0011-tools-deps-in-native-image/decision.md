@@ -228,8 +228,12 @@ tree loads without a single Maven class: `util/maven.clj` carries the small
 surface other namespaces use, `extensions/maven.clj` is empty,
 `extensions/pom.clj` delegates `read-model` and `model-deps`, and
 `extensions/local.clj` is upstream with its `:jar` methods reading the POM
-text out of the jar. `babashka.mvn.tools-deps` loads after tools.deps through
-the load-fn patch, so its methods win. The vendor script skips those four.
+text out of the jar. The stand-in `extensions/maven.clj` requires
+`babashka.mvn.tools-deps`, and tools.deps loads that file last, so its
+methods win. The vendor script skips those four. One patch is appended when
+`edn.clj` is served: the root deps.edn, a jar resource the image cannot see.
+`NOTICE.md` next to the copies says all of this; `babashka/mvn/NOTICE.md`
+names what the procurer ports from Maven and under which license.
 
 Verified against the oracle: all 20 corpus entries match the JVM tools.deps,
 both with the source tree on `-cp` and with the sources bundled in the
@@ -406,7 +410,7 @@ registrations in `classes.clj` switched off and nothing else changed:
 | baseline | 70.02 MB | 28.84 MiB | 21,587 |
 | interpreted tools.deps, no Maven | 70.05 MB | 28.85 MiB | 21,610 |
 
-The bundled sources, the reify adapter and the load-fn patches cost 30 KB.
+The bundled sources, the reify adapter and the load-fn patch cost 30 KB.
 Everything else in the 5 MB is Maven. A Clojure procurer adds its own source
 on top of 70.05 MB.
 

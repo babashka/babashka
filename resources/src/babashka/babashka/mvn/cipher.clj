@@ -5,7 +5,8 @@
   of an 8-byte salt, one byte of pad length, then AES/CBC/PKCS5 ciphertext.
   Key and IV are the SHA-256 digest of password and salt. The master
   password lives in settings-security.xml, encrypted the same way under the
-  fixed password settings.security."
+  fixed password settings.security. After plexus-cipher and
+  plexus-sec-dispatcher, Apache License 2.0, see NOTICE.md."
   (:require [babashka.fs :as fs]
             [babashka.mvn.xml :refer [child-text]]
             [clojure.string :as str])

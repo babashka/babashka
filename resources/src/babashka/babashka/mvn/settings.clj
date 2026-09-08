@@ -1,5 +1,7 @@
 (ns babashka.mvn.settings
-  "The parts of ~/.m2/settings.xml that resolution needs."
+  "The parts of ~/.m2/settings.xml that resolution needs. Mirror and proxy
+  selection after Maven's DefaultMirrorSelector and DefaultProxySelector,
+  Apache License 2.0, see NOTICE.md."
   (:require [babashka.fs :as fs]
             [babashka.mvn.xml :refer [child child-text children elements text]]
             [clojure.string :as str]))

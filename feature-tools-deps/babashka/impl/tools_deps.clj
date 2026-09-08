@@ -28,14 +28,11 @@
 
 (def ^:private make-classpath-ns 'clojure.tools.deps.script.make-classpath2)
 
-;; Appended to the bundled sources when bb's load-fn serves them.
-;; The procurer overrides the :mvn and :pom extension methods, so it loads
-;; after tools.deps loaded its own. The root deps.edn is a jar resource,
-;; invisible to bb's classpath.
+;; Appended to the bundled sources when bb's load-fn serves them. The root
+;; deps.edn is a jar resource the image cannot see, so it travels as data.
+;; The procurer itself is required by the stand-in extensions/maven.clj.
 (def ^:private source-patches
-  {'clojure.tools.deps
-   "\n(require 'babashka.mvn.tools-deps)\n"
-   'clojure.tools.deps.edn
+  {'clojure.tools.deps.edn
    (binding [*print-namespace-maps* false]
      (str "\n(alter-var-root #'root-deps (constantly (fn [] '" (pr-str root-deps-edn) ")))\n"))})
 

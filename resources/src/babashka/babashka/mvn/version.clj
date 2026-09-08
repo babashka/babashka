@@ -1,7 +1,7 @@
 (ns babashka.mvn.version
   "Maven version ordering, a port of GenericVersion from maven-resolver-util
-  1.9.27, the scheme tools.deps compares with. Items are maps of :kind and
-  :value."
+  1.9.27, the scheme tools.deps compares with; Apache License 2.0, see
+  NOTICE.md. Items are maps of :kind and :value."
   (:require [clojure.string :as str]))
 
 ;; Item kinds, ordered. Min and max are the "min" and "max" tokens.

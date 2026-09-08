@@ -1,7 +1,8 @@
 (ns babashka.mvn.pom
   "POM parsing and the effective model: profiles, inheritance,
   interpolation, dependency management with BOM imports, relocation. After
-  Maven's DefaultModelBuilder, for what dependency resolution needs."
+  Maven's DefaultModelBuilder, for what dependency resolution needs; Apache
+  License 2.0, see NOTICE.md."
   (:require [babashka.fs :as fs]
             [babashka.mvn.version :as version]
             [babashka.mvn.xml :as x]
