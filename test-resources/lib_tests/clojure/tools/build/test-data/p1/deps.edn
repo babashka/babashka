@@ -1,0 +1,9 @@
+{:paths [:clj-paths :resource-paths]
+
+ :deps
+ {org.clojure/clojure {:mvn/version "1.10.1"}
+  org.clojure/core.cache {:mvn/version "1.0.207"}}
+
+ :aliases
+ {:clj-paths ["src"]
+  :resource-paths ["resources"]}}

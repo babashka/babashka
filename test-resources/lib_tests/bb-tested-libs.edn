@@ -279,4 +279,6 @@ org.clojure/core.cache {:git-url "https://github.com/clojure/core.cache"
                               :git-sha "b7c7c97fce9cc8943ee15c8105dcc1db3810fd86"
                               :test-paths ["test" "notebooks" "src" "resources"]
                               :test-namespaces []
-                              :manually-added true}}
+                              :manually-added true}
+ ;; BB-TEST-PATCH: test-javac needs javax.tools, which the image has not
+ io.github.clojure/tools.build {:git-url "https://github.com/clojure/tools.build", :test-namespaces (clojure.tools.build.tasks.test-delete clojure.tools.build.tasks.test-write-file clojure.tools.build.tasks.test-process clojure.tools.build.tasks.test-zip clojure.tools.build.tasks.test-jar clojure.tools.build.tasks.test-compile-clj clojure.tools.build.tasks.test-uber clojure.tools.build.tasks.test-basis clojure.tools.build.tasks.test-pom clojure.tools.build.tasks.test-install clojure.tools.build.tasks.test-copy clojure.tools.build.test-project-root clojure.tools.build.test-util), :branch "v0.10.9", :test-directories ("src/test/clojure"), :git-sha "e405aac49c67310f88ceeca7839881692abdde95"}}

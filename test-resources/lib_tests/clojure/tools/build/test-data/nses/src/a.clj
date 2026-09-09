@@ -1,0 +1,2 @@
+(ns a
+  (:require b))

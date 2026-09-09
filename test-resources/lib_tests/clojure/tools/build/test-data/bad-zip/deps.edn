@@ -1,0 +1,1 @@
+{:deps {my/bad {:local/root "bad.jar"}}}

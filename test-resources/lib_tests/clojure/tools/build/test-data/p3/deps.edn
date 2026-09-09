@@ -1,0 +1,9 @@
+{:paths [:clj-paths :resource-paths]
+
+ :deps
+ {org.clojure/clojure {:mvn/version "1.10.1"}
+  org.clojure/core.async {:mvn/version "1.1.587" :optional true}}
+
+ :aliases
+ {:clj-paths ["src"]
+  :resource-paths ["resources"]}}

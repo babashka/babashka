@@ -919,19 +919,20 @@ Use bb run --help to show this help output.
     (set-agent-send-off-executor! executor)
     (vreset! common/solo-executor executor)))
 
-(def ^:private bundled-first
-  "Namespaces served from the bundled sources before the classpath: the
-  spec.alpha bb ships, which a spec jar cannot replace, and the stand-ins
-  for namespaces a tools.deps or tools.build jar would supply in a form
-  that needs Maven."
-  '#{clojure.spec.alpha
-     clojure.spec.gen.alpha
-     clojure.spec.test.alpha
-     clojure.tools.deps.extensions.maven
-     clojure.tools.deps.extensions.pom
-     clojure.tools.deps.extensions.local
-     clojure.tools.deps.util.maven
-     clojure.tools.build.tasks.install})
+(defn- bundled-first
+  "True for a namespace served from the bundled sources before the
+  classpath: the spec.alpha bb ships, which a spec jar cannot replace;
+  all of tools.deps and gitlibs, so a jar of either cannot mix its
+  version with the bundled one or bring Maven in; and the tools.build
+  task bb stands in for."
+  [namespace]
+  (let [n (str namespace)]
+    (or (contains? '#{clojure.spec.alpha clojure.spec.gen.alpha clojure.spec.test.alpha
+                      clojure.tools.deps clojure.tools.gitlibs
+                      clojure.tools.build.tasks.install}
+                   namespace)
+        (str/starts-with? n "clojure.tools.deps.")
+        (str/starts-with? n "clojure.tools.gitlibs."))))
 
 (defn exec [cli-opts]
   (with-bindings {clojure.lang.Compiler/LOADER @cp/the-url-loader}
