@@ -929,7 +929,7 @@ Use bb run --help to show this help output.
   (let [n (str namespace)]
     (or (contains? '#{clojure.spec.alpha clojure.spec.gen.alpha clojure.spec.test.alpha
                       clojure.tools.deps clojure.tools.gitlibs
-                      clojure.tools.build.tasks.install}
+                      clojure.tools.build.tasks.install clojure.tools.build.tasks.javac}
                    namespace)
         (str/starts-with? n "clojure.tools.deps.")
         (str/starts-with? n "clojure.tools.gitlibs."))))

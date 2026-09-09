@@ -55,5 +55,7 @@ that namespace before the classpath:
 - `clojure/tools/build/tasks/install.clj`: lays the jar and POM into the
   local repository the way Resolver does, with `_remote.repositories` and
   `maven-metadata-local.xml`.
+- `clojure/tools/build/tasks/javac.clj`: spawns javac instead of the
+  in-process compiler API, which the image does not have.
 
 tools.build is Copyright (c) Rich Hickey, Eclipse Public License 1.0.

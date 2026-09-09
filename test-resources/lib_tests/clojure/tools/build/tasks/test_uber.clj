@@ -25,13 +25,50 @@
   [^String s]
   (ByteArrayInputStream. (.getBytes s "UTF-8")))
 
-;; BB-TEST-PATCH: test-uber and test-custom-manifest are removed, both
-;; javac first, and javax.tools is not in the image
-
 (deftest string-stream-rt
   (are [s] (= s (#'uber/stream->string (string->stream s)))
     ""
     "abc"))
+
+(deftest test-uber
+  (let [uber-path "target/p1-uber.jar"]
+    (with-test-dir "test-data/p1"
+      (api/set-project-root! (.getAbsolutePath *test-dir*))
+      (api/javac {:class-dir "target/classes"
+                  :src-dirs ["java"]})
+      (api/copy-dir {:target-dir "target/classes"
+                     :src-dirs ["src"]})
+      (api/uber {:class-dir "target/classes"
+                 :basis (api/create-basis nil)
+                 :uber-file uber-path
+                 :main 'foo.bar})
+      (let [uf (jio/file (project-path uber-path))]
+        (is (true? (.exists uf)))
+        (is (set/subset?
+              #{"META-INF/MANIFEST.MF" "foo/" "foo/bar.clj" "foo/Demo2.class" "foo/Demo1.class"}
+              (set (map :name (zip/list-zip (project-path uber-path))))))
+        (is (str/includes? (test-jar/slurp-manifest uf) "Main-Class: foo.bar"))))))
+
+(deftest test-custom-manifest
+  (let [uber-path "target/p1-uber.jar"]
+    (with-test-dir "test-data/p1"
+      (api/set-project-root! (.getAbsolutePath *test-dir*))
+      (api/javac {:class-dir "target/classes"
+                  :src-dirs ["java"]})
+      (api/copy-dir {:target-dir "target/classes"
+                     :src-dirs ["src"]})
+      (api/uber {:class-dir "target/classes"
+                 :uber-file uber-path
+                 :main 'foo.bar
+                 :manifest {"Main-Class" "baz" ;; overrides :main
+                            'Custom-Thing 100}}) ;; stringify kvs
+      (let [uf (jio/file (project-path uber-path))]
+        (is (true? (.exists uf)))
+        (is (= #{"META-INF/MANIFEST.MF" "foo/" "foo/bar.clj" "foo/Demo2.class" "foo/Demo1.class"}
+              (set (map :name (zip/list-zip (project-path uber-path))))))
+        (let [manifest-out (test-jar/slurp-manifest uf)]
+          (is (str/includes? manifest-out "Main-Class: baz"))
+          (is (str/includes? manifest-out "Custom-Thing: 100")))))))
 
 (deftest test-conflicts
   (with-test-dir "test-data/uber-conflict"
