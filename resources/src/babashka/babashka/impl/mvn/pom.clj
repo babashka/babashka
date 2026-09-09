@@ -1,12 +1,13 @@
-(ns babashka.mvn.pom
+(ns babashka.impl.mvn.pom
   "POM parsing and the effective model: profiles, inheritance,
   interpolation, dependency management with BOM imports, relocation. After
   Maven's DefaultModelBuilder, for what dependency resolution needs; Apache
   License 2.0, see NOTICE.md."
+  {:no-doc true}
   (:require [babashka.fs :as fs]
-            [babashka.mvn.env :as env]
-            [babashka.mvn.version :as version]
-            [babashka.mvn.xml :as x]
+            [babashka.impl.mvn.env :as env]
+            [babashka.impl.mvn.version :as version]
+            [babashka.impl.mvn.xml :as x]
             [clojure.string :as str]))
 
 ;; Parsing
@@ -202,7 +203,7 @@
 ;; entries with new keys are appended. A dominant source replaces target
 ;; entries with the same key.
 
-(defn dependency-key [{:keys [group artifact type classifier]}]
+(defn- dependency-key [{:keys [group artifact type classifier]}]
   [group artifact (or type "jar") classifier])
 
 (defn- merge-by-key [target source key-fn dominant?]
@@ -287,7 +288,7 @@
 
 (declare effective-model)
 
-(defn gav-key [{:keys [group artifact version]}]
+(defn- gav-key [{:keys [group artifact version]}]
   [group artifact version])
 
 (defn- lineage

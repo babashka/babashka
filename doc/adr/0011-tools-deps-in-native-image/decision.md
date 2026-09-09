@@ -179,7 +179,7 @@ which registers a name and nothing else.
 
 ## The Clojure procurer: 70.02 MB
 
-Branch `mvn-clj`. `babashka.mvn` replaces Maven Resolver, MIMA,
+Branch `mvn-clj`. `babashka.impl.mvn` replaces Maven Resolver, MIMA,
 maven-model-builder, plexus, httpclient4 and gson behind tools.deps' own
 `:mvn` and `:pom` extension methods, on data.xml and babashka.http-client.
 tools.deps keeps expansion, version selection, aliases, classpath and cache.
@@ -190,13 +190,13 @@ The sources are bundled and interpreted, like tools.deps itself.
 | baseline | 70.02 MB | 28.84 MiB | 21,587 |
 | tools.deps compiled, with Maven | 75.07 MB | 31.13 MiB | 23,423 |
 | tools.deps interpreted, with Maven | 75.05 MB | 31.06 MiB | |
-| tools.deps interpreted, babashka.mvn | 70.02 MB | 28.84 MiB | 21,601 |
+| tools.deps interpreted, babashka.impl.mvn | 70.02 MB | 28.84 MiB | 21,601 |
 
 Same size as baseline to the reported precision, 14 more reachable types.
 The uberjar shrinks from 23.83 MB to 22.82 MB: the only Maven artifact left
 is `tools.deps.edn`, for the root deps.edn resource read at build time.
 
-Namespaces, under `resources/src/babashka/babashka/mvn`:
+Namespaces, under `resources/src/babashka/babashka/impl/mvn`:
 
 - `coords`: lib symbols, packaging types, the repository layout, base
   versions of timestamped snapshots.
@@ -231,12 +231,12 @@ surface other namespaces use, `extensions/maven.clj` is empty,
 `extensions/pom.clj` delegates `read-model` and `model-deps`, and
 `extensions/local.clj` is upstream with its `:jar` methods reading the POM
 text out of the jar. The stand-in `extensions/maven.clj` requires
-`babashka.mvn.tools-deps`, and tools.deps loads that file last, so its
+`babashka.impl.mvn.tools-deps`, and tools.deps loads that file last, so its
 methods win. The vendor script never copies those four. It writes the one
 patch to a shipped file itself, `root-deps` in `edn.clj` returning the root
 deps.edn as data, since the image cannot see the jar resource; upstream's
 form stays under `#_` between BB-PATCH markers.
-`NOTICE.md` next to the copies says all of this; `babashka/mvn/NOTICE.md`
+`NOTICE.md` next to the copies says all of this; `babashka/impl/mvn/NOTICE.md`
 names what the procurer ports from Maven and under which license.
 
 Verified against the oracle: all 20 corpus entries match the JVM tools.deps,
@@ -248,7 +248,7 @@ timestamped snapshot pin, a floating `-SNAPSHOT`, and a version range.
 resolve natively with no java on the machine. A forced `add-deps` of medley
 takes 64 ms.
 
-Encrypted settings.xml passwords: `babashka.mvn.cipher` reads the legacy
+Encrypted settings.xml passwords: `babashka.impl.mvn.cipher` reads the legacy
 format of plexus-cipher and plexus-sec-dispatcher 2.0, the pair MIMA wires
 for tools.deps. A blob is base64 of an 8-byte salt, a pad length byte and
 AES/CBC/PKCS5 ciphertext; key and IV are one SHA-256 digest of password and

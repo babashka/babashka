@@ -1,9 +1,9 @@
 #!/usr/bin/env bb
-;; babashka.mvn.version against maven-resolver-util's GenericVersionTest,
+;; babashka.impl.mvn.version against maven-resolver-util's GenericVersionTest,
 ;; the scheme tools.deps compares with. Cases in version-cases.edn.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/version_test.clj
 (ns version-test
-  (:require [babashka.mvn.version :as version]
+  (:require [babashka.impl.mvn.version :as version]
             [clojure.edn :as edn]
             [clojure.test :as t :refer [deftest is testing]]))
 

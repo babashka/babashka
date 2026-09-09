@@ -9,7 +9,7 @@
 (ns ^{:skip-wiki true}
   clojure.tools.deps.extensions.local
   "BB-STAND-IN: babashka's copy of the tools.deps namespace of the same
-  name. The :jar methods read a jar's pom.xml as text for babashka.mvn
+  name. The :jar methods read a jar's pom.xml as text for babashka.impl.mvn
   instead of through Maven's model source. Everything else is upstream.
   Each change sits between BB-PATCH and END-BB-PATCH, the upstream form
   before it under #_."

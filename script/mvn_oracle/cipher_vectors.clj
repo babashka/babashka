@@ -1,4 +1,4 @@
-;; Ground truth for babashka.mvn.cipher: encrypt with plexus-cipher 2.0 and
+;; Ground truth for babashka.impl.mvn.cipher: encrypt with plexus-cipher 2.0 and
 ;; decrypt through plexus-sec-dispatcher 2.0, the pair MIMA wires for
 ;; tools.deps. Prints EDN.
 ;; Run: clojure -Sdeps '{:deps {org.codehaus.plexus/plexus-cipher {:mvn/version "2.0"} org.codehaus.plexus/plexus-sec-dispatcher {:mvn/version "2.0"}}}' -M script/mvn_oracle/cipher_vectors.clj

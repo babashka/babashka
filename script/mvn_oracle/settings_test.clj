@@ -1,9 +1,9 @@
 #!/usr/bin/env bb
-;; babashka.mvn.settings: what resolution reads from settings.xml, and
+;; babashka.impl.mvn.settings: what resolution reads from settings.xml, and
 ;; mirror matching after Maven's DefaultMirrorSelector.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/settings_test.clj
 (ns settings-test
-  (:require [babashka.mvn.settings :as settings]
+  (:require [babashka.impl.mvn.settings :as settings]
             [clojure.test :as t :refer [deftest is testing]]))
 
 (def settings-xml

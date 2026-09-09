@@ -1,4 +1,4 @@
-(ns babashka.mvn.cipher
+(ns babashka.impl.mvn.cipher
   "Encrypted passwords in settings.xml, as tools.deps reads them: the
   legacy format of plexus-cipher and plexus-sec-dispatcher 2.0, which MIMA
   wires into Maven's settings decrypter. A password is a {...} blob: base64
@@ -7,8 +7,9 @@
   password lives in settings-security.xml, encrypted the same way under the
   fixed password settings.security. After plexus-cipher and
   plexus-sec-dispatcher, Apache License 2.0, see NOTICE.md."
+  {:no-doc true}
   (:require [babashka.fs :as fs]
-            [babashka.mvn.xml :refer [child-text]]
+            [babashka.impl.mvn.xml :refer [child-text]]
             [clojure.string :as str])
   (:import [java.security MessageDigest]
            [java.util Arrays Base64]
@@ -21,7 +22,7 @@
 ;; an unescaped { and the next unescaped }, surrounded by anything.
 (def ^:private encrypted-re #"(?s).*?[^\\]?\{(.*?[^\\])\}.*")
 
-(defn encrypted?
+(defn- encrypted?
   "True when s carries a {...} blob. A bare {} or escaped braces do not."
   [s]
   (boolean (and s (re-matches encrypted-re s))))
@@ -29,7 +30,7 @@
 (defn- undecorate [s]
   (second (re-matches encrypted-re s)))
 
-(defn decrypt
+(defn- decrypt
   "The plaintext of a bare blob, without braces, under password."
   [^String blob ^String password]
   (let [all (.decode (Base64/getDecoder) blob)
@@ -47,7 +48,7 @@
                         (IvParameterSpec. (Arrays/copyOfRange key-and-iv 16 32))))]
     (String. (.doFinal cipher ciphertext) "UTF-8")))
 
-(defn security-file
+(defn- security-file
   "settings-security.xml: the settings.security system property, or the
   one in ~/.m2."
   []
@@ -58,10 +59,10 @@
   "The encrypted master from a settings-security.xml, following one
   <relocation> the way SecUtil does."
   [path]
-  (let [root (babashka.mvn.xml/parse (slurp path))]
+  (let [root (babashka.impl.mvn.xml/parse (slurp path))]
     (if-let [relocation (child-text root "relocation")]
       (let [target (str (fs/path (fs/parent path) relocation))]
-        (some-> (babashka.mvn.xml/parse (slurp target)) (child-text "master")))
+        (some-> (babashka.impl.mvn.xml/parse (slurp target)) (child-text "master")))
       (child-text root "master"))))
 
 (defn master-password

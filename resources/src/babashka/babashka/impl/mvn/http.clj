@@ -1,5 +1,6 @@
-(ns babashka.mvn.http
+(ns babashka.impl.mvn.http
   "Repository downloads and checksum verification."
+  {:no-doc true}
   (:require [babashka.fs :as fs]
             [babashka.http-client :as http]
             [clojure.java.io :as io]

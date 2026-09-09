@@ -5,7 +5,7 @@
 ;; Run: CLOJURE_CLI_ALLOW_HTTP_REPO=true ./bb -cp resources/src/babashka script/mvn_oracle/proxy_test.clj
 (ns proxy-test
   (:require [babashka.fs :as fs]
-            [babashka.mvn.settings :as settings]
+            [babashka.impl.mvn.settings :as settings]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.string :as str]

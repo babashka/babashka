@@ -29,12 +29,12 @@ Maven classes when they load:
 
 - `clojure/tools/deps/util/maven.clj`: the small surface other namespaces
   use, standard repositories, settings, the local repository, over
-  `babashka.mvn`.
+  `babashka.impl.mvn`.
 - `clojure/tools/deps/extensions/maven.clj`: requires
-  `babashka.mvn.tools-deps`, which registers the `:mvn` and `:pom`
+  `babashka.impl.mvn.tools-deps`, which registers the `:mvn` and `:pom`
   extension methods. clojure.tools.deps loads this path in place of its own.
 - `clojure/tools/deps/extensions/pom.clj`: `read-model` and `model-deps`
-  over `babashka.mvn.pom`.
+  over `babashka.impl.mvn.pom`.
 - `clojure/tools/deps/extensions/local.clj`: the original, with its `:jar`
   methods reading the POM text out of the jar instead of through Maven's
   model builder.

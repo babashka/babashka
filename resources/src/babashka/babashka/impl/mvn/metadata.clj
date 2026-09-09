@@ -1,12 +1,13 @@
-(ns babashka.mvn.metadata
+(ns babashka.impl.mvn.metadata
   "maven-metadata.xml: the versions of an artifact, and the timestamped
   file behind a SNAPSHOT version. Cached in the local repository under
   Aether's names, maven-metadata-<repoId>.xml, with the update policy."
+  {:no-doc true}
   (:require [babashka.fs :as fs]
-            [babashka.mvn.coords :as coords]
-            [babashka.mvn.http :as http]
-            [babashka.mvn.version :as version]
-            [babashka.mvn.xml :as x]
+            [babashka.impl.mvn.coords :as coords]
+            [babashka.impl.mvn.http :as http]
+            [babashka.impl.mvn.version :as version]
+            [babashka.impl.mvn.xml :as x]
             [clojure.string :as str]))
 
 (defn- parse-artifact-metadata [s]

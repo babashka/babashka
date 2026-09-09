@@ -6,7 +6,7 @@
             [sci.core :as sci]))
 
 ;; tools.deps runs interpreted, from the sources under resources/src/babashka,
-;; with babashka.mvn as its Maven procurer. Nothing in this namespace
+;; with babashka.impl.mvn as its Maven procurer. Nothing in this namespace
 ;; requires either, so none of it is compiled in. This is the compiled glue:
 ;; the specs stub and make-classpath2 in-process. The sources' own deviations
 ;; from upstream are marked BB-PATCH and BB-STAND-IN in the tree.
@@ -26,7 +26,7 @@
 
 (defn- prepare! [ctx]
   (sci/eval-form ctx (list 'require (list 'quote make-classpath-ns)
-                           ''babashka.mvn.env)))
+                           ''babashka.impl.mvn.env)))
 
 (def ^:private gitlibs-dir-set (atom nil))
 
@@ -100,7 +100,7 @@
           (gitlibs-dir! ctx (getenv "GITLIBS"))
           (sci/eval-form ctx
                          (override-form
-                          (cond-> [['babashka.mvn.env/getenv getenv]]
+                          (cond-> [['babashka.impl.mvn.env/getenv getenv]]
                             config-dir (conj ['clojure.tools.deps.edn/user-config-dir
                                               (constantly config-dir)]))
                           run)))))))

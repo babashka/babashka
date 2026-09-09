@@ -1,29 +1,30 @@
-(ns babashka.mvn.tools-deps
+(ns babashka.impl.mvn.tools-deps
   "The :mvn and :pom procurers for tools.deps, without Maven. Required by
   bb's stand-ins for clojure.tools.deps.extensions.maven and .pom, which
   tools.deps loads in place of its own."
+  {:no-doc true}
   (:require [babashka.fs :as fs]
-            [babashka.mvn.coords :as coords]
-            [babashka.mvn.metadata :as metadata]
-            [babashka.mvn.pom :as pom]
-            [babashka.mvn.repo :as repo]
-            [babashka.mvn.settings :as settings]
-            [babashka.mvn.version :as version]
+            [babashka.impl.mvn.coords :as coords]
+            [babashka.impl.mvn.metadata :as metadata]
+            [babashka.impl.mvn.pom :as pom]
+            [babashka.impl.mvn.repo :as repo]
+            [babashka.impl.mvn.settings :as settings]
+            [babashka.impl.mvn.version :as version]
             [clojure.string :as str]
             [clojure.tools.deps.extensions :as ext]
             [clojure.tools.deps.util.session :as session]))
 
 (defn- settings []
-  (session/retrieve :babashka.mvn/settings settings/read-settings))
+  (session/retrieve :babashka.impl.mvn/settings settings/read-settings))
 
 (defn- repos [{:keys [mvn/repos]}]
-  (session/retrieve [:babashka.mvn/repos repos] #(repo/remote-repos repos (settings))))
+  (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos (settings))))
 
 (defn- local-repo [config]
   (repo/local-repo config (settings)))
 
 (defn- model-cache []
-  (session/retrieve :babashka.mvn/models #(atom {})))
+  (session/retrieve :babashka.impl.mvn/models #(atom {})))
 
 (defn- check-version [lib {:keys [mvn/version] :as coord}]
   (cond
@@ -179,7 +180,7 @@
 
 (defn- artifact-versions [lib config]
   (let [[group artifact] (coords/lib->names lib)]
-    (session/retrieve [:babashka.mvn/versions lib]
+    (session/retrieve [:babashka.impl.mvn/versions lib]
                       #(metadata/versions (local-repo config) (repos config)
                                           {:group group :artifact artifact}))))
 
