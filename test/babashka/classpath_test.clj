@@ -1,5 +1,6 @@
 (ns babashka.classpath-test
   (:require
+   [babashka.fs :as fs]
    [babashka.test-utils :as tu]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
@@ -10,6 +11,16 @@
   (edn/read-string (apply tu/bb (when (some? input) (str input)) (map str args))))
 
 (def path-sep (System/getProperty "path.separator"))
+
+(deftest bundled-first-test
+  ;; a spec.alpha or a tools.deps stand-in on the classpath cannot load in
+  ;; bb, so the bundled sources serve those namespaces before the classpath
+  (let [dir (fs/create-temp-dir)]
+    (doseq [path ["clojure/spec/alpha.clj" "clojure/tools/deps/util/maven.clj"]]
+      (fs/create-dirs (fs/parent (fs/file dir path)))
+      (spit (fs/file dir path) "(throw (Exception. \"classpath version loaded\"))"))
+    (is (true? (bb nil "--prn" "--classpath" (str dir)
+                   "(require '[clojure.spec.alpha :as s] 'clojure.tools.deps.util.maven) (s/valid? int? 1)")))))
 
 (deftest classpath-test
   (is (= :my-script/bb
