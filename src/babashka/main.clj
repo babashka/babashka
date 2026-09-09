@@ -998,7 +998,7 @@ Use bb run --help to show this help output.
                                                  :version :metadata)))
                                  {})
                                (pods/load-pod (:pod-spec pod) (:opts pod)))))
-                         (when loader
+                         (when (and loader (not (tools-deps/bundled-first namespace)))
                            (when-let [res (cp/source-for-namespace loader namespace nil)]
                              (if uberscript
                                (do (swap! uberscript-sources conj (:source res))

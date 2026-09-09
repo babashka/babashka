@@ -45,3 +45,15 @@ between `BB-PATCH` and `END-BB-PATCH` markers, the upstream form kept under
 whose `root-deps` returns the root deps.edn as data, since the binary cannot
 see the jar resource; `script/vendor_tools_deps.clj` writes that one.
 Everything else is verbatim.
+
+## tools.build
+
+bb does not ship tools.build; a project adds it as a dependency. One of
+its tasks installs through Maven Resolver, and bb serves a stand-in for
+that namespace before the classpath:
+
+- `clojure/tools/build/tasks/install.clj`: lays the jar and POM into the
+  local repository the way Resolver does, with `_remote.repositories` and
+  `maven-metadata-local.xml`.
+
+tools.build is Copyright (c) Rich Hickey, Eclipse Public License 1.0.

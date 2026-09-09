@@ -155,18 +155,32 @@
   ;; it off. write-pom reads the alias namespace's name field and
   ;; process tasks call clojure.java.process/io-task.
   (let [tmp (str (fs/create-temp-dir))
-        [io-task? pom] (bb (format "
+        [io-task? pom installed metadata x] (bb (format "
 (babashka.deps/add-deps '{:deps {io.github.clojure/tools.build {:mvn/version \"0.10.9\"}}}
                         {:extra-env {\"BABASHKA_DEPS_RESOLVER\" \"bb\"}})
 (require '[clojure.tools.build.api :as b] '[babashka.fs :as fs])
+(def repo (str (fs/file %s \"m2\")))
+(fs/create-dirs (fs/file %s \"classes\" \"demo\"))
+(spit (fs/file %s \"classes\" \"demo\" \"core.clj\") \"(ns demo.core) (def x 42)\")
 (binding [b/*project-root* %s]
-  (b/write-pom {:class-dir \"classes\" :lib 'demo/demo :version \"1.0\"
-                :basis (b/create-basis {:project {:deps {}}})}))
+  (let [basis (b/create-basis {:project {:deps {} :mvn/local-repo repo}})]
+    (b/write-pom {:class-dir \"classes\" :lib 'demo/demo :version \"1.0\" :basis basis})
+    (b/jar {:class-dir \"classes\" :jar-file \"demo.jar\"})
+    (b/install {:basis basis :lib 'demo/demo :version \"1.0\" :jar-file \"demo.jar\" :class-dir \"classes\"})))
+(babashka.deps/add-deps {:deps {'demo/demo {:mvn/version \"1.0\"}} :mvn/local-repo repo}
+                        {:force true :extra-env {\"BABASHKA_DEPS_RESOLVER\" \"bb\"}})
+(require 'demo.core)
 [(some? (resolve 'clojure.java.process/io-task))
- (slurp (fs/file %s \"classes\" \"META-INF\" \"maven\" \"demo\" \"demo\" \"pom.xml\"))]
-" (pr-str tmp) (pr-str tmp)))]
+ (slurp (fs/file %s \"classes\" \"META-INF\" \"maven\" \"demo\" \"demo\" \"pom.xml\"))
+ (sort (map fs/file-name (fs/list-dir (fs/file repo \"demo\" \"demo\" \"1.0\"))))
+ (slurp (fs/file repo \"demo\" \"demo\" \"maven-metadata-local.xml\"))
+ @(resolve 'demo.core/x)]
+" (pr-str tmp) (pr-str tmp) (pr-str tmp) (pr-str tmp) (pr-str tmp)))]
     (is (true? io-task?))
-    (is (str/includes? pom "<artifactId>demo</artifactId>"))))
+    (is (str/includes? pom "<artifactId>demo</artifactId>"))
+    (is (= ["_remote.repositories" "demo-1.0.jar" "demo-1.0.pom"] installed))
+    (is (str/includes? metadata "<version>1.0</version>"))
+    (is (= 42 x))))
 
 (deftest dependency-test
   (is (= #{:a :c :b} (bb "
