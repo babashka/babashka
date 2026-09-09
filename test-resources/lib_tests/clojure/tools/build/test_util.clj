@@ -17,16 +17,22 @@
 
 (def ^:dynamic ^File *test-dir* nil)
 
+;; BB-TEST-PATCH: the tests run from babashka's root; project data comes
+;; from the tools.build clone the lib-test runner fetched, and the output
+;; goes to the temp dir
+(def tools-build-root
+  (let [sha (-> (jio/resource "bb-tested-libs.edn") slurp read-string
+                (get 'io.github.clojure/tools.build) :git-sha)]
+    (jio/file (System/getProperty "user.home") ".gitlibs" "libs" "io.github.clojure" "tools.build" sha)))
+
 (defmacro with-test-dir
   [test-project & body]
-  ;; BB-TEST-PATCH: the tests run from babashka's root, so the project data
-  ;; lives next to these tests and the output goes to the temp dir
   `(let [name# (-> test/*testing-vars* last symbol str)
          dir# (jio/file (System/getProperty "java.io.tmpdir") "tools-build-test-out" name#)]
      (file/delete dir#)
      (.mkdirs dir#)
      (file/copy-contents (let [f# (jio/file ~test-project)]
-                           (if (.isAbsolute f#) f# (jio/file "test-resources/lib_tests/clojure/tools/build" f#)))
+                           (if (.isAbsolute f#) f# (jio/file tools-build-root f#)))
                          dir#)
      (binding [*test-dir* dir#]
        ~@body)))

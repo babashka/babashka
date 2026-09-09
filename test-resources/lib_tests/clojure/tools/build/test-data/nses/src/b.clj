@@ -1,2 +1,0 @@
-(ns b
-  (:require c))

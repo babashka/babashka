@@ -20,7 +20,7 @@
   ;; expect: c b a (reverse topo sort), then d at the end
   (is (= '[c b a d]
         ;; BB-TEST-PATCH: the tests run from babashka's root
-        (#'compile-clj/nses-in-topo [(jio/file "test-resources/lib_tests/clojure/tools/build/test-data/nses/src")]))))
+        (#'compile-clj/nses-in-topo [(jio/file tools-build-root "test-data/nses/src")]))))
 
 (deftest test-compile
   (with-test-dir "test-data/p1"
