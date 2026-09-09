@@ -23,7 +23,9 @@
     (doseq [path ["clojure/spec/alpha.clj" "clojure/tools/deps.clj" "clojure/tools/deps/extensions/maven.clj"]]
       (fs/create-dirs (fs/parent (fs/file jar-src path)))
       (spit (fs/file jar-src path) "(throw (Exception. \"jar version loaded\"))"))
-    (fs/zip (fs/file dir "shadow.jar") [(str jar-src)] {:root (str jar-src)})
+    ;; :root is matched against entries with forward slashes, so on
+    ;; Windows it has to be given that way
+    (fs/zip (fs/file dir "shadow.jar") [(str jar-src)] {:root (fs/unixify jar-src)})
     (fs/create-dirs (fs/file cp-dir "clojure" "tools" "build" "tasks"))
     (fs/create-dirs (fs/file cp-dir "clojure" "tools" "gitlibs"))
     (spit (fs/file cp-dir "clojure" "tools" "build" "tasks" "javac.clj")
