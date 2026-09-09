@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- tools.build `javac` runs in bb by spawning `javac` from `JAVA_HOME` or the `PATH`.
+- The bundled `clojure.spec.alpha`, tools.deps and gitlibs win over jars of them on the classpath, which cannot load in bb. tools.build's test suite runs as a lib test.
 - tools.build `install` runs in bb: the jar and POM land in the local repository with the files Maven Resolver writes, and bb serves that task before a tools.build jar on the classpath.
 - tools.build runs from source, `install` excepted: the bundled tools.deps wins over a tools.deps jar on the classpath, `clojure.java.process/io-task` is exposed, and `(.-name ns)` works on a namespace.
 - Resolve deps without a JVM: set `:deps-resolver :bb` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=bb`. Default stays `jvm` for now.

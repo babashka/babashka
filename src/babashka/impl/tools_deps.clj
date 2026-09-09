@@ -24,15 +24,6 @@
 
 (def ^:private make-classpath-ns 'clojure.tools.deps.script.make-classpath2)
 
-(def bundled-first
-  "Namespaces bb serves from its bundled sources before looking at the
-  classpath: stand-ins for namespaces a jar on the classpath would
-  otherwise supply in a form that needs Maven."
-  '#{clojure.tools.deps.extensions.maven
-     clojure.tools.deps.extensions.pom
-     clojure.tools.deps.extensions.local
-     clojure.tools.deps.util.maven
-     clojure.tools.build.tasks.install})
 
 (defn- prepare! [ctx]
   (sci/eval-form ctx (list 'require (list 'quote make-classpath-ns)

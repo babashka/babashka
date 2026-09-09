@@ -919,6 +919,21 @@ Use bb run --help to show this help output.
     (set-agent-send-off-executor! executor)
     (vreset! common/solo-executor executor)))
 
+(defn- bundled-first
+  "True for a namespace served from the bundled sources before the
+  classpath: the spec.alpha bb ships, which a spec jar cannot replace;
+  all of tools.deps and gitlibs, so a jar of either cannot mix its
+  version with the bundled one or bring Maven in; and the tools.build
+  task bb stands in for."
+  [namespace]
+  (let [n (str namespace)]
+    (or (contains? '#{clojure.spec.alpha clojure.spec.gen.alpha clojure.spec.test.alpha
+                      clojure.tools.deps clojure.tools.gitlibs
+                      clojure.tools.build.tasks.install clojure.tools.build.tasks.javac}
+                   namespace)
+        (str/starts-with? n "clojure.tools.deps.")
+        (str/starts-with? n "clojure.tools.gitlibs."))))
+
 (defn exec [cli-opts]
   (with-bindings {clojure.lang.Compiler/LOADER @cp/the-url-loader}
     (-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
@@ -998,7 +1013,7 @@ Use bb run --help to show this help output.
                                                  :version :metadata)))
                                  {})
                                (pods/load-pod (:pod-spec pod) (:opts pod)))))
-                         (when (and loader (not (tools-deps/bundled-first namespace)))
+                         (when (and loader (not (bundled-first namespace)))
                            (when-let [res (cp/source-for-namespace loader namespace nil)]
                              (if uberscript
                                (do (swap! uberscript-sources conj (:source res))
@@ -1013,9 +1028,6 @@ Use bb run --help to show this help output.
                              {:file (str url)
                               :source (slurp url)}))
                          (case namespace
-                           clojure.spec.alpha
-                           (binding [*out* *err*]
-                             (println "[babashka] WARNING: Use the babashka-compatible version of clojure.spec.alpha, available here: https://github.com/babashka/spec.alpha"))
                            clojure.core.specs.alpha
                            (binding [*out* *err*]
                              (println "[babashka] WARNING: clojure.core.specs.alpha is removed from the classpath, unless you explicitly add the dependency."))
