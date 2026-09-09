@@ -149,6 +149,25 @@
               (binding [deps/*make-classpath-fn* (fn [_] (throw (Exception. "the java resolver ran")))]
                 (test-utils/bb nil "--config" (str bb-edn) "find-x")))))))
 
+(deftest tools-build-test
+  ;; tools.build brings a tools.deps jar that would shadow the bundled
+  ;; sources and cannot load without Maven; the classpath override keeps
+  ;; it off. write-pom reads the alias namespace's name field and
+  ;; process tasks call clojure.java.process/io-task.
+  (let [tmp (str (fs/create-temp-dir))
+        [io-task? pom] (bb (format "
+(babashka.deps/add-deps '{:deps {io.github.clojure/tools.build {:mvn/version \"0.10.9\"}}}
+                        {:extra-env {\"BABASHKA_DEPS_RESOLVER\" \"bb\"}})
+(require '[clojure.tools.build.api :as b] '[babashka.fs :as fs])
+(binding [b/*project-root* %s]
+  (b/write-pom {:class-dir \"classes\" :lib 'demo/demo :version \"1.0\"
+                :basis (b/create-basis {:project {:deps {}}})}))
+[(some? (resolve 'clojure.java.process/io-task))
+ (slurp (fs/file %s \"classes\" \"META-INF\" \"maven\" \"demo\" \"demo\" \"pom.xml\"))]
+" (pr-str tmp) (pr-str tmp)))]
+    (is (true? io-task?))
+    (is (str/includes? pom "<artifactId>demo</artifactId>"))))
+
 (deftest dependency-test
   (is (= #{:a :c :b} (bb "
 (require '[babashka.deps :as deps])
