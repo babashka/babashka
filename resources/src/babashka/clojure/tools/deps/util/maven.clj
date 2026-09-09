@@ -2,15 +2,15 @@
   clojure.tools.deps.util.maven
   "BB-STAND-IN for the tools.deps namespace of the same name. The upstream
   one wraps Maven Resolver, this one carries the functions other tools.deps
-  namespaces use, on babashka.mvn."
-  (:require [babashka.mvn.coords :as coords]
-            [babashka.mvn.repo :as repo]
-            [babashka.mvn.settings :as settings]))
+  namespaces use, on babashka.impl.mvn."
+  (:require [babashka.impl.mvn.coords :as coords]
+            [babashka.impl.mvn.repo :as repo]
+            [babashka.impl.mvn.settings :as settings]))
 
 (def standard-repos repo/standard-repos)
 
 (defn get-settings
-  "The user settings as a map, see babashka.mvn.settings."
+  "The user settings as a map, see babashka.impl.mvn.settings."
   []
   (settings/read-settings))
 

@@ -1,4 +1,4 @@
-# babashka.mvn
+# babashka.impl.mvn
 
 A Maven repository procurer for tools.deps in plain Clojure, so babashka
 resolves `:mvn/version` coordinates without a JVM. It plugs into tools.deps

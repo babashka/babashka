@@ -39,7 +39,7 @@ Layers, top to bottom, with what is ours and what is not:
    the run, tools.deps' `user-config-dir` answers the config dir deps.clj
    found in the call's environment, so a named tool's descriptor comes
    from the call's `CLJ_CONFIG`, `-Srepro` or not; gitlibs points at the
-   call's `GITLIBS`; and `babashka.mvn.env/getenv`, the one place the
+   call's `GITLIBS`; and `babashka.impl.mvn.env/getenv`, the one place the
    procurer reads the environment for `${env.NAME}` in settings.xml and
    POMs, `http_proxy`, `no_proxy` and `CLOJURE_CLI_ALLOW_HTTP_REPO`, is
    the call's lookup. All three are process-wide state, hence the lock.
@@ -58,13 +58,13 @@ Layers, top to bottom, with what is ours and what is not:
    the `edn.clj` patch itself, and reports every other file in the jars, so
    an upgrade shows each upstream addition. One grep for the two markers
    lists every deviation.
-5. `babashka.mvn`, 12 namespaces, 1,643 lines, plain Clojure over
+5. `babashka.impl.mvn`, 12 namespaces, 1,643 lines, plain Clojure over
    babashka.fs, babashka.http-client, data.xml and javax.crypto. The `:mvn`
    and `:pom` procurer registered through tools.deps' `ext/` multimethods,
    required from the stand-in `extensions/maven.clj`, which tools.deps loads
    last.
 
-Inside `babashka.mvn`:
+Inside `babashka.impl.mvn`:
 
 - `coords`: lib names with `$classifier`, packaging types, the repository
   layout, and where Maven Resolver keeps a timestamped snapshot.
@@ -95,7 +95,7 @@ install the Clojure tools first because they run `exec.jar` from it.
 
 ## Two local repositories, one directory
 
-bb and the JVM share `~/.m2/repository`. So `babashka.mvn` writes what Maven
+bb and the JVM share `~/.m2/repository`. So `babashka.impl.mvn` writes what Maven
 Resolver reads and reads what it writes: the `_remote.repositories` markers,
 timestamped snapshots stored under their base name, metadata files named per
 repository, `.sha1` sidecars verified on download. The oracle's `--cold`
@@ -150,7 +150,7 @@ accept what bb wrote.
 ## What is borrowed, and how it is credited
 
 tools.deps unchanged but for the stand-ins and two marked patches, all named
-in the NOTICE next to the copies. `babashka.mvn` ports behaviour from Maven and
+in the NOTICE next to the copies. `babashka.impl.mvn` ports behaviour from Maven and
 its libraries where the behaviour is an algorithm, and says so in the
 namespaces and in its own NOTICE, with the Apache License 2.0 text alongside.
 The version scheme is the one tools.deps compares with, `GenericVersion`
@@ -172,7 +172,7 @@ files, three mediation strategies, a `require-deps` facade and its own CLI,
 It has no settings.xml support, and its version scheme adapts
 `ComparableVersion`, the choice the oracle rejected here.
 
-| | Grenadine | babashka.mvn |
+| | Grenadine | babashka.impl.mvn |
 |---|---|---|
 | Source | 5,326 lines, 17 namespaces, plus a 1,227-line CLI | 1,643 lines, 12 namespaces |
 | Tests | 2,079 lines; an oracle against tools.deps 0.31.1642 | 499 assertions in scripts; an oracle against tools.deps 0.31.1638, warm and cold, 22 entries |

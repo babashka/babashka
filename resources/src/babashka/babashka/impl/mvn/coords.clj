@@ -1,5 +1,6 @@
-(ns babashka.mvn.coords
+(ns babashka.impl.mvn.coords
   "Maven coordinates and the repository layout."
+  {:no-doc true}
   (:require [clojure.string :as str]))
 
 (defn lib->names

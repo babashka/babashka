@@ -1,10 +1,11 @@
-(ns babashka.mvn.settings
+(ns babashka.impl.mvn.settings
   "The parts of ~/.m2/settings.xml that resolution needs. Mirror and proxy
   selection after Maven's DefaultMirrorSelector and DefaultProxySelector,
   Apache License 2.0, see NOTICE.md."
+  {:no-doc true}
   (:require [babashka.fs :as fs]
-            [babashka.mvn.env :as env]
-            [babashka.mvn.xml :refer [child child-text children elements text]]
+            [babashka.impl.mvn.env :as env]
+            [babashka.impl.mvn.xml :refer [child child-text children elements text]]
             [clojure.string :as str]))
 
 (defn interpolate
@@ -52,7 +53,7 @@
 (defn parse
   "Settings from an XML string."
   [s]
-  (let [root (babashka.mvn.xml/parse s)]
+  (let [root (babashka.impl.mvn.xml/parse s)]
     {:local-repository (interpolate (child-text root "localRepository"))
      :servers (into {} (map server (some-> (child root "servers") (children "server"))))
      :mirrors (mapv mirror (some-> (child root "mirrors") (children "mirror")))
@@ -60,7 +61,7 @@
      :profiles (into {} (map profile (some-> (child root "profiles") (children "profile"))))
      :active-profiles (mapv text (some-> (child root "activeProfiles") (children "activeProfile")))}))
 
-(defn user-settings-file
+(defn- user-settings-file
   "~/.m2/settings.xml, read from user.home at call time."
   []
   (str (fs/path (System/getProperty "user.home") ".m2" "settings.xml")))

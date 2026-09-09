@@ -1,9 +1,9 @@
 #!/usr/bin/env bb
-;; babashka.mvn.coords: lib names, artifact maps and the repository layout,
+;; babashka.impl.mvn.coords: lib names, artifact maps and the repository layout,
 ;; including where Aether keeps a timestamped snapshot.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/coords_test.clj
 (ns coords-test
-  (:require [babashka.mvn.coords :as coords]
+  (:require [babashka.impl.mvn.coords :as coords]
             [clojure.test :as t :refer [deftest is testing]]))
 
 (deftest lib-names-test

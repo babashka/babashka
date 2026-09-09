@@ -1,9 +1,9 @@
 #!/usr/bin/env bb
-;; babashka.mvn.http on file: repositories: encoded and bare paths, misses.
+;; babashka.impl.mvn.http on file: repositories: encoded and bare paths, misses.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/http_test.clj
 (ns http-test
   (:require [babashka.fs :as fs]
-            [babashka.mvn.http :as http]
+            [babashka.impl.mvn.http :as http]
             [clojure.string :as str]
             [clojure.test :as t :refer [deftest is testing]]))
 

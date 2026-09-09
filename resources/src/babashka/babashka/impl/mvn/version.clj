@@ -1,7 +1,8 @@
-(ns babashka.mvn.version
+(ns babashka.impl.mvn.version
   "Maven version ordering, a port of GenericVersion from maven-resolver-util
   1.9.27, the scheme tools.deps compares with; Apache License 2.0, see
   NOTICE.md. Items are maps of :kind and :value."
+  {:no-doc true}
   (:require [clojure.string :as str]))
 
 ;; Item kinds, ordered. Min and max are the "min" and "max" tokens.
@@ -106,7 +107,7 @@
           (recur (remove-at items i) (dec i) (dec end) number)
           (recur items (dec i) end number))))))
 
-(defn parse
+(defn- parse
   "The items of a version string."
   [version]
   (trim-padding (tokenize version)))
@@ -160,7 +161,7 @@
      :high (when-not (str/blank? high) high)
      :high-inclusive high-inclusive}))
 
-(defn parse-range
+(defn- parse-range
   "The restrictions of a Maven version range such as [1.0,2.0) or
   [1.0],[2.0,). A plain version is a single soft restriction."
   [s]

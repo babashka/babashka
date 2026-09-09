@@ -40,7 +40,7 @@
     "clojure/tools/gitlibs/impl.clj"})
 
 ;; Upstream files bb replaces at the same path: the Maven-backed namespaces
-;; have babashka.mvn stand-ins, local.clj is a patched copy. Never copied.
+;; have babashka.impl.mvn stand-ins, local.clj is a patched copy. Never copied.
 (def stand-ins
   #{"clojure/tools/deps/extensions/local.clj"
     "clojure/tools/deps/extensions/maven.clj"

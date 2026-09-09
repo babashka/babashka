@@ -1,12 +1,13 @@
-(ns babashka.mvn.repo
+(ns babashka.impl.mvn.repo
   "Artifact resolution and local repository caching."
+  {:no-doc true}
   (:require [babashka.fs :as fs]
-            [babashka.mvn.cipher :as cipher]
-            [babashka.mvn.coords :as coords]
-            [babashka.mvn.env :as env]
-            [babashka.mvn.http :as http]
-            [babashka.mvn.metadata :as metadata]
-            [babashka.mvn.settings :as settings]
+            [babashka.impl.mvn.cipher :as cipher]
+            [babashka.impl.mvn.coords :as coords]
+            [babashka.impl.mvn.env :as env]
+            [babashka.impl.mvn.http :as http]
+            [babashka.impl.mvn.metadata :as metadata]
+            [babashka.impl.mvn.settings :as settings]
             [clojure.string :as str]))
 
 (def standard-repos
@@ -169,14 +170,3 @@
             (or (when (get-in repo [policy :enabled])
                   (download-from! local-repo repo artifact dest policy))
                 (recur more))))))))
-
-(defn fetch-text!
-  "A repository file as a string, from the first repository that has it,
-  without caching. nil when none does."
-  [repos rel]
-  (loop [[repo & more] repos]
-    (when repo
-      (or (when (get-in repo [:releases :enabled])
-            (http/fetch (str (:url repo) rel) {:auth (:auth repo) :proxy (:proxy repo)
-                                                :repo-id (:id repo) :label rel}))
-          (recur more)))))

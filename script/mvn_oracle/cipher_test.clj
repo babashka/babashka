@@ -1,10 +1,10 @@
 #!/usr/bin/env bb
-;; babashka.mvn.cipher against vectors made by plexus-cipher and
+;; babashka.impl.mvn.cipher against vectors made by plexus-cipher and
 ;; plexus-sec-dispatcher 2.0 on the JVM (cipher_vectors.clj).
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/cipher_test.clj
 (ns cipher-test
   (:require [babashka.fs :as fs]
-            [babashka.mvn.cipher :as cipher]
+            [babashka.impl.mvn.cipher :as cipher]
             [clojure.edn :as edn]
             [clojure.test :as t :refer [deftest is testing]]))
 

@@ -1,13 +1,14 @@
-(ns babashka.mvn.xml
+(ns babashka.impl.mvn.xml
   "Reading Maven's XML files with data.xml. Tags are compared by local
   name, the POM and settings namespaces do not matter here."
+  {:no-doc true}
   (:require [clojure.data.xml :as xml]
             [clojure.string :as str]))
 
 (defn parse [s]
   (xml/parse-str s))
 
-(defn tag= [tag el]
+(defn- tag= [tag el]
   (and (map? el) (= tag (name (:tag el)))))
 
 (defn elements [el]

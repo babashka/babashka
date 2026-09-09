@@ -1,10 +1,10 @@
 #!/usr/bin/env bb
-;; babashka.mvn.pom: the effective model from POM text, with parents,
+;; babashka.impl.mvn.pom: the effective model from POM text, with parents,
 ;; properties, dependency management, BOM imports, profiles and relocation.
 ;; No repository: :read-pom serves POMs from a map.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/pom_test.clj
 (ns pom-test
-  (:require [babashka.mvn.pom :as pom]
+  (:require [babashka.impl.mvn.pom :as pom]
             [clojure.test :as t :refer [deftest is testing]]))
 
 (defn- pom [& body]
@@ -41,7 +41,7 @@
        "<profiles>"
        "<profile><id>on</id><activation><activeByDefault>true</activeByDefault></activation>"
        "<dependencies><dependency><groupId>org.example</groupId><artifactId>from-profile</artifactId><version>${nested}</version></dependency></dependencies></profile>"
-       "<profile><id>off</id><activation><property><name>babashka.mvn.no-such-property</name></property></activation>"
+       "<profile><id>off</id><activation><property><name>babashka.impl.mvn.no-such-property</name></property></activation>"
        "<dependencies><dependency><groupId>org.example</groupId><artifactId>never</artifactId><version>1</version></dependency></dependencies></profile>"
        "</profiles>"))
 
