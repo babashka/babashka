@@ -94,14 +94,9 @@
            (binding [*print-namespace-maps* false]
              (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
                                       {:replace-paths [] ;; babashka sets paths manually
-                                       ;; the bundled tools.deps sources serve these; a jar on
-                                       ;; the classpath would shadow them and needs Maven
                                        :classpath-overrides (cond->
                                                              '{org.clojure/clojure ""
-                                                               org.clojure/spec.alpha ""
-                                                               org.clojure/tools.deps ""
-                                                               org.clojure/tools.deps.edn ""
-                                                               org.clojure/tools.gitlibs ""}
+                                                               org.clojure/spec.alpha ""}
                                                               ;; only remove core specs when they are not mentioned in deps map
                                                               (not (str/includes? (str deps-map) "org.clojure/core.specs.alpha"))
                                                               (assoc 'org.clojure/core.specs.alpha ""))})
