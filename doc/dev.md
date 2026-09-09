@@ -81,6 +81,31 @@ Test the native version:
 
     BABASHKA_TEST_ENV=native script/test
 
+## Trying a fix to bundled code without building bb
+
+Some of what bb ships is Clojure source in the image rather than compiled
+code: `clojure.spec.alpha`, tools.deps and gitlibs, the Maven-free
+procurer under `babashka.impl.mvn`, and the stand-ins for two tools.build
+tasks. All of it lives under `resources/src/babashka`. Two ways to run a
+change to it:
+
+- bb from source on the JVM sees the tree as it is:
+
+      clojure -M:babashka/dev -e "(require '[clojure.tools.deps :as d]) ..."
+
+  `script/test` and `script/run_lib_tests` run the same way.
+
+- The release binary, with your copy of the file on the classpath as a
+  directory:
+
+      bb -cp path/to/your/src -e "..."
+
+  A directory on the classpath wins over the bundled source. A jar does
+  not: for spec.alpha, tools.deps, gitlibs and the tools.build stand-ins,
+  a jar on the classpath is ignored, since the jar's version cannot run in
+  bb. A `:git/url` or `:local/root` dependency is a directory too, so a
+  fix can be shared that way, pinned to a sha, until it lands upstream.
+
 ## Tests for Libraries
 
 Babashka runs tests of libraries that are compatible with it through

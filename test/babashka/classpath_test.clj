@@ -13,14 +13,26 @@
 (def path-sep (System/getProperty "path.separator"))
 
 (deftest bundled-first-test
-  ;; a spec.alpha or a tools.deps stand-in on the classpath cannot load in
-  ;; bb, so the bundled sources serve those namespaces before the classpath
-  (let [dir (fs/create-temp-dir)]
-    (doseq [path ["clojure/spec/alpha.clj" "clojure/tools/deps.clj" "clojure/tools/deps/util/maven.clj"]]
-      (fs/create-dirs (fs/parent (fs/file dir path)))
-      (spit (fs/file dir path) "(throw (Exception. \"classpath version loaded\"))"))
-    (is (true? (bb nil "--prn" "--classpath" (str dir)
-                   "(require '[clojure.spec.alpha :as s] 'clojure.tools.deps 'clojure.tools.deps.util.maven) (s/valid? int? 1)")))))
+  ;; spec.alpha, tools.deps and gitlibs from a jar on the classpath cannot
+  ;; load in bb, so the bundled sources beat a jar; a directory on the
+  ;; classpath is a deliberate override and wins; and a namespace under
+  ;; those prefixes that bb does not ship comes from the classpath
+  (let [dir (fs/create-temp-dir)
+        jar-src (fs/file dir "jar-src")
+        cp-dir (fs/file dir "cp")]
+    (doseq [path ["clojure/spec/alpha.clj" "clojure/tools/deps.clj" "clojure/tools/deps/extensions/maven.clj"]]
+      (fs/create-dirs (fs/parent (fs/file jar-src path)))
+      (spit (fs/file jar-src path) "(throw (Exception. \"jar version loaded\"))"))
+    (fs/zip (fs/file dir "shadow.jar") [(str jar-src)] {:root (str jar-src)})
+    (fs/create-dirs (fs/file cp-dir "clojure" "tools" "build" "tasks"))
+    (fs/create-dirs (fs/file cp-dir "clojure" "tools" "gitlibs"))
+    (spit (fs/file cp-dir "clojure" "tools" "build" "tasks" "javac.clj")
+          "(ns clojure.tools.build.tasks.javac) (def javac :from-directory)")
+    (spit (fs/file cp-dir "clojure" "tools" "gitlibs" "extra.clj")
+          "(ns clojure.tools.gitlibs.extra) (def x 1)")
+    (is (= [true :from-directory 1]
+           (bb nil "--prn" "--classpath" (str (fs/file dir "shadow.jar") fs/path-separator cp-dir)
+               "(require '[clojure.spec.alpha :as s] 'clojure.tools.deps 'clojure.tools.deps.extensions.maven 'clojure.tools.build.tasks.javac 'clojure.tools.gitlibs.extra) [(s/valid? int? 1) clojure.tools.build.tasks.javac/javac clojure.tools.gitlibs.extra/x]")))))
 
 (deftest classpath-test
   (is (= :my-script/bb

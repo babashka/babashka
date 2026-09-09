@@ -920,11 +920,11 @@ Use bb run --help to show this help output.
     (vreset! common/solo-executor executor)))
 
 (defn- bundled-first
-  "True for a namespace served from the bundled sources before the
+  "True for a namespace whose bundled source wins over a jar on the
   classpath: the spec.alpha bb ships, which a spec jar cannot replace;
   all of tools.deps and gitlibs, so a jar of either cannot mix its
   version with the bundled one or bring Maven in; and the tools.build
-  task bb stands in for."
+  tasks bb stands in for. A directory on the classpath still wins."
   [namespace]
   (let [n (str namespace)]
     (or (contains? '#{clojure.spec.alpha clojure.spec.gen.alpha clojure.spec.test.alpha
@@ -933,6 +933,15 @@ Use bb run --help to show this help output.
                    namespace)
         (str/starts-with? n "clojure.tools.deps.")
         (str/starts-with? n "clojure.tools.gitlibs."))))
+
+(defn- bundled-source
+  "The bundled source of namespace, or nil."
+  [namespace]
+  (let [rps (cp/resource-paths namespace)
+        rps (mapv #(str "src/babashka/" %) rps)]
+    (when-let [url (some #(io/resource % common/jvm-loader) rps)]
+      {:file (str url)
+       :source (slurp url)})))
 
 (defn exec [cli-opts]
   (with-bindings {clojure.lang.Compiler/LOADER @cp/the-url-loader}
@@ -1013,20 +1022,20 @@ Use bb run --help to show this help output.
                                                  :version :metadata)))
                                  {})
                                (pods/load-pod (:pod-spec pod) (:opts pod)))))
-                         (when (and loader (not (bundled-first namespace)))
+                         (when loader
                            (when-let [res (cp/source-for-namespace loader namespace nil)]
-                             (if uberscript
+                             ;; a bundled-first namespace from a jar on the classpath
+                             ;; loses to the bundled source; from a directory it wins,
+                             ;; a directory is a deliberate override
+                             (when-not (and (bundled-first namespace)
+                                            (= "jar" (.getProtocol ^java.net.URL (cp/source-for-namespace loader namespace true))))
+                               (if uberscript
                                (do (swap! uberscript-sources conj (:source res))
                                    (uberscript/uberscript {:ctx (common/ctx)
                                                            :expressions [(:source res)]})
                                    {})
-                               res)))
-                         ;; built-in deps
-                         (let [rps (cp/resource-paths namespace)
-                               rps (mapv #(str "src/babashka/" %) rps)]
-                           (when-let [url (some #(io/resource % common/jvm-loader) rps)]
-                             {:file (str url)
-                              :source (slurp url)}))
+                               res))))
+                         (bundled-source namespace)
                          (case namespace
                            clojure.core.specs.alpha
                            (binding [*out* *err*]
