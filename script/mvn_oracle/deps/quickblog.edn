@@ -1,0 +1,33 @@
+{:paths ["src" "resources"]
+ :deps {rewrite-clj/rewrite-clj {:mvn/version "1.1.45"}
+        babashka/fs {:mvn/version "0.1.6"}
+        org.clojure/clojure {:mvn/version "1.11.1"}
+        org.clojure/data.xml {:mvn/version "0.2.0-alpha6"}
+        selmer/selmer {:mvn/version "1.12.53"}
+        io.github.nextjournal/markdown {:mvn/version "0.7.186"}
+        org.babashka/cli {:mvn/version "0.6.50"}
+        org.babashka/http-server {:mvn/version "0.1.14"}
+        babashka/babashka.pods {:git/url "https://github.com/babashka/pods"
+                                :git/sha "93081b75e66fb4c4d161f89e714c6b9e8d55c8d5"}
+        clj-commons/clj-yaml {:mvn/version "1.0.29"}}
+ :aliases
+ {:quickblog
+  {:deps {io.github.borkdude/quickblog
+          {:local/root "."}
+          org.babashka/cli {:mvn/version "0.6.41"}}
+   :main-opts ["-m" "babashka.cli.exec" "quickblog.cli" "run"]
+   :exec-args {:blog-title "REPL adventures"
+               :blog-description "A blog about blogging quickly"
+               :about-link "https://github.com/borkdude/quickblog"
+               :twitter-handle "quickblog"}}
+  :test
+  {:extra-paths ["test"]
+   :extra-deps {io.github.cognitect-labs/test-runner
+                {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+   :exec-args {:cmd "bb test"}
+   :main-opts ["-m" "babashka.cli.exec"]
+   :exec-fn quickblog.test-runner/test}
+
+  :clj-1.9 {:extra-deps {org.clojure/clojure {:mvn/version "1.9.0"}}}
+  :clj-1.10 {:extra-deps {org.clojure/clojure {:mvn/version "1.10.3"}}}
+  :clj-1.11 {:extra-deps {org.clojure/clojure {:mvn/version "1.11.1"}}}}}

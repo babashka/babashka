@@ -50,17 +50,24 @@
 
 ;;;; end merge edn files
 
+
 ;; We are optimizing for the 1-file script with deps scenario where people can
 ;; call this function to include e.g. {:deps {medley/medley
 ;; {:mvn/version "1.3.3"}}}. Optionally they can include aliases, to modify the
 ;; classpath.
 (defn add-deps
-  "Takes deps edn map and optionally a map with :aliases (seq of
-  keywords) which will used to calculate classpath. The classpath is
-  then used to resolve dependencies in babashka."
+  "Resolves dependencies from a deps.edn map and adds them to the classpath.
+  Options: :aliases selects aliases by keyword, :force recomputes the
+  classpath, :env replaces the environment, and :extra-env adds overrides.
+
+  Set :deps-resolver in the deps map to :bb for in-process resolution or
+  :jvm to use Java. Defaults to :deps-resolver in bb.edn, then
+  BABASHKA_DEPS_RESOLVER, then jvm."
   ([deps-map] (add-deps deps-map nil))
   ([deps-map {:keys [:aliases :env :extra-env :force]}]
-   (let [deps-root (:deps-root @bb-edn)]
+   (let [deps-root (:deps-root @bb-edn)
+         ;; tasks and scripts inherit the project's resolver
+         resolver (or (:deps-resolver deps-map) (:deps-resolver @bb-edn))]
      (when-let [paths (:paths deps-map)]
        (let [paths (if deps-root
                      (let [deps-root (fs/absolutize deps-root)
@@ -76,7 +83,7 @@
                                 ;; paths are added manually above
                                 ;; extra-paths are added as :paths in tasks
                                 :paths :tasks :raw :file :deps-root
-                                :min-bb-version)
+                                :min-bb-version :deps-resolver)
                ;; associate deps-root to avoid cache conflict between different
                ;; bb.edns with relative local/roots by the same name NOTE:
                ;; deps-root is nil when bb.edn isn't used, so clashes may still
@@ -98,17 +105,21 @@
                               "-Sdeps-file" "__babashka_no_deps_file__.edn") ;; we reset deps file so the local deps.edn isn't used
                    args (if force (cons "-Sforce" args) args)
                    args (concat args [(str "-A:" (str/join ":" (cons ":org.babashka/defaults" aliases)))])
+                   getenv (bdeps/getenv-fn env extra-env)
+                   make-classpath-fn (bdeps/make-classpath-fn (when deps-root (str deps-root)) getenv resolver)
                    bindings (cond->
-                             {#'deps/*aux-process-fn* (fn [{:keys [cmd out]}]
-                                                        (process/shell
-                                                         {:cmd cmd
-                                                          :out out
-                                                          :env env
-                                                          :dir (when deps-root (str deps-root))
-                                                          :extra-env extra-env}))
+                             {#'deps/*getenv-fn* getenv
+                              #'deps/*aux-process-fn* (fn [{:keys [cmd out]}]
+                                                       (process/shell
+                                                        {:cmd cmd
+                                                         :out out
+                                                         :env env
+                                                         :dir (when deps-root (str deps-root))
+                                                         :extra-env extra-env}))
                               #'deps/*exit-fn* (fn [{:keys [message]}]
                                                  (when message
                                                    (throw (Exception. message))))}
+                              make-classpath-fn (assoc #'deps/*make-classpath-fn* make-classpath-fn)
                               deps-root (assoc #'deps/*dir* (str deps-root)))
                    cp (with-out-str (with-bindings bindings
                                       (apply deps/-main args)))

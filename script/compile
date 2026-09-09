@@ -69,6 +69,7 @@ fi
 . script/libffi_archive.sh
 # Pass the feature setting to image initialization.
 args+=("-EBABASHKA_FEATURE_LIBFFI")
+
 if [ -n "$libffi_archive" ]; then
     if [ "$(uname -s)" = "Darwin" ]; then
         args+=("-H:NativeLinkerOption=-Wl,-force_load,$libffi_archive")

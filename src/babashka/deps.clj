@@ -1,8 +1,36 @@
 (ns babashka.deps
-  (:require [babashka.impl.process :as pp]
+  (:require [babashka.impl.common :as common]
+            [babashka.impl.process :as pp]
+            [babashka.impl.tools-deps :as tools-deps]
             [babashka.process :as p]
             [borkdude.deps :as deps]
             [sci.core :as sci]))
+
+(defn ^:no-doc make-classpath-fn
+  "Returns an in-process classpath resolver for :bb, or nil for the JVM.
+  resolver takes precedence over BABASHKA_DEPS_RESOLVER from getenv.
+  Defaults to the JVM. dir is the project directory.
+  getenv maps environment names to values."
+  [dir getenv resolver]
+  (when (= "bb" (some-> (or resolver (getenv "BABASHKA_DEPS_RESOLVER")) name))
+    (fn [{:keys [args out]}]
+      ;; deps.clj has bound *getenv-fn* by now, so this is the config dir
+      ;; of the call's own environment, -Srepro or not
+      (let [opts {:config-dir (deps/get-config-dir)
+                  :getenv deps/*getenv-fn*}]
+        (if (= :string out)
+          {:out (with-out-str (tools-deps/make-classpath! dir args opts))}
+          (do (tools-deps/make-classpath! dir args opts)
+              {:out nil}))))))
+
+(defn ^:no-doc getenv-fn
+  "Returns an environment lookup function for deps.clj.
+  env replaces the process environment. extra-env supplies overrides."
+  [env extra-env]
+  (fn [k]
+    (if env
+      (get (merge env extra-env) k)
+      (or (get extra-env k) (System/getenv k)))))
 
 (defn clojure
   "Starts clojure similar to CLI. Use `rlwrap bb` for `clj`-like invocation.
@@ -33,17 +61,22 @@
                      :out :inherit
                      :err :inherit
                      :shutdown p/destroy-tree}
-                    opts)]
+                    opts)
+        getenv (getenv-fn (:env opts) (:extra-env opts))]
     (binding [*in* @sci/in
               *out* @sci/out
               *err* @sci/err
               deps/*dir* (:dir opts)
+              deps/*getenv-fn* getenv
+              deps/*make-classpath-fn* (or (make-classpath-fn (:dir opts) getenv
+                                                              (:deps-resolver @common/bb-edn))
+                                           deps/*make-classpath-fn*)
               deps/*aux-process-fn* (fn [{:keys [cmd out]}]
                                       (pp/shell (assoc opts :out out :cmd cmd)))
               deps/*clojure-process-fn* (fn [{:keys [cmd]}]
-                                  (pp/process* {:cmd cmd
-                                                :prev prev
-                                                :opts opts}))
+                                          (pp/process* {:cmd cmd
+                                                        :prev prev
+                                                        :opts opts}))
               deps/*exit-fn* (fn [{:keys [message]}]
                                (when message
                                  (throw (Exception. message))))]

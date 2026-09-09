@@ -85,3 +85,4 @@
 
 (when rrb-vector?
   (require '[babashka.impl.rrb-vector]))
+

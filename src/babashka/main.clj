@@ -61,6 +61,7 @@
    [babashka.impl.server :refer [clojure-core-server-namespace]]
    [babashka.impl.socket-repl :as socket-repl]
    [babashka.impl.tasks :as tasks :refer [tasks-namespace]]
+   [babashka.impl.tools-deps :as tools-deps]
    [babashka.impl.test :as t]
    [babashka.impl.tools.cli :refer [tools-cli-namespace]]
    [babashka.impl.uberscript :as uberscript]
@@ -82,6 +83,8 @@
   (:gen-class))
 
 (def windows? (fs/windows?))
+
+;; The root deps.edn patch, see babashka.impl.tools-deps.
 
 (if-not windows?
   (do ;; see https://github.com/oracle/graal/issues/1784
@@ -505,6 +508,7 @@ Use bb run --help to show this help output.
                           'next.jdbc.sql @(resolve 'babashka.impl.jdbc/next-sql-namespace)
                           'next.jdbc.result-set @(resolve 'babashka.impl.jdbc/result-set-namespace))
     features/csv? (assoc 'clojure.data.csv @(resolve 'babashka.impl.csv/csv-namespace))
+    true (assoc 'clojure.tools.deps.specs tools-deps/specs-namespace)
     features/transit? (assoc 'cognitect.transit @(resolve 'babashka.impl.transit/transit-namespace))
     features/datascript? (assoc 'datascript.core @(resolve 'babashka.impl.datascript/datascript-namespace)
                                 'datascript.db @(resolve 'babashka.impl.datascript/datascript-db-namespace))
@@ -962,10 +966,8 @@ Use bb run --help to show this help output.
             uberscript-sources (atom ())
             classpath (or classpath
                           (System/getenv "BABASHKA_CLASSPATH"))
-            _ (if classpath
-                (cp/add-classpath classpath)
-                ;; when classpath isn't set, we calculate it from bb.edn, if present
-                (when-let [bb-edn @common/bb-edn] (deps/add-deps bb-edn {:force force?})))
+            _ (when classpath
+                (cp/add-classpath classpath))
             abs-path (when file
                        (let [abs-path (.getAbsolutePath (io/file file))]
                          (sci/alter-var-root sci/file (constantly abs-path))
@@ -1008,9 +1010,8 @@ Use bb run --help to show this help output.
                          (let [rps (cp/resource-paths namespace)
                                rps (mapv #(str "src/babashka/" %) rps)]
                            (when-let [url (some #(io/resource % common/jvm-loader) rps)]
-                             (let [source (slurp url)]
-                               {:file (str url)
-                                :source source})))
+                             {:file (str url)
+                              :source (slurp url)}))
                          (case namespace
                            clojure.spec.alpha
                            (binding [*out* *err*]
@@ -1045,6 +1046,19 @@ Use bb run --help to show this help output.
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (ctx-store/reset-ctx! sci-ctx)
+            ;; when classpath isn't set, we calculate it from bb.edn, if
+            ;; present. After the context exists: with tools.deps in the
+            ;; image the resolver runs interpreted, through the context.
+            _ (when-not classpath
+                (when-let [bb-edn @common/bb-edn]
+                  (try (deps/add-deps bb-edn {:force force?})
+                       (catch Exception e
+                         ;; what make-classpath2 prints when it runs in its own java
+                         (binding [*out* *err*]
+                           (println "Error building classpath." (ex-message e))
+                           (when-not (instance? clojure.lang.IExceptionInfo e)
+                             (.printStackTrace e)))
+                         (System/exit 1)))))
             _ (when-let [pods (:pods @common/bb-edn)]
                 (when-let [pod-metadata (pods/load-pods-metadata
                                          pods {:download-only (download-only?)})]

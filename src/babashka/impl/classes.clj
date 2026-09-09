@@ -152,6 +152,7 @@
     clojure.lang.MultiFn
     {:fields [{:name "dispatchFn"}]
      :methods [{:name "getMethod"}
+               {:name "getMethodTable"}
                {:name "addMethod"}]}
     clojure.lang.RT
     {:methods [{:name "aget"}
@@ -244,6 +245,29 @@
                {:name "setParser"}]
      :inherit [org.jline.reader.LineReader]}})
 
+;; JDK methods the interpreted tools.deps sources call that bb does not
+;; expose otherwise. On a tools.deps upgrade, grep the new sources for
+;; interop on these classes and adjust.
+(def tools-deps-methods
+  (quote {java.lang.ProcessBuilder$Redirect
+ {:methods [{:name "toString", :parameterTypes []}]},
+ java.util.concurrent.ConcurrentMap
+ {:methods
+  [{:name "computeIfAbsent",
+    :parameterTypes ["java.lang.Object" "java.util.function.Function"]}
+   {:name "get", :parameterTypes ["java.lang.Object"]}
+   {:name "put",
+    :parameterTypes ["java.lang.Object" "java.lang.Object"]}
+   {:name "putAll", :parameterTypes ["java.util.Map"]}
+   {:name "putIfAbsent",
+    :parameterTypes ["java.lang.Object" "java.lang.Object"]}]}}
+))
+
+;; Referenced by the sources without calling anything on them.
+(def tools-deps-name-only
+  (quote [clojure.lang.IExceptionInfo]
+))
+
 (def nio-buffer-get-put
   {:methods [{:name "get"} {:name "put"}]})
 
@@ -270,7 +294,9 @@
            `java.nio.FloatBuffer nio-buffer-get-put
            `java.nio.IntBuffer nio-buffer-get-put
            `java.nio.LongBuffer nio-buffer-get-put
-           `java.nio.ShortBuffer nio-buffer-get-put)))
+           `java.nio.ShortBuffer nio-buffer-get-put)
+    true
+    (merge tools-deps-methods)))
 
 (def java-net-http-classes
   "These classes must be initialized at run time since GraalVM 22.1"
@@ -341,6 +367,7 @@
 (def thread-builder-of-platform
   (try (Class/forName "java.lang.Thread$Builder$OfPlatform")
        (catch Exception _ nil)))
+
 
 (def classes
   ;; :all = full reflection enabled (allPublicMethods, allPublicConstructors, etc.)
@@ -775,7 +802,8 @@
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue
-             ~@(when features/postgresql? '[org.postgresql.PGProperty])]
+             ~@(when features/postgresql? '[org.postgresql.PGProperty])
+             java.lang.ProcessBuilder$Redirect]
     ;; this just adds the class without any methods also suitable for private
     ;; classes: add the privage class here and the public class to the normal
     ;; list above and then everything reachable via the public class will be
@@ -869,7 +897,8 @@
                                               'clojure.data.xml.event.CharsEvent
                                               'clojure.data.xml.event.CDataEvent
                                               'clojure.data.xml.event.CommentEvent
-                                              'clojure.data.xml.event.QNameEvent])]
+                                              'clojure.data.xml.event.QNameEvent])
+                      ~@tools-deps-name-only]
     :custom ~custom-map})
 
 (defn compiler-load
