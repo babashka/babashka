@@ -135,6 +135,17 @@ accept what bb wrote.
   git under `jvm` and not under `bb`. gitlibs builds the process itself,
   and a patch there is not worth one variable; the process environment is
   the place for it.
+- A jar a namespace was loaded from cannot be deleted on Windows while the
+  process runs, and that stays so. `URLClassLoader` keeps a `JarFile` open
+  per jar for its own lifetime, and a `jar:` URL read through the JDK's
+  connection cache keeps another; Windows refuses to delete an open file,
+  Linux and macOS do not care. Clojure on the JVM behaves the same, for the
+  same reason, and `URLClassLoader.close()` exists because of it. Reading
+  with the cache off was tried and reverted: it cost about 0.45 ms per
+  namespace loaded from a jar, measured on the clojure jar, and left the
+  loader's own handle in place anyway. So the oracle tests that require from
+  a resolved jar keep their `local-repo` outside the directory they delete,
+  which is what tools.deps does with `~/.m2` as well.
 
 ## What is borrowed, and how it is credited
 

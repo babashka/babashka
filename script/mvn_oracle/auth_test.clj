@@ -66,7 +66,10 @@
         ((resolve 'babashka.deps/add-deps)
          {:deps {'auth-test/lib {:mvn/version "1.0.0"}}
           :mvn/repos {"authrepo" {:url (str "http://localhost:" port "/")}}
-          :mvn/local-repo (str (fs/file dir "local-repo"))}
+          ;; not under dir: once required, the jar is open on the classpath,
+          ;; and Windows cannot delete an open file. The process ends right
+          ;; after the test, so nothing cleans this up.
+          :mvn/local-repo (str (fs/create-temp-dir {:prefix "local-repo"}))}
          {:force true :extra-env {"BABASHKA_DEPS_RESOLVER" "bb"}})
         (require 'auth-test.lib)
         (is (= 42 @(resolve 'auth-test.lib/answer)))

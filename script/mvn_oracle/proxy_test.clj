@@ -115,7 +115,10 @@
         ((resolve 'babashka.deps/add-deps)
          {:deps {'proxied/lib {:mvn/version "1.0.0"}}
           :mvn/repos {"proxied" {:url "http://repo.invalid/"}}
-          :mvn/local-repo (str (fs/file dir "local-repo"))}
+          ;; not under dir: once required, the jar is open on the classpath,
+          ;; and Windows cannot delete an open file. The process ends right
+          ;; after the test, so nothing cleans this up.
+          :mvn/local-repo (str (fs/create-temp-dir {:prefix "local-repo"}))}
          {:force true :extra-env {"BABASHKA_DEPS_RESOLVER" "bb"}})
         (require 'proxied.lib)
         (is (= 43 @(resolve 'proxied.lib/answer)))
