@@ -3,4 +3,5 @@
             [sci.core :as sci]))
 
 (def cjp (sci/create-ns 'clojure.java.process nil))
-(def cjp-namespace (sci/copy-ns clojure.java.process cjp))
+;; io-task is :skip-wiki upstream; tools.build calls it
+(def cjp-namespace (sci/copy-ns clojure.java.process cjp {:exclude-when-meta [:no-doc]}))
