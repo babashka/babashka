@@ -10,6 +10,18 @@
 
 (set! *warn-on-reflection* true)
 
+(defn- read-resource
+  "The text at res. A jar: URL is read with the connection cache off: with it
+   on, the JDK keeps the JarFile open for the life of the process, and Windows
+   cannot delete a jar that is open."
+  [^URL res]
+  (if (= "jar" (.getProtocol res))
+    (let [^java.net.URLConnection conn (.openConnection res)]
+      (.setUseCaches conn false)
+      (with-open [in (.getInputStream conn)]
+        (slurp in)))
+    (slurp res)))
+
 (defn getResource [^babashka.impl.URLClassLoader class-loader resource-paths url?]
   (some (fn [resource]
           (when-let [^java.net.URL res (.findResource class-loader resource)]
@@ -18,7 +30,7 @@
               {:file (if (= "jar" (.getProtocol res))
                        resource
                        (.getFile res))
-               :source (slurp res)})))
+               :source (read-resource res)})))
         resource-paths))
 
 (def path-sep (System/getProperty "path.separator"))
