@@ -10,7 +10,7 @@
   "<settings>
      <localRepository>${user.home}/other-m2</localRepository>
      <servers>
-       <server><id>nexus</id><username>${env.USER}</username><password>secret</password></server>
+       <server><id>nexus</id><username>${env.PATH}</username><password>secret</password></server>
      </servers>
      <mirrors>
        <mirror><id>internal</id><url>https://nexus.example.com/maven2</url><mirrorOf>*,!clojars</mirrorOf></mirror>
@@ -42,7 +42,7 @@
 
 (deftest parse-test
   (is (= (str (System/getProperty "user.home") "/other-m2") (:local-repository parsed)))
-  (is (= {:username (System/getenv "USER") :password "secret"} (get-in parsed [:servers "nexus"])))
+  (is (= {:username (System/getenv "PATH") :password "secret"} (get-in parsed [:servers "nexus"])))
   (is (= [{:id "internal" :url "https://nexus.example.com/maven2" :mirror-of "*,!clojars"}] (:mirrors parsed)))
   (is (= [{:id "corp" :active true :protocol "https" :host "proxy.example.com" :port 3128
            :username nil :password nil :non-proxy-hosts "localhost|*.example.com"}

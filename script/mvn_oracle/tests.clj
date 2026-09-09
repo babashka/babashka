@@ -25,7 +25,7 @@
                                               :extra-env {"CLOJURE_CLI_ALLOW_HTTP_REPO" "true"
                                                           "BABASHKA_DEPS_RESOLVER" "bb"}}
                                      cmd)
-           summary (or (last (re-seq #"Ran \d+ tests containing \d+ assertions\.\n\d+ failures, \d+ errors\." out))
+           summary (or (last (re-seq #"Ran \d+ tests containing \d+ assertions\.\r?\n\d+ failures, \d+ errors\." out))
                        "no summary")]
        (println (format "%-40s %s" (fs/file-name t) (str/replace summary "\n" ", ")))
        (when-not (zero? exit)

@@ -24,7 +24,8 @@
           "<project><modelVersion>4.0.0</modelVersion><groupId>bad</groupId><artifactId>lib</artifactId><version>1.0.0</version></project>")
     (spit (fs/file d "lib-1.0.0.pom.sha1") "0000000000000000000000000000000000000000\n")
     (spit (fs/file d "lib-1.0.0.jar") "PK")
-    (str "file://" dir "/")))
+    ;; a file URL the way java writes one, so it holds on Windows too
+    (str (.toURI (fs/file dir)))))
 
 (deftest not-found-test
   (is (= "Could not find artifact nope:nope:pom:1.0.0 in central (https://repo1.maven.org/maven2/), clojars (https://repo.clojars.org/)"
