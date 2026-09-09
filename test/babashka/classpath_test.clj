@@ -19,8 +19,13 @@
     (doseq [path ["clojure/spec/alpha.clj" "clojure/tools/deps.clj" "clojure/tools/deps/util/maven.clj"]]
       (fs/create-dirs (fs/parent (fs/file dir path)))
       (spit (fs/file dir path) "(throw (Exception. \"classpath version loaded\"))"))
-    (is (true? (bb nil "--prn" "--classpath" (str dir)
-                   "(require '[clojure.spec.alpha :as s] 'clojure.tools.deps 'clojure.tools.deps.util.maven) (s/valid? int? 1)")))))
+    ;; a namespace under the prefixes that bb does not ship, a test
+    ;; namespace of the library say, still comes from the classpath
+    (fs/create-dirs (fs/file dir "clojure" "tools" "gitlibs"))
+    (spit (fs/file dir "clojure" "tools" "gitlibs" "extra.clj") "(ns clojure.tools.gitlibs.extra) (def x 1)")
+    (is (= [true 1]
+           (bb nil "--prn" "--classpath" (str dir)
+               "(require '[clojure.spec.alpha :as s] 'clojure.tools.deps 'clojure.tools.deps.util.maven 'clojure.tools.gitlibs.extra) [(s/valid? int? 1) clojure.tools.gitlibs.extra/x]")))))
 
 (deftest classpath-test
   (is (= :my-script/bb

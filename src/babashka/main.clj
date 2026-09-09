@@ -934,6 +934,17 @@ Use bb run --help to show this help output.
         (str/starts-with? n "clojure.tools.deps.")
         (str/starts-with? n "clojure.tools.gitlibs."))))
 
+(defn- bundled-source
+  "The bundled source of namespace, or nil. A bundled-first namespace bb
+  does not ship, a library's test namespace under one of the prefixes
+  say, falls through to the classpath."
+  [namespace]
+  (let [rps (cp/resource-paths namespace)
+        rps (mapv #(str "src/babashka/" %) rps)]
+    (when-let [url (some #(io/resource % common/jvm-loader) rps)]
+      {:file (str url)
+       :source (slurp url)})))
+
 (defn exec [cli-opts]
   (with-bindings {clojure.lang.Compiler/LOADER @cp/the-url-loader}
     (-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
@@ -1013,7 +1024,9 @@ Use bb run --help to show this help output.
                                                  :version :metadata)))
                                  {})
                                (pods/load-pod (:pod-spec pod) (:opts pod)))))
-                         (when (and loader (not (bundled-first namespace)))
+                         (when (bundled-first namespace)
+                           (bundled-source namespace))
+                         (when loader
                            (when-let [res (cp/source-for-namespace loader namespace nil)]
                              (if uberscript
                                (do (swap! uberscript-sources conj (:source res))
@@ -1021,12 +1034,7 @@ Use bb run --help to show this help output.
                                                            :expressions [(:source res)]})
                                    {})
                                res)))
-                         ;; built-in deps
-                         (let [rps (cp/resource-paths namespace)
-                               rps (mapv #(str "src/babashka/" %) rps)]
-                           (when-let [url (some #(io/resource % common/jvm-loader) rps)]
-                             {:file (str url)
-                              :source (slurp url)}))
+                         (bundled-source namespace)
                          (case namespace
                            clojure.core.specs.alpha
                            (binding [*out* *err*]
