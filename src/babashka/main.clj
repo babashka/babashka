@@ -71,7 +71,6 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [edamame.core :as edamame]
-   [hf.depstar.uberjar :as uberjar]
    [sci.addons :as addons]
    [sci.core :as sci]
    [sci.ctx-store :as ctx-store]
@@ -949,6 +948,13 @@ Use bb run --help to show this help output.
                  :source (slurp url)}))))
         (cp/resource-paths namespace)))
 
+(defn- uberjar!
+  "Builds an uberjar with tools.build's uber task: the bundled one, or the
+  one a tools.build dependency on the classpath brings."
+  [ctx params]
+  (sci/eval-form ctx '(require 'clojure.tools.build.api))
+  (sci/eval-form ctx (list 'clojure.tools.build.api/uber (list 'quote params))))
+
 (defn exec [cli-opts]
   (with-bindings {clojure.lang.Compiler/LOADER @cp/the-url-loader}
     (-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
@@ -1231,20 +1237,23 @@ Use bb run --help to show this help output.
               (not cp)
               (throw (Exception. "The uberjar task needs a classpath."))
               :else
-              (let [uber-params {:dest uberjar
-                                 :jar :uber
-                                 :classpath cp
-                                 :main-class main
-                                 :verbose debug}]
-                (if-let [bb-edn-pods (:pods @common/bb-edn)]
-                  (fs/with-temp-dir [bb-edn-dir {}]
-                    (let [bb-edn-resource (fs/file bb-edn-dir "META-INF" "bb.edn")]
-                      (fs/create-dirs (fs/parent bb-edn-resource))
-                      (->> {:pods bb-edn-pods} pr-str (spit bb-edn-resource))
-                      (let [cp-with-bb-edn (str bb-edn-dir cp/path-sep cp)]
-                        (uberjar/run (assoc uber-params
-                                            :classpath cp-with-bb-edn)))))
-                  (uberjar/run uber-params))))))
+              (fs/with-temp-dir [tmp {}]
+                (let [pods (:pods @common/bb-edn)
+                      bb-edn-dir (fs/file tmp "bb-edn")
+                      class-dir (fs/file tmp "classes")
+                      ;; one pseudo-lib keeps the classpath order, which
+                      ;; decides the first-wins conflicts; bb.edn goes first
+                      paths (cond->> (remove str/blank? (str/split cp (re-pattern (java.util.regex.Pattern/quote cp/path-sep))))
+                              pods (cons (str bb-edn-dir)))]
+                  (fs/create-dirs class-dir)
+                  (when pods
+                    (let [f (fs/file bb-edn-dir "META-INF" "bb.edn")]
+                      (fs/create-dirs (fs/parent f))
+                      (spit f (pr-str {:pods pods}))))
+                  (uberjar! sci-ctx {:basis {:libs {'babashka/uberjar {:paths (vec paths)}}}
+                                     :class-dir (str class-dir)
+                                     :uber-file (str (fs/absolutize uberjar))
+                                     :main main}))))))
         {:exit exit-code
          :force-exit force-exit}))))
 

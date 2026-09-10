@@ -147,7 +147,7 @@
     (read-edn (BufferedReader. (InputStreamReader. (.openStream url))))))
 
 (defn root-deps
-  "The root deps.edn of tools.deps.edn 0.9.42, embedded by script/vendor_tools_deps.clj."
+  "The root deps.edn of tools.deps.edn 0.9.42, embedded by script/vendor_bundled_sources.clj."
   []
   '{:paths ["src"], :deps {org.clojure/clojure {:mvn/version "1.12.5"}}, :aliases {:deps {:replace-paths [], :replace-deps {org.clojure/tools.deps.cli {:mvn/version "0.31.158"}}, :ns-default clojure.tools.deps.cli.api, :ns-aliases {help clojure.tools.deps.cli.help}}, :test {:extra-paths ["test"]}}, :mvn/repos {"central" {:url "https://repo1.maven.org/maven2/"}, "clojars" {:url "https://repo.clojars.org/"}}})
 ;; END-BB-PATCH

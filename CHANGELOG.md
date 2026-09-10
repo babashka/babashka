@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.
+- Bundle tools.build: `clojure.tools.build.api` works without a dependency, and a tools.build dependency on the classpath takes precedence. `bb uberjar` builds with its `uber` task instead of depstar, so license files are kept and duplicate files no longer print warnings.
 - Resolve dependencies without a JVM by default. Set `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, to use Java as before
 - Run tools.build from babashka from source. Babashka includes patched versions `install` and `javac` (since they relied on mvn or JVM-only features).
 - Add `clojure.java.process/io-task`

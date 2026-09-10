@@ -14,7 +14,7 @@
          "feature-jdbc"
          "pods/src"
          "babashka.nrepl/src"
-         "depstar/src" "process/src"
+         "process/src"
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"
          "impl-java/src"],
