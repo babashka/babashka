@@ -61,7 +61,23 @@
       (.deleteOnExit tmp-file)
       (tu/bb nil "--classpath" empty-classpath "uberjar" path "-m" "my.main-main")
       ;; Only a manifest entry is added
-      (is (< (count-entries path) 3)))))
+      (is (< (count-entries path) 3))))
+  (testing "leaves out license files, so a META-INF/LICENSE file and a META-INF/license/ dir do not collide"
+    (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
+          path (.getPath tmp-file)
+          a (fs/create-temp-dir)
+          b (fs/create-temp-dir)]
+      (.deleteOnExit tmp-file)
+      (fs/create-dirs (fs/path a "META-INF"))
+      (spit (fs/file a "META-INF" "LICENSE") "license")
+      (spit (fs/file a "LICENSE") "license")
+      (fs/create-dirs (fs/path b "META-INF" "license"))
+      (spit (fs/file b "META-INF" "license" "THIRD.txt") "third party")
+      (tu/bb nil "--classpath" (str a fs/path-separator b) "uberjar" path)
+      (let [names (set (map #(.getName ^java.util.jar.JarEntry %) (jar-entries path)))]
+        (is (contains? names "META-INF/license/THIRD.txt"))
+        (is (not (contains? names "META-INF/LICENSE")))
+        (is (not (contains? names "LICENSE")))))))
 
 (deftest uberjar-with-pods-test
   (testing "jar contains bb.edn w/ only :pods when bb.edn has :pods"
