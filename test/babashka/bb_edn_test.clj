@@ -657,6 +657,29 @@ even more stuff here\"
                                      "complete" "--shell" "zsh" "--" "tst" "-")]
             (is (str/includes? compl "--watch"))
             (is (str/includes? compl "--target")))))))
+  (testing "a CLI dep gets its own :exec-args, the target does not"
+    (test-utils/with-config '{:tasks {dep {:exec-fn clojure.core/prn
+                                           :exec-args {:from-dep true}}
+                                      target {:depends [dep]
+                                              :exec-fn clojure.core/prn
+                                              :exec-args {:from-target true}}}}
+      (is (= [{:from-dep true} {:from-target true}]
+             (map edn/read-string (str/split-lines (test-utils/bb nil "target")))))))
+  (testing "a CLI dep's options layer as when it runs alone"
+    (test-utils/with-config '{:tasks {dep {:exec-fn clojure.core/prn
+                                           :cli {:spec {:snapshot {:coerce :boolean :default false}}}
+                                           :exec-args {:snapshot true :own 1}}
+                                      target {:depends [dep]
+                                              :exec-fn clojure.core/prn
+                                              :exec-args {:own 2}}}}
+      (let [lines #(map edn/read-string (str/split-lines (apply test-utils/bb nil %&)))]
+        (is (= [{:snapshot true :own 1}] (lines "dep")))
+        (testing ":exec-args win over a spec :default, the target's do not reach the dep"
+          (is (= [{:snapshot true :own 1} {:snapshot false :own 2}]
+                 (lines "target"))))
+        (testing "the command line wins over both"
+          (is (= [{:snapshot false :own 1} {:snapshot false :own 2}]
+                 (lines "target" "--no-snapshot")))))))
   (testing "loading a dependency namespace does not leak into completion candidates"
     (test-utils/with-config '{:tasks {-noisy {:exec-fn babashka.tasks-cli-noisy/go}
                                       tst {:depends [-noisy]

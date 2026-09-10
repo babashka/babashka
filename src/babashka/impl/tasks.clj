@@ -353,7 +353,10 @@
          (resolve-or-throw resolve-fn f
                            (str "Task " task-name ": cannot resolve :exec-fn " f))
          f)
-       (select-keys opts (keys (spec-map (:spec node))))))))
+       (-> (select-keys opts (:supplied (:org.babashka/cli (meta opts))))
+           (babashka.cli/apply-defaults (select-keys node [:spec :exec-args]))
+           (select-keys (concat (keys (spec-map (:spec node)))
+                                (keys (:exec-args node)))))))))
 
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's node. A `:fn` / `:exec-fn` symbol is
