@@ -62,7 +62,7 @@
       (tu/bb nil "--classpath" empty-classpath "uberjar" path "-m" "my.main-main")
       ;; Only a manifest entry is added
       (is (< (count-entries path) 3))))
-  (testing "leaves out license files, so a META-INF/LICENSE file and a META-INF/license/ dir do not collide"
+  (testing "excludes LICENSE files and keeps files in META-INF/license/"
     (let [tmp-file (java.io.File/createTempFile "uber" ".jar")
           path (.getPath tmp-file)
           a (fs/create-temp-dir)
