@@ -35,9 +35,8 @@
 (def ^:private tools-deps-version "0.31.1638")
 
 (defn- user-agent
-  "What the Clojure CLI sends, with bb in its place: the caller first, then
-  the tools.deps it runs. aether.connector.userAgent overrides it, as it
-  does for Maven."
+  "Returns the aether.connector.userAgent system property, or
+  babashka/<version> tools.deps/<version> by default."
   []
   (or (System/getProperty "aether.connector.userAgent")
       (str "babashka/" (or (System/getProperty "babashka.version") "unknown")
