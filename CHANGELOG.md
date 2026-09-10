@@ -14,7 +14,9 @@ A preview of the next release can be installed from
 - A `:depends` task's `:restrict` falls back to the runner-level `:restrict`
 - The in-process resolver sends `babashka/<version> tools.deps/<version>` as its User-Agent, the way the Clojure CLI sends `ClojureCLI/<version> tools.deps/<version>`. `aether.connector.userAgent` overrides it.
 - Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.
-- Bundle tools.build: `clojure.tools.build.api` works without a dependency, and a tools.build dependency on the classpath takes precedence. `bb uberjar` builds with its `uber` task instead of depstar, so license files are kept and duplicate files no longer print warnings.
+- Bundle `clojure.tools.build.api`. A tools.build dependency on the classpath takes precedence
+- Use tools.build for `bb uberjar`, with the same exclusions as depstar. Duplicate files no longer print warnings
+- Fix `bb uberjar` failing on macOS when dependencies contain both `META-INF/LICENSE` and `META-INF/license/`
 - Resolve dependencies without a JVM by default. Set `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, to use Java as before
 - Run tools.build from babashka from source. Babashka includes patched versions `install` and `javac` (since they relied on mvn or JVM-only features).
 - Add `clojure.java.process/io-task`

@@ -1253,7 +1253,12 @@ Use bb run --help to show this help output.
                   (uberjar! sci-ctx {:basis {:libs {'babashka/uberjar {:paths (vec paths)}}}
                                      :class-dir (str class-dir)
                                      :uber-file (str (fs/absolutize uberjar))
-                                     :main main}))))))
+                                     :main main
+                                     ;; Preserve depstar's exclusions.
+                                     :exclude ["project.clj" "LICENSE" "COPYRIGHT" "\\.keep"
+                                               ".*\\.pom$" "module-info\\.class$"
+                                               "(?i)META-INF/.*\\.(?:MF|SF|RSA|DSA)"
+                                               "(?i)META-INF/(?:INDEX\\.LIST|DEPENDENCIES|NOTICE|LICENSE)(?:\\.txt)?"]}))))))
         {:exit exit-code
          :force-exit force-exit}))))
 
