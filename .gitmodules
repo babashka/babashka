@@ -8,9 +8,6 @@
 [submodule "babashka.nrepl"]
 	path = babashka.nrepl
 	url = https://github.com/babashka/babashka.nrepl
-[submodule "depstar"]
-	path = depstar
-	url = https://github.com/babashka/depstar
 [submodule "process"]
 	path = process
 	url = https://github.com/babashka/process

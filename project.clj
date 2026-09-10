@@ -9,7 +9,7 @@
             :url "http://opensource.org/licenses/eclipse-1.0.php"}
   :source-paths ["src" "ffi/src" "sci/src" "babashka.curl/src" "fs/src" "pods/src"
                  "babashka.core/src"
-                 "babashka.nrepl/src" "depstar/src"
+                 "babashka.nrepl/src"
                  "process/src" "process/resources"
                  "deps.clj/src" "deps.clj/resources"
                  "impl-java/src"]

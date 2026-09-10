@@ -54,7 +54,7 @@ Layers, top to bottom, with what is ours and what is not:
    under `#_` next to each: `local.clj`, whose `:jar` methods read the POM
    as text, and `edn.clj`, whose `root-deps` returns the root deps.edn as
    data, since the image cannot see the jar resource. The vendor script,
-   `script/vendor_tools_deps.clj`, copies only the files it lists, writes
+   `script/vendor_bundled_sources.clj`, copies only the files it lists, writes
    the `edn.clj` patch itself, and reports every other file in the jars, so
    an upgrade shows each upstream addition. One grep for the two markers
    lists every deviation.
