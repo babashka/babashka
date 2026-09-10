@@ -25,6 +25,7 @@ A preview of the next release can be installed from
   - Fix constructor overload selection for `(Boolean. false)`
 - Bump Clojure to `1.12.6`
 - Bump `babashka.cli` to `0.12.90`
+- Bump `clj-yaml` to `1.0.30`
 
 ## 1.13.220 (2026-08-31)
 
