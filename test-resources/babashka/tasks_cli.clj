@@ -34,11 +34,17 @@
   (prn (assoc opts :ran :exec-only)))
 
 ;; A CLI task named in another task's :depends: its spec merges into the
-;; target's parse and its handler runs with the keys it declared.
+;; target's parse and its handler runs with the options the target parsed.
 (defn dep-build
   {:org.babashka/cli {:spec {:target {:desc "build target"}}}}
   [opts]
   (prn (assoc opts :ran :dep-build)))
+
+;; The same dep with :restrict: its handler gets only the options it declares.
+(defn dep-restrict
+  {:org.babashka/cli {:restrict true :spec {:target {:desc "build target"}}}}
+  [opts]
+  (prn (assoc opts :ran :dep-restrict)))
 
 (defn mark-task
   {:org.babashka/cli {:spec {:out {}}}}
