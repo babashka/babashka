@@ -1254,7 +1254,7 @@ Use bb run --help to show this help output.
                                      :class-dir (str class-dir)
                                      :uber-file (str (fs/absolutize uberjar))
                                      :main main
-                                     ;; depstar's exclusions, so jars keep the contents bb uberjar always gave them
+                                     ;; Preserve depstar's exclusions.
                                      :exclude ["project.clj" "LICENSE" "COPYRIGHT" "\\.keep"
                                                ".*\\.pom$" "module-info\\.class$"
                                                "(?i)META-INF/.*\\.(?:MF|SF|RSA|DSA)"
