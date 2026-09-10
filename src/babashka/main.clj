@@ -934,13 +934,19 @@ Use bb run --help to show this help output.
         (str/starts-with? n "clojure.tools.gitlibs."))))
 
 (defn- bundled-source
-  "The bundled source of namespace, or nil."
+  "The bundled source of namespace, or nil. The image holds each file
+  gzipped, see BundledSourcesFeature; on the JVM they are plain."
   [namespace]
-  (let [rps (cp/resource-paths namespace)
-        rps (mapv #(str "src/babashka/" %) rps)]
-    (when-let [url (some #(io/resource % common/jvm-loader) rps)]
-      {:file (str url)
-       :source (slurp url)})))
+  (some (fn [rp]
+          (let [rp (str "src/babashka/" rp)]
+            (if-let [gz (io/resource (str rp ".gz") common/jvm-loader)]
+              (let [url (str gz)]
+                {:file (subs url 0 (- (count url) 3))
+                 :source (slurp (java.util.zip.GZIPInputStream. (io/input-stream gz)))})
+              (when-let [url (io/resource rp common/jvm-loader)]
+                {:file (str url)
+                 :source (slurp url)}))))
+        (cp/resource-paths namespace)))
 
 (defn- uberjar!
   "Builds an uberjar with tools.build's uber task: the bundled one, or the
