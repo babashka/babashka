@@ -36,6 +36,23 @@
            (bb nil "--prn" "--classpath" (str (fs/file dir "shadow.jar") fs/path-separator cp-dir)
                "(require '[clojure.spec.alpha :as s] 'clojure.tools.deps 'clojure.tools.deps.extensions.maven 'clojure.tools.build.tasks.javac 'clojure.tools.gitlibs.extra) [(s/valid? int? 1) clojure.tools.build.tasks.javac/javac clojure.tools.gitlibs.extra/x]")))))
 
+(deftest bundled-fallback-test
+  ;; tools.build and the tools.namespace pieces its compile-clj uses load
+  ;; from the binary when nothing on the classpath has them, and a jar that
+  ;; has them wins, so a project's tools.build version is the one it gets
+  (is (= [true true]
+         (bb nil "--prn"
+             "(require 'clojure.tools.build.api 'clojure.tools.namespace.find) [(some? (resolve 'clojure.tools.build.api/uber)) (some? (resolve 'clojure.tools.namespace.find/find-namespaces))]")))
+  (let [dir (fs/create-temp-dir)
+        jar-src (fs/file dir "jar-src")
+        api (fs/file jar-src "clojure" "tools" "build" "api.clj")]
+    (fs/create-dirs (fs/parent api))
+    (spit api "(ns clojure.tools.build.api) (def version :from-jar)")
+    (fs/zip (fs/file dir "tools-build.jar") [(str jar-src)] {:root (fs/unixify jar-src)})
+    (is (= :from-jar
+           (bb nil "--prn" "--classpath" (str (fs/file dir "tools-build.jar"))
+               "(require 'clojure.tools.build.api) clojure.tools.build.api/version")))))
+
 (deftest classpath-test
   (is (= :my-script/bb
          (bb nil "--prn" "--classpath" "test-resources/babashka/src_for_classpath_test"
