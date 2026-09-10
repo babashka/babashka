@@ -9,13 +9,12 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- tools.build `javac` runs in bb by spawning `javac` from `JAVA_HOME` or the `PATH`.
-- The bundled `clojure.spec.alpha`, tools.deps and gitlibs win over jars of them on the classpath, which cannot load in bb. tools.build's test suite runs as a lib test.
-- tools.build `install` runs in bb: the jar and POM land in the local repository with the files Maven Resolver writes, and bb serves that task before a tools.build jar on the classpath.
-- tools.build runs from source, `install` excepted: the bundled tools.deps wins over a tools.deps jar on the classpath, `clojure.java.process/io-task` is exposed, and `(.-name ns)` works on a namespace.
-- Resolve deps without a JVM, now the default. `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, resolves with Java as before.
-- [#2040](https://github.com/babashka/babashka/issues/2040): allow `.get`/`.put` on typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`) and primitive arrays `[F]`, `[J]`, `[D]`, `[S]` so SCI can call bulk `Buffer.get(primitive[])` / `.put`
-- Fix interop for `(Boolean. false)` which picked the wrong overload
+- Resolve dependencies without a JVM by default. Set `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, to use Java as before
+- Run tools.build from babashka from source. Babashka includes patched versions `install` and `javac` (since they relied on mvn or JVM-only features).
+- Add `clojure.java.process/io-task`
+- Support `(.-name ns)` on namespaces
+- [#2040](https://github.com/babashka/babashka/issues/2040): allow bulk `.get` and `.put` with primitive arrays on typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`)
+  - Fix constructor overload selection for `(Boolean. false)`
 - Bump Clojure to `1.12.6`
 - Bump `babashka.cli` to `0.12.89`
 
