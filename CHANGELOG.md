@@ -9,20 +9,19 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Resolve dependencies without a JVM by default. Set `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, to use Java as before
+- Bundle `clojure.tools.build.api`, with patched `install` and `javac` for babashka. A tools.build dependency on the classpath takes precedence and runs from source
+- Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.
+- Use tools.build for `bb uberjar`, with the same exclusions as depstar. Duplicate files no longer print warnings
+- Fix `bb uberjar` failing on macOS when dependencies contain both `META-INF/LICENSE` and `META-INF/license/`
 - A `:depends` task's `:exec-fn` receives all parsed options, the runner-level `:cli` defaults included. With `:restrict` it receives only the options it declares
 - [#2103](https://github.com/babashka/babashka/issues/2103): A `:depends` task's `:exec-fn` receives its own `:exec-args` and spec defaults, with command line options taking precedence. These defaults do not apply to the target task
 - A `:depends` task's `:restrict` falls back to the runner-level `:restrict`
-- The in-process resolver sends `babashka/<version> tools.deps/<version>` as its User-Agent, the way the Clojure CLI sends `ClojureCLI/<version> tools.deps/<version>`. `aether.connector.userAgent` overrides it.
-- Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.
-- Bundle `clojure.tools.build.api`. A tools.build dependency on the classpath takes precedence
-- Use tools.build for `bb uberjar`, with the same exclusions as depstar. Duplicate files no longer print warnings
-- Fix `bb uberjar` failing on macOS when dependencies contain both `META-INF/LICENSE` and `META-INF/license/`
-- Resolve dependencies without a JVM by default. Set `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, to use Java as before
-- Run tools.build from babashka from source. Babashka includes patched versions `install` and `javac` (since they relied on mvn or JVM-only features).
+- [#2040](https://github.com/babashka/babashka/issues/2040): allow bulk `.get` and `.put` with primitive arrays on typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`)
+- Fix constructor overload selection for `(Boolean. false)`
 - Add `clojure.java.process/io-task`
 - Support `(.-name ns)` on namespaces
-- [#2040](https://github.com/babashka/babashka/issues/2040): allow bulk `.get` and `.put` with primitive arrays on typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`)
-  - Fix constructor overload selection for `(Boolean. false)`
+- The in-process resolver sends `babashka/<version> tools.deps/<version>` as its User-Agent, the way the Clojure CLI sends `ClojureCLI/<version> tools.deps/<version>`. `aether.connector.userAgent` overrides it.
 - Bump Clojure to `1.12.6`
 - Bump `babashka.cli` to `0.12.90`
 - Bump `clj-yaml` to `1.0.30`
