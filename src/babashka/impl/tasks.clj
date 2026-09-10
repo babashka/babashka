@@ -344,8 +344,9 @@
 
 (defn -run-cli-dep
   "Calls the handler of a CLI task named in `:depends`, with the options it
-  declared. Emitted in the dep's own place in the assembled `:depends` program,
-  so it keeps its position in the graph and its `:depends` still run first."
+  declared, or all of them when it declares none. Emitted in the dep's own place
+  in the assembled `:depends` program, so it keeps its position in the graph and
+  its `:depends` still run first."
   [node task-name opts resolve-fn]
   (let [node (-dep-node resolve-fn task-name node)]
     (when-let [f (:exec-fn node)]
@@ -353,7 +354,9 @@
          (resolve-or-throw resolve-fn f
                            (str "Task " task-name ": cannot resolve :exec-fn " f))
          f)
-       (select-keys opts (keys (spec-map (:spec node))))))))
+       (if-let [spec (not-empty (spec-map (:spec node)))]
+         (select-keys opts (keys spec))
+         opts)))))
 
 (defn -cli-dispatch
   "Runs babashka.cli/dispatch over a task's node. A `:fn` / `:exec-fn` symbol is

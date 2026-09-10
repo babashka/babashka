@@ -657,6 +657,13 @@ even more stuff here\"
                                      "complete" "--shell" "zsh" "--" "tst" "-")]
             (is (str/includes? compl "--watch"))
             (is (str/includes? compl "--target")))))))
+  (testing "a CLI dep without a spec gets every option the target parsed"
+    (test-utils/with-config '{:tasks {-jar {:exec-fn clojure.core/prn}
+                                      deploy {:depends [-jar]
+                                              :exec-fn clojure.core/prn}}}
+      (is (= [{:snapshot true} {:snapshot true}]
+             (map edn/read-string
+                  (str/split-lines (test-utils/bb nil "deploy" "--snapshot")))))))
   (testing "loading a dependency namespace does not leak into completion candidates"
     (test-utils/with-config '{:tasks {-noisy {:exec-fn babashka.tasks-cli-noisy/go}
                                       tst {:depends [-noisy]
