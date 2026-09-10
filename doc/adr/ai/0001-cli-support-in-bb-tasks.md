@@ -308,6 +308,46 @@ listing the others or completion from offering them.
 A task `:doc` may be a vector of strings. `join-docs` joins it with newlines into
 the string every consumer expects.
 
+### 14. A dependency's handler gets the map it would get run alone
+
+The target parses the command line once, over its own spec merged with the
+specs of its CLI dependencies, which `--help` lists under `Inherited options`.
+A dependency never parses. Its handler is called with a map built from that
+one parse, the way `bb dep` would build it from the same command line:
+
+1. the options given on the command line, read from the `:supplied` set that
+   babashka.cli puts in the opts metadata
+2. under them, the dependency's own `:exec-args` and spec `:default`s, over
+   those of the runner-level `:cli`, through `babashka.cli/apply-defaults`
+
+Defaults do not cross between tasks. The target's `:exec-args` do not reach a
+dependency, and a dependency's `:exec-args` do not reach the target. A
+dependency's spec `:default` does apply to the target's parse, because its spec
+is part of that parse.
+
+Which keys the handler gets follows Clojure 1.13's map destructuring. Without
+`:restrict` a dependency gets `:all`, the whole map, including options that only
+the target declares. With `:restrict` it gets `:select`: the keys its own spec
+and the runner-level spec declare, plus `:exec-args` keys, which babashka.cli
+never restricts. A coll given as `:restrict` is the key set itself.
+
+A dependency's `:restrict` is decided like a target's: its own, from its `:cli`
+or its handler's metadata, else the runner-level one. `bb dep --port 1` fails
+under a runner-level `:restrict` when `dep` declares no `:port`, so the
+dependency does not get `:port` when another task parsed it either. For a
+dependency `:restrict` narrows the map instead of rejecting input, because the
+other options belong to other tasks.
+
+`:all` is the default because it is what a target gets. A handler that throws on
+keys it does not expect throws as a target too, and `:restrict` fixes it in
+both places. `clojure -X` and `exec` also pass the whole map.
+
+1.13.220 selected a dependency's keys by its spec. A dependency without a spec
+got `{}`, the runner-level defaults were dropped, and its own `:exec-args` never
+applied (#2103). That last part needed babashka.cli to report which options came
+from the command line: without it, a spec `:default` already in the parsed map
+beat the dependency's own `:exec-args`.
+
 ## Library support in babashka.cli
 
 This feature drove these additions, used by the task layer above.
@@ -322,6 +362,9 @@ This feature drove these additions, used by the task layer above.
 - 0.12.82: `:msg` is populated in the `:error-fn` data for dispatch command
   errors (`:no-match`, `:input-exhausted`), like option errors already carry it,
   so an error handler can read `:msg` uniformly.
+- 0.12.90: `dispatch` puts `:supplied`, the set of option keys given on the
+  command line, in the opts metadata under `:org.babashka/cli`. Decision 14
+  reads it.
 
 ## Rejected and deferred
 

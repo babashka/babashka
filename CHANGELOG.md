@@ -9,6 +9,9 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- A `:depends` task's `:exec-fn` receives all parsed options, the runner-level `:cli` defaults included. With `:restrict` it receives only the options it declares
+- [#2103](https://github.com/babashka/babashka/issues/2103): A `:depends` task's `:exec-fn` receives its own `:exec-args` and spec defaults, with command line options taking precedence. These defaults do not apply to the target task
+- A `:depends` task's `:restrict` falls back to the runner-level `:restrict`
 - The in-process resolver sends `babashka/<version> tools.deps/<version>` as its User-Agent, the way the Clojure CLI sends `ClojureCLI/<version> tools.deps/<version>`. `aether.connector.userAgent` overrides it.
 - Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.
 - Bundle tools.build: `clojure.tools.build.api` works without a dependency, and a tools.build dependency on the classpath takes precedence. `bb uberjar` builds with its `uber` task instead of depstar, so license files are kept and duplicate files no longer print warnings.
@@ -19,7 +22,7 @@ A preview of the next release can be installed from
 - [#2040](https://github.com/babashka/babashka/issues/2040): allow bulk `.get` and `.put` with primitive arrays on typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`)
   - Fix constructor overload selection for `(Boolean. false)`
 - Bump Clojure to `1.12.6`
-- Bump `babashka.cli` to `0.12.89`
+- Bump `babashka.cli` to `0.12.90`
 
 ## 1.13.220 (2026-08-31)
 
