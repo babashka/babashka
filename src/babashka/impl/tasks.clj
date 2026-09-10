@@ -342,20 +342,37 @@
   dep can be handed the ones it declared."
   "__babashka-dep-opts")
 
+(defn- restrict-keys
+  "The keys a dep with `:restrict` receives: its restrict coll, or for `true`
+  what the runner-level `:tasks {:cli ...}` and the dep's own spec and `:coerce`
+  declare, as a target's parse would. `:exec-args` keys are always kept,
+  babashka.cli does not restrict those either."
+  [defaults node]
+  (let [restrict (:restrict node)]
+    (set (concat (if (true? restrict)
+                   (mapcat #(concat (keys (spec-map (:spec %))) (keys (:coerce %)))
+                           [defaults node])
+                   restrict)
+                 (keys (:exec-args defaults))
+                 (keys (:exec-args node))))))
+
 (defn -run-cli-dep
-  "Calls the handler of a CLI task named in `:depends`, with the options it
-  declared, or all of them when it declares none. Emitted in the dep's own place
+  "Calls the handler of a CLI task named in `:depends`, with the options the
+  target parsed, or with `:restrict` only the ones it declares. The runner-level
+  `:restrict` does not narrow them, it already applied to the parse. `defaults`
+  is the runner-level `:tasks {:cli ...}` entry. Emitted in the dep's own place
   in the assembled `:depends` program, so it keeps its position in the graph and
   its `:depends` still run first."
-  [node task-name opts resolve-fn]
+  [node task-name opts defaults resolve-fn]
   (let [node (-dep-node resolve-fn task-name node)]
     (when-let [f (:exec-fn node)]
       ((if (symbol? f)
          (resolve-or-throw resolve-fn f
                            (str "Task " task-name ": cannot resolve :exec-fn " f))
          f)
-       (if-let [spec (not-empty (spec-map (:spec node)))]
-         (select-keys opts (keys spec))
+       (if (:restrict node)
+         (select-keys opts (restrict-keys (-resolve-cli-opts resolve-fn defaults ":tasks :cli")
+                                          node))
          opts)))))
 
 (defn -cli-dispatch
@@ -374,8 +391,8 @@
   `dep-nodes` are the `[name node]` pairs of the CLI `:depends` tasks. Their
   specs merge under this task's own, so one parse covers everything the
   invocation can consume. The handlers themselves are called from the assembled
-  `:depends` program, in their own place in the graph. A dep never parses, so
-  its `:restrict` does not apply here."
+  `:depends` program, in their own place in the graph. A dep never parses: its
+  `:restrict` only narrows what its handler receives, see `-run-cli-dep`."
   [cli-opts task-name fns defaults dep-nodes resolve-fn args]
   (let [;; the task's own `:cli` also provides dispatch opts, for options that
         ;; only exist there, such as an `:error-fn`
@@ -491,8 +508,9 @@
                 (format "(apply %s *command-line-args*)" task)
                 (pr-str task))
          prog (if dep-cli-node
-                (format "(do %s (babashka.tasks/-run-cli-dep '%s \"%s\" %s requiring-resolve))"
-                        prog (pr-str dep-cli-node) task-name dep-opts-sym)
+                (format "(do %s (babashka.tasks/-run-cli-dep '%s \"%s\" %s '%s requiring-resolve))"
+                        prog (pr-str dep-cli-node) task-name dep-opts-sym
+                        (pr-str (:cli (:tasks @bb-edn))))
                 prog)
          prog (wrap-enter-leave task-name prog enter leave)
          cli-target? (and last? (cli-node task-map))

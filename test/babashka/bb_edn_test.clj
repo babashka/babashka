@@ -635,7 +635,7 @@ even more stuff here\"
              (bb "-cp" "test-resources" "deps" "outdated" "--format" "edn")))
       (is (= {:ran :clean}
              (bb "-cp" "test-resources" "deps" "cache" "clean")))))
-  (testing "a CLI task named in :depends runs, with the keys it declared"
+  (testing "a CLI task named in :depends runs, with the options the target parsed"
     (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
                                       tst {:depends [-build]
                                            :exec-fn babashka.tasks-cli/dep-test}}}
@@ -643,7 +643,7 @@ even more stuff here\"
                     (map edn/read-string
                          (str/split-lines (apply test-utils/bb nil "-cp" "test-resources" args))))]
         (testing "the dep's handler runs before the target's"
-          (is (= [{:ran :dep-build} {:watch true :ran :dep-test}]
+          (is (= [{:watch true :ran :dep-build} {:watch true :ran :dep-test}]
                  (lines "tst" "--watch"))))
         (testing "the dep's spec merges into the parse, so :restrict accepts it"
           (is (= [{:target "x" :ran :dep-build} {:target "x" :ran :dep-test}]
@@ -664,6 +664,45 @@ even more stuff here\"
       (is (= [{:snapshot true} {:snapshot true}]
              (map edn/read-string
                   (str/split-lines (test-utils/bb nil "deploy" "--snapshot")))))))
+  (testing "a CLI dep and the runner-level :cli"
+    (let [lines (fn [& args]
+                  (map edn/read-string
+                       (str/split-lines (apply test-utils/bb nil "-cp" "test-resources" args))))]
+      (testing "without :restrict, the dep gets its spec defaults and :exec-args"
+        (test-utils/with-config '{:tasks {:cli {:spec {:env {:coerce :keyword :default :dev}}
+                                                :exec-args {:author "me"}}
+                                          -build {:exec-fn babashka.tasks-cli/dep-build}
+                                          tst {:depends [-build]
+                                               :exec-fn babashka.tasks-cli/dep-test}}}
+          (is (= [{:env :dev :author "me" :target "x" :watch true :ran :dep-build}
+                  {:env :dev :author "me" :target "x" :watch true :ran :dep-test}]
+                 (lines "tst" "--target" "x" "--watch")))))
+      (testing "with :restrict, the dep gets its own options and the runner-level ones"
+        (test-utils/with-config '{:tasks {:cli {:spec {:env {:coerce :keyword :default :dev}}
+                                                :exec-args {:author "me"}}
+                                          -build {:exec-fn babashka.tasks-cli/dep-restrict}
+                                          tst {:depends [-build]
+                                               :exec-fn babashka.tasks-cli/dep-test}}}
+          (is (= [{:env :dev :author "me" :target "x" :ran :dep-restrict}
+                  {:env :dev :author "me" :target "x" :watch true :ran :dep-test}]
+                 (lines "tst" "--target" "x" "--watch")))))
+      (testing ":restrict may sit in the dep's :cli, as a coll of keys too"
+        (test-utils/with-config '{:tasks {:cli {:exec-args {:author "me"}}
+                                          -jar {:exec-fn clojure.core/prn
+                                                :cli {:restrict [:snapshot]}}
+                                          deploy {:depends [-jar]
+                                                  :exec-fn clojure.core/prn}}}
+          (is (= [{:author "me" :snapshot true}
+                  {:author "me" :snapshot true :repo "x"}]
+                 (lines "deploy" "--snapshot" "--repo" "x")))))
+      (testing "the runner-level :restrict checks the parse, it does not narrow a dep"
+        (test-utils/with-config '{:tasks {:cli {:restrict true :spec {:env {}}}
+                                          -jar {:exec-fn clojure.core/prn}
+                                          deploy {:depends [-jar]
+                                                  :exec-fn clojure.core/prn
+                                                  :cli {:spec {:port {:coerce :long}}}}}}
+          (is (= [{:env "a" :port 1} {:env "a" :port 1}]
+                 (lines "deploy" "--env" "a" "--port" "1")))))))
   (testing "loading a dependency namespace does not leak into completion candidates"
     (test-utils/with-config '{:tasks {-noisy {:exec-fn babashka.tasks-cli-noisy/go}
                                       tst {:depends [-noisy]
@@ -685,7 +724,7 @@ even more stuff here\"
     (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
                                       deploy {:depends [-build]
                                               :cmd {"lock" {:fn babashka.tasks-cli/lock}}}}}
-      (is (= [{:target "x" :ran :dep-build}
+      (is (= [{:environment "staging" :target "x" :ran :dep-build}
               {:environment "staging" :target "x" :ran :lock}]
              (map edn/read-string
                   (str/split-lines
@@ -801,7 +840,7 @@ even more stuff here\"
                                            :exec-fn clojure.core/prn
                                            :cli {:spec [[:zeta {:desc "own last"}]
                                                         [:alpha {:desc "own first"}]]}}}}
-      (is (= [{:target "t" :ran :dep-build} {:target "t" :alpha "a"}]
+      (is (= [{:target "t" :alpha "a" :ran :dep-build} {:target "t" :alpha "a"}]
              (map edn/read-string
                   (str/split-lines
                    (test-utils/bb nil "-cp" "test-resources" "tst" "--target" "t" "--alpha" "a")))))
