@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.
 - Resolve dependencies without a JVM by default. Set `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, to use Java as before
 - Run tools.build from babashka from source. Babashka includes patched versions `install` and `javac` (since they relied on mvn or JVM-only features).
 - Add `clojure.java.process/io-task`
