@@ -31,12 +31,24 @@
         (swap! proxy-clients assoc proxy client)
         client)))
 
+;; The bundled tools.deps; script/vendor_bundled_sources.clj keeps it current.
+(def ^:private tools-deps-version "0.31.1638")
+
+(defn- user-agent
+  "What the Clojure CLI sends, with bb in its place: the caller first, then
+  the tools.deps it runs. aether.connector.userAgent overrides it, as it
+  does for Maven."
+  []
+  (or (System/getProperty "aether.connector.userAgent")
+      (str "babashka/" (or (System/getProperty "babashka.version") "unknown")
+           " tools.deps/" tools-deps-version)))
+
 (defn- request-opts [{:keys [auth proxy]}]
   (cond-> {:as :stream
            :throw false
            :follow-redirects :normal
            :timeout 120000
-           :headers {"User-Agent" "babashka"}}
+           :headers {"User-Agent" (user-agent)}}
     auth (assoc :basic-auth auth)
     proxy (assoc :client (client-for proxy))))
 

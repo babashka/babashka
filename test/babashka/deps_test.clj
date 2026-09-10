@@ -5,7 +5,8 @@
    [borkdude.deps :as deps]
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [clojure.test :as test :refer [deftest is testing]]))
+   [clojure.test :as test :refer [deftest is testing]]
+   [org.httpkit.server :as server]))
 
 (defn bb [& args]
   (let [edn-str (apply test-utils/bb nil (map str args))]
@@ -13,6 +14,36 @@
      {:readers *data-readers*
       :eof nil}
      edn-str)))
+
+(deftest user-agent-test
+  ;; the in-process resolver names itself the way the Clojure CLI does, the
+  ;; caller first, then the tools.deps it runs; aether.connector.userAgent wins
+  (let [agents (atom [])
+        srv (server/run-server (fn [req]
+                                 (swap! agents conj (get-in req [:headers "user-agent"]))
+                                 {:status 404})
+                               {:ip "127.0.0.1" :port 0 :legacy-return-value? false})
+        port (server/server-port srv)
+        m2 (str (fs/create-temp-dir))
+        resolve! (fn [prelude]
+                   (bb (format "%s
+(try (babashka.deps/add-deps '{:deps {example/absent {:mvn/version \"1.0.0\"}}
+                               :deps-resolver :bb
+                               :mvn/repos {\"central\" nil \"clojars\" nil
+                                           \"fake\" {:url \"http://127.0.0.1:%s/\"}}
+                               :mvn/local-repo %s}
+                             {:force true :extra-env {\"CLOJURE_CLI_ALLOW_HTTP_REPO\" \"true\"}})
+     (catch Exception _ nil))
+nil" prelude port (pr-str m2))))]
+    (try
+      (resolve! "")
+      (is (re-matches #"babashka/\S+ tools\.deps/\d+\.\d+\.\d+" (str (first @agents))))
+      (reset! agents [])
+      (resolve! "(System/setProperty \"aether.connector.userAgent\" \"my-tool/1.0\")")
+      (is (= "my-tool/1.0" (first @agents)))
+      (finally
+        (System/clearProperty "aether.connector.userAgent")
+        (server/server-stop! srv)))))
 
 (deftest resolver-switch-test
   ;; BABASHKA_DEPS_RESOLVER picks the resolver: jvm is the java deps.clj

@@ -6,7 +6,8 @@
 ;; Only the files listed in `shipped` are copied; anything else in the jars
 ;; is reported, so an upgrade shows every upstream addition for a decision.
 ;; The one patch to a shipped file, root-deps in edn.clj, is written here
-;; between BB-PATCH markers with the upstream form kept under #_.
+;; between BB-PATCH markers with the upstream form kept under #_. The
+;; tools.deps version also goes into the procurer's User-Agent.
 (require '[babashka.fs :as fs]
          '[clojure.set :as set]
          '[clojure.string :as str]
@@ -14,6 +15,7 @@
 
 (def m2 (str (fs/expand-home "~/.m2/repository")))
 
+(def tools-deps-version "0.31.1638")
 (def tools-deps-edn-version "0.9.42")
 
 (defn- jar [group artifact version]
@@ -21,7 +23,7 @@
        artifact "-" version ".jar"))
 
 (def jars
-  [(jar "org.clojure" "tools.deps" "0.31.1638")
+  [(jar "org.clojure" "tools.deps" tools-deps-version)
    (jar "org.clojure" "tools.deps.edn" tools-deps-edn-version)
    (jar "org.clojure" "tools.gitlibs" "2.6.217")
    (jar "io.github.clojure" "tools.build" "0.10.14")
@@ -137,6 +139,11 @@
         (spit (fs/file target rel) (patch-root-deps (slurp (fs/file tmp rel)) root-deps-edn))
         (fs/copy (fs/file tmp rel) (fs/file target rel) {:replace-existing true}))
       (println rel))
+    (let [http "resources/src/babashka/babashka/impl/mvn/http.clj"
+          source (slurp http)
+          re #"\(def \^:private tools-deps-version \"[^\"]+\"\)"]
+      (assert (re-find re source) "tools-deps-version not found in http.clj")
+      (spit http (str/replace source re (str "(def ^:private tools-deps-version \"" tools-deps-version "\")"))))
     (when (seq new)
       (println "\nUpstream files not shipped, decide per file:")
       (run! #(println " " %) new))
