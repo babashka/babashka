@@ -7,21 +7,24 @@
             [sci.core :as sci]))
 
 (defn ^:no-doc make-classpath-fn
-  "Returns an in-process classpath resolver for :bb, or nil for the JVM.
-  resolver takes precedence over BABASHKA_DEPS_RESOLVER from getenv.
-  Defaults to the JVM. dir is the project directory.
-  getenv maps environment names to values."
+  "Returns an in-process classpath resolver for :bb, the default, or nil
+  for :jvm. resolver takes precedence over BABASHKA_DEPS_RESOLVER from
+  getenv. dir is the project directory. getenv maps environment names to
+  values."
   [dir getenv resolver]
-  (when (= "bb" (some-> (or resolver (getenv "BABASHKA_DEPS_RESOLVER")) name))
-    (fn [{:keys [args out]}]
-      ;; deps.clj has bound *getenv-fn* by now, so this is the config dir
-      ;; of the call's own environment, -Srepro or not
-      (let [opts {:config-dir (deps/get-config-dir)
-                  :getenv deps/*getenv-fn*}]
-        (if (= :string out)
-          {:out (with-out-str (tools-deps/make-classpath! dir args opts))}
-          (do (tools-deps/make-classpath! dir args opts)
-              {:out nil}))))))
+  (let [r (some-> (or resolver (not-empty (getenv "BABASHKA_DEPS_RESOLVER"))) name)]
+    (when-not (contains? #{nil "bb" "jvm"} r)
+      (throw (ex-info (str "Unknown deps resolver " r ", use bb or jvm") {:resolver r})))
+    (when-not (= "jvm" r)
+      (fn [{:keys [args out]}]
+        ;; deps.clj has bound *getenv-fn* by now, so this is the config dir
+        ;; of the call's own environment, -Srepro or not
+        (let [opts {:config-dir (deps/get-config-dir)
+                    :getenv deps/*getenv-fn*}]
+          (if (= :string out)
+            {:out (with-out-str (tools-deps/make-classpath! dir args opts))}
+            (do (tools-deps/make-classpath! dir args opts)
+                {:out nil})))))))
 
 (defn ^:no-doc getenv-fn
   "Returns an environment lookup function for deps.clj.

@@ -15,9 +15,9 @@
      edn-str)))
 
 (deftest resolver-switch-test
-  ;; BABASHKA_DEPS_RESOLVER picks the resolver; unset means the java that
-  ;; deps.clj spawns, bb means tools.deps in this process. Both resolve
-  ;; the same dependency.
+  ;; BABASHKA_DEPS_RESOLVER picks the resolver: jvm is the java deps.clj
+  ;; spawns, bb or unset is tools.deps in this process. Both resolve the
+  ;; same dependency.
   (doseq [resolver ["jvm" "bb"]]
     (testing resolver
       (is (= 3 (bb (format "
@@ -26,6 +26,19 @@
 (require '[medley.core :as m])
 (m/find-first odd? [2 3 4])
 " resolver))))))
+  (testing "unset means bb: :env replaces the environment, so there is no resolver setting and no java"
+    (is (= 3 (bb "
+(babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}}
+                        {:force true :env {\"PATH\" \"/nonexistent\" \"JAVA_CMD\" \"\"}})
+(require '[medley.core :as m])
+(m/find-first odd? [2 3 4])
+"))))
+  (testing "an unknown resolver is an error"
+    (is (thrown-with-msg? Exception #"Unknown deps resolver nope, use bb or jvm"
+                          (bb "
+(babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}}
+                        {:force true :extra-env {\"BABASHKA_DEPS_RESOLVER\" \"nope\"}})
+"))))
   (testing ":deps-resolver in the deps map, no environment needed"
     (is (= 3 (bb "
 (babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}} :deps-resolver :bb}
@@ -57,11 +70,11 @@
     [(str config) (str (fs/canonicalize (fs/file tool-root "src")))]))
 
 (deftest resolver-from-process-env-test
-  ;; the CI leg that sets BABASHKA_DEPS_RESOLVER=bb must actually resolve
-  ;; in-process: with no java to be found, only that resolver can succeed.
+  ;; unless the process asks for jvm, resolution must run in-process: with
+  ;; no java to be found, only the bb resolver can succeed.
   ;; JAVA_CMD "" keeps deps.clj from looking for java and gives it nothing
   ;; runnable.
-  (when (= "bb" (System/getenv "BABASHKA_DEPS_RESOLVER"))
+  (when-not (= "jvm" (System/getenv "BABASHKA_DEPS_RESOLVER"))
     (is (= 3 (bb "
 (babashka.deps/add-deps '{:deps {medley/medley {:mvn/version \"1.3.0\"}}}
                         {:force true :extra-env {\"PATH\" \"/nonexistent\" \"JAVA_HOME\" \"\" \"JAVA_CMD\" \"\"}})

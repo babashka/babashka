@@ -62,7 +62,7 @@
 
   Set :deps-resolver in the deps map to :bb for in-process resolution or
   :jvm to use Java. Defaults to :deps-resolver in bb.edn, then
-  BABASHKA_DEPS_RESOLVER, then jvm."
+  BABASHKA_DEPS_RESOLVER, then bb."
   ([deps-map] (add-deps deps-map nil))
   ([deps-map {:keys [:aliases :env :extra-env :force]}]
    (let [deps-root (:deps-root @bb-edn)
