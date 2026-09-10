@@ -27,7 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       LEIN_ROOT: "true"
-      BABASHKA_DEPS_RESOLVER: bb
       BABASHKA_PLATFORM: linux # could be used in jar name
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BABASHKA_SHA: ${{ github.sha }}
@@ -112,7 +111,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       LEIN_ROOT: "true"
-      BABASHKA_DEPS_RESOLVER: bb
       GRAALVM_VERSION: ${{ matrix.graalvm_version }}
       BABASHKA_PLATFORM: ${{ matrix.name }} # used in release script
       BABASHKA_ARCH: ${{ matrix.arch }}

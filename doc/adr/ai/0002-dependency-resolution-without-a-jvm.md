@@ -27,8 +27,8 @@ Layers, top to bottom, with what is ours and what is not:
    spawned-java behaviour is the default of that var, so existing users of
    deps.clj as a library, Cursive among them, see no change.
 2. `babashka.deps` and `babashka.impl.deps` bind `*make-classpath-fn*` to an
-   in-process run when the resolver is `bb`, and leave it alone when it is
-   `jvm` or unset. `:deps-resolver` in the deps map says it, then the one
+   in-process run when the resolver is `bb` or unset, and leave it alone
+   when it is `jvm`; bb became the default on 2026-09-10. `:deps-resolver` in the deps map says it, then the one
    in bb.edn, which a task's `:extra-deps` inherit; without either
    `BABASHKA_DEPS_RESOLVER` decides, read through the resolve's
    environment view, so `:env` and `:extra-env` on `add-deps` and
