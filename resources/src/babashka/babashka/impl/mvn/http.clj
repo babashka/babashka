@@ -31,12 +31,23 @@
         (swap! proxy-clients assoc proxy client)
         client)))
 
+;; The bundled tools.deps; script/vendor_bundled_sources.clj keeps it current.
+(def ^:private tools-deps-version "0.31.1638")
+
+(defn- user-agent
+  "Returns the aether.connector.userAgent system property, or
+  babashka/<version> tools.deps/<version> by default."
+  []
+  (or (System/getProperty "aether.connector.userAgent")
+      (str "babashka/" (or (System/getProperty "babashka.version") "unknown")
+           " tools.deps/" tools-deps-version)))
+
 (defn- request-opts [{:keys [auth proxy]}]
   (cond-> {:as :stream
            :throw false
            :follow-redirects :normal
            :timeout 120000
-           :headers {"User-Agent" "babashka"}}
+           :headers {"User-Agent" (user-agent)}}
     auth (assoc :basic-auth auth)
     proxy (assoc :client (client-for proxy))))
 
