@@ -4,6 +4,7 @@
    [babashka.impl.common :as common]
    [babashka.impl.repl :as repl]
    [babashka.main :as main]
+   [babashka.nrepl.server :as nrepl-server]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
@@ -13,7 +14,8 @@
    [clojure.tools.reader.reader-types :as r]
    [sci.core :as sci])
   (:import
-   [java.lang ProcessBuilder$Redirect]))
+   [java.lang ProcessBuilder$Redirect]
+   [org.jline.reader LineReader EndOfFileException UserInterruptException]))
 
 (def debug? false)
 
@@ -378,7 +380,7 @@
     (let [os (java.io.StringWriter.)
           in (r/indexing-push-back-reader (r/push-back-reader (java.io.StringReader. input)))]
       (sci/with-bindings {sci/out os sci/err os sci/in in}
-        (repl/start-connected-repl! (common/ctx) (babashka.nrepl.server/parse-connect target)))
+        (repl/start-connected-repl! (common/ctx) (nrepl-server/parse-connect target)))
       (str os))
     (let [res @(p/process ["./bb" "repl" "--connect" target] {:in input :out :string :err :string})]
       (str (:out res) (:err res)))))
@@ -408,6 +410,44 @@
         (testing "displays the server exception type"
           (let [out (connected-repl "127.0.0.1:1674" "(/ 1 0)\n:repl/quit")]
             (is (str/includes? out "ArithmeticException"))))))))
+
+(defn- scripted-line-reader
+  "A LineReader answering readLine with `lines` in turn: a string is
+  returned, :interrupt throws UserInterruptException, exhausted lines throw
+  EndOfFileException."
+  ^LineReader [lines]
+  (let [remaining (atom lines)]
+    (reify LineReader
+      (^String readLine [_ ^String _prompt]
+        (let [line (first @remaining)]
+          (swap! remaining rest)
+          (cond (nil? line) (throw (EndOfFileException.))
+                (= :interrupt line) (throw (UserInterruptException. ""))
+                :else line))))))
+
+(deftest ^:skip-windows nrepl-connect-stdin-test
+  ;; the terminal path, with mock readers, so the JVM route only
+  (when tu/jvm?
+    (with-bb-script 1678
+      "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1678 :quiet true}))"
+      (fn []
+        (let [target {:host "127.0.0.1" :port 1678}
+              client (repl/connect-client (common/ctx) target)
+              os (java.io.StringWriter.)]
+          (sci/with-bindings {sci/out os sci/err os}
+            (try (repl/connected-repl-with-line-reader
+                  (common/ctx) client target
+                  (scripted-line-reader ["(read-line)" "(+ 1 2)" "(read-line)" "(read-line)" ":repl/quit"])
+                  (scripted-line-reader [:interrupt "hello (" ""]))
+                 (finally ((:close client)))))
+          (let [out (str os)]
+            (testing "Ctrl-C during the server's read-line interrupts the eval, the REPL goes on"
+              (is (str/includes? out "Interrupted"))
+              (is (str/includes? out "3"))
+              (is (< (str/index-of out "Interrupted") (str/index-of out "3"))))
+            (testing "stdin lines go through as typed, an empty line included"
+              (is (str/includes? out "\"hello (\""))
+              (is (str/includes? out "\"\"")))))))))
 
 (deftest ^:skip-windows nrepl-eval-error-test
   (with-bb-script 1673

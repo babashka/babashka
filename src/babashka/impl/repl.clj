@@ -652,7 +652,24 @@
         request-exit
         (recur (str text (when (seq text) "\n") (r/read-line in)))))))
 
-(defn- connect-client
+(defn- plain-line-reader
+  "A line reader for the server's stdin requests: no Clojure parsing, no
+  completion, a line is a line."
+  ^LineReader [^LineReader line-reader]
+  (-> (LineReaderBuilder/builder)
+      (.terminal (.getTerminal line-reader))
+      (.option org.jline.reader.LineReader$Option/DISABLE_EVENT_EXPANSION true)
+      (.build)))
+
+(defn- stdin-read-input
+  "Reads a line for the server's stdin request from `stdin-reader`: nil at
+  EOF, ::interrupted on Ctrl-C."
+  [^LineReader stdin-reader]
+  (try (.readLine stdin-reader "")
+       (catch EndOfFileException _ nil)
+       (catch UserInterruptException _ ::interrupted)))
+
+(defn connect-client
   "Connects to the nREPL server specified by `target`."
   [sci-ctx target]
   (let [connect (sci/eval-string* sci-ctx "(require 'babashka.nrepl.impl.client) babashka.nrepl.impl.client/connect")]
@@ -669,7 +686,13 @@
         (sio/print err) (sio/flush)))
     (when value (sio/println value))
     (when (some #{"need-input"} status)
-      ((:stdin client) (if-let [line (read-input)] (str line "\n") "")))
+      (let [line (read-input)]
+        (if (identical? ::interrupted line)
+          ;; Ctrl-C while the server waits for input: stop the eval and
+          ;; unblock its read
+          (do ((:interrupt client))
+              ((:stdin client) ""))
+          ((:stdin client) (if line (str line "\n") "")))))
     (when (some #{"interrupted"} status)
       (sio/println "Interrupted"))))
 
@@ -683,32 +706,43 @@
     (try ((:eval client) code (reply-handler client read-input))
          (finally (Signal/handle signal previous)))))
 
-(defn start-connected-repl!
-  "Starts a REPL connected to the nREPL server specified by `target`.
-  Accepts a map with :host and :port, or :socket for a Unix domain socket."
-  [sci-ctx {:keys [host port socket] :as target}]
-  (let [client (connect-client sci-ctx target)
-        ns-name #(deref (:ns client))
-        {:keys [versions]} (:describe client)
-        opts {:init (fn []
+(defn- connected-opts
+  "The REPL hooks for `client`, connected to `target`."
+  [client {:keys [host port socket]}]
+  (let [ns-name #(deref (:ns client))
+        {:keys [versions]} (:describe client)]
+    {:init (fn []
                       (.println System/err
                                 (str "Connected to nREPL server at " (or socket (str host ":" port))
                                      (when-let [v (get versions "nrepl")] (str ", nREPL " v))
                                      (when-let [v (get versions "clojure")] (str ", Clojure " v))
                                      (when-let [v (get versions "babashka")] (str ", babashka " v))
                                      "\nType :repl/help for help")))
-              :ns-name ns-name
-              :source? true
-              :parse-fn remote-parser
-              :print (fn [_] nil)
-              :prompt #(sio/printf "%s=> " (ns-name))}]
+     :ns-name ns-name
+     :source? true
+     :parse-fn remote-parser
+     :print (fn [_] nil)
+     :prompt #(sio/printf "%s=> " (ns-name))}))
+
+(defn connected-repl-with-line-reader
+  "The connected REPL over `line-reader`, the server's stdin requests read
+  from `stdin-reader`. Exposed for testing with mock readers."
+  [sci-ctx client target line-reader stdin-reader]
+  (let [read-input #(stdin-read-input stdin-reader)]
+    (repl-with-line-reader sci-ctx line-reader
+                           (assoc (connected-opts client target)
+                                  :eval #(remote-eval client read-input %)))))
+
+(defn start-connected-repl!
+  "Starts a REPL connected to the nREPL server specified by `target`.
+  Accepts a map with :host and :port, or :socket for a Unix domain socket."
+  [sci-ctx target]
+  (let [client (connect-client sci-ctx target)
+        opts (connected-opts client target)]
     (try
       (if (terminal/tty? :stdin)
-        (let [line-reader (jline-reader remote-parser (select-keys client [:completions :lookup]))
-              read-input #(try (.readLine line-reader "")
-                               (catch EndOfFileException _ nil))]
-          (repl-with-line-reader sci-ctx line-reader
-                                 (assoc opts :eval #(remote-eval client read-input %))))
+        (let [line-reader (jline-reader remote-parser (select-keys client [:completions :lookup]))]
+          (connected-repl-with-line-reader sci-ctx client target line-reader (plain-line-reader line-reader)))
         (let [input-buffer (atom "")
               in @sci/in
               read-input #(when (some? (r/peek-char in)) (r/read-line in))]
