@@ -39,8 +39,11 @@
   (testing "testShouldThrowExceptionOnRecursiveScmConnectionReference: a self reference ends"
     (is (string? (property (model "<properties><p>${p}/somepath</p></properties>") "p"))))
   (testing "testEnvars"
-    (let [home (System/getenv "HOME")]
-      (is (= home (property (model "<properties><outputDirectory>${env.HOME}</outputDirectory></properties>") "outputDirectory")))))
+    ;; HOME is not set on Windows, so any plainly named variable will do
+    (let [[k v] (first (filter (fn [[k v]] (and (seq v) (re-matches #"[A-Za-z_][A-Za-z0-9_]*" k)))
+                               (System/getenv)))]
+      (is (= v (property (model (str "<properties><outputDirectory>${env." k "}</outputDirectory></properties>"))
+                         "outputDirectory")))))
   (testing "testEnvarExpressionThatEvaluatesToNullReturnsTheLiteralString"
     (is (= "${env.DOES_NOT_EXIST}" (property (model "<properties><p>${env.DOES_NOT_EXIST}</p></properties>") "p"))))
   (testing "testExpressionThatEvaluatesToNullReturnsTheLiteralString"
