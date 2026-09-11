@@ -3,6 +3,7 @@
 (def interfaces [java.nio.file.FileVisitor
                  java.nio.file.DirectoryStream$Filter
                  java.io.Closeable
+                 java.io.Flushable
                  java.io.FileFilter
                  java.io.FilenameFilter
                  clojure.lang.Associative

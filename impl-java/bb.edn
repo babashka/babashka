@@ -1,2 +1,15 @@
-{:tasks {install (clojure "-T:build install")
-         deploy (clojure "-T:build deploy")}}
+{:paths ["."]
+ :tasks
+ {:requires ([build])
+  gen-classes {:doc "Generate the reify classes, on the JVM: insn needs ASM"
+               :task (clojure "-T:build gen-classes")}
+  jar {:doc "Build the jar"
+       :depends [gen-classes]
+       :task (build/jar {})}
+  install {:doc "Install the jar in ~/.m2"
+           :depends [gen-classes]
+           :task (build/install {})}
+  deploy {:doc "Deploy the jar to Clojars"
+          :depends [gen-classes]
+          :extra-deps {io.github.babashka/deps-deploy {:mvn/version "0.0.1"}}
+          :task (build/deploy {})}}}
