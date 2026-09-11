@@ -19,6 +19,7 @@
 (def tools-deps-version "0.31.1638")
 (def tools-deps-edn-version "0.9.42")
 (def nrepl-version "1.7.0")
+(def orchard-version "0.44.0")
 
 (defn- jar [group artifact version]
   (str m2 "/" (str/replace group "." "/") "/" artifact "/" version "/"
@@ -31,7 +32,8 @@
    (jar "io.github.clojure" "tools.build" "0.10.14")
    (jar "org.clojure" "tools.namespace" "1.5.1")
    (jar "org.clojure" "java.classpath" "1.1.1")
-   (jar "nrepl" "nrepl" nrepl-version)])
+   (jar "nrepl" "nrepl" nrepl-version)
+   (jar "cider" "orchard" orchard-version)])
 
 ;; Upstream files shipped verbatim, edn.clj with the patch below.
 (def shipped
@@ -92,7 +94,15 @@
     "nrepl/util/out.clj"
     "nrepl/util/print.clj"
     "nrepl/util/threading.clj"
-    "nrepl/version.clj"})
+    "nrepl/version.clj"
+    ;; the CIDER inspector's rendering engine
+    "orchard/inspect.clj"
+    "orchard/inspect/analytics.clj"
+    "orchard/java/compatibility.clj"
+    "orchard/misc.clj"
+    "orchard/pp.clj"
+    "orchard/print.clj"
+    "orchard/util/io.clj"})
 
 ;; nREPL's Java classes, compiled into bb from src-java.
 (def java-shipped
@@ -102,7 +112,8 @@
     "nrepl/out/CallbackBufferedOutputStream.java"
     "nrepl/out/QuotaBoundWriter.java"
     "nrepl/out/QuotaExceeded.java"
-    "nrepl/out/TeeOutputStream.java"})
+    "nrepl/out/TeeOutputStream.java"
+    "mx/cider/orchard/TruncatingStringWriter.java"})
 
 ;; Upstream files bb replaces at the same path: the Maven-backed namespaces
 ;; have babashka.impl.mvn stand-ins, local.clj is a patched copy, two
@@ -139,19 +150,43 @@
     "nrepl/tls_client_proxy.clj"
     "nrepl/util/jvmti.clj" ; only reached with -Djdk.attach.allowAttachSelf
     "nrepl/JvmtiAgent.java"
-    "nrepl/main.java"})
+    "nrepl/main.java"
+    ;; orchard beyond the inspector: JVM introspection bb does not do
+    "orchard/apropos.clj"
+    "orchard/cljs/analysis.cljc"
+    "orchard/cljs/meta.cljc"
+    "orchard/clojuredocs.clj"
+    "orchard/eldoc.clj"
+    "orchard/indent.clj"
+    "orchard/info.clj"
+    "orchard/java.clj"
+    "orchard/java/classpath.clj"
+    "orchard/java/parser_next.clj"
+    "orchard/java/resource.clj"
+    "orchard/java/source_files.clj"
+    "orchard/meta.clj"
+    "orchard/namespace.clj"
+    "orchard/profile.clj"
+    "orchard/query.clj"
+    "orchard/spec.clj"
+    "orchard/stacktrace.clj"
+    "orchard/trace.clj"
+    "orchard/util/os.clj"
+    "orchard/xref.clj"
+    "mx/cider/orchard/LruMap.java"})
 
 (def target "resources/src/babashka")
 (def java-target "src-java")
 
 (defn- patch
   "`source` with the form `upstream` replaced by `ours`, kept under #_ and
-  marked BB-PATCH with `why`. `upstream` must be one complete form that
-  occurs once, so the discard covers exactly it."
-  [source upstream ours why]
-  (let [n (count (str/split source (re-pattern (java.util.regex.Pattern/quote upstream)) -1))]
-    (assert (= 2 n) (str "expected one occurrence, found " (dec n) ": " upstream)))
-  (str/replace-first source upstream (str "#_" upstream " ;; BB-PATCH " why "\n" ours)))
+  marked BB-PATCH with `why`. `upstream` must be one complete form, so the
+  discard covers exactly it, and occur `n` times (default 1)."
+  ([source upstream ours why] (patch source upstream ours why 1))
+  ([source upstream ours why n]
+   (let [found (dec (count (str/split source (re-pattern (java.util.regex.Pattern/quote upstream)) -1)))]
+     (assert (= n found) (str "expected " n " occurrences, found " found ": " upstream)))
+   (str/replace source upstream (str "#_" upstream " ;; BB-PATCH " why "\n" ours))))
 
 (defn- subst
   "`source` with `from` replaced by `to`, `n` times (default 1). For renames
@@ -362,6 +397,45 @@
     (close [_this] (close))))"
                 "sci deftype cannot implement a Java interface, reify can")
          (subst "(FnTransport.\n" "(fn-transport*\n")))
+   "orchard/print.clj"
+   (fn [s]
+     (-> s
+         (patch "(clojure.lang AFunction Compiler IDeref IPending IPersistentMap MultiFn
+                 IPersistentSet IPersistentVector IRecord Keyword Namespace
+                 RT Symbol TaggedLiteral Var)"
+                "(clojure.lang AFunction IDeref IPending IPersistentMap MultiFn
+                 IPersistentSet IPersistentVector IRecord Keyword
+                 RT Symbol TaggedLiteral)
+   (sci.lang Namespace Var)"
+                "no Compiler in the image; sci's vars and namespaces are its own types")
+         (patch "(Compiler/demunge (.getName (class x)))"
+                "(clojure.main/demunge (.getName (class x)))"
+                "no Compiler in the image")
+         (patch "(def ^:private multifn-name-field
+  (delay (doto (.getDeclaredField MultiFn \"name\")
+           (.setAccessible true))))"
+                ""
+                "no reflection on MultiFn's private field")
+         (patch "(defn- multifn-name [^MultiFn mfn]
+  (try (.get ^java.lang.reflect.Field @multifn-name-field mfn)
+       (catch SecurityException _ \"_\")))"
+                "(defn- multifn-name [_mfn] \"_\")"
+                "no reflection on MultiFn's private field")))
+   "orchard/inspect/analytics.clj"
+   (fn [s]
+     (patch s "(definline ^:private inc-if [val condition]
+  `(cond-> ~val ~condition inc))"
+            "(defn- inc-if [val condition] (cond-> val condition inc))"
+            "sci has no definline"))
+   "orchard/inspect.clj"
+   (fn [s]
+     (patch s "(#'clojure.reflect/parse-flags (.getModifiers obj) :class)"
+            "(let [m (.getModifiers obj)]
+                                 (remove nil? [(when (Modifier/isPublic m) :public)
+                                               (when (Modifier/isAbstract m) :abstract)
+                                               (when (Modifier/isFinal m) :final)
+                                               (when (Modifier/isStatic m) :static)]))"
+            "clojure.reflect's private parse-flags is not reachable in sci" 2))
    "nrepl/version.clj"
    (fn [s]
      (patch s "(get-version \"nrepl\" \"nrepl\")"
@@ -397,7 +471,7 @@
 (let [tmp (fs/create-temp-dir)]
   (doseq [jar jars]
     (fs/unzip jar tmp {:replace-existing true}))
-  (let [upstream (->> (concat (fs/glob tmp "clojure/**") (fs/glob tmp "nrepl/**"))
+  (let [upstream (->> (concat (fs/glob tmp "clojure/**") (fs/glob tmp "nrepl/**") (fs/glob tmp "orchard/**") (fs/glob tmp "mx/**"))
                       (filter fs/regular-file?)
                       (map #(str (fs/relativize tmp %)))
                       (remove #(or (str/ends-with? % ".class") (str/ends-with? % ".so")))

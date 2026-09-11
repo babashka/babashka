@@ -121,27 +121,44 @@
                {:name "getModifiers"}
                {:name "getParameterCount"}
                {:name "getParameterTypes"}
-               {:name "getReturnType"}]}
+               {:name "getReturnType"}
+               ;; orchard.inspect
+               {:name "getDeclaringClass"}
+               {:name "toGenericString"}]}
     java.lang.reflect.Modifier
     {:methods [{:name "isStatic"}
-               {:name "toString"}]}
+               {:name "toString"}
+               ;; orchard.inspect
+               {:name "isPublic"}
+               {:name "isAbstract"}
+               {:name "isFinal"}]}
     java.lang.reflect.Field
     {:methods [{:name "getName"}
                {:name "getModifiers"}
                {:name "setAccessible"}
                {:name "get"}
-               {:name "set"}]}
+               {:name "set"}
+               ;; orchard.inspect and orchard.java.compatibility
+               {:name "getDeclaringClass"}
+               {:name "getType"}
+               {:name "toGenericString"}
+               {:name "canAccess"}
+               {:name "trySetAccessible"}]}
     java.lang.reflect.Constructor
     {:methods [{:name "getName"}
                {:name "getModifiers"}
                {:name "getParameterTypes"}
-               {:name "getParameterCount"}]}
+               {:name "getParameterCount"}
+               ;; orchard.inspect
+               {:name "getDeclaringClass"}
+               {:name "toGenericString"}]}
     java.lang.reflect.Executable
     {:methods [{:name "getParameterCount"}]}
     java.util.stream.Collectors
     {:methods [{:name "toList"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
+               {:name "getLength"} ;; orchard.inspect
                {:name "set"}]}
     java.lang.Runnable
     {:methods [{:name "run"}]}
@@ -384,6 +401,12 @@
           nrepl.out.QuotaBoundWriter
           nrepl.out.QuotaExceeded
           nrepl.out.TeeOutputStream
+          ;; orchard's, the CIDER inspector, see the same script
+          mx.cider.orchard.TruncatingStringWriter
+          mx.cider.orchard.TruncatingStringWriter$TotalLimitExceeded
+          clojure.core.Eduction ;; orchard.print
+          java.lang.Module ;; orchard.java.compatibility
+          java.lang.ModuleLayer ;; orchard.java.compatibility
           java.lang.NoSuchMethodException ;; nrepl.socket
           java.lang.Thread$State ;; nrepl.util.threading
           java.net.ProtocolFamily ;; nrepl.socket
