@@ -382,7 +382,8 @@
       (sci/with-bindings {sci/out os sci/err os sci/in in}
         (repl/start-connected-repl! (common/ctx) (babashka.nrepl.server/parse-connect target)))
       (str os))
-    (tu/bb input "repl" "--connect" target)))
+    (let [res @(p/process ["./bb" "repl" "--connect" target] {:in input :out :string :err :string})]
+      (str (:out res) (:err res)))))
 
 (deftest ^:skip-windows nrepl-connect-repl-test
   (with-bb-script 1674
