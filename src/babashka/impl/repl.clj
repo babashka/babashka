@@ -435,7 +435,7 @@
                            :read-cond :allow
                            :features #{:clj :bb}
                            :auto-resolve (fn [alias] (if (= :current alias) 'user alias))
-                           :readers (fn [_tag] identity)
+                           :readers (fn [tag] (fn [v] (tagged-literal tag v)))
                            :syntax-quote {:resolve-symbol identity}}))
 
 (defn- remote-parser [reader]
@@ -638,18 +638,27 @@
 (defn- source-read
   "Reads lines until a complete form is available and returns its source text.
   Returns `request-exit` at EOF or for :repl/quit and :repl/exit.
-  Prints help and returns `request-prompt` for :repl/help."
+  Prints help and returns `request-prompt` for :repl/help.
+  An unfinished form at EOF is reported as a read error."
   [parse-fn in input-buffer request-prompt request-exit]
   (loop [text @input-buffer]
-    (if (complete-source? parse-fn text)
-      (let [_ (reset! input-buffer "")
-            [_ form remaining source] (parse-form parse-fn text)]
-        (reset! input-buffer remaining)
-        (cond (or (identical? :repl/quit form) (identical? :repl/exit form)) request-exit
-              (identical? :repl/help form) (do (print-repl-help) request-prompt)
-              :else source))
-      (if (nil? (r/peek-char in))
-        request-exit
+    (reset! input-buffer "")
+    (let [res (try (parse-form parse-fn text)
+                   (catch Exception e e))]
+      (cond
+        (vector? res)
+        (let [[_ form remaining source] res]
+          (reset! input-buffer remaining)
+          (cond (or (identical? :repl/quit form) (identical? :repl/exit form)) request-exit
+                (identical? :repl/help form) (do (print-repl-help) request-prompt)
+                :else source))
+        ;; a syntax error, reported once
+        (and (instance? Exception res)
+             (not (str/includes? (str (ex-message res)) "EOF")))
+        (throw res)
+        (nil? (r/peek-char in))
+        (if (instance? Exception res) (throw res) request-exit)
+        :else
         (recur (str text (when (seq text) "\n") (r/read-line in)))))))
 
 (defn- plain-line-reader

@@ -404,6 +404,13 @@
             (is (str/includes? out "3"))
             (is (str/includes? out "7"))
             (is (= 1 (count (re-seq #"Unmatched delimiter" out))))))
+        (testing "at EOF the complete forms run and an unfinished one is reported"
+          (let [out (connected-repl "1674" "(println :ok) (")]
+            (is (str/includes? out ":ok"))
+            (is (str/includes? out "EOF"))))
+        (testing "a tagged literal reaches the server's reader, a command keyword inside it too"
+          (let [out (connected-repl "1674" "#my/tag :repl/quit\n(+ 40 2)\n:repl/quit")]
+            (is (str/includes? out "42"))))
         (testing "the server's read-line gets the next line"
           (let [out (connected-repl "1674" "(read-line)\nhello\n:repl/quit")]
             (is (str/includes? out "\"hello\""))))
