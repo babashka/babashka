@@ -291,6 +291,23 @@
           (some-> @proc p/destroy-tree))
         (fs/delete-if-exists file)))))
 
+(defn- session-sender
+  "Clones a session over `in` and `os` and returns a function sending an op
+  map to it and returning the replies."
+  [in os]
+  (bencode/write-bencode os {"op" "clone"})
+  (let [session (:new-session (read-msg (bencode/read-bencode in)))
+        id (atom 0)]
+    (fn [m]
+      (let [id (str (swap! id inc))]
+        (bencode/write-bencode os (assoc m "session" session "id" id))
+        (loop [replies []]
+          (let [reply (read-reply in session id)
+                replies (conj replies reply)]
+            (if (contains? (set (:status reply)) "done")
+              replies
+              (recur replies))))))))
+
 (defn- with-session
   "Calls `f` with a function sending an op map to a fresh session on
   `port` and returning the replies to it."
@@ -298,19 +315,16 @@
   (with-open [socket (java.net.Socket. "127.0.0.1" (int port))
               in (java.io.PushbackInputStream. (.getInputStream socket))
               os (.getOutputStream socket)]
-    (bencode/write-bencode os {"op" "clone"})
-    (let [session (:new-session (read-msg (bencode/read-bencode in)))
-          id (atom 0)
-          send (fn [m]
-                 (let [id (str (swap! id inc))]
-                   (bencode/write-bencode os (assoc m "session" session "id" id))
-                   (loop [replies []]
-                     (let [reply (read-reply in session id)
-                           replies (conj replies reply)]
-                       (if (contains? (set (:status reply)) "done")
-                         replies
-                         (recur replies))))))]
-      (f send))))
+    (f (session-sender in os))))
+
+(defn- with-unix-session
+  "Like `with-session`, over the unix domain socket at `path`."
+  [path f]
+  (with-open [ch (java.nio.channels.SocketChannel/open
+                  (java.net.UnixDomainSocketAddress/of ^String path))
+              in (java.io.PushbackInputStream. (java.nio.channels.Channels/newInputStream ch))
+              os (java.nio.channels.Channels/newOutputStream ch)]
+    (f (session-sender in os))))
 
 (deftest ^:skip-windows nrepl-user-middleware-test
   (with-bb-script 1670
@@ -388,6 +402,36 @@
           (testing "inspect-def-current-value defs it"
             (send {"op" "inspect-def-current-value" "ns" "user" "var-name" "inspected"})
             (is (= "{:a 1, :b [1 2 3]}" (:value (first (send {"op" "eval" "code" "inspected"})))))))))))
+
+(deftest ^:skip-windows nrepl-unix-socket-test
+  ;; macOS limits a socket path to 104 bytes, its temp dir is longer
+  (let [path (str "/tmp/bb-nrepl-" (System/nanoTime) ".sock")
+        file (str (fs/create-temp-file {:suffix ".clj"}))
+        proc (atom nil)
+        stop! (fn []
+                (with-unix-session path
+                  (fn [send]
+                    (try (send {"op" "eval" "code" "(babashka.nrepl.server/stop-server! user/server)"})
+                         (catch java.io.EOFException _ nil)))))]
+    (spit file (format "(def server (babashka.nrepl.server/start-server! {:socket %s :quiet true}))" (pr-str path)))
+    (try
+      (if tu/jvm?
+        (tu/bb nil file)
+        (reset! proc (p/process ["./bb" file] {:err :inherit})))
+      (let [deadline (+ (System/currentTimeMillis) 10000)]
+        (while (and (not (fs/exists? path)) (< (System/currentTimeMillis) deadline))
+          (Thread/sleep 50)))
+      (is (fs/exists? path))
+      (with-unix-session path
+        (fn [send]
+          (is (= ["3"] (keep :value (send {"op" "eval" "code" "(+ 1 2)"}))))
+          (is (contains? (:ops (first (send {"op" "describe"}))) "eval"))))
+      (finally
+        (if tu/jvm?
+          (stop!)
+          (some-> @proc p/destroy-tree))
+        (fs/delete-if-exists path)
+        (fs/delete-if-exists file)))))
 
 (deftest ^:skip-windows nrepl-server-non-daemon-test
   (when tu/native?

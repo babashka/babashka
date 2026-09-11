@@ -128,26 +128,36 @@
   "Starts the server. Returns a map with `:socket`, `:port` and `:stop`.
 
   `wrap-handler` wraps the message handler, see babashka.nrepl.server.
-  Options: `:host` (default 127.0.0.1), `:port` (default 1667), `:quiet`,
+  Options: `:host` (default 127.0.0.1), `:port` (default 1667), `:socket`
+  (a unix domain socket path, instead of host and port), `:quiet`,
   `:describe` (a map merged into the describe reply, `versions` included),
   `:middleware` (vars or symbols with an nREPL descriptor, added to the
   default stack)."
-  [{:keys [host port quiet describe middleware]
+  [{:keys [host port socket quiet describe middleware]
     :or {host "127.0.0.1" port 1667}}
    wrap-handler]
   (reset! versions (walk/keywordize-keys (get describe "versions" (:versions describe))))
   (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka #'cider/wrap-cider
                                      (map middleware-var middleware)))
-        srv (server/start-server :bind host :port port :handler handler)
-        ^java.net.ServerSocket ss (:server-socket srv)]
+        srv (if socket
+              (server/start-server :socket socket :handler handler)
+              (server/start-server :bind host :port port :handler handler))
+        ss (:server-socket srv)
+        open? (if socket
+                (fn [] (.isOpen ^java.nio.channels.ServerSocketChannel ss))
+                (fn [] (not (.isClosed ^java.net.ServerSocket ss))))]
     (when-not quiet
-      (println (format "Started nREPL server at %s:%d"
-                       (.getHostAddress (.getInetAddress ss)) (.getLocalPort ss))))
+      (println (if socket
+                 (str "Started nREPL server at " socket)
+                 (format "Started nREPL server at %s:%d"
+                         (.getHostAddress (.getInetAddress ^java.net.ServerSocket ss))
+                         (.getLocalPort ^java.net.ServerSocket ss)))))
     ;; nREPL runs on daemon threads, this keeps the process alive
-    (doto (Thread. (fn [] (while (not (.isClosed ss)) (Thread/sleep 250))))
+    (doto (Thread. (fn [] (while (open?) (Thread/sleep 250))))
       (.setName "babashka-nrepl-server")
       (.setDaemon false)
       (.start))
     {:socket ss
-     :port (.getLocalPort ss)
+     :port (when-not socket (.getLocalPort ^java.net.ServerSocket ss))
+     :path socket
      :stop (fn [] (server/stop-server srv))}))
