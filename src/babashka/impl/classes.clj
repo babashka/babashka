@@ -28,7 +28,8 @@
   ;; Reflection config is needed for untyped Java interop on these
   ;; instances in SCI-evaluated code (e.g. (.hasheq x) without type hint).
   `{sci.lang.Var {:fields [{:name "ns"}
-                            {:name "sym"}]}
+                            {:name "sym"}]
+                  :methods [{:name "bindRoot"}]} ;; nrepl.util.out
     sci.lang.Namespace {:fields [{:name "name"}]}
     sci.lang.Type {:methods [{:name "getName"}]}
     babashka.impl.SciMap {:allPublicConstructors true
@@ -159,6 +160,7 @@
     {:methods [{:name "aget"}
                {:name "aset"}
                {:name "aclone"}
+               {:name "classForName"} ;; nrepl.transport
                {:name "iter"}
                ;; we expose this via the Compiler/LOADER dynamic var
                {:name "baseLoader"}]}
@@ -345,6 +347,7 @@
     javax.net.ssl.KeyManagerFactory
     javax.net.ssl.SSLContext
     javax.net.ssl.SSLException
+    javax.net.ssl.SSLServerSocket ;; nrepl.socket
     javax.net.ssl.SSLParameters
     javax.net.ssl.SSLSession ;; clj-http-lite
     javax.net.ssl.TrustManager
@@ -373,6 +376,20 @@
 (def classes
   ;; :all = full reflection enabled (allPublicMethods, allPublicConstructors, etc.)
   `{:all [clojure.lang.AMapEntry ;; for proxy-super on proxied classes
+          ;; nREPL's Java classes, see script/vendor_bundled_sources.clj
+          nrepl.SessionThread
+          nrepl.DaemonThreadFactory
+          nrepl.in.QueuePollingReader
+          nrepl.out.CallbackBufferedOutputStream
+          nrepl.out.QuotaBoundWriter
+          nrepl.out.QuotaExceeded
+          nrepl.out.TeeOutputStream
+          java.lang.NoSuchMethodException ;; nrepl.socket
+          java.lang.Thread$State ;; nrepl.util.threading
+          java.net.ProtocolFamily ;; nrepl.socket
+          java.net.SocketAddress ;; nrepl.socket
+          java.nio.channels.ClosedChannelException ;; nrepl.transport
+          java.nio.channels.NetworkChannel ;; nrepl.socket
           clojure.lang.APersistentMap ;; for proxy-super on proxied classes
           clojure.lang.ArityException
           clojure.lang.BigInt
@@ -1159,6 +1176,8 @@
     IllegalStateException java.lang.IllegalStateException
     Integer java.lang.Integer
     InterruptedException java.lang.InterruptedException
+    NoSuchMethodException java.lang.NoSuchMethodException
+    Thread$State java.lang.Thread$State
     Iterable java.lang.Iterable
     ;; NOTE: in hindsight File never belonged to the default imports of Clojure,
     ;; but it's been here to long to remove probably

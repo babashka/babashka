@@ -60,6 +60,8 @@
         org.jline/jline-reader {:mvn/version "4.4.0"}}
  :aliases {:babashka/dev
            {:extra-deps {babashka/babashka {:local/root "."}}
+            ;; the src-java classes, compiled by lein javac
+            :extra-paths ["target/classes"]
             :main-opts ["-m" "babashka.main"]
             :jvm-opts ["--enable-native-access=ALL-UNNAMED" "-Duser.language=en" "-Duser.country=US"]}
            ;; macOS only: GLFW/Cocoa windows (e.g. raylib over babashka.ffi)

@@ -452,6 +452,8 @@ Use bb run --help to show this help output.
                                                 (repl/repl-read (common/ctx) @sci/in request-prompt request-exit))
                                               {:ns clojure-main-ns})
                       'with-read-known (sci/copy-var clojure-main/with-read-known clojure-main-ns)
+                      'root-cause (sci/copy-var clojure-main/root-cause clojure-main-ns)
+                      'skip-if-eol (sci/copy-var clojure-main/skip-if-eol clojure-main-ns)
                       'main main-var}
        'clojure.test t/clojure-test-namespace
        'clojure.math math-namespace
@@ -932,7 +934,9 @@ Use bb run --help to show this help output.
                       clojure.tools.build.tasks.install clojure.tools.build.tasks.javac}
                    namespace)
         (str/starts-with? n "clojure.tools.deps.")
-        (str/starts-with? n "clojure.tools.gitlibs."))))
+        (str/starts-with? n "clojure.tools.gitlibs.")
+        (= "nrepl" n)
+        (str/starts-with? n "nrepl."))))
 
 (defn- bundled-source
   "The bundled source of namespace, or nil. The image holds each file
