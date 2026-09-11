@@ -393,6 +393,18 @@
           (is (str/includes? out "#'user/x"))
           (is (str/includes? out ":side-effect"))
           (is (str/includes? out "foo.bar=> ")))
+        (testing "aliases and syntax-quote are the server's"
+          (let [out (connected-repl "1674" "(require '[clojure.string :as str])\n::str/foo\n`str/join\n:repl/quit")]
+            (is (str/includes? out ":clojure.string/foo"))
+            (is (str/includes? out "clojure.string/join"))))
+        (testing "a stray delimiter is reported once, the next form still runs"
+          (let [out (connected-repl "1674" "(+ 1 2) )\n(+ 3 4)\n:repl/quit")]
+            (is (str/includes? out "3"))
+            (is (str/includes? out "7"))
+            (is (= 1 (count (re-seq #"Unmatched delimiter" out))))))
+        (testing "the server's read-line gets the next line"
+          (let [out (connected-repl "1674" "(read-line)\nhello\n:repl/quit")]
+            (is (str/includes? out "\"hello\""))))
         (testing "displays the server exception type"
           (let [out (connected-repl "127.0.0.1:1674" "(/ 1 0)\n:repl/quit")]
             (is (str/includes? out "ArithmeticException"))))))))

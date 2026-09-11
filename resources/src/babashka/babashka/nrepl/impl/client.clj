@@ -10,8 +10,8 @@
 
 (defn connect
   "Connects to `host` and `port` or a Unix domain `socket`.
-  Returns a map with `:eval`, `:completions`, `:lookup`, `:interrupt` and
-  `:close` functions, `:describe` server information and a `:ns` atom
+  Returns a map with `:eval`, `:completions`, `:lookup`, `:stdin` (input the
+  server asked for, an empty string for EOF), `:interrupt` and `:close` functions, `:describe` server information and a `:ns` atom
   containing the current namespace. `:eval` accepts code and a reply callback."
   [{:keys [host port socket]}]
   (let [conn (if socket
@@ -45,6 +45,7 @@
                  (when (seq info)
                    {:ns (:ns info) :name (:name info) :doc (:doc info)
                     :arglists (some-> (:arglists-str info) read-string)})))
+     :stdin (fn [s] (doall (nrepl/message session {:op "stdin" :stdin s})))
      :interrupt (fn []
                   (when-let [id @current-id]
                     (doall (nrepl/message session {:op "interrupt" :interrupt-id id}))))
