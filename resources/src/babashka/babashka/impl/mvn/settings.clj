@@ -27,7 +27,8 @@
 (defn- mirror [el]
   {:id (child-text el "id")
    :url (interpolate (child-text el "url"))
-   :mirror-of (child-text el "mirrorOf")})
+   :mirror-of (child-text el "mirrorOf")
+   :mirror-of-layouts (child-text el "mirrorOfLayouts")})
 
 (defn- proxy-entry [el]
   {:id (child-text el "id")
@@ -76,30 +77,68 @@
 
 ;; Mirror matching, after Maven's DefaultMirrorSelector.
 
-(defn- external? [{:keys [url]}]
-  (let [u (str/lower-case (or url ""))]
-    (not (or (str/starts-with? u "file:")
-             (str/includes? u "localhost")
-             (str/includes? u "127.0.0.1")))))
+(def ^:private url-re #"([^:/]+(:[^:/]{2,}+(?=://))?):(//([^@/]*@)?([^/:]+))?.*")
 
-(defn- matches-pattern? [pattern {:keys [id] :as repo}]
-  (let [patterns (map str/trim (str/split pattern #","))
-        excluded? (some #(and (str/starts-with? % "!") (= id (subs % 1))) patterns)]
-    (boolean
-     (and (not excluded?)
-          (some (fn [p]
-                  (or (= id p)
-                      (= "*" p)
-                      (and (= "external:*" p) (external? repo))
-                      (and (= "external:http:*" p)
-                           (external? repo)
-                           (str/starts-with? (str/lower-case (:url repo)) "http:"))))
-                patterns)))))
+(defn- protocol-and-host
+  "[protocol host] of a repository URL, read the way RemoteRepository reads
+  it. Both empty when the URL has no scheme."
+  [url]
+  (if-let [m (re-matches url-re (or url ""))]
+    [(nth m 1) (or (nth m 5) "")]
+    ["" ""]))
+
+(defn- local-host? [host]
+  (contains? #{"localhost" "127.0.0.1"} host))
+
+(defn- external? [{:keys [url]}]
+  (let [[protocol host] (protocol-and-host url)]
+    (not (or (local-host? host) (= "file" (str/lower-case protocol))))))
+
+(defn- external-http? [{:keys [url]}]
+  (let [[protocol host] (protocol-and-host url)]
+    (and (contains? #{"http" "dav" "dav:http" "dav+http"} (str/lower-case protocol))
+         (not (local-host? host)))))
+
+(defn- exclusion? [p]
+  (and (> (count p) 1) (str/starts-with? p "!")))
+
+(defn- matches-pattern?
+  "Whether a mirrorOf pattern names repo. Later segments can exclude what
+  a wildcard matched, and an exclusion ends the search."
+  [pattern {:keys [id] :as repo}]
+  (if (or (= "*" pattern) (= pattern id))
+    true
+    (loop [[p & more] (str/split pattern #",") result false]
+      (cond
+        (nil? p) result
+        (exclusion? p) (if (= (subs p 1) id) false (recur more result))
+        (= p id) true
+        (or (= "*" p)
+            (and (= "external:*" p) (external? repo))
+            (and (= "external:http:*" p) (external-http? repo)))
+        (recur more true)
+        :else (recur more result)))))
+
+(defn- matches-layout?
+  "Whether a mirrorOfLayouts pattern names layout. Empty means any."
+  [pattern layout]
+  (if (or (str/blank? pattern) (= "*" pattern) (= pattern layout))
+    true
+    (loop [[p & more] (str/split pattern #",") result false]
+      (cond
+        (nil? p) result
+        (exclusion? p) (if (= (subs p 1) layout) false (recur more result))
+        (= p layout) true
+        (= "*" p) (recur more true)
+        :else (recur more result)))))
 
 (defn mirror-for
-  "The first mirror whose mirrorOf matches repo, or nil."
+  "The mirror for repo: the first whose mirrorOf is the repository id,
+  else the first whose pattern matches it. nil without one."
   [mirrors repo]
-  (first (filter #(matches-pattern? (or (:mirror-of %) "") repo) mirrors)))
+  (let [layout-ok? (fn [m] (matches-layout? (:mirror-of-layouts m) "default"))]
+    (or (first (filter #(and (= (:id repo) (:mirror-of %)) (layout-ok? %)) mirrors))
+        (first (filter #(and (matches-pattern? (or (:mirror-of %) "") repo) (layout-ok? %)) mirrors)))))
 
 ;; Proxies, after Maven's DefaultProxySelector and the JVM's http.proxyHost
 ;; properties that deps.clj used to pass to the java it spawned.

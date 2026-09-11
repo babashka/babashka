@@ -127,5 +127,29 @@
           (is (some #{(expected-auth (:plain case-1))} @seen)))
         (finally (server/server-stop! stop))))))
 
+(defn- non-proxy-host? [host non-proxy-hosts]
+  (#'settings/non-proxy-host? (#'settings/split-patterns non-proxy-hosts #"\|") host))
+
+(deftest non-proxy-hosts-test
+  (testing "blank"
+    (is (not (non-proxy-host? "www.eclipse.org" nil)))
+    (is (not (non-proxy-host? "www.eclipse.org" ""))))
+  (testing "wildcard"
+    (is (non-proxy-host? "www.eclipse.org" "*"))
+    (is (non-proxy-host? "www.eclipse.org" "*.org"))
+    (is (not (non-proxy-host? "www.eclipse.org" "*.com")))
+    (is (non-proxy-host? "www.eclipse.org" "www.*"))
+    (is (non-proxy-host? "www.eclipse.org" "www.*.org")))
+  (testing "multiple"
+    (is (non-proxy-host? "eclipse.org" "eclipse.org|host2"))
+    (is (non-proxy-host? "eclipse.org" "host1|eclipse.org"))
+    (is (non-proxy-host? "eclipse.org" "host1|eclipse.org|host2")))
+  (testing "whole host only"
+    (is (not (non-proxy-host? "www.eclipse.org" "www.eclipse.com")))
+    (is (not (non-proxy-host? "www.eclipse.org" "eclipse.org"))))
+  (testing "case"
+    (is (non-proxy-host? "www.eclipse.org" "www.ECLIPSE.org"))
+    (is (non-proxy-host? "www.ECLIPSE.org" "www.eclipse.org"))))
+
 (let [{:keys [fail error]} (t/run-tests 'proxy-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

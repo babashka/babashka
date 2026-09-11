@@ -132,6 +132,13 @@ accept what bb wrote.
   families such as `linux`, empty properties), the range parser after
   GenericVersionRange (wildcards, malformed ranges rejected), and `daily`
   after DefaultUpdatePolicyAnalyzer (local midnight, not 24 hours).
+  The last batch: the repository layout, checksum sidecars, mirror
+  selection, nonProxyHosts and the plexus cipher vectors. It rewrote the
+  mirror selector after DefaultMirrorSelector (a mirror naming the
+  repository id wins over an earlier pattern, `mirrorOfLayouts`,
+  `localhost` as a host rather than a substring) and the sidecar reader
+  after ChecksumUtils (the `name = sum` form, `.md5` when a repository
+  publishes no `.sha1`).
 - CI runs the scripts on the built binary on Linux, macOS and Windows, and
   the JVM suite runs one resolve under each value of the switch.
 
