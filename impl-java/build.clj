@@ -1,18 +1,24 @@
 (ns build
-  (:require [build.reify2 :as reify2]
+  (:require [clojure.edn :as edn]
             [clojure.tools.build.api :as b]))
 
-(def lib 'org.babashka/babashka.impl.java)
-(def version "0.1.21")
+;; use neil project set version x.y.z to update the version in deps.edn
+(def project (-> (edn/read-string (slurp "deps.edn"))
+                 :aliases :neil :project))
+(def lib (:name project))
+(def version (:version project))
 (def class-dir "target/classes")
 (def basis (b/create-basis {:project "deps.edn"}))
 (def jar-file (format "target/%s-%s.jar" (name lib) version))
+(def generated-class "target/classes/babashka/impl/java/io/Closeable.class")
 
 (defn clean [_]
   (b/delete {:path "target"}))
 
-(defn gen-classes [_]
-  (reify2/gen-classes nil))
+(defn gen-classes
+  "Writes the reify classes to target/classes, on the JVM: insn needs ASM."
+  [_]
+  ((requiring-resolve 'build.reify2/gen-classes) nil))
 
 (defn compile-java [_]
   (b/javac {:src-dirs ["src-java"]
@@ -21,8 +27,9 @@
             :javac-opts ["--release" "8"]}))
 
 (defn jar [_]
+  (when-not (.exists (java.io.File. generated-class))
+    (throw (ex-info "The reify classes are missing, run bb gen-classes first" {})))
   (compile-java nil)
-  (gen-classes nil)
   (b/write-pom {:class-dir class-dir
                 :lib lib
                 :version version
@@ -48,15 +55,9 @@
 
 (defn deploy [opts]
   (jar opts)
-  ((requiring-resolve 'deps-deploy.deps-deploy/deploy)
+  ((requiring-resolve 'babashka.deps-deploy/deploy)
    (merge {:installer :remote
            :artifact jar-file
            :pom-file (b/pom-path {:lib lib :class-dir class-dir})}
           opts))
   opts)
-
-;;;; Scratch
-
-(comment
-  (gen-classes nil)
-  )
