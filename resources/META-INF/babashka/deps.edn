@@ -13,7 +13,6 @@
          "feature-rrb-vector"
          "feature-jdbc"
          "pods/src"
-         "babashka.nrepl/src"
          "process/src"
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"

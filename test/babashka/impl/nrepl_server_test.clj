@@ -1,16 +1,12 @@
 (ns babashka.impl.nrepl-server-test
   (:require
    [babashka.fs :as fs]
-   [babashka.impl.nrepl-server :refer [start-server!]]
    [babashka.main :as main]
-   [babashka.nrepl.server :refer [parse-opt stop-server!]]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
-   [clojure.test :as t :refer [deftest is testing]]
-   [sci.core :as sci]
-   [sci.ctx-store :as ctx-store])
+   [clojure.test :as t :refer [deftest is testing]])
   (:import
    [java.lang ProcessBuilder$Redirect]))
 
@@ -242,33 +238,38 @@
           ;; dev-resources doesn't exist
           (is (pos? (count (filter fs/exists? cp)))))))))
 
+(defn- eval-over-the-wire
+  "Evaluates `code` in the server on `port`, for stopping the in-process
+  server the JVM branch starts through bb's own entry point."
+  [port code]
+  (with-open [socket (java.net.Socket. "127.0.0.1" (int port))
+              in (java.io.PushbackInputStream. (.getInputStream socket))
+              os (.getOutputStream socket)]
+    (bencode/write-bencode os {"op" "clone"})
+    (let [session (:new-session (read-msg (bencode/read-bencode in)))]
+      (bencode/write-bencode os {"op" "eval" "code" code "session" session "id" "stop"})
+      ;; the server closes the connection before it can reply
+      (try (read-reply in session "stop")
+           (catch java.io.EOFException _ nil)))))
+
 (deftest ^:skip-windows nrepl-server-test
-  (let [proc-state (atom nil)
-        server-state (atom nil)
-        ctx (sci/init {:namespaces main/namespaces
-                       :features #{:bb}})]
-    (sci.ctx-store/with-ctx ctx
-      (try
+  (let [proc-state (atom nil)]
+    (try
+      (if tu/jvm?
+        ;; in-process, through bb's own entry point, which returns while the
+        ;; server's keepalive thread runs
+        (tu/bb nil "-e" "(def nrepl-server (babashka.nrepl.server/start-server! {:host \"0.0.0.0\" :port 1668 :quiet true}))")
+        (let [pb (ProcessBuilder. ["./bb" "nrepl-server" "0.0.0.0:1668"])
+              _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
+              proc (.start pb)]
+          (reset! proc-state proc)))
+      (babashka.wait/wait-for-port "127.0.0.1" 1668)
+      (nrepl-test)
+      (finally
         (if tu/jvm?
-          (let [nrepl-opts (parse-opt "0.0.0.0:1668")
-                nrepl-opts (assoc nrepl-opts
-                                  :describe {"versions" {"babashka" main/version}})
-                server (start-server! nrepl-opts)]
-            (reset! server-state server))
-          (let [pb (ProcessBuilder. ["./bb" "nrepl-server" "0.0.0.0:1668"])
-                _ (.redirectError pb ProcessBuilder$Redirect/INHERIT)
-                ;; _ (.redirectOutput pb ProcessBuilder$Redirect/INHERIT)
-                ;; env (.environment pb)
-                ;; _ (.put env "BABASHKA_DEV" "true")
-                proc (.start pb)]
-            (reset! proc-state proc)))
-        (babashka.wait/wait-for-port "127.0.0.1" 1668)
-        (nrepl-test)
-        (finally
-          (if tu/jvm?
-            (stop-server! @server-state)
-            (when-let [proc @proc-state]
-              (.destroy ^Process proc))))))))
+          (eval-over-the-wire 1668 "(babashka.nrepl.server/stop-server! user/nrepl-server)")
+          (when-let [proc @proc-state]
+            (.destroy ^Process proc)))))))
 
 (deftest ^:skip-windows nrepl-server-non-daemon-test
   (when tu/native?

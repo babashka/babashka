@@ -45,7 +45,7 @@
                                       http-client-websocket-namespace
                                       http-client-interceptors-namespace]]
    [babashka.impl.markdown :as md]
-   [babashka.impl.nrepl-server :refer [nrepl-server-namespace]]
+   [babashka.impl.nrepl-server :refer [nrepl-server-namespace sci-helpers-namespace]]
    [babashka.impl.pods :as pods]
    [babashka.impl.pprint :refer [pprint-namespace]]
    [babashka.impl.print-deps :as print-deps]
@@ -427,6 +427,7 @@ Use bb run --help to show this help output.
        'babashka.impl.deftype (let [dns (sci/create-ns 'babashka.impl.deftype nil)]
                                 {'->scimap (sci/copy-var bb-deftype/->scimap dns)})
        'babashka.nrepl.server nrepl-server-namespace
+       'babashka.nrepl.impl.sci sci-helpers-namespace
        'babashka.wait wait-namespace
        'babashka.signal signal-ns
        'clojure.java.io io-namespace
@@ -936,7 +937,8 @@ Use bb run --help to show this help output.
         (str/starts-with? n "clojure.tools.deps.")
         (str/starts-with? n "clojure.tools.gitlibs.")
         (= "nrepl" n)
-        (str/starts-with? n "nrepl."))))
+        (str/starts-with? n "nrepl.")
+        (str/starts-with? n "babashka.nrepl.impl."))))
 
 (defn- bundled-source
   "The bundled source of namespace, or nil. The image holds each file
