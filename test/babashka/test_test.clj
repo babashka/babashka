@@ -125,3 +125,18 @@ true")))))
         (bb "(clojure.test/testing-vars-str {:file \"x\" :line 1})")
         "() (x:1)")
       "includes explicit line number + file name in test report"))
+
+(deftest error-report-sci-stacktrace-test
+  (doseq [[desc test-body] [["an exception inside is" "(t/is (= 0 (outer)))"]
+                            ["an exception outside is" "(outer)"]]]
+    (t/testing desc
+      (let [output (bb (str "(require '[clojure.test :as t])
+                             (defn inner [] (throw (ex-info \"boom\" {:a 1})))
+                             (defn outer [] (inner))
+                             (t/deftest tst " test-body ")
+                             (t/run-tests *ns*)"))]
+        (is (str/includes? output "clojure.lang.ExceptionInfo: boom"))
+        (is (str/includes? output "{:a 1}"))
+        (is (str/includes? output "user/inner"))
+        (is (str/includes? output "user/outer"))
+        (is (not (str/includes? output "sci.impl")))))))

@@ -367,6 +367,29 @@
             (is (= ["#'user/down" ":bottom"]
                    (keep :value (send {"op" "eval" "code" "(defn down [n] (if (zero? n) :bottom (down (dec n)))) (down 5000)"}))))))))))
 
+(deftest ^:skip-windows nrepl-eval-error-test
+  (with-bb-script 1673
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1673 :quiet true}))"
+    (fn []
+      (with-session 1673
+        (fn [send]
+          (send {"op" "eval" "code" "(defn inner [x] (/ x 0)) (defn middle [x] (inner x)) (defn outer [x] (middle x))"})
+          (testing "an eval error names the exception class"
+            (let [replies (send {"op" "eval" "code" "(outer 1)"})]
+              (is (str/includes? (str/join (keep :err replies)) "java.lang.ArithmeticException: Divide by zero"))
+              (is (= "class java.lang.ArithmeticException" (some :ex replies)))))
+          (testing "*e carries sci's callstack"
+            (is (= ["true"] (keep :value (send {"op" "eval" "code" "(some? (:sci.impl/callstack (ex-data *e)))"})))))
+          (testing "analyze-last-stacktrace answers with sci's frames"
+            (let [[cause] (send {"op" "analyze-last-stacktrace"})]
+              (is (= "java.lang.ArithmeticException" (bytes->str (:class cause))))
+              (is (= ["user/inner" "user/middle" "user/outer"]
+                     (->> (:stacktrace cause)
+                          (map #(bytes->str (get % "name")))
+                          (filter #(str/starts-with? % "user/"))
+                          distinct
+                          (take 3)))))))))))
+
 (deftest ^:skip-windows nrepl-cider-ops-test
   (with-bb-script 1671
     "(ns ct-demo (:require [clojure.test :refer [deftest is testing]]))
@@ -392,10 +415,10 @@
               (is (= "error" (:type (result "erroring"))))
               (is (str/includes? (:error (result "erroring")) "boom"))
               (is (integer? (:line (result "erroring"))))))
-          (testing "test-stacktrace names the erring test"
+          (testing "test-stacktrace starts in the erring test's namespace"
             (let [cause (first (send {"op" "test-stacktrace" "ns" "ct-demo" "var" "erroring" "index" 0}))]
               (is (= "boom" (bytes->str (:message cause))))
-              (is (= "ct-demo/erroring" (bytes->str (get-in (first (:stacktrace cause)) ["name"]))))))
+              (is (= "ct-demo" (bytes->str (get-in (first (:stacktrace cause)) ["ns"]))))))
           (testing "retest reruns only what failed"
             (let [summary (into {} (map (fn [[k v]] [(keyword (bytes->str k)) v])) (:summary (first (send {"op" "retest"}))))]
               (is (= 2 (:test summary)))
