@@ -1,12 +1,5 @@
 #!/usr/bin/env bb
-;; nREPL's own test suite against the bundled server, run in the library's
-;; checkout at the version bb bundles. The tests close a server with
-;; with-open; the bundled Server record has no close, so those forms go
-;; through with-server, and the hints naming the record and the transport
-;; type are dropped. The completion tests are not run: nrepl.util.completion
-;; is bb's own. A directory on the classpath overrides bundled
-;; sources, so only the test directory is on it and nrepl.spec is loaded
-;; by path. Run: ./bb script/nrepl_tests.clj [namespace ...]
+;; Run upstream nREPL tests: ./bb script/nrepl_tests.clj [namespace ...]
 (ns nrepl-tests
   (:require [babashka.classpath :as cp]
             [babashka.deps :as deps]
@@ -33,7 +26,7 @@
       "(with-server [s2 (server/start-server :transport-fn *transport-fn*"]
      ["(.close *server*)" "(server/stop-server *server*)"]
      ["(.close server)" "(server/stop-server server)"]
-     ;; bb reports a reader error as its message, not in Clojure's phase words
+     ;; Match bb's reader error message.
      ["#\"(?s)^Syntax error reading source at[^\\n]+[\\r]?\\nMap literal must contain an even number of forms[\\r]?\\n\""
       "#\"Map literals? must contain an even number of forms\""]]]
    ["test/clojure/nrepl/middleware/session_test.clj" []]
@@ -48,7 +41,7 @@
    ["test/clojure/nrepl/middleware_test.clj" []]
    ["test/clojure/nrepl/misc_test.clj" []]
    ["test/clojure/nrepl/util/lookup_test.clj"
-    ;; sci's let carries no :special-form metadata
+    ;; sci exposes let as a macro.
     [["          :special-form \"true\"}\n         (lookup 'clojure.core 'let)"
       "          :macro \"true\"}\n         (lookup 'clojure.core 'let)"]]]
    ["test/clojure/nrepl/middleware/print_test.clj" []]
@@ -70,19 +63,16 @@
     nrepl.transport-test])
 
 (def skipped
-  "Tests of what the image does not have: Clojure's DynamicClassLoader, a
-  JVMTI agent to stop a thread, java.util.GregorianCalendar, and JVM stack
-  frames named after compiled functions."
+  "Upstream tests excluded from the bundled server test run."
   '{nrepl.core-test [hotloading-common-classloader-test
                      non-interruptible-stop-thread
                      session-*out*-writer-length-translation]
     nrepl.middleware.interruptible-eval-test [preserves-source-location-test]
-    ;; walks every public and reads its var metadata; babashka's user/*input*
-    ;; is an evaluated value rather than a var
+    ;; babashka's user/*input* is an evaluated value.
     nrepl.util.lookup-test [bencode-test]})
 
 (def runner
-  "Runs in the checkout: the sources with their substitutions, then the tests."
+  "Test runner form evaluated in the nREPL checkout."
   '(do
      (require '[clojure.string :as str] '[clojure.test :as t])
      (doseq [[file substs] 'SOURCES]
@@ -95,7 +85,7 @@
             (str/replace #"\^(nrepl\.transport\.FnTransport|nrepl\.server\.Server|Server)\s+" ""))))
      (doseq [[ns vars] 'SKIPPED, v vars]
        (ns-unmap ns v))
-     ;; clojure.main binds these for a JVM test run, the fixture set!s them
+     ;; The fixture requires thread bindings for set!.
      (let [{:keys [fail error]} (binding [*print-length* nil *print-level* nil]
                                   (apply t/run-tests 'NAMESPACES))]
        (System/exit (if (zero? (+ fail error)) 0 1)))))
@@ -107,7 +97,7 @@
           (p/shell "git" "-C" (str checkout) "checkout" "-q" git-sha))
       bb (str (fs/absolutize (if (fs/windows?) "bb.exe" "bb")))
       _ (deps/add-deps '{:deps {nubank/matcher-combinators {:mvn/version "3.9.1"}}})
-      ;; test/ for the resources the print tests read, target/ for the socket test
+      ;; The socket test requires target/.
       _ (fs/create-dirs (fs/file checkout "target"))
       classpath (str/join fs/path-separator
                           (concat [(str (fs/file checkout "test" "clojure"))

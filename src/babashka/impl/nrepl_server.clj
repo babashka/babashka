@@ -31,9 +31,8 @@
   (sci-helpers/lookup (common/ctx) sym-str :ns-str ns-str))
 
 (defn pr-on
-  "Prints `x` to `w` as clojure.core/pr-on does, under the session's print
-  settings. `*out*` stays bound, so what printing a lazy value writes
-  goes to the session's out."
+  "Prints `x` to `w` using the session's print settings. Output from realizing
+  lazy values goes to the session's `*out*`."
   [x ^java.io.Writer w]
   (binding [*print-length* @sio/print-length
             *print-level* @sio/print-level
