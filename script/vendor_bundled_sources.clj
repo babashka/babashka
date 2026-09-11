@@ -299,6 +299,8 @@
    "nrepl/middleware/session.clj"
    (fn [s]
      (-> s
+       (patch "(.put q -1)" "(.put q (int -1))"
+              "the EOF marker: QueuePollingReader compares with an Integer, a Long never equals it; fixed upstream in nrepl#470, after 1.7.0")
          (patch "(clojure.lang Compiler LineNumberingPushbackReader)"
                 "(clojure.lang LineNumberingPushbackReader)"
                 "the image has no Compiler")

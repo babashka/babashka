@@ -1,15 +1,21 @@
 (ns babashka.impl.nrepl-server-test
   (:require
    [babashka.fs :as fs]
+   [babashka.impl.common :as common]
+   [babashka.impl.repl :as repl]
    [babashka.main :as main]
+   [babashka.nrepl.server :as nrepl-server]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is testing]])
+   [clojure.test :as t :refer [deftest is testing]]
+   [clojure.tools.reader.reader-types :as r]
+   [sci.core :as sci])
   (:import
-   [java.lang ProcessBuilder$Redirect]))
+   [java.lang ProcessBuilder$Redirect]
+   [org.jline.reader LineReader EndOfFileException UserInterruptException]))
 
 (def debug? false)
 
@@ -366,6 +372,89 @@
           (testing "an eval recurses 5000 calls deep"
             (is (= ["#'user/down" ":bottom"]
                    (keep :value (send {"op" "eval" "code" "(defn down [n] (if (zero? n) :bottom (down (dec n)))) (down 5000)"}))))))))))
+
+(defn- connected-repl
+  "Runs a connected REPL with `input` and returns its output."
+  [target input]
+  (if tu/jvm?
+    (let [os (java.io.StringWriter.)
+          in (r/indexing-push-back-reader (r/push-back-reader (java.io.StringReader. input)))]
+      (sci/with-bindings {sci/out os sci/err os sci/in in}
+        (repl/start-connected-repl! (common/ctx) (nrepl-server/parse-connect target)))
+      (str os))
+    (let [res @(p/process ["./bb" "repl" "--connect" target] {:in input :out :string :err :string})]
+      (str (:out res) (:err res)))))
+
+(deftest ^:skip-windows nrepl-connect-repl-test
+  (with-bb-script 1674
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1674 :quiet true}))"
+    (fn []
+      (let [out (connected-repl "1674" "(+ 1 2)\n(def x 10)\n(println :side-effect)\n(ns foo.bar)\n(inc x)\n:repl/quit")]
+        (testing "displays server values, output and namespace in the prompt"
+          (is (str/includes? out "user=> 3"))
+          (is (str/includes? out "#'user/x"))
+          (is (str/includes? out ":side-effect"))
+          (is (str/includes? out "foo.bar=> ")))
+        (testing "aliases and syntax-quote are the server's"
+          (let [out (connected-repl "1674" "(require '[clojure.string :as str])\n::str/foo\n`str/join\n:repl/quit")]
+            (is (str/includes? out ":clojure.string/foo"))
+            (is (str/includes? out "clojure.string/join"))))
+        (testing "a stray delimiter is reported once, the next form still runs"
+          (let [out (connected-repl "1674" "(+ 1 2) )\n(+ 3 4)\n:repl/quit")]
+            (is (str/includes? out "3"))
+            (is (str/includes? out "7"))
+            (is (= 1 (count (re-seq #"Unmatched delimiter" out))))))
+        (testing "at EOF the complete forms run and an unfinished one is reported"
+          (let [out (connected-repl "1674" "(println :ok) (")]
+            (is (str/includes? out ":ok"))
+            (is (str/includes? out "EOF"))))
+        (testing "a tagged literal reaches the server's reader, a command keyword inside it too"
+          (let [out (connected-repl "1674" "#my/tag :repl/quit\n(+ 40 2)\n:repl/quit")]
+            (is (str/includes? out "42"))))
+        (testing "the server's read-line gets the next line"
+          (let [out (connected-repl "1674" "(read-line)\nhello\n:repl/quit")]
+            (is (str/includes? out "\"hello\""))))
+        (testing "displays the server exception type"
+          (let [out (connected-repl "127.0.0.1:1674" "(/ 1 0)\n:repl/quit")]
+            (is (str/includes? out "ArithmeticException"))))))))
+
+(defn- scripted-line-reader
+  "A LineReader answering readLine with `lines` in turn: a string is
+  returned, :interrupt throws UserInterruptException, exhausted lines throw
+  EndOfFileException."
+  ^LineReader [lines]
+  (let [remaining (atom lines)]
+    (reify LineReader
+      (^String readLine [_ ^String _prompt]
+        (let [line (first @remaining)]
+          (swap! remaining rest)
+          (cond (nil? line) (throw (EndOfFileException.))
+                (= :interrupt line) (throw (UserInterruptException. ""))
+                :else line))))))
+
+(deftest ^:skip-windows nrepl-connect-stdin-test
+  ;; the terminal path, with mock readers, so the JVM route only
+  (when tu/jvm?
+    (with-bb-script 1678
+      "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1678 :quiet true}))"
+      (fn []
+        (let [target {:host "127.0.0.1" :port 1678}
+              client (repl/connect-client (common/ctx) target)
+              os (java.io.StringWriter.)]
+          (sci/with-bindings {sci/out os sci/err os}
+            (try (repl/connected-repl-with-line-reader
+                  (common/ctx) client target
+                  (scripted-line-reader ["(read-line)" "(+ 1 2)" "(read-line)" "(read-line)" ":repl/quit"])
+                  (scripted-line-reader [:interrupt "hello (" ""]))
+                 (finally ((:close client)))))
+          (let [out (str os)]
+            (testing "Ctrl-C during the server's read-line interrupts the eval, the REPL goes on"
+              (is (str/includes? out "Interrupted"))
+              (is (str/includes? out "3"))
+              (is (< (str/index-of out "Interrupted") (str/index-of out "3"))))
+            (testing "stdin lines go through as typed, an empty line included"
+              (is (str/includes? out "\"hello (\""))
+              (is (str/includes? out "\"\"")))))))))
 
 (deftest ^:skip-windows nrepl-eval-error-test
   (with-bb-script 1673

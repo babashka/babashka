@@ -426,7 +426,8 @@
     (if (= op "stdin")
       (let [^LinkedBlockingQueue q (:input-queue (meta session))]
         (if (empty? stdin)
-          (.put q -1)
+          #_(.put q -1) ;; BB-PATCH the EOF marker: QueuePollingReader compares with an Integer, a Long never equals it; fixed upstream in nrepl#470, after 1.7.0
+(.put q (int -1))
           (.addAll q (seq stdin)))
         (t/respond-to msg :status :done))
       (h msg))))
