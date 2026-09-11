@@ -25,14 +25,20 @@
 
 ;;;; Stacktraces, in the shape CIDER's stacktrace buffer renders
 
-(defn- sci-frame [{:keys [ns name file line column]}]
-  {:name (str ns "/" (or name "fn"))
-   :file (or file "NO_SOURCE_FILE")
-   :line (or line 0)
-   :column column
-   :ns (str ns)
-   :fn (str name)
-   :flags #{:clj :project}})
+(defn- sci-frame
+  "A sci frame; nREPL's and babashka's own are flagged tooling, which CIDER hides."
+  [{:keys [ns name file line column]}]
+  (let [ns (str ns)]
+    {:name (str ns "/" (or name "fn"))
+     :file (or file "NO_SOURCE_FILE")
+     :line (or line 0)
+     :column column
+     :ns ns
+     :fn (str name)
+     :flags (if (or (str/starts-with? ns "nrepl.") (str/starts-with? ns "babashka.")
+                    (= "clojure.core" ns))
+              #{:clj :tooling}
+              #{:clj :project})}))
 
 (defn- java-frame
   "A JVM frame; sci's own frames are flagged tooling, which CIDER hides."
