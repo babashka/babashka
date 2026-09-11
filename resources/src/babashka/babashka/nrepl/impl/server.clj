@@ -4,6 +4,7 @@
   {:no-doc true}
   (:require
    [babashka.classpath :as cp]
+   [babashka.nrepl.impl.cider :as cider]
    [babashka.nrepl.impl.sci :as sci-helpers]
    [clojure.string :as str]
    [clojure.walk :as walk]
@@ -135,7 +136,7 @@
     :or {host "0.0.0.0" port 1667}}
    wrap-handler]
   (reset! versions (walk/keywordize-keys (get describe "versions" (:versions describe))))
-  (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka
+  (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka #'cider/wrap-cider
                                      (map middleware-var middleware)))
         srv (server/start-server :bind host :port port :handler handler)
         ^java.net.ServerSocket ss (:server-socket srv)]
