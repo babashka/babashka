@@ -1,4 +1,5 @@
-{:paths ["src" "ffi/src" "feature-xml"
+;; target/classes holds the src-java classes, compiled by lein javac
+{:paths ["src" "target/classes" "ffi/src" "feature-xml"
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
          "feature-httpkit-client" "feature-httpkit-server"
@@ -59,8 +60,6 @@
         org.jline/jline-reader {:mvn/version "4.4.0"}}
  :aliases {:babashka/dev
            {:extra-deps {babashka/babashka {:local/root "."}}
-            ;; the src-java classes, compiled by lein javac
-            :extra-paths ["target/classes"]
             :main-opts ["-m" "babashka.main"]
             :jvm-opts ["--enable-native-access=ALL-UNNAMED" "-Duser.language=en" "-Duser.country=US"]}
            ;; macOS only: GLFW/Cocoa windows (e.g. raylib over babashka.ffi)
