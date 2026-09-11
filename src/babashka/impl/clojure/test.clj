@@ -365,6 +365,23 @@
     (println "expected:" (pr-str (:expected m)))
     (println "  actual:" (pr-str (:actual m)))))
 
+(defn- print-error-stack-trace
+  "Prints `e` with sci frames if available, or JVM frames otherwise.
+  Limits the stack trace to `n` frames when non-nil."
+  [^Throwable e n]
+  (if-let [st (seq (sci/stacktrace e))]
+    (let [^Throwable cause (if (= :sci/error (:type (ex-data e))) (or (ex-cause e) e) e)
+          data (ex-data cause)]
+      (println (str (.getName (class cause)) ": " (.getMessage cause)))
+      (when (and data (not (:sci.impl/callstack data)))
+        (prn data))
+      (run! #(println " " %) (cond->> (sci/format-stacktrace st) n (take n)))
+      (loop [c (.getCause cause)]
+        (when c
+          (println (str "Caused by: " (.getName (class c)) ": " (.getMessage c)))
+          (recur (.getCause c)))))
+    (stack/print-cause-trace e n)))
+
 (defmethod report-impl :error [m]
   (with-test-out-internal
     (inc-report-counter :error)
@@ -375,7 +392,7 @@
     (print "  actual: ")
     (let [actual (:actual m)]
       (if (instance? Throwable actual)
-        (stack/print-cause-trace actual @stack-trace-depth)
+        (print-error-stack-trace (or (::sci-error m) actual) @stack-trace-depth)
         (prn actual)))))
 
 (defmethod report-impl :summary [m]
@@ -540,7 +557,7 @@
   {:added "1.1"}
   [msg form]
   `(try ~(assert-expr msg form)
-        (catch Throwable t#
+        (catch ~(with-meta 'Throwable {:sci/callstack true}) t#
           (clojure.test/do-report {:file clojure.core/*file*
                                    :line ~(:line (meta form))
                                    :type :error, :message ~msg,
