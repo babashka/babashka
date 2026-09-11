@@ -32,7 +32,7 @@
   (sci/with-bindings {sci/out @sci/err}
     (let [d (ex-data e)
           sci-error? (identical? :sci/error (:type d))
-          ;; a plain exception locates through its first sci frame
+          ;; Use the first non-built-in sci frame for a plain exception's location.
           {:keys [:file :line :column]} (if sci-error?
                                           d
                                           (some #(when-not (:sci/built-in %) %) (sci/stacktrace e)))

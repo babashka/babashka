@@ -15,6 +15,9 @@ A preview of the next release can be installed from
 - Run the nREPL server on a Unix domain socket with the `:socket` option of `babashka.nrepl.server/start-server!`
 - Add `reify` support for `java.io.Flushable`
 - Increase the nREPL eval thread stack size to 8 MB to match the main thread and allow deeper recursion
+- [#1518](https://github.com/babashka/babashka/issues/1518): Print sci stack frames in `clojure.test` error reports, both inside and outside `is`
+- Show sci stack frames in CIDER's error buffer via `analyze-last-stacktrace`
+- Include the exception class and source location in nREPL eval errors and preserve sci stack frames on `*e`
 - [babashka.nrepl#72](https://github.com/babashka/babashka.nrepl/issues/72): Isolate REPL bindings such as `*1`, `*e` and `*ns*` per session and preserve them when reconnecting with the same session id
 - Add the nREPL `interrupt` op. Interruption is cooperative and does not stop tight loops
 - Replace the `:xform` option of `babashka.nrepl.server/start-server!` with `:middleware`, accepting middleware vars with nREPL descriptors. See [examples/nrepl_middleware.clj](examples/nrepl_middleware.clj)

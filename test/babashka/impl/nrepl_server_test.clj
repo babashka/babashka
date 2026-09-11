@@ -374,14 +374,14 @@
       (with-session 1673
         (fn [send]
           (send {"op" "eval" "code" "(defn inner [x] (/ x 0)) (defn middle [x] (inner x)) (defn outer [x] (middle x))"})
-          (testing "an eval error names the exception class and the location"
+          (testing "eval errors include the exception class and source location"
             (let [replies (send {"op" "eval" "code" "(outer 1)"})]
               (is (str/includes? (str/join (keep :err replies)) "java.lang.ArithmeticException: Divide by zero"))
               (is (str/includes? (str/join (keep :err replies)) "[at NO_SOURCE_PATH:1:"))
               (is (= "class java.lang.ArithmeticException" (some :ex replies)))))
-          (testing "*e is the exception itself"
+          (testing "*e retains the original exception"
             (is (= ["[java.lang.ArithmeticException nil]"] (keep :value (send {"op" "eval" "code" "[(class *e) (ex-data *e)]"})))))
-          (testing "analyze-last-stacktrace answers with sci's frames"
+          (testing "analyze-last-stacktrace returns sci frames"
             (let [[cause] (send {"op" "analyze-last-stacktrace"})]
               (is (= "java.lang.ArithmeticException" (bytes->str (:class cause))))
               (is (= ["user/inner" "user/middle" "user/outer"]
@@ -395,7 +395,7 @@
                           (filter #(str/starts-with? (bytes->str (get % "name")) "user/"))
                           (map #(bytes->str (get % "file")))
                           set)))
-              (testing "every frame has a fn name, the top-level one included"
+              (testing "all frames have function names, including top-level frames"
                 (is (every? #(seq (bytes->str (get % "fn"))) (:stacktrace cause)))
                 (is (some #(= "user/fn" (bytes->str (get % "name"))) (:stacktrace cause)))))))))))
 
@@ -424,7 +424,7 @@
               (is (= "error" (:type (result "erroring"))))
               (is (str/includes? (:error (result "erroring")) "boom"))
               (is (integer? (:line (result "erroring"))))))
-          (testing "test-stacktrace starts in the erring test's namespace"
+          (testing "test-stacktrace starts in the test's namespace"
             (let [cause (first (send {"op" "test-stacktrace" "ns" "ct-demo" "var" "erroring" "index" 0}))]
               (is (= "boom" (bytes->str (:message cause))))
               (is (= "ct-demo" (bytes->str (get-in (first (:stacktrace cause)) ["ns"]))))))

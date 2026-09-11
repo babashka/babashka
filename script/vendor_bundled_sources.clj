@@ -286,7 +286,7 @@
                                      {Compiler/SOURCE_PATH file
                                       Compiler/SOURCE file-name})"
                 "{#'*file* (or file \"NO_SOURCE_PATH\")}"
-                "sci reads the source path from *file*, NO_SOURCE_PATH for code without a file")
+                "Set *file* to the source path or NO_SOURCE_PATH")
          (patch "(instance? LispReader$ReaderException e)"
                 "(= :sci.error/parse (:type (ex-data e)))"
                 "sci reader errors are ex-info")
@@ -295,7 +295,7 @@
                   (caught e))"
                 "(catch ^{:sci/callstack true} Throwable e
                   (caught e))"
-                "a :sci/callstack catch gets the exception itself, sci keeps its frames for *e and the stacktrace ops")))
+                "Preserve the original exception and its sci stack frames")))
    "nrepl/middleware/session.clj"
    (fn [s]
      (-> s

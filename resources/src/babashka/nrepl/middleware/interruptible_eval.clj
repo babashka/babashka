@@ -114,7 +114,7 @@
       (push-thread-bindings (merge (when explicit-ns {#'*ns* explicit-ns})
                                    #_(when (and file file-name)
                                      {Compiler/SOURCE_PATH file
-                                      Compiler/SOURCE file-name}) ;; BB-PATCH sci reads the source path from *file*, NO_SOURCE_PATH for code without a file
+                                      Compiler/SOURCE file-name}) ;; BB-PATCH Set *file* to the source path or NO_SOURCE_PATH
 {#'*file* (or file "NO_SOURCE_PATH")}
                                    bindings))
       (try
@@ -151,7 +151,7 @@
                     (catch Throwable e
                       (throw (ex-info nil {:clojure.error/phase :print-eval-result} e)))))
                 #_(catch Throwable e
-                  (caught e)) ;; BB-PATCH a :sci/callstack catch gets the exception itself, sci keeps its frames for *e and the stacktrace ops
+                  (caught e)) ;; BB-PATCH Preserve the original exception and its sci stack frames
 (catch ^{:sci/callstack true} Throwable e
                   (caught e)))
               ;; Otherwise, when errors happen during eval/print phase,

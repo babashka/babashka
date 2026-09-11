@@ -366,8 +366,8 @@
     (println "  actual:" (pr-str (:actual m)))))
 
 (defn- print-error-stack-trace
-  "Prints `e` with sci's frames when it carries them, as a sci error does,
-  and with clojure.stacktrace otherwise, at most `n` frames."
+  "Prints `e` with sci frames if available, or JVM frames otherwise.
+  Limits the stack trace to `n` frames when non-nil."
   [^Throwable e n]
   (if-let [st (seq (sci/stacktrace e))]
     (let [^Throwable cause (if (= :sci/error (:type (ex-data e))) (or (ex-cause e) e) e)
