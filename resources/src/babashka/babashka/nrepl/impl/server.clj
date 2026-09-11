@@ -7,6 +7,8 @@
    [babashka.nrepl.impl.sci :as sci-helpers]
    [clojure.string :as str]
    [clojure.walk :as walk]
+   ;; nrepl.core for clients whose init reads nrepl.core/version, like REPLy
+   [nrepl.core]
    [nrepl.middleware :refer [set-descriptor!]]
    [nrepl.misc :as misc]
    [nrepl.server :as server]
