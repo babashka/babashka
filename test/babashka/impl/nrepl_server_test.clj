@@ -1,13 +1,17 @@
 (ns babashka.impl.nrepl-server-test
   (:require
    [babashka.fs :as fs]
+   [babashka.impl.common :as common]
+   [babashka.impl.repl :as repl]
    [babashka.main :as main]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
    [clojure.string :as str]
-   [clojure.test :as t :refer [deftest is testing]])
+   [clojure.test :as t :refer [deftest is testing]]
+   [clojure.tools.reader.reader-types :as r]
+   [sci.core :as sci])
   (:import
    [java.lang ProcessBuilder$Redirect]))
 
@@ -367,19 +371,31 @@
             (is (= ["#'user/down" ":bottom"]
                    (keep :value (send {"op" "eval" "code" "(defn down [n] (if (zero? n) :bottom (down (dec n)))) (down 5000)"}))))))))))
 
+(defn- connected-repl
+  "Runs `bb repl --connect` on `input`, returning its output. In-process on
+  the JVM, since a second bb run in the same process would reset the env
+  the server evaluates in."
+  [target input]
+  (if tu/jvm?
+    (let [os (java.io.StringWriter.)
+          in (r/indexing-push-back-reader (r/push-back-reader (java.io.StringReader. input)))]
+      (sci/with-bindings {sci/out os sci/err os sci/in in}
+        (repl/start-connected-repl! (common/ctx) (babashka.nrepl.server/parse-connect target)))
+      (str os))
+    (tu/bb input "repl" "--connect" target)))
+
 (deftest ^:skip-windows nrepl-connect-repl-test
   (with-bb-script 1674
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1674 :quiet true}))"
     (fn []
-      (let [out (tu/bb "(+ 1 2)\n(def x 10)\n(println :side-effect)\n(ns foo.bar)\n(inc x)\n:repl/quit"
-                       "repl" "--connect" "1674")]
+      (let [out (connected-repl "1674" "(+ 1 2)\n(def x 10)\n(println :side-effect)\n(ns foo.bar)\n(inc x)\n:repl/quit")]
         (testing "values, output and the prompt's namespace come from the server"
           (is (str/includes? out "user=> 3"))
           (is (str/includes? out "#'user/x"))
           (is (str/includes? out ":side-effect"))
           (is (str/includes? out "foo.bar=> ")))
         (testing "an error on the server names the exception"
-          (let [out (tu/bb "(/ 1 0)\n:repl/quit" "repl" "--connect" "127.0.0.1:1674")]
+          (let [out (connected-repl "127.0.0.1:1674" "(/ 1 0)\n:repl/quit")]
             (is (str/includes? out "ArithmeticException"))))))))
 
 (deftest ^:skip-windows nrepl-eval-error-test
