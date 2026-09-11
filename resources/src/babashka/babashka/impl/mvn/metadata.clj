@@ -30,18 +30,22 @@
                                  :value (x/child-text sv "value")})
                               (some-> (x/child versioning "snapshotVersions") (x/children "snapshotVersion")))}))
 
+(defn- local-midnight-millis []
+  (-> (java.time.LocalDate/now) (.atStartOfDay (java.time.ZoneId/systemDefault)) .toInstant .toEpochMilli))
+
 (defn- stale?
-  "Whether a cached metadata file should be refreshed under the policy."
+  "Whether a cached metadata file should be refreshed under the policy,
+  after Maven's DefaultUpdatePolicyAnalyzer: daily means before today's
+  local midnight, a number is an interval in minutes."
   [file {:keys [update]}]
   (cond
     (not (fs/exists? file)) true
     (= :always update) true
     (= :never update) false
-    :else (let [age-minutes (/ (- (System/currentTimeMillis)
-                                  (.toMillis (fs/last-modified-time file)))
-                               60000.0)
-                limit (if (= :daily update) 1440 (long update))]
-            (> age-minutes limit))))
+    :else (let [modified (.toMillis (fs/last-modified-time file))]
+            (if (= :daily update)
+              (> (local-midnight-millis) modified)
+              (> (- (System/currentTimeMillis) (* 60000 (long update))) modified)))))
 
 (defn- cached-text!
   "Metadata text from repo for the directory rel, from the cache when fresh,
