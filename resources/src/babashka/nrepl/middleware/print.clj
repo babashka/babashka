@@ -21,7 +21,7 @@
 
   Defaults to the equivalent of `clojure.core/pr`."
   #_@#'clojure.core/pr-on ;; BB-PATCH pr-on is private to clojure.core and absent in sci
-(fn [x w] (binding [*out* w] (pr x)))) ;; Private in clojure.core
+babashka.nrepl.impl.sci/pr-on) ;; Private in clojure.core
 
 (def ^:dynamic *stream?*
   "If logical true, the result of printing each value will be streamed to the

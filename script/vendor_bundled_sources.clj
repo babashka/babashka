@@ -225,7 +225,7 @@
          (patch "(nrepl.transport Transport)" "" "a sci protocol is not a class")
          (subst "(reify Transport" "(reify transport/Transport")
          (patch "@#'clojure.core/pr-on"
-                "(fn [x w] (binding [*out* w] (pr x)))"
+                "babashka.nrepl.impl.sci/pr-on"
                 "pr-on is private to clojure.core and absent in sci")))
    "nrepl/middleware/load_file.clj"
    (fn [s]
@@ -265,18 +265,6 @@
                  LineNumberingPushbackReader LispReader$ReaderException)"
                 "(clojure.lang LineNumberingPushbackReader)"
                 "the image has no Compiler or LispReader")
-         (patch "(java.lang.reflect Field)" "" "no reflection on the reader's column field")
-         (patch "(defn- set-column!
-  [^LineNumberingPushbackReader reader column]
-  (when-let [field (->> LineNumberingPushbackReader
-                        (.getDeclaredFields)
-                        (filter #(= \"_columnNumber\" (.getName ^Field %)))
-                        first)]
-    (-> ^Field field
-        (doto (.setAccessible true))
-        (.set reader column))))"
-                "(defn- set-column! [_reader _column] nil)"
-                "the column field is set through reflection")
          (patch "(or (instance? ThreadDeath (clojure.main/root-cause e))
       (and (instance? Compiler$CompilerException e)
            (instance? ThreadDeath (.getCause e))))"
