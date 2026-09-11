@@ -260,7 +260,8 @@
     {:allPublicConstructors true
      :methods [{:name "create"}]}
     clojure.lang.TaggedLiteral
-    {:methods [{:name "create"}]}
+    {:methods [{:name "create"}]
+     :allDeclaredFields true}
     org.jline.reader.impl.LineReaderImpl
     {:fields [{:name "post"} {:name "size"}]
      :methods [{:name "redisplay"}
@@ -1281,6 +1282,17 @@
                                (cond-> {:name class-name}
                                  (.startsWith ^String class-name "clojure.lang.")
                                  (assoc :allDeclaredFields true))))
+        instance-check-names (set (map str (:instance-checks classes)))
+        ;; the inspector walks the superclasses for their fields too
+        superclass-fields (vec (for [n (sort (set (for [c (:instance-checks classes)
+                                                        :when (.startsWith ^String (str c) "clojure.lang.")
+                                                        k (take-while some? (iterate #(.getSuperclass ^Class %)
+                                                                                     (Class/forName (str c))))
+                                                        :let [kn (.getName ^Class k)]
+                                                        :when (and (.startsWith kn "clojure.lang.")
+                                                                   (not (instance-check-names kn)))]
+                                                    kn)))]
+                                {:name n :allDeclaredFields true}))
         custom-entries (for [[c v] (:custom classes)
                              :let [class-name (str c)]]
                          (let [v (if-let [inherit-from (seq (:inherit v))]
@@ -1292,7 +1304,7 @@
                                          (update :methods into inherited-methods)))
                                    (dissoc v :inherit))]
                            (assoc v :name class-name)))
-        all-entries (concat entries constructors methods fields instance-checks custom-entries)]
+        all-entries (concat entries constructors methods fields instance-checks superclass-fields custom-entries)]
     all-entries))
 
 (defn generate-reflection-file
