@@ -12,6 +12,8 @@ A preview of the next release can be installed from
 - Run nREPL 1.7.0 from bundled source
 - Bind the nREPL server to `127.0.0.1` by default instead of `0.0.0.0`. Use `bb --nrepl-server 0.0.0.0:1667` in Docker
 - Bundle nREPL ops for the CIDER inspector, test runner (`C-c C-t`) and `cider-version`
+- Run the nREPL server on a Unix domain socket with the `:socket` option of `babashka.nrepl.server/start-server!`
+- Add `reify` support for `java.io.Flushable`
 - [babashka.nrepl#72](https://github.com/babashka/babashka.nrepl/issues/72): Isolate REPL bindings such as `*1`, `*e` and `*ns*` per session and preserve them when reconnecting with the same session id
 - Add the nREPL `interrupt` op. Interruption is cooperative and does not stop tight loops
 - Replace the `:xform` option of `babashka.nrepl.server/start-server!` with `:middleware`, accepting middleware vars with nREPL descriptors. See [examples/nrepl_middleware.clj](examples/nrepl_middleware.clj)
