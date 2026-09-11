@@ -6,6 +6,7 @@
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
+   [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]])
   (:import
    [java.lang ProcessBuilder$Redirect]))
@@ -270,6 +271,123 @@
           (eval-over-the-wire 1668 "(babashka.nrepl.server/stop-server! user/nrepl-server)")
           (when-let [proc @proc-state]
             (.destroy ^Process proc)))))))
+
+(defn- with-bb-script
+  "Runs `script` through bb, which starts an nREPL server on `port` and
+  returns, then calls `f`. In-process on the JVM, a process natively."
+  [port script f]
+  (let [file (str (fs/create-temp-file {:suffix ".clj"}))
+        proc (atom nil)]
+    (spit file script)
+    (try
+      (if tu/jvm?
+        (tu/bb nil file)
+        (reset! proc (p/process ["./bb" file] {:err :inherit})))
+      (wait/wait-for-port "127.0.0.1" port {:timeout 10000})
+      (f)
+      (finally
+        (if tu/jvm?
+          (eval-over-the-wire port "(babashka.nrepl.server/stop-server! user/server)")
+          (some-> @proc p/destroy-tree))
+        (fs/delete-if-exists file)))))
+
+(defn- with-session
+  "Calls `f` with a function sending an op map to a fresh session on
+  `port` and returning the replies to it."
+  [port f]
+  (with-open [socket (java.net.Socket. "127.0.0.1" (int port))
+              in (java.io.PushbackInputStream. (.getInputStream socket))
+              os (.getOutputStream socket)]
+    (bencode/write-bencode os {"op" "clone"})
+    (let [session (:new-session (read-msg (bencode/read-bencode in)))
+          id (atom 0)
+          send (fn [m]
+                 (let [id (str (swap! id inc))]
+                   (bencode/write-bencode os (assoc m "session" session "id" id))
+                   (loop [replies []]
+                     (let [reply (read-reply in session id)
+                           replies (conj replies reply)]
+                       (if (contains? (set (:status reply)) "done")
+                         replies
+                         (recur replies))))))]
+      (f send))))
+
+(deftest ^:skip-windows nrepl-user-middleware-test
+  (with-bb-script 1670
+    "(require '[nrepl.middleware :refer [set-descriptor!]] '[nrepl.transport :as t])
+     (defn wrap-hello [handler]
+       (fn [{:keys [op] :as msg}]
+         (if (= \"hello\" op)
+           (t/respond-to msg :greeting (str \"Hello, \" (:name msg \"world\") \"!\") :status :done)
+           (handler msg))))
+     (set-descriptor! #'wrap-hello {:requires #{\"clone\"} :expects #{} :handles {\"hello\" {:doc \"Greets.\"}}})
+     (defn wrap-timing [handler]
+       (fn [{:keys [op transport] :as msg}]
+         (if (= \"eval\" op)
+           (handler (assoc msg :transport (reify t/Transport
+                                            (recv [_ timeout] (t/recv transport timeout))
+                                            (send [this reply]
+                                              (t/send transport (cond-> reply (contains? (set (:status reply)) :done) (assoc :elapsed-ms 0)))
+                                              this))))
+           (handler msg))))
+     (set-descriptor! #'wrap-timing {:requires #{\"clone\"} :expects #{\"eval\"} :handles {}})
+     (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1670 :quiet true :middleware [#'wrap-hello #'wrap-timing]}))"
+    (fn []
+      (with-session 1670
+        (fn [send]
+          (testing "a middleware adding an op"
+            (is (= "Hello, bb!" (:greeting (first (send {"op" "hello" "name" "bb"})))))
+            (is (contains? (:ops (first (send {"op" "describe"}))) "hello")))
+          (testing "a middleware wrapping eval's transport"
+            (let [replies (send {"op" "eval" "code" "(+ 1 2)"})]
+              (is (= "3" (:value (first replies))))
+              (is (= 0 (:elapsed-ms (last replies)))))))))))
+
+(deftest ^:skip-windows nrepl-cider-ops-test
+  (with-bb-script 1671
+    "(ns ct-demo (:require [clojure.test :refer [deftest is testing]]))
+     (deftest passing (is (= 1 1)))
+     (deftest failing (testing \"ctx\" (is (= 1 2) \"nope\")))
+     (deftest erroring (is (= 1 (throw (ex-info \"boom\" {:a 1})))))
+     (ns user)
+     (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1671 :quiet true}))"
+    (fn []
+      (with-session 1671
+        (fn [send]
+          (testing "describe carries the cider version CIDER checks"
+            (is (string? (bytes->str (get-in (first (send {"op" "describe"})) [:aux "cider-version" "version-string"])))))
+          (testing "the test op runs clojure.test and reports like cider-nrepl"
+            (let [reply (first (send {"op" "test" "ns" "ct-demo"}))
+                  summary (into {} (map (fn [[k v]] [(keyword (bytes->str k)) v])) (:summary reply))
+                  results (get (:results reply) "ct-demo")
+                  result (fn [var] (into {} (map (fn [[k v]] [(keyword (bytes->str k)) (if (bytes? v) (bytes->str v) v)])) (first (get results var))))]
+              (is (= {:ns 1 :var 3 :test 3 :pass 1 :fail 1 :error 1} summary))
+              (is (= "pass" (:type (result "passing"))))
+              (is (= "ctx" (:context (result "failing"))))
+              (is (= "nope" (:message (result "failing"))))
+              (is (= "error" (:type (result "erroring"))))
+              (is (str/includes? (:error (result "erroring")) "boom"))
+              (is (integer? (:line (result "erroring"))))))
+          (testing "test-stacktrace names the erring test"
+            (let [cause (first (send {"op" "test-stacktrace" "ns" "ct-demo" "var" "erroring" "index" 0}))]
+              (is (= "boom" (bytes->str (:message cause))))
+              (is (= "ct-demo/erroring" (bytes->str (get-in (first (:stacktrace cause)) ["name"]))))))
+          (testing "retest reruns only what failed"
+            (let [summary (into {} (map (fn [[k v]] [(keyword (bytes->str k)) v])) (:summary (first (send {"op" "retest"}))))]
+              (is (= 2 (:test summary)))
+              (is (= 0 (:pass summary)))))
+          (testing "an eval with :inspect returns the inspector's rendering"
+            (let [value (:value (first (send {"op" "eval" "code" "{:a 1 :b [1 2 3]}" "inspect" "true"})))]
+              (is (str/starts-with? value "(\"Class: \""))
+              (is (str/includes? value "\":b\""))))
+          (testing "inspect-push, then inspect-pop"
+            (let [pushed (:value (first (send {"op" "inspect-push" "idx" 4})))
+                  popped (:value (first (send {"op" "inspect-pop"})))]
+              (is (str/includes? pushed "PersistentVector"))
+              (is (str/includes? popped "PersistentArrayMap"))))
+          (testing "inspect-def-current-value defs it"
+            (send {"op" "inspect-def-current-value" "ns" "user" "var-name" "inspected"})
+            (is (= "{:a 1, :b [1 2 3]}" (:value (first (send {"op" "eval" "code" "inspected"})))))))))))
 
 (deftest ^:skip-windows nrepl-server-non-daemon-test
   (when tu/native?

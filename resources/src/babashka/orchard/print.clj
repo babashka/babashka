@@ -130,7 +130,7 @@
     (.append w \")))
 
 (defmethod print :scalar [^Object x, ^Writer w]
-  (.write w (.toString x)))
+  (.write w (str x)))
 
 (defmethod print :keyword [^Keyword kw, ^Writer w]
   (if-some [kw-ns (and *pov-ns* (namespace kw))]
@@ -145,8 +145,8 @@
             (.write w (name matched-alias))
             (.write w "/")
             (.write w (name kw)))
-        (.write w (.toString kw))))
-    (.write w (.toString kw))))
+        (.write w (str kw))))
+    (.write w (str kw))))
 
 (defmethod print :double [x, ^Writer w]
   (cond (= Double/POSITIVE_INFINITY x) (.write w "##Inf")
@@ -194,7 +194,7 @@
 
 (defmethod print IDeref [^IDeref x, ^Writer w]
   (let [pending (and (instance? IPending x)
-                     (not (.isRealized ^IPending x)))
+                     (not (realized? x)))
         [ex val]
         (when-not pending
           (try [false (deref x)]

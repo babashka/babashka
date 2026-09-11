@@ -756,7 +756,7 @@
     (render-page-info ins)))
 
 (defn- render-var-value [inspector ^clojure.lang.Var obj]
-  (if-not (.isBound obj)
+  (if-not (bound? obj)
     inspector
     (render-labeled-value inspector "Value" (var-get obj))))
 

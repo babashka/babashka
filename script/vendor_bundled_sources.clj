@@ -420,22 +420,31 @@
   (try (.get ^java.lang.reflect.Field @multifn-name-field mfn)
        (catch SecurityException _ \"_\")))"
                 "(defn- multifn-name [_mfn] \"_\")"
-                "no reflection on MultiFn's private field")))
+                "no reflection on MultiFn's private field")
+         ;; interop on Clojure values needs reflection registration in the
+         ;; image, the core functions do not
+         (subst "(.write w (.toString x))" "(.write w (str x))")
+         (subst "(.toString kw)" "(str kw)" 2)
+         (subst "(not (.isRealized ^IPending x))" "(not (realized? x))")))
    "orchard/inspect/analytics.clj"
    (fn [s]
-     (patch s "(definline ^:private inc-if [val condition]
+     (-> s
+         (patch "(definline ^:private inc-if [val condition]
   `(cond-> ~val ~condition inc))"
-            "(defn- inc-if [val condition] (cond-> val condition inc))"
-            "sci has no definline"))
+                "(defn- inc-if [val condition] (cond-> val condition inc))"
+                "sci has no definline")
+         (subst "(.iterator coll)" "(RT/iter coll)" 3)))
    "orchard/inspect.clj"
    (fn [s]
-     (patch s "(#'clojure.reflect/parse-flags (.getModifiers obj) :class)"
+     (-> s
+         (subst "(if-not (.isBound obj)" "(if-not (bound? obj)")
+         (patch "(#'clojure.reflect/parse-flags (.getModifiers obj) :class)"
             "(let [m (.getModifiers obj)]
                                  (remove nil? [(when (Modifier/isPublic m) :public)
                                                (when (Modifier/isAbstract m) :abstract)
                                                (when (Modifier/isFinal m) :final)
                                                (when (Modifier/isStatic m) :static)]))"
-            "clojure.reflect's private parse-flags is not reachable in sci" 2))
+            "clojure.reflect's private parse-flags is not reachable in sci" 2)))
    "nrepl/version.clj"
    (fn [s]
      (patch s "(get-version \"nrepl\" \"nrepl\")"

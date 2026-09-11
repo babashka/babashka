@@ -65,7 +65,7 @@
          (or (> n 20) (> ratio 0.3)))))
 
 (defn- numbers-stats [^Iterable coll]
-  (let [it (.iterator coll)]
+  (let [it (RT/iter coll)]
     (loop [i 0, hi nil, lo nil, zeros 0, n 0, sum 0.0]
       (if (and (< i *size-cutoff*) (.hasNext it))
         (let [x (.next it)]
@@ -84,7 +84,7 @@
   (.newEncoder (java.nio.charset.Charset/forName "US-ASCII")))
 
 (defn- strings-stats [^Iterable coll]
-  (let [it (.iterator coll)]
+  (let [it (RT/iter coll)]
     (loop [i 0, n 0, blank 0, ascii 0, hi nil, lo nil, sum 0]
       (if (and (< i *size-cutoff*) (.hasNext it))
         (let [x (.next it)]
@@ -102,7 +102,7 @@
           {:n n, :blank blank, :ascii ascii, :max-len hi, :min-len lo, :avg-len (float (/ sum n))})))))
 
 (defn- colls-stats [^Iterable coll]
-  (let [it (.iterator coll)]
+  (let [it (RT/iter coll)]
     (loop [i 0, n 0, empty 0, hi nil, lo nil, sum 0]
       (if (and (< i *size-cutoff*) (.hasNext it))
         (let [x (.next it)]

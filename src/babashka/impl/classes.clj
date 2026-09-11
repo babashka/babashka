@@ -108,7 +108,14 @@
                {:name "fill"}]}
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
-    {:methods [{:name "canAccess"}]}
+    {:methods [{:name "canAccess"}
+               {:name "trySetAccessible"}]} ;; orchard.java.compatibility
+    ;; orchard.java.compatibility, module-name and is-in-boot-module?
+    java.lang.Module
+    {:methods [{:name "getName"}]}
+    java.lang.ModuleLayer
+    {:methods [{:name "boot"}
+               {:name "modules"}]}
     java.lang.Package
     {:methods [{:name "getName"}]}
     java.lang.reflect.Member
@@ -141,9 +148,7 @@
                ;; orchard.inspect and orchard.java.compatibility
                {:name "getDeclaringClass"}
                {:name "getType"}
-               {:name "toGenericString"}
-               {:name "canAccess"}
-               {:name "trySetAccessible"}]}
+               {:name "toGenericString"}]}
     java.lang.reflect.Constructor
     {:methods [{:name "getName"}
                {:name "getModifiers"}
@@ -405,8 +410,6 @@
           mx.cider.orchard.TruncatingStringWriter
           mx.cider.orchard.TruncatingStringWriter$TotalLimitExceeded
           clojure.core.Eduction ;; orchard.print
-          java.lang.Module ;; orchard.java.compatibility
-          java.lang.ModuleLayer ;; orchard.java.compatibility
           java.lang.NoSuchMethodException ;; nrepl.socket
           java.lang.Thread$State ;; nrepl.util.threading
           java.net.ProtocolFamily ;; nrepl.socket

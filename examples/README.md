@@ -36,6 +36,7 @@
   - [Check stdin for data](#check-stdin-for-data)
   - [Using org.clojure/data.xml](#using-orgclojuredataxml)
   - [Simple logger](#simple-logger)
+  - [nREPL server with your own middleware](#nrepl-server-with-your-own-middleware)
   - [Using GZip streams (memo utility)](#using-gzip-streams-to-make-a-note-utility)
   - [Pretty-printing mySQL results](#pretty-printing-mysql-results)
   - [Single page application with Babashka + htmx](#single-page-application-with-babashka--htmx)
@@ -528,6 +529,13 @@ $ bb examples/xml-example.clj
 $ bb "(require 'logger) (logger/log \"the logger says hi\")"
 NO_SOURCE_PATH:1:19 the logger says hi
 ```
+
+## nREPL server with your own middleware
+
+[nrepl_middleware.clj](nrepl_middleware.clj) starts an nREPL server that
+times every eval: the time goes into the reply as `elapsed-ms` and to the
+terminal. Middleware is a var with an nREPL descriptor, handed to
+`babashka.nrepl.server/start-server!` as `:middleware`.
 
 ## Using gzip streams to make a note utility
 
