@@ -374,9 +374,10 @@
       (with-session 1673
         (fn [send]
           (send {"op" "eval" "code" "(defn inner [x] (/ x 0)) (defn middle [x] (inner x)) (defn outer [x] (middle x))"})
-          (testing "an eval error names the exception class"
+          (testing "an eval error names the exception class and the location"
             (let [replies (send {"op" "eval" "code" "(outer 1)"})]
               (is (str/includes? (str/join (keep :err replies)) "java.lang.ArithmeticException: Divide by zero"))
+              (is (str/includes? (str/join (keep :err replies)) "[at NO_SOURCE_PATH:1:"))
               (is (= "class java.lang.ArithmeticException" (some :ex replies)))))
           (testing "*e carries sci's callstack"
             (is (= ["true"] (keep :value (send {"op" "eval" "code" "(some? (:sci.impl/callstack (ex-data *e)))"})))))
@@ -388,7 +389,12 @@
                           (map #(bytes->str (get % "name")))
                           (filter #(str/starts-with? % "user/"))
                           distinct
-                          (take 3)))))))))))
+                          (take 3))))
+              (is (= #{"NO_SOURCE_PATH"}
+                     (->> (:stacktrace cause)
+                          (filter #(str/starts-with? (bytes->str (get % "name")) "user/"))
+                          (map #(bytes->str (get % "file")))
+                          set))))))))))
 
 (deftest ^:skip-windows nrepl-cider-ops-test
   (with-bb-script 1671

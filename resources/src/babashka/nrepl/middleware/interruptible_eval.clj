@@ -113,10 +113,10 @@
 (str (class (if (= :sci/error (:type (ex-data e))) (or (ex-cause e) e) e)))
                                         :root-ex (str (class (clojure.main/root-cause e)))})))]
       (push-thread-bindings (merge (when explicit-ns {#'*ns* explicit-ns})
-                                   (when (and file file-name)
-                                     #_{Compiler/SOURCE_PATH file
-                                      Compiler/SOURCE file-name} ;; BB-PATCH sci reads the source path from *file*
-{#'*file* file})
+                                   #_(when (and file file-name)
+                                     {Compiler/SOURCE_PATH file
+                                      Compiler/SOURCE file-name}) ;; BB-PATCH sci reads the source path from *file*, NO_SOURCE_PATH for code without a file
+{#'*file* (or file "NO_SOURCE_PATH")}
                                    bindings))
       (try
         (loop []

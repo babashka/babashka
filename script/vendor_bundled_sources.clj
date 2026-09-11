@@ -282,10 +282,11 @@
            (instance? ThreadDeath (.getCause e))))"
                 "(instance? ThreadDeath (clojure.main/root-cause e))"
                 "no CompilerException in sci")
-         (patch "{Compiler/SOURCE_PATH file
-                                      Compiler/SOURCE file-name}"
-                "{#'*file* file}"
-                "sci reads the source path from *file*")
+         (patch "(when (and file file-name)
+                                     {Compiler/SOURCE_PATH file
+                                      Compiler/SOURCE file-name})"
+                "{#'*file* (or file \"NO_SOURCE_PATH\")}"
+                "sci reads the source path from *file*, NO_SOURCE_PATH for code without a file")
          (patch "(instance? LispReader$ReaderException e)"
                 "(= :sci.error/parse (:type (ex-data e)))"
                 "sci reader errors are ex-info")
