@@ -27,14 +27,17 @@
 
 (defn- sci-frame
   "A sci frame; nREPL's and babashka's own are flagged tooling, which CIDER hides."
-  [{:keys [ns name file line column]}]
-  (let [ns (str ns)]
-    {:name (str ns "/" (or name "fn"))
+  [{:keys [ns name local file line column]}]
+  (let [ns (str ns)
+        ;; CIDER draws a frame as ns/fn, so a top-level or anonymous frame
+        ;; needs a name too
+        fn-name (str (or name "fn") (when local (str "#" local)))]
+    {:name (str ns "/" fn-name)
      :file (or file "NO_SOURCE_FILE")
      :line (or line 0)
      :column column
      :ns ns
-     :fn (str name)
+     :fn fn-name
      :flags (if (or (str/starts-with? ns "nrepl.") (str/starts-with? ns "babashka.")
                     (= "clojure.core" ns))
               #{:clj :tooling}

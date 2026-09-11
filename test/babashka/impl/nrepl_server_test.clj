@@ -394,7 +394,10 @@
                      (->> (:stacktrace cause)
                           (filter #(str/starts-with? (bytes->str (get % "name")) "user/"))
                           (map #(bytes->str (get % "file")))
-                          set))))))))))
+                          set)))
+              (testing "every frame has a fn name, the top-level one included"
+                (is (every? #(seq (bytes->str (get % "fn"))) (:stacktrace cause)))
+                (is (some #(= "user/fn" (bytes->str (get % "name"))) (:stacktrace cause)))))))))))
 
 (deftest ^:skip-windows nrepl-cider-ops-test
   (with-bb-script 1671
