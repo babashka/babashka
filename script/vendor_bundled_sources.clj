@@ -282,14 +282,20 @@
            (instance? ThreadDeath (.getCause e))))"
                 "(instance? ThreadDeath (clojure.main/root-cause e))"
                 "no CompilerException in sci")
-         (patch "{Compiler/SOURCE_PATH file
-                                      Compiler/SOURCE file-name}"
-                "{#'*file* file}"
-                "sci reads the source path from *file*")
+         (patch "(when (and file file-name)
+                                     {Compiler/SOURCE_PATH file
+                                      Compiler/SOURCE file-name})"
+                "{#'*file* (or file \"NO_SOURCE_PATH\")}"
+                "Set *file* to the source path or NO_SOURCE_PATH")
          (patch "(instance? LispReader$ReaderException e)"
                 "(= :sci.error/parse (:type (ex-data e)))"
                 "sci reader errors are ex-info")
-         (patch "(Compiler/eval input true)" "(clojure.core/eval input)" "sci eval, eval is shadowed by the message key")))
+         (patch "(Compiler/eval input true)" "(clojure.core/eval input)" "sci eval, eval is shadowed by the message key")
+         (patch "(catch Throwable e
+                  (caught e))"
+                "(catch ^{:sci/callstack true} Throwable e
+                  (caught e))"
+                "Preserve the original exception and its sci stack frames")))
    "nrepl/middleware/session.clj"
    (fn [s]
      (-> s

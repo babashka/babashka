@@ -25,14 +25,21 @@
 
 ;;;; Stacktraces, in the shape CIDER's stacktrace buffer renders
 
-(defn- sci-frame [{:keys [ns name file line column]}]
-  {:name (str ns "/" (or name "fn"))
-   :file (or file "NO_SOURCE_FILE")
-   :line (or line 0)
-   :column column
-   :ns (str ns)
-   :fn (str name)
-   :flags #{:clj :project}})
+(defn- sci-frame
+  "Returns a CIDER frame with nREPL, babashka and clojure.core frames flagged as tooling."
+  [{:keys [ns name local file line column]}]
+  (let [ns (str ns)
+        fn-name (str (or name "fn") (when local (str "#" local)))]
+    {:name (str ns "/" fn-name)
+     :file (or file "NO_SOURCE_FILE")
+     :line (or line 0)
+     :column column
+     :ns ns
+     :fn fn-name
+     :flags (if (or (str/starts-with? ns "nrepl.") (str/starts-with? ns "babashka.")
+                    (= "clojure.core" ns))
+              #{:clj :tooling}
+              #{:clj :project})}))
 
 (defn- java-frame
   "A JVM frame; sci's own frames are flagged tooling, which CIDER hides."
@@ -48,10 +55,11 @@
               #{:java})}))
 
 (defn analyze
-  "Causes of `ex`, innermost last, each with its stack: sci's frames when
-  there are any, the JVM's otherwise."
+  "Returns the causes of `ex`, innermost last, with sci or JVM stack frames.
+  Unwraps sci errors and preserves their sci frames."
   [^Throwable ex]
-  (let [sci-trace (map sci-frame (try (sci/stacktrace ex) (catch Throwable _ nil)))]
+  (let [sci-trace (map sci-frame (try (sci/stacktrace ex) (catch Throwable _ nil)))
+        ex (if (= :sci/error (:type (ex-data ex))) (or (ex-cause ex) ex) ex)]
     (loop [causes [] e ex]
       (if e
         (let [data (ex-data e)
@@ -94,7 +102,7 @@
            (when (= :fail t)
              {:actual (print-object actual)})
            (when (= :error t)
-             (let [^Throwable e actual
+             (let [e (or (:babashka.impl.clojure.test/sci-error m) actual)
                    frames (try (sci/stacktrace e) (catch Throwable _ nil))
                    in-test (some #(when (and (= (str ns) (str (:ns %)))
                                               (= (str v-name) (str (:name %))))
@@ -356,19 +364,30 @@
     (exec (:id msg)
           (fn []
             (if-let [e (get-in @results [(symbol ns) (symbol var) index :error])]
-              (let [;; the erring test itself as the first frame, sci has no
-                    ;; frames for an exception user code caught
+              (let [;; Use the test as the first frame when sci frames are unavailable.
                     test-frame {:name (str ns "/" var)
                                 :ns ns :fn var
                                 :file (:file (meta (ns-resolve (symbol ns) (symbol var))))
                                 :line (get-in @results [(symbol ns) (symbol var) index :line])
                                 :flags #{:clj :project}}
-                    [first-cause & more] (analyze e)]
-                (doseq [cause (cons (update first-cause :stacktrace #(into [test-frame] %)) more)]
+                    [first-cause & more] (analyze e)
+                    sci-frames? (seq (try (sci/stacktrace e) (catch Throwable _ nil)))]
+                (doseq [cause (cons (cond-> first-cause
+                                      (not sci-frames?) (update :stacktrace #(into [test-frame] %)))
+                                    more)]
                   (t/respond-to msg (wire cause))))
               (t/respond-to msg :status :no-error)))
           (fn [] (t/respond-to msg :status :done))
           msg)))
+
+(defn- analyze-last-stacktrace-reply
+  "Sends each cause of the session's `*e`, or `no-error` if unset, followed by `done`."
+  [msg]
+  (if-let [e (get @(:session msg) #'*e)]
+    (doseq [cause (analyze e)]
+      (t/respond-to msg (wire cause)))
+    (t/respond-to msg :status :no-error))
+  (t/respond-to msg :status :done))
 
 (defn wrap-cider
   "Middleware for the cider-nrepl ops babashka implements."
@@ -389,6 +408,8 @@
       ("cider/test-all" "test-all") (test-all-reply msg)
       ("cider/retest" "retest") (retest-reply msg)
       ("cider/test-stacktrace" "test-stacktrace") (test-stacktrace-reply msg)
+      ("cider/analyze-last-stacktrace" "analyze-last-stacktrace" "cider/stacktrace" "stacktrace")
+      (analyze-last-stacktrace-reply msg)
       ("cider/cider-version" "cider-version") (t/respond-to msg :cider-version version :status :done)
       (h msg))))))
 
@@ -404,6 +425,8 @@
                                   "test-all" {:doc "Runs the tests of every loaded namespace." :requires {} :optional {} :returns {}}
                                   "retest" {:doc "Reruns the tests that failed or errored last time." :requires {} :optional {} :returns {}}
                                   "test-stacktrace" {:doc "The causes of an erring test's exception." :requires {"ns" "" "var" "" "index" ""} :optional {} :returns {}}
+                                  "analyze-last-stacktrace" {:doc "Returns the causes of the session's last exception." :requires {} :optional {} :returns {}}
+                                  "stacktrace" {:doc "Alias for analyze-last-stacktrace." :requires {} :optional {} :returns {}}
                                   "cider-version" {:doc "The cider-nrepl version these ops speak." :requires {} :optional {} :returns {"cider-version" ""}}
                                   "inspect-print-current-value" {:doc "Prints the inspected value." :requires {} :optional {} :returns {}}}
                                  (map (fn [op] [op {:doc "Inspector operation, see cider-nrepl."
