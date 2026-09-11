@@ -55,6 +55,12 @@ patched, for what sci cannot run as it is:
 - `clojure.core/pr-on`, private and absent in sci.
 - The version string, a jar resource the image cannot read.
 
+Two of nREPL's Java classes are patched as well: `SessionThread` and
+`DaemonThreadFactory` pass an 8 MB stack size, the main thread's. A thread
+in the image otherwise gets a sixteenth of that, and an eval over nREPL
+overflowed at a sixteenth of the depth the same code reaches as a script
+(malli validation of recursive data: 200 levels against 3,200).
+
 Everything else that nREPL needed was interop bb did not expose yet, and
 was registered rather than patched: `RT/classForName`, `Var.bindRoot`,
 `Thread$State`, `NoSuchMethodException`, `SSLServerSocket`, four
