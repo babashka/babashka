@@ -28,7 +28,8 @@
   ;; Reflection config is needed for untyped Java interop on these
   ;; instances in SCI-evaluated code (e.g. (.hasheq x) without type hint).
   `{sci.lang.Var {:fields [{:name "ns"}
-                            {:name "sym"}]}
+                            {:name "sym"}]
+                  :methods [{:name "bindRoot"}]} ;; nrepl.util.out
     sci.lang.Namespace {:fields [{:name "name"}]}
     sci.lang.Type {:methods [{:name "getName"}]}
     babashka.impl.SciMap {:allPublicConstructors true
@@ -107,7 +108,14 @@
                {:name "fill"}]}
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
-    {:methods [{:name "canAccess"}]}
+    {:methods [{:name "canAccess"}
+               {:name "trySetAccessible"}]} ;; orchard.java.compatibility
+    ;; orchard.java.compatibility, module-name and is-in-boot-module?
+    java.lang.Module
+    {:methods [{:name "getName"}]}
+    java.lang.ModuleLayer
+    {:methods [{:name "boot"}
+               {:name "modules"}]}
     java.lang.Package
     {:methods [{:name "getName"}]}
     java.lang.reflect.Member
@@ -120,27 +128,43 @@
                {:name "getModifiers"}
                {:name "getParameterCount"}
                {:name "getParameterTypes"}
-               {:name "getReturnType"}]}
+               {:name "getReturnType"}
+               ;; orchard.inspect
+               {:name "getDeclaringClass"}
+               {:name "getExceptionTypes"}
+               {:name "toGenericString"}]}
     java.lang.reflect.Modifier
     {:methods [{:name "isStatic"}
-               {:name "toString"}]}
+               {:name "toString"}
+               ;; orchard.inspect
+               {:name "isPublic"}
+               {:name "isAbstract"}
+               {:name "isFinal"}]}
     java.lang.reflect.Field
     {:methods [{:name "getName"}
                {:name "getModifiers"}
                {:name "setAccessible"}
                {:name "get"}
-               {:name "set"}]}
+               {:name "set"}
+               ;; orchard.inspect and orchard.java.compatibility
+               {:name "getDeclaringClass"}
+               {:name "getType"}
+               {:name "toGenericString"}]}
     java.lang.reflect.Constructor
     {:methods [{:name "getName"}
                {:name "getModifiers"}
                {:name "getParameterTypes"}
-               {:name "getParameterCount"}]}
+               {:name "getParameterCount"}
+               ;; orchard.inspect
+               {:name "getDeclaringClass"}
+               {:name "toGenericString"}]}
     java.lang.reflect.Executable
     {:methods [{:name "getParameterCount"}]}
     java.util.stream.Collectors
     {:methods [{:name "toList"}]}
     java.lang.reflect.Array
     {:methods [{:name "newInstance"}
+               {:name "getLength"} ;; orchard.inspect
                {:name "set"}]}
     java.lang.Runnable
     {:methods [{:name "run"}]}
@@ -151,7 +175,7 @@
     clojure.lang.IFn
     {:methods [{:name "applyTo"}]}
     clojure.lang.MultiFn
-    {:fields [{:name "dispatchFn"}]
+    {:fields [{:name "dispatchFn"} {:name "name"}]
      :methods [{:name "getMethod"}
                {:name "getMethodTable"}
                {:name "addMethod"}]}
@@ -159,6 +183,7 @@
     {:methods [{:name "aget"}
                {:name "aset"}
                {:name "aclone"}
+               {:name "classForName"} ;; nrepl.transport
                {:name "iter"}
                ;; we expose this via the Compiler/LOADER dynamic var
                {:name "baseLoader"}]}
@@ -235,7 +260,8 @@
     {:allPublicConstructors true
      :methods [{:name "create"}]}
     clojure.lang.TaggedLiteral
-    {:methods [{:name "create"}]}
+    {:methods [{:name "create"}]
+     :allDeclaredFields true}
     org.jline.reader.impl.LineReaderImpl
     {:fields [{:name "post"} {:name "size"}]
      :methods [{:name "redisplay"}
@@ -345,6 +371,7 @@
     javax.net.ssl.KeyManagerFactory
     javax.net.ssl.SSLContext
     javax.net.ssl.SSLException
+    javax.net.ssl.SSLServerSocket ;; nrepl.socket
     javax.net.ssl.SSLParameters
     javax.net.ssl.SSLSession ;; clj-http-lite
     javax.net.ssl.TrustManager
@@ -373,6 +400,24 @@
 (def classes
   ;; :all = full reflection enabled (allPublicMethods, allPublicConstructors, etc.)
   `{:all [clojure.lang.AMapEntry ;; for proxy-super on proxied classes
+          ;; nREPL's Java classes, see script/vendor_bundled_sources.clj
+          nrepl.SessionThread
+          nrepl.DaemonThreadFactory
+          nrepl.in.QueuePollingReader
+          nrepl.out.CallbackBufferedOutputStream
+          nrepl.out.QuotaBoundWriter
+          nrepl.out.QuotaExceeded
+          nrepl.out.TeeOutputStream
+          ;; orchard's, the CIDER inspector, see the same script
+          mx.cider.orchard.TruncatingStringWriter
+          mx.cider.orchard.TruncatingStringWriter$TotalLimitExceeded
+          clojure.core.Eduction ;; orchard.print
+          java.lang.NoSuchMethodException ;; nrepl.socket
+          java.lang.Thread$State ;; nrepl.util.threading
+          java.net.ProtocolFamily ;; nrepl.socket
+          java.net.SocketAddress ;; nrepl.socket
+          java.nio.channels.ClosedChannelException ;; nrepl.transport
+          java.nio.channels.NetworkChannel ;; nrepl.socket
           clojure.lang.APersistentMap ;; for proxy-super on proxied classes
           clojure.lang.ArityException
           clojure.lang.BigInt
@@ -1159,6 +1204,8 @@
     IllegalStateException java.lang.IllegalStateException
     Integer java.lang.Integer
     InterruptedException java.lang.InterruptedException
+    NoSuchMethodException java.lang.NoSuchMethodException
+    Thread$State java.lang.Thread$State
     Iterable java.lang.Iterable
     ;; NOTE: in hindsight File never belonged to the default imports of Clojure,
     ;; but it's been here to long to remove probably
@@ -1230,8 +1277,22 @@
                        :allPublicFields true}))
         instance-checks (vec (for [c (sort (:instance-checks classes))
                                    :let [class-name (str c)]]
-                               ;; don't include any methods
-                               {:name class-name}))
+                               ;; don't include any methods, the inspector
+                               ;; reads the fields of the Clojure ones
+                               (cond-> {:name class-name}
+                                 (.startsWith ^String class-name "clojure.lang.")
+                                 (assoc :allDeclaredFields true))))
+        instance-check-names (set (map str (:instance-checks classes)))
+        ;; the inspector walks the superclasses for their fields too
+        superclass-fields (vec (for [n (sort (set (for [c (:instance-checks classes)
+                                                        :when (.startsWith ^String (str c) "clojure.lang.")
+                                                        k (take-while some? (iterate #(.getSuperclass ^Class %)
+                                                                                     (Class/forName (str c))))
+                                                        :let [kn (.getName ^Class k)]
+                                                        :when (and (.startsWith kn "clojure.lang.")
+                                                                   (not (instance-check-names kn)))]
+                                                    kn)))]
+                                {:name n :allDeclaredFields true}))
         custom-entries (for [[c v] (:custom classes)
                              :let [class-name (str c)]]
                          (let [v (if-let [inherit-from (seq (:inherit v))]
@@ -1243,7 +1304,7 @@
                                          (update :methods into inherited-methods)))
                                    (dissoc v :inherit))]
                            (assoc v :name class-name)))
-        all-entries (concat entries constructors methods fields instance-checks custom-entries)]
+        all-entries (concat entries constructors methods fields instance-checks superclass-fields custom-entries)]
     all-entries))
 
 (defn generate-reflection-file

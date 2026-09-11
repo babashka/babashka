@@ -1,4 +1,5 @@
-{:paths ["src" "ffi/src" "feature-xml"
+;; target/classes holds the src-java classes, compiled by lein javac
+{:paths ["src" "target/classes" "ffi/src" "feature-xml"
          "feature-yaml" "feature-csv" "feature-transit"
          "feature-java-time" "feature-java-nio"
          "feature-httpkit-client" "feature-httpkit-server"
@@ -13,7 +14,6 @@
          "feature-rrb-vector"
          "feature-jdbc"
          "pods/src"
-         "babashka.nrepl/src"
          "process/src"
          "deps.clj/src" "deps.clj/resources"
          "resources" "sci/resources"

@@ -56,6 +56,29 @@ by default when a new command-line REPL is started."} repl-requires
     [clojure.java.javadoc :refer (javadoc)]
     [clojure.pprint :refer (pp pprint)]])
 
+(defn root-cause
+  "Returns the initial cause of an exception or error by peeling off all of
+  its wrappers"
+  [^Throwable t]
+  (loop [cause t]
+    (if-let [cause (.getCause cause)]
+      (recur cause)
+      cause)))
+
+(defn skip-if-eol
+  "If the next character on stream s is a newline, skips it, otherwise
+  leaves the stream untouched. Returns :line-start, :stream-end, or :body
+  to indicate the relative location of the next character on s. The stream
+  must either be an instance of LineNumberingPushbackReader or duplicate
+  its behavior of both supporting .unread and collapsing all of CR, LF, and
+  CRLF to a single \\newline."
+  [^java.io.PushbackReader s]
+  (let [c (.read s)]
+    (cond
+      (= c (int \newline)) :line-start
+      (= c -1) :stream-end
+      :else (do (.unread s c) :body))))
+
 (defmacro with-read-known
   "Evaluates body with *read-eval* set to a \"known\" value,
    i.e. substituting true for :unknown if necessary."

@@ -5,7 +5,7 @@
    [babashka.impl.clojure.core :as core-extras]
    [babashka.impl.clojure.main :as m]
    [babashka.impl.common :as common]
-   [babashka.nrepl.impl.sci :as sci-helpers]
+   [babashka.impl.nrepl.sci :as sci-helpers]
    [babashka.terminal :as terminal]
    [clojure.java.io :as io]
    [clojure.string :as str]

@@ -204,4 +204,8 @@ rm -rf resources/*.class
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" do run
     lein with-profiles "$BABASHKA_LEIN_PROFILES" do clean, uberjar, metabom
+    # target/classes is on deps.edn's paths for the src-java classes, the
+    # AOT output of the uberjar would shadow the sources there
+    rm -rf target/classes
+    lein with-profiles "$BABASHKA_LEIN_PROFILES" javac
 fi
