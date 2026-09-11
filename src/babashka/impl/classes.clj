@@ -174,7 +174,7 @@
     clojure.lang.IFn
     {:methods [{:name "applyTo"}]}
     clojure.lang.MultiFn
-    {:fields [{:name "dispatchFn"}]
+    {:fields [{:name "dispatchFn"} {:name "name"}]
      :methods [{:name "getMethod"}
                {:name "getMethodTable"}
                {:name "addMethod"}]}

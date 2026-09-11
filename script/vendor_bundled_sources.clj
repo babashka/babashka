@@ -411,21 +411,39 @@
          (patch "(Compiler/demunge (.getName (class x)))"
                 "(clojure.main/demunge (.getName (class x)))"
                 "no Compiler in the image")
-         (patch "(def ^:private multifn-name-field
-  (delay (doto (.getDeclaredField MultiFn \"name\")
-           (.setAccessible true))))"
-                ""
-                "no reflection on MultiFn's private field")
-         (patch "(defn- multifn-name [^MultiFn mfn]
-  (try (.get ^java.lang.reflect.Field @multifn-name-field mfn)
-       (catch SecurityException _ \"_\")))"
-                "(defn- multifn-name [_mfn] \"_\")"
-                "no reflection on MultiFn's private field")
+         ;; sci's IDeref is a protocol descriptor, not a class, so a method
+         ;; keyed on it never matches: dispatch to a keyword instead
+         (subst "(instance? Var x)               :default"
+                "(instance? Var x)               :default
+      (instance? IDeref x)            :deref")
+         (subst "(defmethod print IDeref [^IDeref x, ^Writer w]"
+                "(defmethod print :deref [^IDeref x, ^Writer w]")
+         (patch "(defmethod print :record [x, ^Writer w]
+  (.write w \"#\")
+  (.write w (if *short-record-names*
+              (.getSimpleName (class x))
+              (.getName (class x))))
+  (print-map x w))"
+                "(defmethod print :record [x, ^Writer w]
+  (.write w \"#\")
+  (.write w (let [full-name (.getName (type x))]
+              (if *short-record-names*
+                (subs full-name (inc (.lastIndexOf full-name \".\")))
+                full-name)))
+  (print-map x w))"
+                "every sci record is a SciRecord, its name is on the sci type")
          ;; interop on Clojure values needs reflection registration in the
          ;; image, the core functions do not
          (subst "(.write w (.toString x))" "(.write w (str x))")
          (subst "(.toString kw)" "(str kw)" 2)
          (subst "(not (.isRealized ^IPending x))" "(not (realized? x))")))
+   "orchard/pp.clj"
+   (fn [s]
+     ;; every sci record is a SciRecord, its name is on the sci type
+     (-> s
+         (subst "(.getSimpleName (class coll))"
+                "(let [n (.getName (type coll))] (subs n (inc (.lastIndexOf n \".\"))))")
+         (subst "(.getName (class coll))" "(.getName (type coll))")))
    "orchard/inspect/analytics.clj"
    (fn [s]
      (-> s

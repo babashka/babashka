@@ -41,6 +41,7 @@
       (instance? IPersistentSet x)    :set
       (instance? Eduction x)          :list
       (instance? Var x)               :default
+      (instance? IDeref x)            :deref
       (.isArray (class x))            :array
       :else                           (type x))))
 
@@ -177,11 +178,18 @@
 (defmethod print :map [^Map x, w]
   (print-map x w))
 
-(defmethod print :record [x, ^Writer w]
+#_(defmethod print :record [x, ^Writer w]
   (.write w "#")
   (.write w (if *short-record-names*
               (.getSimpleName (class x))
               (.getName (class x))))
+  (print-map x w)) ;; BB-PATCH every sci record is a SciRecord, its name is on the sci type
+(defmethod print :record [x, ^Writer w]
+  (.write w "#")
+  (.write w (let [full-name (.getName (type x))]
+              (if *short-record-names*
+                (subs full-name (inc (.lastIndexOf full-name ".")))
+                full-name)))
   (print-map x w))
 
 (defmethod print :array [x, ^Writer w]
@@ -192,7 +200,7 @@
       (print-coll w as-seq ", " "[] {" "}")
       (.write w "[] {}"))))
 
-(defmethod print IDeref [^IDeref x, ^Writer w]
+(defmethod print :deref [^IDeref x, ^Writer w]
   (let [pending (and (instance? IPending x)
                      (not (realized? x)))
         [ex val]
@@ -222,15 +230,13 @@
 (clojure.main/demunge (.getName (class x))))
   (.write w "]"))
 
-#_(def ^:private multifn-name-field
+(def ^:private multifn-name-field
   (delay (doto (.getDeclaredField MultiFn "name")
-           (.setAccessible true)))) ;; BB-PATCH no reflection on MultiFn's private field
+           (.setAccessible true))))
 
-
-#_(defn- multifn-name [^MultiFn mfn]
+(defn- multifn-name [^MultiFn mfn]
   (try (.get ^java.lang.reflect.Field @multifn-name-field mfn)
-       (catch SecurityException _ "_"))) ;; BB-PATCH no reflection on MultiFn's private field
-(defn- multifn-name [_mfn] "_")
+       (catch SecurityException _ "_")))
 
 (defmethod print MultiFn [x, ^Writer w]
   ;; MultiFn names are not unique so we keep the identity to ensure it's unique.

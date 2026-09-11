@@ -126,8 +126,8 @@
   [coll]
   (if (record? coll)
     [(str "#" (if print/*short-record-names*
-                (.getSimpleName (class coll))
-                (.getName (class coll))) "{") coll]
+                (let [n (.getName (type coll))] (subs n (inc (.lastIndexOf n "."))))
+                (.getName (type coll))) "{") coll]
     ;; If all keys in the map share a namespace and *print-
     ;; namespace-maps* is true, print the map using map namespace
     ;; syntax (e.g. #:a{:b 1} instead of {:a/b 1}). If the map is

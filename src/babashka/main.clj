@@ -938,7 +938,9 @@ Use bb run --help to show this help output.
         (str/starts-with? n "clojure.tools.gitlibs.")
         (= "nrepl" n)
         (str/starts-with? n "nrepl.")
-        (str/starts-with? n "babashka.nrepl.impl."))))
+        (str/starts-with? n "babashka.nrepl.impl.")
+        ;; the inspector's engine, patched; a cider-nrepl jar brings orchard
+        (str/starts-with? n "orchard."))))
 
 (defn- bundled-source
   "The bundled source of namespace, or nil. The image holds each file
