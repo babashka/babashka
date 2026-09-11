@@ -128,12 +128,12 @@
   "Starts the server. Returns a map with `:socket`, `:port` and `:stop`.
 
   `wrap-handler` wraps the message handler, see babashka.nrepl.server.
-  Options: `:host` (default 0.0.0.0), `:port` (default 1667), `:quiet`,
+  Options: `:host` (default 127.0.0.1), `:port` (default 1667), `:quiet`,
   `:describe` (a map merged into the describe reply, `versions` included),
   `:middleware` (vars or symbols with an nREPL descriptor, added to the
   default stack)."
   [{:keys [host port quiet describe middleware]
-    :or {host "0.0.0.0" port 1667}}
+    :or {host "127.0.0.1" port 1667}}
    wrap-handler]
   (reset! versions (walk/keywordize-keys (get describe "versions" (:versions describe))))
   (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka #'cider/wrap-cider
