@@ -184,7 +184,12 @@
 
 (deftest malformed-command-line-args-test
   (is (thrown-with-msg? Exception #"File does not exist: non-existing"
-                        (bb nil "-f" "non-existing"))))
+                        (bb nil "-f" "non-existing")))
+  (testing "an empty or blank argument is reported as a missing file"
+    (is (thrown-with-msg? Exception #"File does not exist"
+                          (bb nil "")))
+    (is (thrown-with-msg? Exception #"File does not exist"
+                          (bb nil " ")))))
 
 (deftest ^:flaky ssl-test
   (let [resp (bb nil "(slurp \"https://www.google.com\")")]
