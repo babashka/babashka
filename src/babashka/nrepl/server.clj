@@ -8,6 +8,23 @@
 
 (set! *warn-on-reflection* true)
 
+(declare parse-opt)
+
+(defn parse-connect
+  "The server `bb repl --connect` talks to: `host:port`, a port on
+  127.0.0.1, `unix://path`, or with `true` the port in .nrepl-port."
+  [target]
+  (cond (true? target)
+        (let [f (java.io.File. ".nrepl-port")]
+          (if (.exists f)
+            {:host "127.0.0.1" :port (Integer/parseInt (string/trim (slurp f)))}
+            (throw (ex-info "No .nrepl-port file in the current directory, pass an address: bb repl --connect host:port" {}))))
+        (string/starts-with? target "unix://")
+        {:socket (subs target (count "unix://"))}
+        :else
+        (let [{:keys [host port]} (parse-opt target)]
+          {:host (or host "127.0.0.1") :port port})))
+
 (defn parse-opt [host+port]
   (let [parts (string/split host+port #":")
         [host port] (if (= 1 (count parts))

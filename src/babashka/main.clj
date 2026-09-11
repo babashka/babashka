@@ -218,6 +218,7 @@ Evaluation:
 REPL:
 
   repl                 Start REPL.
+  repl --connect [addr] Start a REPL on an nREPL server. Address defaults to .nrepl-port.
   socket-repl  [addr]  Start a socket REPL. Address defaults to localhost:1666.
   nrepl-server [addr]  Start nREPL server. Address defaults to localhost:1667.
 
@@ -692,10 +693,17 @@ Use bb run --help to show this help output.
                    (assoc opts-map
                           :uberjar (first options))))
           ("--repl")
-          (let [options (next options)]
+          (let [options (next options)
+                [connect options] (if (= "--connect" (first options))
+                                    (let [options (next options)
+                                          addr (first options)]
+                                      (if (and addr (not (str/starts-with? addr "-")))
+                                        [addr (next options)]
+                                        [true options]))
+                                    [nil options])]
             (recur options
-                   (assoc opts-map
-                          :repl true)))
+                   (cond-> (assoc opts-map :repl true)
+                     connect (assoc :repl-connect connect))))
           ("--socket-repl")
           (let [options (next options)
                 opt (first options)
@@ -1175,7 +1183,10 @@ Use bb run --help to show this help output.
                 (second
                  (cond doc (print-doc sci-ctx command-line-args)
                        repl (sci/binding [core/command-line-args command-line-args]
-                              [(repl/start-repl! sci-ctx) 0])
+                              [(if-let [target (:repl-connect cli-opts)]
+                                 (repl/start-connected-repl! sci-ctx (nrepl-server/parse-connect target))
+                                 (repl/start-repl! sci-ctx))
+                               0])
                        nrepl [(start-nrepl! nrepl) 0]
                        uberjar [nil 0]
                        list-tasks [(tasks/list-tasks sci-ctx) 0]

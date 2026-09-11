@@ -22,6 +22,7 @@
     Completer Candidate Widget Reference]
    [org.jline.terminal TerminalBuilder]
    [org.jline.reader.impl LineReaderImpl]
+   [sun.misc Signal SignalHandler]
    [org.jline.utils AttributedString AttributedStringBuilder AttributedStyle]))
 
 (set! *warn-on-reflection* true)
@@ -181,13 +182,13 @@
       (rawWordLength [_] (count word)))))
 
 (defn- clojure-completer
-  "Creates a JLine Completer that uses SCI for Clojure completions."
-  [sci-ctx]
+  "Creates a JLine Completer over `completions-fn`, sci's or a server's."
+  [completions-fn]
   (reify Completer
     (complete [_ _ parsed-line candidates]
       (let [word (.word ^ParsedLine parsed-line)]
         (when (and word (pos? (count word)))
-          (let [{:keys [completions]} (sci-helpers/completions sci-ctx word)]
+          (let [{:keys [completions]} (completions-fn word)]
             (doseq [{:keys [candidate ns type]} completions]
               (.add ^java.util.List candidates
                     (Candidate.
@@ -311,7 +312,7 @@
 (defn- update-tail-tip
   "Sets the tail tip to the common completion prefix beyond what's typed.
    Only computes when cursor is at end of buffer (where JLine renders it)."
-  [sci-ctx ^LineReaderImpl line-reader]
+  [completions-fn ^LineReaderImpl line-reader]
   (try
     (let [buf (.getBuffer line-reader)
           cursor (.cursor buf)]
@@ -319,7 +320,7 @@
         (.setTailTip line-reader "")
         (let [line (str buf)]
           (if-let [[word _] (word-at-cursor line cursor)]
-            (let [{:keys [completions]} (sci-helpers/completions sci-ctx word)
+            (let [{:keys [completions]} (completions-fn word)
                   candidates (mapv :candidate completions)
                   tip (compute-tail-tip word candidates)]
               (.setTailTip line-reader tip))
@@ -328,7 +329,7 @@
 
 (defn- update-eldoc
   "Computes eldoc for the current buffer and sets/clears the post field."
-  [sci-ctx ^LineReaderImpl line-reader cache]
+  [lookup-fn ^LineReaderImpl line-reader cache]
   (try
     (let [buf (.getBuffer line-reader)
           line (str buf)
@@ -337,7 +338,7 @@
           [cached-name cached-result] @cache
           m (if (= fn-name cached-name)
               cached-result
-              (let [result (when fn-name (sci-helpers/lookup sci-ctx fn-name))]
+              (let [result (when fn-name (lookup-fn fn-name))]
                 (reset! cache [fn-name result])
                 result))]
       (set-post line-reader (when (:arglists m) (format-eldoc-attributed m))))
@@ -358,14 +359,14 @@
 (defn- doc-at-point-widget
   "Creates a JLine Widget that displays documentation for the symbol at cursor.
    Shows doc below the prompt, waits for any keypress, clears doc and replays the key."
-  [sci-ctx ^LineReaderImpl line-reader]
+  [lookup-fn ^LineReaderImpl line-reader]
   (reify Widget
     (apply [_]
       (let [buf (.getBuffer line-reader)
             line (str buf)
             cursor (.cursor buf)]
         (when-let [[word _] (word-at-cursor line cursor)]
-          (when-let [m (sci-helpers/lookup sci-ctx word)]
+          (when-let [m (lookup-fn word)]
             (set-post line-reader (format-doc-attributed m))
             (.redisplay line-reader)
             (.readBinding line-reader (.getKeys line-reader) nil)
@@ -376,9 +377,9 @@
 
 (defn- register-widgets
   "Registers custom widgets and key bindings on the LineReader."
-  [^LineReader line-reader sci-ctx force-accept?]
+  [^LineReader line-reader {:keys [completions lookup]} force-accept?]
   (.put (.getWidgets line-reader) "clojure-doc-at-point"
-        (doc-at-point-widget sci-ctx line-reader))
+        (doc-at-point-widget lookup line-reader))
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
     (.bind km (Reference. "clojure-doc-at-point")
            (str (KeyMap/ctrl \X) (KeyMap/ctrl \D))))
@@ -403,8 +404,8 @@
                   (.apply accept-line)))))))
   (let [cache (atom [nil nil])
         after (fn []
-                (update-eldoc sci-ctx line-reader cache)
-                (update-tail-tip sci-ctx line-reader))
+                (update-eldoc lookup line-reader cache)
+                (update-tail-tip completions line-reader))
         clear-tip #(.setTailTip ^LineReaderImpl line-reader "")]
     (wrap-widget line-reader LineReader/SELF_INSERT nil after)
     (wrap-widget line-reader LineReader/BACKWARD_DELETE_CHAR nil after)
@@ -467,7 +468,7 @@
 
 (defn- jline-reader
   "Creates a JLine LineReader for interactive input with persistent history."
-  ^org.jline.reader.LineReader [sci-ctx]
+  ^org.jline.reader.LineReader [sci-ctx helpers]
   (let [terminal (-> (TerminalBuilder/builder)
                      (.system true)
                      (.build))
@@ -481,15 +482,21 @@
         reader (-> (LineReaderBuilder/builder)
                    (.terminal terminal)
                    (.parser (jline-parser sci-ctx force-accept?))
-                   (.completer (clojure-completer sci-ctx))
+                   (.completer (clojure-completer (:completions helpers)))
                    (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
                    (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
                    ;; disable JLine treating backslashes as escapes
                    (.option org.jline.reader.LineReader$Option/DISABLE_EVENT_EXPANSION true)
                    (.build))]
     (.setAutosuggestion reader LineReader$SuggestionType/TAIL_TIP)
-    (register-widgets reader sci-ctx force-accept?)
+    (register-widgets reader helpers force-accept?)
     reader))
+
+(defn- local-helpers
+  "Completion and lookup against the sci context."
+  [sci-ctx]
+  {:completions #(sci-helpers/completions sci-ctx %)
+   :lookup #(sci-helpers/lookup sci-ctx %)})
 
 (defn- read-remaining
   "Read remaining characters from a reader into a string."
@@ -503,7 +510,8 @@
               (recur)))))))
 
 (defn- parse-form
-  "Parse the next form from input string. Returns [:form form remaining] or nil if empty/whitespace only."
+  "Parse the next form from input string. Returns [:form form remaining source]
+  or nil if empty/whitespace only; source is the form's own text."
   [sci-ctx input]
   (let [reader (r/source-logging-push-back-reader input)]
     (loop []
@@ -514,37 +522,39 @@
           :else (do
                   (r/unread reader c)
                   (let [form (parser/parse-next sci-ctx reader)
-                        remaining (read-remaining reader)]
-                    [:form form remaining])))))))
+                        remaining (read-remaining reader)
+                        source (str/trim (subs input 0 (- (count input) (count remaining))))]
+                    [:form form remaining source])))))))
 
 (defn- jline-read
   "Read function for m/repl that uses JLine for input.
    JLine handles multi-line editing via the Clojure parser.
    First Ctrl+C or Ctrl+D on empty prompt shows warning, second exits."
-  [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending request-prompt request-exit]
+  [sci-ctx ^org.jline.reader.LineReader line-reader input-buffer ctrl-c-pending
+   {:keys [ns-name source?] :or {ns-name utils/current-ns-name}}
+   request-prompt request-exit]
   (try
-    (when-let [[_ form remaining]
+    (when-let [[_ form remaining source]
                (or
                 ;; First check if there's buffered input from previous read (multiple forms on one line)
                 (when-not (str/blank? @input-buffer)
                   (let [buf @input-buffer]
                     (reset! input-buffer "")
-                    (when-let [[_ form remaining] (parse-form sci-ctx buf)]
-                      [:form form remaining])))
+                    (parse-form sci-ctx buf)))
                 ;; Read new input - JLine handles ALL multi-line via our parser
-                (let [prompt (str (utils/current-ns-name) "=> ")
+                (let [prompt (str (ns-name) "=> ")
                       input (.readLine line-reader prompt)]
-                  (when-let [[_ form remaining] (parse-form sci-ctx input)]
-                    [:form form remaining])))]
+                  (parse-form sci-ctx input)))]
       (reset! input-buffer remaining)
       (reset! ctrl-c-pending false)
-      ;; Return form from buffer
+      ;; Return form from buffer, or its text for a remote evaluator
       (cond
         (or (identical? :repl/quit form)
             (identical? :repl/exit form))
         request-exit
         (identical? :repl/help form)
         (do (print-repl-help) request-prompt)
+        source? source
         :else form))
     (catch EndOfFileException _
       ;; Ctrl+D on empty line: exit immediately. JLine only throws
@@ -584,14 +594,84 @@
                  {:need-prompt (constantly false)  ;; JLine handles prompting
                   :prompt (constantly nil)         ;; No-op, JLine handles prompting
                   :read (fn [request-prompt request-exit]
-                          (jline-read sci-ctx line-reader input-buffer ctrl-c-pending request-prompt request-exit))
+                          (jline-read sci-ctx line-reader input-buffer ctrl-c-pending opts request-prompt request-exit))
                   :eval (or (:eval opts) (fn [form] (repl-eval sci-ctx form)))
                   :print (or (:print opts) sio/prn)}))))
 
 (defn- repl-with-jline
   "REPL using JLine for interactive line editing and history."
   [sci-ctx opts]
-  (repl-with-line-reader sci-ctx (jline-reader sci-ctx) opts))
+  (repl-with-line-reader sci-ctx (jline-reader sci-ctx (local-helpers sci-ctx)) opts))
+
+;;;; bb repl --connect: the same REPL, evaluating on an nREPL server
+
+(defn- source-read
+  "Read function for a remote evaluator on a plain stream: lines until
+  they make a complete form, then the form's text."
+  [sci-ctx in input-buffer request-prompt request-exit]
+  (loop [text @input-buffer]
+    (if (complete-form? sci-ctx text)
+      (let [[_ form remaining source] (parse-form sci-ctx text)]
+        (reset! input-buffer remaining)
+        (cond (or (identical? :repl/quit form) (identical? :repl/exit form)) request-exit
+              (identical? :repl/help form) (do (print-repl-help) request-prompt)
+              :else source))
+      (if (nil? (r/peek-char in))
+        request-exit
+        (recur (str text (when (seq text) "\n") (r/read-line in)))))))
+
+(defn- connect-client
+  "The interpreted client, see babashka.nrepl.impl.client."
+  [sci-ctx target]
+  (let [connect (sci/eval-string* sci-ctx "(require 'babashka.nrepl.impl.client) babashka.nrepl.impl.client/connect")]
+    (connect target)))
+
+(defn- print-reply [{:keys [out err value status]}]
+  (when out (sio/print out) (sio/flush))
+  (when err
+    (sci/with-bindings {sci/out @sci/err}
+      (sio/print err) (sio/flush)))
+  (when value (sio/println value))
+  (when (some #{"interrupted"} status)
+    (sio/println "Interrupted")))
+
+(defn- remote-eval
+  "Evaluates `code` on the server, printing replies as they come. Ctrl-C
+  during the eval interrupts it on the server."
+  [client code]
+  (let [signal (Signal. "INT")
+        handler (reify SignalHandler (handle [_ _] ((:interrupt client))))
+        previous (Signal/handle signal handler)]
+    (try ((:eval client) code print-reply)
+         (finally (Signal/handle signal previous)))))
+
+(defn start-connected-repl!
+  "A REPL on the nREPL server `target` names, see
+  babashka.nrepl.server/parse-connect."
+  [sci-ctx {:keys [host port socket] :as target}]
+  (let [client (connect-client sci-ctx target)
+        ns-name #(deref (:ns client))
+        {:keys [versions]} (:describe client)
+        opts {:init (fn []
+                      (.println System/err
+                                (str "Connected to nREPL server at " (or socket (str host ":" port))
+                                     (when-let [v (get versions "nrepl")] (str ", nREPL " v))
+                                     (when-let [v (get versions "clojure")] (str ", Clojure " v))
+                                     (when-let [v (get versions "babashka")] (str ", babashka " v))
+                                     "\nType :repl/help for help")))
+              :ns-name ns-name
+              :source? true
+              :eval #(remote-eval client %)
+              :print (fn [_] nil)
+              :prompt #(sio/printf "%s=> " (ns-name))}]
+    (try
+      (if (terminal/tty? :stdin)
+        (repl-with-line-reader sci-ctx (jline-reader sci-ctx (select-keys client [:completions :lookup])) opts)
+        (let [input-buffer (atom "")
+              in @sci/in]
+          (repl sci-ctx (assoc opts :read (fn [request-prompt request-exit]
+                                            (source-read sci-ctx in input-buffer request-prompt request-exit))))))
+      (finally ((:close client))))))
 
 (defn start-repl!
   ([sci-ctx] (start-repl! sci-ctx nil))

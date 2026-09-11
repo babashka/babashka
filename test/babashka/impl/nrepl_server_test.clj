@@ -367,6 +367,21 @@
             (is (= ["#'user/down" ":bottom"]
                    (keep :value (send {"op" "eval" "code" "(defn down [n] (if (zero? n) :bottom (down (dec n)))) (down 5000)"}))))))))))
 
+(deftest ^:skip-windows nrepl-connect-repl-test
+  (with-bb-script 1674
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1674 :quiet true}))"
+    (fn []
+      (let [out (tu/bb "(+ 1 2)\n(def x 10)\n(println :side-effect)\n(ns foo.bar)\n(inc x)\n:repl/quit"
+                       "repl" "--connect" "1674")]
+        (testing "values, output and the prompt's namespace come from the server"
+          (is (str/includes? out "user=> 3"))
+          (is (str/includes? out "#'user/x"))
+          (is (str/includes? out ":side-effect"))
+          (is (str/includes? out "foo.bar=> ")))
+        (testing "an error on the server names the exception"
+          (let [out (tu/bb "(/ 1 0)\n:repl/quit" "repl" "--connect" "127.0.0.1:1674")]
+            (is (str/includes? out "ArithmeticException"))))))))
+
 (deftest ^:skip-windows nrepl-cider-ops-test
   (with-bb-script 1671
     "(ns ct-demo (:require [clojure.test :refer [deftest is testing]]))
