@@ -19,7 +19,7 @@ public class DaemonThreadFactory implements ThreadFactory {
 
     @Override
     public Thread newThread(Runnable r) {
-        Thread t = new Thread(r);
+        Thread t = new Thread(null, r, "", 8L * 1024 * 1024); // BB-PATCH the main thread's stack size
         t.setName(String.format(nameFormat, counter.getAndIncrement()));
         t.setContextClassLoader(classloader);
         t.setDaemon(true);

@@ -357,6 +357,16 @@
               (is (= "3" (:value (first replies))))
               (is (= 0 (:elapsed-ms (last replies)))))))))))
 
+(deftest ^:skip-windows nrepl-eval-stack-depth-test
+  (with-bb-script 1672
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1672 :quiet true}))"
+    (fn []
+      (with-session 1672
+        (fn [send]
+          (testing "an eval recurses 5000 calls deep"
+            (is (= ["#'user/down" ":bottom"]
+                   (keep :value (send {"op" "eval" "code" "(defn down [n] (if (zero? n) :bottom (down (dec n)))) (down 5000)"}))))))))))
+
 (deftest ^:skip-windows nrepl-cider-ops-test
   (with-bb-script 1671
     "(ns ct-demo (:require [clojure.test :refer [deftest is testing]]))

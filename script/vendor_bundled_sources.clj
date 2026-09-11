@@ -198,6 +198,18 @@
      (assert (= n found) (str "expected " n " occurrences, found " found ": " from)))
    (str/replace source from to)))
 
+;; nREPL's eval threads get the main thread's 8 MB stack, in the image the
+;; default is a sixteenth of it.
+(def java-patches
+  {"nrepl/SessionThread.java"
+   (fn [s]
+     (subst s "        this.runFn = runFn;\n"
+            "        super(null, null, name, 8L * 1024 * 1024); // BB-PATCH the main thread's stack size\n        this.runFn = runFn;\n"))
+   "nrepl/DaemonThreadFactory.java"
+   (fn [s]
+     (subst s "        Thread t = new Thread(r);\n"
+            "        Thread t = new Thread(null, r, \"\", 8L * 1024 * 1024); // BB-PATCH the main thread's stack size\n"))})
+
 ;; What sci cannot run as it is: Compiler internals, deftype and defrecord
 ;; over a Java interface, a private clojure.core var, a jar resource, and a
 ;; protocol imported as if it were a Java interface.
@@ -515,7 +527,9 @@
       (println rel))
     (doseq [rel (sort java-shipped)]
       (fs/create-dirs (fs/parent (fs/file java-target rel)))
-      (fs/copy (fs/file tmp rel) (fs/file java-target rel) {:replace-existing true})
+      (if-let [p (java-patches rel)]
+        (spit (fs/file java-target rel) (p (slurp (fs/file tmp rel))))
+        (fs/copy (fs/file tmp rel) (fs/file java-target rel) {:replace-existing true}))
       (println rel))
     (let [http "resources/src/babashka/babashka/impl/mvn/http.clj"
           source (slurp http)
