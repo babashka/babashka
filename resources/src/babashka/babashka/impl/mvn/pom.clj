@@ -94,7 +94,9 @@
                        (mapv (fn [e]
                                {:goals (mapv x/text (some-> (x/child e "goals") (x/children "goal")))
                                 :sources (mapv x/text (some-> (x/child e "configuration") (x/child "sources") (x/children "source")))
-                                :resources (mapv #(x/child-text % "directory")
+                                ;; the plugin's <resource><directory>, or the
+                                ;; bare text tools.deps reads
+                                :resources (mapv #(or (x/child-text % "directory") (x/text %))
                                                  (some-> (x/child e "configuration") (x/child "resources") (x/children "resource")))})
                              (some-> (x/child p "executions") (x/children "execution")))})
                     (some-> (x/child el "plugins") (x/children "plugin")))}))

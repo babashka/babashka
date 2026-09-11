@@ -115,6 +115,14 @@ accept what bb wrote.
   vectors, failure messages, and two end-to-end resolves through an http-kit
   server, one behind basic auth and one behind an authenticating proxy for a
   host that does not resolve.
+- tools.deps's own test suite at the bundled version, run by
+  `tools_deps_test.clj` in the library's checkout: 62 tests, the resolution
+  algorithm over a fake Maven repository, local POM deps, git deps, the
+  classpath script. Its test helper imports Aether's version scheme and is
+  loaded with that swapped for bb's port. The first run found one
+  difference: tools.deps reads build-helper `add-resource` directories in a
+  text form the plugin rejects, bb read only the documented form; bb reads
+  both now.
 - CI runs the scripts on the built binary on Linux, macOS and Windows, and
   the JVM suite runs one resolve under each value of the switch.
 
