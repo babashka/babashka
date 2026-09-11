@@ -293,12 +293,9 @@
          (patch "(Compiler/eval input true)" "(clojure.core/eval input)" "sci eval, eval is shadowed by the message key")
          (patch "(catch Throwable e
                   (caught e))"
-                "(catch ^{:sci/error true} Throwable e
+                "(catch ^{:sci/callstack true} Throwable e
                   (caught e))"
-                "a :sci/error catch gets the exception with sci's callstack, for *e and the stacktrace ops")
-         (patch "(str (class e))"
-                "(str (class (if (= :sci/error (:type (ex-data e))) (or (ex-cause e) e) e)))"
-                "the class of the exception sci's error wraps")))
+                "a :sci/callstack catch gets the exception itself, sci keeps its frames for *e and the stacktrace ops")))
    "nrepl/middleware/session.clj"
    (fn [s]
      (-> s

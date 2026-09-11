@@ -557,15 +557,11 @@
   {:added "1.1"}
   [msg form]
   `(try ~(assert-expr msg form)
-        (catch ~(with-meta 'Throwable {:sci/error true}) t#
+        (catch ~(with-meta 'Throwable {:sci/callstack true}) t#
           (clojure.test/do-report {:file clojure.core/*file*
                                    :line ~(:line (meta form))
                                    :type :error, :message ~msg,
-                                   :expected '~form
-                                   :actual (if (= :sci/error (:type (ex-data t#)))
-                                             (or (ex-cause t#) t#)
-                                             t#)
-                                   ::sci-error t#}))))
+                                   :expected '~form, :actual t#}))))
 
 
 

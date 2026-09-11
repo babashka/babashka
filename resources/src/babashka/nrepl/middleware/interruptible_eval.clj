@@ -109,8 +109,7 @@
                    (when-not (interrupted? e)
                      (t/respond-to msg {::caught/throwable e
                                         :status #{:eval-error}
-                                        :ex #_(str (class e)) ;; BB-PATCH the class of the exception sci's error wraps
-(str (class (if (= :sci/error (:type (ex-data e))) (or (ex-cause e) e) e)))
+                                        :ex (str (class e))
                                         :root-ex (str (class (clojure.main/root-cause e)))})))]
       (push-thread-bindings (merge (when explicit-ns {#'*ns* explicit-ns})
                                    #_(when (and file file-name)
@@ -152,8 +151,8 @@
                     (catch Throwable e
                       (throw (ex-info nil {:clojure.error/phase :print-eval-result} e)))))
                 #_(catch Throwable e
-                  (caught e)) ;; BB-PATCH a :sci/error catch gets the exception with sci's callstack, for *e and the stacktrace ops
-(catch ^{:sci/error true} Throwable e
+                  (caught e)) ;; BB-PATCH a :sci/callstack catch gets the exception itself, sci keeps its frames for *e and the stacktrace ops
+(catch ^{:sci/callstack true} Throwable e
                   (caught e)))
               ;; Otherwise, when errors happen during eval/print phase,
               ;; report the exception but continue executing the

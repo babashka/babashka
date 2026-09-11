@@ -379,8 +379,8 @@
               (is (str/includes? (str/join (keep :err replies)) "java.lang.ArithmeticException: Divide by zero"))
               (is (str/includes? (str/join (keep :err replies)) "[at NO_SOURCE_PATH:1:"))
               (is (= "class java.lang.ArithmeticException" (some :ex replies)))))
-          (testing "*e carries sci's callstack"
-            (is (= ["true"] (keep :value (send {"op" "eval" "code" "(some? (:sci.impl/callstack (ex-data *e)))"})))))
+          (testing "*e is the exception itself"
+            (is (= ["[java.lang.ArithmeticException nil]"] (keep :value (send {"op" "eval" "code" "[(class *e) (ex-data *e)]"})))))
           (testing "analyze-last-stacktrace answers with sci's frames"
             (let [[cause] (send {"op" "analyze-last-stacktrace"})]
               (is (= "java.lang.ArithmeticException" (bytes->str (:class cause))))

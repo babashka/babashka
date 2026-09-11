@@ -30,11 +30,16 @@
   "Default :caught hook for repl"
   [^Throwable e]
   (sci/with-bindings {sci/out @sci/err}
-    (let [{:keys [:file :line :column] :as d} (ex-data e)
+    (let [d (ex-data e)
           sci-error? (identical? :sci/error (:type d))
-          ex-name (when sci-error?
+          ;; a plain exception locates through its first sci frame
+          {:keys [:file :line :column]} (if sci-error?
+                                          d
+                                          (some #(when-not (:sci/built-in %) %) (sci/stacktrace e)))
+          ex-name (if sci-error?
                     (some-> ^Throwable (ex-cause e)
-                            .getClass .getName))
+                            .getClass .getName)
+                    (.getName (class e)))
           ex-message (when-let [m (.getMessage e)]
                        (when-not (str/blank? m)
                          m))]
