@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Keep output from realizing lazy values separate from nREPL evaluation results
+- [babashka.nrepl#67](https://github.com/babashka/babashka.nrepl/issues/67): Preserve source columns in nREPL evaluations
 - Add `bb repl --connect [addr]` to connect to an nREPL server with completion, eldoc, documentation lookup and Ctrl-C interruption. Accepts `host:port`, a port or `unix://path`. Reads `.nrepl-port` by default.
 - Run nREPL 1.7.0 from bundled source
 - Bind the nREPL server to `127.0.0.1` by default instead of `0.0.0.0`. Use `bb --nrepl-server 0.0.0.0:1667` in Docker
@@ -18,7 +20,7 @@ A preview of the next release can be installed from
 - Increase the nREPL eval thread stack size to 8 MB to match the main thread and allow deeper recursion
 - [#1518](https://github.com/babashka/babashka/issues/1518): Print sci stack frames in `clojure.test` error reports, both inside and outside `is`
 - Show sci stack frames in CIDER's error buffer via `analyze-last-stacktrace`
-- Include the exception class and source location in nREPL eval errors and preserve sci stack frames on `*e`
+- Report the original exception class and source location in nREPL eval errors and preserve sci stack frames on `*e`
 - [babashka.nrepl#72](https://github.com/babashka/babashka.nrepl/issues/72): Isolate REPL bindings such as `*1`, `*e` and `*ns*` per session and preserve them when reconnecting with the same session id
 - Add the nREPL `interrupt` op. Interruption is cooperative and does not stop tight loops
 - Replace the `:xform` option of `babashka.nrepl.server/start-server!` with `:middleware`, accepting middleware vars with nREPL descriptors. See [examples/nrepl_middleware.clj](examples/nrepl_middleware.clj)
