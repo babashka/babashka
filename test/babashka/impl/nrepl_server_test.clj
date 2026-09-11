@@ -372,9 +372,7 @@
                    (keep :value (send {"op" "eval" "code" "(defn down [n] (if (zero? n) :bottom (down (dec n)))) (down 5000)"}))))))))))
 
 (defn- connected-repl
-  "Runs `bb repl --connect` on `input`, returning its output. In-process on
-  the JVM, since a second bb run in the same process would reset the env
-  the server evaluates in."
+  "Runs a connected REPL with `input` and returns its output."
   [target input]
   (if tu/jvm?
     (let [os (java.io.StringWriter.)
@@ -390,12 +388,12 @@
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1674 :quiet true}))"
     (fn []
       (let [out (connected-repl "1674" "(+ 1 2)\n(def x 10)\n(println :side-effect)\n(ns foo.bar)\n(inc x)\n:repl/quit")]
-        (testing "values, output and the prompt's namespace come from the server"
+        (testing "displays server values, output and namespace in the prompt"
           (is (str/includes? out "user=> 3"))
           (is (str/includes? out "#'user/x"))
           (is (str/includes? out ":side-effect"))
           (is (str/includes? out "foo.bar=> ")))
-        (testing "an error on the server names the exception"
+        (testing "displays the server exception type"
           (let [out (connected-repl "127.0.0.1:1674" "(/ 1 0)\n:repl/quit")]
             (is (str/includes? out "ArithmeticException"))))))))
 

@@ -1,6 +1,5 @@
 (ns babashka.nrepl.impl.client
-  "The nREPL client behind `bb repl --connect`: one session on a server,
-  the pieces the REPL loop calls."
+  "nREPL client for `bb repl --connect`."
   {:no-doc true}
   (:require [nrepl.core :as nrepl]))
 
@@ -10,10 +9,10 @@
      :ops (set (map name (keys ops)))}))
 
 (defn connect
-  "Connects to the server at `host`/`port` or the unix `socket` and returns
-  a map of functions: `:eval` (code, a reply callback), `:completions`,
-  `:lookup`, `:interrupt`, `:close`, plus `:describe` and the `:ns` atom
-  the replies keep current."
+  "Connects to `host` and `port` or a Unix domain `socket`.
+  Returns a map with `:eval`, `:completions`, `:lookup`, `:interrupt` and
+  `:close` functions, `:describe` server information and a `:ns` atom
+  containing the current namespace. `:eval` accepts code and a reply callback."
   [{:keys [host port socket]}]
   (let [conn (if socket
                (nrepl/connect :socket socket)

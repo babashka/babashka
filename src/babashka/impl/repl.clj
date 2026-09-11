@@ -187,7 +187,7 @@
       (rawWordLength [_] (count word)))))
 
 (defn- clojure-completer
-  "Creates a JLine Completer over `completions-fn`, sci's or a server's."
+  "Creates a JLine Completer using `completions-fn`."
   [completions-fn]
   (reify Completer
     (complete [_ _ parsed-line candidates]
@@ -498,7 +498,7 @@
     reader))
 
 (defn- local-helpers
-  "Completion and lookup against the sci context."
+  "Returns completion and lookup functions for the SCI context."
   [sci-ctx]
   {:completions #(sci-helpers/completions sci-ctx %)
    :lookup #(sci-helpers/lookup sci-ctx %)})
@@ -515,8 +515,8 @@
               (recur)))))))
 
 (defn- parse-form
-  "Parse the next form from input string. Returns [:form form remaining source]
-  or nil if empty/whitespace only; source is the form's own text."
+  "Parses the next form from `input`. Returns [:form form remaining source],
+  where source is the form's text, or nil for empty or whitespace-only input."
   [sci-ctx input]
   (let [reader (r/source-logging-push-back-reader input)]
     (loop []
@@ -552,7 +552,6 @@
                   (parse-form sci-ctx input)))]
       (reset! input-buffer remaining)
       (reset! ctrl-c-pending false)
-      ;; Return form from buffer, or its text for a remote evaluator
       (cond
         (or (identical? :repl/quit form)
             (identical? :repl/exit form))
@@ -608,11 +607,12 @@
   [sci-ctx opts]
   (repl-with-line-reader sci-ctx (jline-reader sci-ctx (local-helpers sci-ctx)) opts))
 
-;;;; bb repl --connect: the same REPL, evaluating on an nREPL server
+;;;; nREPL client
 
 (defn- source-read
-  "Read function for a remote evaluator on a plain stream: lines until
-  they make a complete form, then the form's text."
+  "Reads lines until a complete form is available and returns its source text.
+  Returns `request-exit` at EOF or for :repl/quit and :repl/exit.
+  Prints help and returns `request-prompt` for :repl/help."
   [sci-ctx in input-buffer request-prompt request-exit]
   (loop [text @input-buffer]
     (if (complete-form? sci-ctx text)
@@ -626,7 +626,7 @@
         (recur (str text (when (seq text) "\n") (r/read-line in)))))))
 
 (defn- connect-client
-  "The interpreted client, see babashka.nrepl.impl.client."
+  "Connects to the nREPL server specified by `target`."
   [sci-ctx target]
   (let [connect (sci/eval-string* sci-ctx "(require 'babashka.nrepl.impl.client) babashka.nrepl.impl.client/connect")]
     (connect target)))
@@ -641,8 +641,8 @@
     (sio/println "Interrupted")))
 
 (defn- remote-eval
-  "Evaluates `code` on the server, printing replies as they come. Ctrl-C
-  during the eval interrupts it on the server."
+  "Evaluates `code` on the server and prints replies as they arrive.
+  Ctrl-C interrupts evaluation on the server."
   [client code]
   (let [signal (Signal. "INT")
         handler (reify SignalHandler (handle [_ _] ((:interrupt client))))
@@ -651,8 +651,8 @@
          (finally (Signal/handle signal previous)))))
 
 (defn start-connected-repl!
-  "A REPL on the nREPL server `target` names, see
-  babashka.nrepl.server/parse-connect."
+  "Starts a REPL connected to the nREPL server specified by `target`.
+  Accepts a map with :host and :port, or :socket for a Unix domain socket."
   [sci-ctx {:keys [host port socket] :as target}]
   (let [client (connect-client sci-ctx target)
         ns-name #(deref (:ns client))

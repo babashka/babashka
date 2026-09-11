@@ -218,7 +218,7 @@ Evaluation:
 REPL:
 
   repl                 Start REPL.
-  repl --connect [addr] Start a REPL on an nREPL server. Address defaults to .nrepl-port.
+  repl --connect [addr] Connect to an nREPL server. Reads .nrepl-port by default.
   socket-repl  [addr]  Start a socket REPL. Address defaults to localhost:1666.
   nrepl-server [addr]  Start nREPL server. Address defaults to localhost:1667.
 
