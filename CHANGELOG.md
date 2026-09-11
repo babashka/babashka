@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Report `File does not exist` for `bb ""` and `bb " "` instead of `StringIndexOutOfBoundsException` or `FileNotFoundException`
 - Resolve dependencies without a JVM by default. Set `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, to use Java as before
 - Bundle `clojure.tools.build.api`, with patched `install` and `javac` for babashka. A tools.build dependency on the classpath takes precedence and runs from source
 - Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.

@@ -357,7 +357,7 @@ Use bb run --help to show this help output.
 
 (defn read-file [file]
   (let [f (io/file file)]
-    (if (.exists f)
+    (if (and (not (str/blank? file)) (.exists f))
       (as-> (slurp file) x
         ;; remove shebang
         (str/replace x #"^#!.*" ""))
@@ -747,7 +747,7 @@ Use bb run --help to show this help output.
             (assoc opts-map
                    :command-line-args options)
             (let [trimmed-opt (str/triml opt)
-                  c (.charAt trimmed-opt 0)]
+                  c (first trimmed-opt)]
               (case c
                 (\( \{ \[ \* \@ \#)
                 (-> opts-map
@@ -801,8 +801,9 @@ Use bb run --help to show this help output.
 (defn parse-file-opt
   [options opts-map]
   (let [opt (first options)]
-    (if (and opt (and (fs/exists? opt)
-                      (not (fs/directory? opt))))
+    (if (and opt (not (str/blank? opt))
+             (fs/exists? opt)
+             (not (fs/directory? opt)))
       [nil (assoc opts-map
                   (if (str/ends-with? opt ".jar")
                     :jar :file) opt
