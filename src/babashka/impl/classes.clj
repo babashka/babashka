@@ -131,6 +131,7 @@
                {:name "getReturnType"}
                ;; orchard.inspect
                {:name "getDeclaringClass"}
+               {:name "getExceptionTypes"}
                {:name "toGenericString"}]}
     java.lang.reflect.Modifier
     {:methods [{:name "isStatic"}
@@ -1275,8 +1276,11 @@
                        :allPublicFields true}))
         instance-checks (vec (for [c (sort (:instance-checks classes))
                                    :let [class-name (str c)]]
-                               ;; don't include any methods
-                               {:name class-name}))
+                               ;; don't include any methods, the inspector
+                               ;; reads the fields of the Clojure ones
+                               (cond-> {:name class-name}
+                                 (.startsWith ^String class-name "clojure.lang.")
+                                 (assoc :allDeclaredFields true))))
         custom-entries (for [[c v] (:custom classes)
                              :let [class-name (str c)]]
                          (let [v (if-let [inherit-from (seq (:inherit v))]

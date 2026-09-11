@@ -411,13 +411,6 @@
          (patch "(Compiler/demunge (.getName (class x)))"
                 "(clojure.main/demunge (.getName (class x)))"
                 "no Compiler in the image")
-         ;; sci's IDeref is a protocol descriptor, not a class, so a method
-         ;; keyed on it never matches: dispatch to a keyword instead
-         (subst "(instance? Var x)               :default"
-                "(instance? Var x)               :default
-      (instance? IDeref x)            :deref")
-         (subst "(defmethod print IDeref [^IDeref x, ^Writer w]"
-                "(defmethod print :deref [^IDeref x, ^Writer w]")
          (patch "(defmethod print :record [x, ^Writer w]
   (.write w \"#\")
   (.write w (if *short-record-names*
@@ -444,6 +437,11 @@
          (subst "(.getSimpleName (class coll))"
                 "(let [n (.getName (type coll))] (subs n (inc (.lastIndexOf n \".\"))))")
          (subst "(.getName (class coll))" "(.getName (type coll))")))
+   "orchard/java/compatibility.clj"
+   (fn [s]
+     (patch s "(catch Exception ~'_ ::access-denied)"
+            "(catch Throwable ~'_ ::access-denied)"
+            "an unregistered field throws MissingReflectionRegistrationError in the image" 2))
    "orchard/inspect/analytics.clj"
    (fn [s]
      (-> s

@@ -34,12 +34,14 @@
                   (.trySetAccessible ~field))
             (.get ~field ~obj)
             ::access-denied)
-          (catch Exception ~'_ ::access-denied))
+          #_(catch Exception ~'_ ::access-denied) ;; BB-PATCH an unregistered field throws MissingReflectionRegistrationError in the image
+(catch Throwable ~'_ ::access-denied))
     ;; Fallback to deprecated try-catch based flow on JDK8.
     `(try (when-not (.isAccessible ~field)
             (.setAccessible ~field true))
           (.get ~field ~obj)
-          (catch Exception ~'_ ::access-denied))))
+          #_(catch Exception ~'_ ::access-denied) ;; BB-PATCH an unregistered field throws MissingReflectionRegistrationError in the image
+(catch Throwable ~'_ ::access-denied))))
 
 (defn get-field-value [^Field field, obj]
   (get-field-value-macro field obj))

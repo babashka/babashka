@@ -41,7 +41,6 @@
       (instance? IPersistentSet x)    :set
       (instance? Eduction x)          :list
       (instance? Var x)               :default
-      (instance? IDeref x)            :deref
       (.isArray (class x))            :array
       :else                           (type x))))
 
@@ -200,7 +199,7 @@
       (print-coll w as-seq ", " "[] {" "}")
       (.write w "[] {}"))))
 
-(defmethod print :deref [^IDeref x, ^Writer w]
+(defmethod print IDeref [^IDeref x, ^Writer w]
   (let [pending (and (instance? IPending x)
                      (not (realized? x)))
         [ex val]
