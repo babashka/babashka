@@ -6,7 +6,6 @@
   {:no-doc true}
   (:require [babashka.fs :as fs]
             [babashka.impl.mvn.env :as env]
-            [babashka.impl.mvn.version :as version]
             [babashka.impl.mvn.xml :as x]
             [clojure.string :as str]))
 
@@ -125,54 +124,127 @@
 (defn- negated [s]
   (if (str/starts-with? s "!") [true (subs s 1)] [false s]))
 
-(defn- jdk-active? [spec]
-  (let [[not? spec] (negated spec)
-        java-version (System/getProperty "java.version")
-        active (if (re-find #"^[\[(]" spec)
-                 (version/in-range? java-version spec)
-                 (str/starts-with? java-version spec))]
-    (if not? (not active) active)))
+;; Activation, after Maven's profile activators. `props` looks a property
+;; up by name: the JVM's, and the environment as env.NAME, what the Maven
+;; CLI and MIMA hand the model builder.
 
-(def ^:private os-families
-  ;; after org.codehaus.plexus.util.Os
-  (let [os-name (str/lower-case (System/getProperty "os.name"))
-        path-sep (System/getProperty "path.separator")]
-    (cond-> #{}
-      (str/includes? os-name "windows") (conj "windows" "dos")
-      (and (= ":" path-sep) (not (str/includes? os-name "openvms"))
-           (or (not (str/includes? os-name "mac")) (str/ends-with? os-name "x"))) (conj "unix")
-      (str/includes? os-name "mac") (conj "mac")
-      (str/includes? os-name "os/2") (conj "os/2")
-      (str/includes? os-name "openvms") (conj "openvms")
-      (str/includes? os-name "z/os") (conj "z/os" "os/390"))))
+(defn- jdk-tokens
+  "The first three numbers of a JDK version the way Maven compares them:
+  every character outside digits, dots, underscores and dashes dropped,
+  split on those, padded with zeros. Throws on a non-number."
+  [s]
+  (let [s (str/replace s #"[^\d._-]" "")
+        tokens (str/split s #"[._-]")]
+    (mapv #(Integer/parseInt %) (take 3 (concat tokens (repeat "0"))))))
+
+(defn- jdk-bound [token]
+  (cond (str/starts-with? token "[") {:value (str/trim (subs token 1)) :closed true}
+        (str/starts-with? token "(") {:value (str/trim (subs token 1)) :closed false}
+        (str/ends-with? token "]") {:value (str/trim (subs token 0 (dec (count token)))) :closed true}
+        (str/ends-with? token ")") {:value (str/trim (subs token 0 (dec (count token)))) :closed false}
+        (= "" token) {:value "" :closed false}))
+
+(defn- jdk-relation
+  "-1, 0 or 1 for `version` against a range bound, Maven's getRelationOrder."
+  [version {:keys [value closed]} left?]
+  (if (= "" value)
+    (if left? 1 -1)
+    (let [c (compare (jdk-tokens version) (jdk-tokens value))]
+      (cond (not (zero? c)) c
+            (not closed) (if left? -1 1)
+            :else 0))))
+
+(defn- jdk-in-range? [version range]
+  (let [bounds (keep jdk-bound (str/split range #","))
+        [lower upper] (if (< (count bounds) 2)
+                        (conj (vec bounds) {:value "99999999" :closed false})
+                        bounds)
+        left (jdk-relation version lower true)]
+    (cond (zero? left) true
+          (neg? left) false
+          :else (<= (jdk-relation version upper false) 0))))
+
+(defn- jdk-active?
+  "Maven's JdkVersionProfileActivator: a `!` negates a prefix match, a
+  range compares three numeric tokens, an unparsable version is inactive."
+  [spec version]
+  (cond (str/blank? version) false
+        (str/starts-with? spec "!") (not (str/starts-with? version (subs spec 1)))
+        (re-find #"^[\[(]" spec) (try (jdk-in-range? version spec)
+                                      (catch NumberFormatException _ false))
+        :else (str/starts-with? version spec)))
+
+(def ^:private path-separator (System/getProperty "path.separator"))
+
+(defn- os-family?
+  "plexus-utils Os.isFamily for a lower-cased OS name; a family Maven does
+  not know matches as a substring of the name."
+  [family os-name]
+  (case family
+    "windows" (str/includes? os-name "windows")
+    "os/2" (str/includes? os-name "os/2")
+    "netware" (str/includes? os-name "netware")
+    "dos" (and (= ";" path-separator)
+               (not (os-family? "netware" os-name))
+               (not (os-family? "windows" os-name))
+               (not (os-family? "win9x" os-name)))
+    "mac" (str/includes? os-name "mac")
+    "tandem" (str/includes? os-name "nonstop_kernel")
+    "unix" (and (= ":" path-separator)
+                (not (os-family? "openvms" os-name))
+                (or (not (os-family? "mac" os-name)) (str/ends-with? os-name "x")))
+    "win9x" (and (os-family? "windows" os-name)
+                 (some #(str/includes? os-name %) ["95" "98" "me" "ce"]))
+    "z/os" (or (str/includes? os-name "z/os") (str/includes? os-name "os/390"))
+    "os/400" (str/includes? os-name "os/400")
+    "openvms" (str/includes? os-name "openvms")
+    (str/includes? os-name family)))
 
 (defn- os-match? [expected actual]
-  (let [[not? v] (negated expected)
-        active (= (str/lower-case v) (str/lower-case actual))]
+  (let [[not? v] (negated (str/lower-case expected))
+        active (= v actual)]
     (if not? (not active) active)))
 
-(defn- os-active? [{:keys [name family arch version]}]
-  (and (or (nil? name) (os-match? name (System/getProperty "os.name")))
-       (or (nil? family) (let [[not? f] (negated family)
-                                active (contains? os-families (str/lower-case f))]
-                            (if not? (not active) active)))
-       (or (nil? arch) (os-match? arch (System/getProperty "os.arch")))
-       (or (nil? version) (os-match? version (System/getProperty "os.version")))))
+(defn- os-active?
+  "Maven's OperatingSystemProfileActivator against the os.name, os.arch and
+  os.version `props` give; a version may be `regex:` followed by a pattern."
+  [{:keys [name family arch version]} props]
+  (let [actual (fn [k default] (str/lower-case (or (props k) (System/getProperty k) default)))
+        os-name (actual "os.name" "")
+        os-arch (actual "os.arch" "")
+        os-version (actual "os.version" "")]
+    (and (or (some? name) (some? family) (some? arch) (some? version))
+         (or (nil? family)
+             (let [[not? f] (negated (str/lower-case family))
+                   active (os-family? f os-name)]
+               (if not? (not active) active)))
+         (or (nil? name) (os-match? name os-name))
+         (or (nil? arch) (os-match? arch os-arch))
+         (or (nil? version)
+             (if (str/starts-with? version "regex:")
+               (some? (re-matches (re-pattern (subs version (count "regex:"))) os-version))
+               (os-match? version os-version))))))
 
 (defn- property-value [name]
   (if (str/starts-with? name "env.")
     (env/getenv (subs name 4))
     (System/getProperty name)))
 
-(defn- property-active? [{:keys [name value]}]
-  (let [[not? name] (negated name)
-        actual (property-value name)
-        active (if value
-                 (let [[vnot? v] (negated value)
-                       eq (= v actual)]
-                   (if vnot? (not eq) eq))
-                 (some? actual))]
-    (if not? (not active) active)))
+(defn- property-active?
+  "Maven's PropertyProfileActivator: with a value, that value (or its `!`
+  negation) must equal the property's; without, the property must be
+  non-empty, `!` on the name negating that."
+  [{:keys [name value]} props]
+  (let [[not-name? name] (negated (or name ""))]
+    (if (str/blank? name)
+      false
+      (let [actual (props name)]
+        (if (and value (pos? (count value)))
+          (let [[not-value? v] (negated value)
+                eq (= v actual)]
+            (if not-value? (not eq) eq))
+          (let [present (and (some? actual) (pos? (count actual)))]
+            (if not-name? (not present) present)))))))
 
 (defn- file-active? [{:keys [exists missing]} basedir]
   (when basedir
@@ -183,20 +255,20 @@
         missing (not (fs/exists? (f missing)))
         :else false))))
 
-(defn- explicitly-active? [{:keys [activation]} basedir]
+(defn- explicitly-active? [{:keys [activation]} basedir props]
   (when activation
     (let [{:keys [jdk os property file]} activation]
       (and (or jdk os property file)
-           (or (nil? jdk) (jdk-active? jdk))
-           (or (nil? os) (os-active? os))
-           (or (nil? property) (property-active? property))
+           (or (nil? jdk) (jdk-active? jdk (props "java.version")))
+           (or (nil? os) (os-active? os props))
+           (or (nil? property) (property-active? property props))
            (or (nil? file) (file-active? file basedir))))))
 
 (defn- active-profiles
   "Profiles activated by jdk, os, property or file. When none is, the
   activeByDefault ones."
   [{:keys [profiles]} basedir]
-  (let [explicit (filter #(explicitly-active? % basedir) profiles)]
+  (let [explicit (filter #(explicitly-active? % basedir property-value) profiles)]
     (if (seq explicit)
       explicit
       (filter #(= "true" (get-in % [:activation :active-by-default])) profiles))))
