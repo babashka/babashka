@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Run nREPL 1.7.0 from bundled source. TLS is not supported
+- Run nREPL 1.7.0 from bundled source
 - [babashka.nrepl#72](https://github.com/babashka/babashka.nrepl/issues/72): Isolate REPL bindings such as `*1`, `*e` and `*ns*` per session and preserve them when reconnecting with the same session id
 - Add the nREPL `interrupt` op. Interruption is cooperative and does not stop tight loops
 - Replace the `:xform` option of `babashka.nrepl.server/start-server!` with `:middleware`, accepting middleware vars with nREPL descriptors
