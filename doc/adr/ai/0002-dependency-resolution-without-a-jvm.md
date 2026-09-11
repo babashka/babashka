@@ -123,6 +123,15 @@ accept what bb wrote.
   difference: tools.deps reads build-helper `add-resource` directories in a
   text form the plugin rejects, bb read only the documented form; bb reads
   both now.
+- Maven's own unit tests, ported case by case into scripts next to the
+  others: the four profile activators (128 cases), the model interpolator
+  (the cases about versions, properties and urls), the version range and
+  constraint parser, the update policy analyzer, the snapshot version
+  resolver. Porting them rewrote the activators after Maven's (jdk ranges
+  by Maven's three-token compare, `regex:` os versions, unlisted os
+  families such as `linux`, empty properties), the range parser after
+  GenericVersionRange (wildcards, malformed ranges rejected), and `daily`
+  after DefaultUpdatePolicyAnalyzer (local midnight, not 24 hours).
 - CI runs the scripts on the built binary on Linux, macOS and Windows, and
   the JVM suite runs one resolve under each value of the switch.
 

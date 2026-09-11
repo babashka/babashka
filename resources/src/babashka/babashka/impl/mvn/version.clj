@@ -179,7 +179,7 @@
         {:low (not-empty low) :low-inclusive low-inclusive
          :high (not-empty high) :high-inclusive high-inclusive}))))
 
-(defn- parse-range
+(defn parse-range
   "The restrictions of a version constraint such as [1.0,2.0) or
   [1.0],[2.0,), after GenericVersionScheme.parseVersionConstraint. A plain
   version is a single restriction. Throws on a malformed constraint."

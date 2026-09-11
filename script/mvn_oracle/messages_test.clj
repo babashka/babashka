@@ -60,7 +60,10 @@
   (testing "an empty coordinate is tools.deps' own error"
     (is (= "Coord of unknown type: {}" (failure '{:deps {medley/medley {}}}))))
   (is (= "Invalid :mvn/version for medley/medley: 1"
-         (failure '{:deps {medley/medley {:mvn/version 1}}}))))
+         (failure '{:deps {medley/medley {:mvn/version 1}}})))
+  (testing "a malformed range, in Aether's words"
+    (is (= "Failed to resolve version range for medley:medley:jar:[1,2,3]: Invalid version range [1,2,3], bounds may not contain additional ','"
+           (failure '{:deps {medley/medley {:mvn/version "[1,2,3]"}}})))))
 
 (deftest checksum-test
   (fs/with-temp-dir [dir {}]

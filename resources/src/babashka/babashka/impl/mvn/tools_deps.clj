@@ -215,7 +215,13 @@
       [lib (assoc coord :mvn/version specific)]
 
       (coords/version-range? version)
-      (let [{:keys [versions]} (artifact-versions lib config)
+      (let [_ (try (version/parse-range version)
+                   (catch clojure.lang.ExceptionInfo e
+                     (let [{:keys [group artifact extension]} (coords/artifact lib coord)]
+                       (throw (ex-info (str "Failed to resolve version range for "
+                                            group ":" artifact ":" extension ":" version ": " (ex-message e))
+                                       {:lib lib :coord coord} e)))))
+            {:keys [versions]} (artifact-versions lib config)
             highest (last (filter #(version/in-range? % version) versions))]
         (if highest
           [lib (assoc coord :mvn/version highest)]
