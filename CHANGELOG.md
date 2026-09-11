@@ -9,12 +9,6 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Match Maven's version range parsing for wildcards such as `[1.2.*]` and report malformed ranges with Maven's error messages
-- Refresh repository metadata after local midnight for the daily update policy, as Maven does
-- Match Maven's JDK profile activation: compare three numeric version components and leave profiles inactive when `java.version` cannot be parsed
-- Match Maven's OS profile activation: accept `regex:` for versions, match unlisted families against the OS name and leave empty `<os/>` conditions inactive
-- Treat empty properties as absent in POM profile activation, as Maven does
-- Read `build-helper-maven-plugin` resource paths in local POM dependencies from both `<resource>dir</resource>` and `<resource><directory>dir</directory></resource>` forms
 - Add `bb repl --connect [addr]` to connect to an nREPL server with completion, eldoc, documentation lookup and Ctrl-C interruption. Accepts `host:port`, a port or `unix://path`. Reads `.nrepl-port` by default.
 - Run nREPL 1.7.0 from bundled source
 - Bind the nREPL server to `127.0.0.1` by default instead of `0.0.0.0`. Use `bb --nrepl-server 0.0.0.0:1667` in Docker
@@ -41,7 +35,6 @@ A preview of the next release can be installed from
 - Fix constructor overload selection for `(Boolean. false)`
 - Add `clojure.java.process/io-task`
 - Support `(.-name ns)` on namespaces
-- The in-process resolver sends `babashka/<version> tools.deps/<version>` as its User-Agent, the way the Clojure CLI sends `ClojureCLI/<version> tools.deps/<version>`. `aether.connector.userAgent` overrides it.
 - Bump Clojure to `1.12.6`
 - Bump `babashka.cli` to `0.12.90`
 - Bump `clj-yaml` to `1.0.30`
