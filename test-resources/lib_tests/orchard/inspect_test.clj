@@ -1511,7 +1511,7 @@
       (let [fields (-> 2 inspect render (section "Private static fields"))]
         (is (or (nil? fields)
                 (= ["serialVersionUID" "<non-inspectable value>"]
-                   [(get-in fields [1 1]) (get-in fields [3 1])])))))))
+                   [(second (nth fields 1)) (second (nth fields 3))])))))))
 
 (deftest analytics-test
   (testing "analytics is not shown by default"
