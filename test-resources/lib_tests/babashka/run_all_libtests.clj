@@ -162,6 +162,22 @@
           (swap! status update :fail (fnil inc 0))))))))
 
 
+;;;; nrepl (native only - the runner spawns the binary under test)
+;; nREPL's own suite from the checkout pinned in bb-tested-libs.edn, with the
+;; forms sci cannot read rewritten. See script/nrepl_tests.clj.
+(let [nrepl-nss (filter #(str/starts-with? (str %) "nrepl.") ns-args)]
+  (when (and (or (empty? ns-args) (seq nrepl-nss))
+             (not (windows?)))
+    (if-not (= "native" (System/getenv "BABASHKA_TEST_ENV"))
+      (println "Skipping nREPL's own tests (native only, set BABASHKA_TEST_ENV=native)")
+      (let [bb-cmd (str (fs/file (System/getProperty "user.dir") "bb"))
+            {:keys [exit]} (apply shell {:continue true
+                                         :env (dissoc (into {} (System/getenv)) "BABASHKA_CLASSPATH")}
+                                  bb-cmd "script/nrepl_tests.clj" (map str nrepl-nss))]
+        (if (zero? exit)
+          (swap! status update :test (fnil inc 0))
+          (swap! status update :fail (fnil inc 0)))))))
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

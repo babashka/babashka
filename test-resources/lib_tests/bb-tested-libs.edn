@@ -1,7 +1,9 @@
 ;; These libraries are tested against babashka and have been added by
 ;; script/add-libtest.clj. Each library entry contains enough data to run tests
 ;; and to update tests later
-{listora/again
+{nrepl/nrepl
+ {:git-sha "61a42f454160d8a503fa8365fbd847ae3e797e8c", :git-url "https://github.com/nrepl/nrepl", :test-namespaces [], :manually-added true, :skip-windows true}
+ listora/again
  {:git-sha "b1a6793f0deaa3cc016eee7626097ba8bf36ba10", :git-url "https://github.com/liwp/again", :test-namespaces (again.core-test)}
  org.clojure/tools.gitlibs {:git-sha "9f98af7631e34983d5b0886e1ab6eadc3856290b", :git-url "https://github.com/clojure/tools.gitlibs", :test-namespaces (clojure.tools.test-gitlibs clojure.tools.gitlibs.test-impl)}
  comb/comb {:git-sha "625a63a9c040fa4a2b3153d8c84d08dc2fc8f660", :git-url "https://github.com/weavejester/comb", :test-namespaces (comb.test.template)}

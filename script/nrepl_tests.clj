@@ -5,10 +5,14 @@
             [babashka.deps :as deps]
             [babashka.fs :as fs]
             [babashka.process :as p]
+            [clojure.edn :as edn]
             [clojure.string :as str]))
 
-(def git-sha "61a42f454160d8a503fa8365fbd847ae3e797e8c") ; v1.7.0
-(def git-url "https://github.com/nrepl/nrepl")
+;; The pin lives in the lib tests registry, like every other library bb tests.
+(def lib (get (edn/read-string (slurp "test-resources/lib_tests/bb-tested-libs.edn"))
+              'nrepl/nrepl))
+(def git-sha (:git-sha lib))
+(def git-url (:git-url lib))
 
 (def sources
   "Test files in load order, each with its substitutions."
