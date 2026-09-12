@@ -199,20 +199,14 @@
              (not (windows?)))
     (if-not (= "native" (System/getenv "BABASHKA_TEST_ENV"))
       (println "Skipping nREPL's own tests (native only, set BABASHKA_TEST_ENV=native)")
-      (let [{:keys [git-sha git-url]} (get (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
-                                           'nrepl/nrepl)
+      ;; the standard run above cloned the checkout and put its :test-paths on
+      ;; the classpath, where our copies shadow the files we had to change
+      (let [{:keys [git-sha]} (get (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
+                                   'nrepl/nrepl)
             checkout (fs/file (fs/home) ".gitlibs" "libs" "nrepl" "nrepl" git-sha)
             nss (if (seq nrepl-nss) nrepl-nss nrepl-namespaces)]
-        (when-not (fs/exists? checkout)
-          (println "Fetching nrepl/nrepl at" git-sha)
-          (sh "git" "clone" (str git-url) (str checkout))
-          (sh "git" "-C" (str checkout) "checkout" git-sha))
         ;; core_test resolves its sample files against this
         (System/setProperty "nrepl.basedir" (str checkout))
-        ;; test/ holds the resources the tests read, test/clojure the namespaces
-        ;; that needed no changes
-        (add-classpath (str (fs/file checkout "test")))
-        (add-classpath (str (fs/file checkout "test" "clojure")))
         ;; babashka does not ship nrepl.spec, which core_test registers specs from
         (load-file (str (fs/file checkout "src" "clojure" "nrepl" "spec.clj")))
         (binding [*ns* *ns*
