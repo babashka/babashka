@@ -3,8 +3,10 @@
             [babashka.fs :as fs]
             [babashka.impl.classpath :as cp]
             [babashka.impl.common :refer [bb-edn]]
+            [babashka.impl.tools-deps :as tools-deps]
             [babashka.process :as process]
             [borkdude.deps :as deps]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [sci.core :as sci]))
 
@@ -51,12 +53,84 @@
 ;;;; end merge edn files
 
 
+;;;; basis
+
+;; bb has no clojure.basis system property, so the basis behind the classpath
+;; is read from the file deps.clj caches next to the classpath file.
+
+(def ^:private current-basis (atom nil))
+
+(defn reset-basis!
+  "Forgets the basis. A run starts from the classpath its own options give
+  it, so what an earlier run in the same process resolved does not carry
+  over."
+  []
+  (reset! current-basis nil))
+
+(defn- basis-file
+  "Returns the path of the basis file for args. deps.clj writes it whenever
+  it computes a classpath, and reuses it silently when the cache is warm,
+  so a warm run derives the path the way deps.clj derives it."
+  [args]
+  (or (tools-deps/take-basis-file!)
+      (let [cli-opts (deps/parse-cli-opts args)
+            config-dir (deps/get-config-dir)
+            install-dir (deps/get-install-dir)
+            deps-edn (deps/get-local-deps-edn {:cli-opts cli-opts})
+            config-paths (deps/get-config-paths {:cli-opts cli-opts
+                                                 :deps-edn deps-edn
+                                                 :config-dir config-dir
+                                                 :install-dir install-dir})
+            {:keys [cache-dir cache-dir-key]}
+            (deps/get-cache-dir* {:deps-edn deps-edn :config-dir config-dir})
+            checksum (deps/get-checksum {:cli-opts cli-opts
+                                         :config-paths config-paths
+                                         :cache-dir-key cache-dir-key})]
+        (deps/get-basis-file {:cache-dir cache-dir :checksum checksum}))))
+
+(defn- read-basis
+  "Returns the basis at path, or nil when it is absent or damaged. The
+  classpath is added either way, so a basis that will not read costs the
+  return value and nothing else."
+  [path]
+  (when (and path (fs/exists? path))
+    (try (edn/read-string {:default (fn [_tag val] val)} (slurp path))
+         (catch Exception _ nil))))
+
+(defn- classpath-libs
+  "Returns the libs of basis that contribute to its classpath. A lib an
+  alias blanks out, such as the Clojure jar babashka replaces with its own,
+  stays in :libs but reaches no classpath root."
+  [basis]
+  (into #{} (keep (comp :lib-name val)) (:classpath basis)))
+
+(defn- add-libs!
+  "Resolves lib-coords against the libs already on the classpath, adds the
+  ones that are new and returns them sorted. A lib already present keeps
+  the version it has, as clojure.repl.deps/add-libs leaves it."
+  [lib-coords basis getenv]
+  (let [existing (:libs basis)
+        wanted (into {} (remove (fn [[lib _]] (contains? existing lib))) lib-coords)]
+    (when (seq wanted)
+      (let [procurer (dissoc basis :basis-config :paths :deps :aliases :argmap
+                             :classpath :classpath-roots :libs)
+            {:keys [added]} (tools-deps/resolve-added-libs
+                             {:existing existing :add wanted :procurer procurer}
+                             getenv)]
+        (when (seq added)
+          (cp/add-classpath (str/join cp/path-sep (mapcat :paths (vals added))))
+          (swap! current-basis update :libs merge added)
+          (vec (sort (keys added))))))))
+
 ;; We are optimizing for the 1-file script with deps scenario where people can
 ;; call this function to include e.g. {:deps {medley/medley
 ;; {:mvn/version "1.3.3"}}}. Optionally they can include aliases, to modify the
 ;; classpath.
 (defn add-deps
   "Resolves dependencies from a deps.edn map and adds them to the classpath.
+  Returns the libs added, sorted, or nil when none were. A lib already on
+  the classpath keeps the version it has and is not added again.
+
   Options: :aliases selects aliases by keyword, :force recomputes the
   classpath, :env replaces the environment, and :extra-env adds overrides.
 
@@ -121,11 +195,20 @@
                                                    (throw (Exception. message))))}
                               make-classpath-fn (assoc #'deps/*make-classpath-fn* make-classpath-fn)
                               deps-root (assoc #'deps/*dir* (str deps-root)))
-                   cp (with-out-str (with-bindings bindings
-                                      (apply deps/-main args)))
-                   cp (str/trim cp)
-                   cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")]
-               (cp/add-classpath cp)))))))))
+                   basis @current-basis]
+               (if (and (not force)
+                        (empty? aliases)
+                        (seq (:libs basis))
+                        (seq (:deps deps-map)))
+                 (add-libs! (:deps deps-map) basis getenv)
+                 (let [cp (with-out-str (with-bindings bindings
+                                          (apply deps/-main args)))
+                       cp (str/trim cp)
+                       cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")
+                       basis (read-basis (with-bindings bindings (basis-file args)))]
+                   (cp/add-classpath cp)
+                   (reset! current-basis basis)
+                   (not-empty (vec (sort (classpath-libs basis))))))))))))))
 
 (def deps-namespace
   {'add-deps (sci/copy-var add-deps dns)

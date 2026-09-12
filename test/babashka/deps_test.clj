@@ -347,3 +347,21 @@ true
               (str/replace ":env-key" ":extra-env")))
       (is (fs/exists? libs-dir))
       (is (fs/exists? libs-dir2)))))
+
+(deftest add-deps-returns-added-libs-test
+  (let [{:keys [first-add second-add duplicate older]}
+        (bb "
+(let [first-add (babashka.deps/add-deps '{:deps {org.clojure/data.csv {:mvn/version \"1.0.1\"}}})
+      second-add (babashka.deps/add-deps '{:deps {org.clojure/tools.cli {:mvn/version \"1.0.219\"}}})
+      duplicate (babashka.deps/add-deps '{:deps {org.clojure/data.csv {:mvn/version \"1.0.1\"}}})
+      older (babashka.deps/add-deps '{:deps {org.clojure/data.csv {:mvn/version \"1.0.0\"}}})]
+  (prn {:first-add first-add :second-add second-add :duplicate duplicate :older older}))
+")]
+    (testing "the libs resolved are returned, without the Clojure jar babashka replaces with its own"
+      (is (= '[org.clojure/data.csv] first-add)))
+    (testing "a later call returns only the libs it added"
+      (is (= '[org.clojure/tools.cli] second-add)))
+    (testing "a lib already on the classpath is not added again"
+      (is (nil? duplicate)))
+    (testing "an older version does not replace the one already present"
+      (is (nil? older)))))

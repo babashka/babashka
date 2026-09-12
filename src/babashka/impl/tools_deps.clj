@@ -72,6 +72,14 @@
 
 (def ^:private run-lock (Object.))
 
+(def ^:private last-basis-file (atom nil))
+
+(defn take-basis-file!
+  "Returns the basis file make-classpath! wrote since the previous call and
+  forgets it, or nil when the cached classpath was reused and nothing ran."
+  []
+  (first (reset-vals! last-basis-file nil)))
+
 (defn make-classpath!
   "Runs clojure.tools.deps.script.make-classpath2 in this process with the
   arguments deps.clj passes to it. dir is the project directory. opts
@@ -91,6 +99,7 @@
       (when (seq errors)
         (throw (ex-info (str/join "\n" errors) {:args args})))
       (let [options (absolutize-files dir options)
+            _ (reset! last-basis-file (:basis-file options))
             run (list 'clojure.tools.deps.util.dir/with-dir
                       (list 'clojure.java.io/file (str dir))
                       (list (symbol (str make-classpath-ns) "run")
@@ -105,3 +114,21 @@
                             config-dir (conj ['clojure.tools.deps.edn/user-config-dir
                                               (constantly config-dir)]))
                           run)))))))
+
+(defn resolve-added-libs
+  "Runs clojure.tools.deps/resolve-added-libs in this process. args is its
+  option map, taking :existing, the libs already resolved, :add, the libs
+  to add, and :procurer, the procurer config from the basis. getenv is the
+  lookup function the Maven layer reads its environment from. Returns a map
+  with :added, the libs resolved in addition to :existing, and :conflict,
+  the requested libs that lost to an existing one."
+  [args getenv]
+  (let [ctx (common/ctx)]
+    (sci/eval-form ctx (list 'require ''clojure.tools.deps
+                             ''babashka.impl.mvn.env))
+    (locking run-lock
+      (gitlibs-dir! ctx (getenv "GITLIBS"))
+      (sci/eval-form ctx
+                     (override-form [['babashka.impl.mvn.env/getenv getenv]]
+                                    (list 'clojure.tools.deps/resolve-added-libs
+                                          (list 'quote args)))))))
