@@ -108,7 +108,7 @@ sci cannot read as copies that shadow it.
 Re-sync the copies after a library releases a new version with:
 
 ```
-bb script/resync.clj lib nrepl/nrepl <new-sha>
+bb --config .build/bb.edn --deps-root . resync lib --lib nrepl/nrepl --new-sha <sha>
 ```
 
 The task reads the revision the copies were taken from out of the registry,
@@ -139,7 +139,7 @@ classpath. That directory carries its own pin in `upstream.edn`, and the same
 task re-syncs it:
 
 ```
-bb script/resync.clj dir script/mvn_oracle/patched <new-sha>
+bb --config .build/bb.edn --deps-root . resync dir --dir script/mvn_oracle/patched --new-sha <sha>
 ```
 
 `script/mvn_oracle/run.clj` compares bb's resolution against tools.deps over
