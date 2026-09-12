@@ -105,29 +105,24 @@ standard run. Clerk and nREPL are the worked examples. The nREPL block
 loads most of its namespaces from the checkout, and keeps the few files
 sci cannot read as copies that shadow it.
 
-Re-sync a copied file after bumping a library by letting git merge the
-churn. The `:git-sha` in the registry is what makes this work: it records
-the upstream revision the copy was made from, so git can tell our edits
-apart from upstream's. Write that revision and the new one to temporary
-files, then merge both into the copy:
+Re-sync the copies after a library releases a new version with:
 
 ```
-cd ~/.gitlibs/libs/nrepl/nrepl/<old-sha>
-git fetch origin
-git show <old-sha>:test/clojure/nrepl/core_test.clj > /tmp/base.clj
-git show <new-sha>:test/clojure/nrepl/core_test.clj > /tmp/other.clj
-cd ~/dev/babashka
-git merge-file test-resources/lib_tests/nrepl/core_test.clj /tmp/base.clj /tmp/other.clj
+bb script/lib_tests/resync.clj nrepl/nrepl <new-sha>
 ```
 
-The last command rewrites the copy in place and exits with the number of
-conflicts. Upstream changes elsewhere in the file apply on their own, and
-only a region both sides edited leaves conflict markers.
+The task reads the revision the copies were taken from out of the registry,
+writes each file at that revision and at the new one to temporary files,
+three-way merges both into the copy, and prints one line per file. It then
+sets `:git-sha` to the new revision, because that revision is the base for
+the next bump.
 
-Repeat for each copied file, then set `:git-sha` in the registry to the new
-revision, because that revision is the base for the next bump. Leave it
-stale and the next re-sync replays changes already taken, which surfaces as
-conflicts that should not exist.
+Upstream changes elsewhere in a file apply on their own. Only a region both
+sides edited leaves conflict markers, which you resolve by hand. Then run
+the suite, because a clean merge is not the same as a correct one.
+
+The task needs `:test-paths` in the entry, which says where the copies came
+from upstream. An entry without it is refused rather than guessed at.
 
 ### Maven layer tests
 
