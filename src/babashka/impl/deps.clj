@@ -55,22 +55,17 @@
 
 ;;;; basis
 
-;; bb has no clojure.basis system property, so the basis behind the classpath
-;; is read from the file deps.clj caches next to the classpath file.
+;; deps.clj caches the basis next to the classpath file.
 
 (def ^:private current-basis (atom nil))
 
 (defn reset-basis!
-  "Forgets the basis. A run starts from the classpath its own options give
-  it, so what an earlier run in the same process resolved does not carry
-  over."
+  "Clears the cached basis."
   []
   (reset! current-basis nil))
 
 (defn- basis-file
-  "Returns the path of the basis file for args. deps.clj writes it whenever
-  it computes a classpath, and reuses it silently when the cache is warm,
-  so a warm run derives the path the way deps.clj derives it."
+  "Returns the basis file path for args."
   [args]
   (or (tools-deps/take-basis-file!)
       (let [cli-opts (deps/parse-cli-opts args)
@@ -89,38 +84,44 @@
         (deps/get-basis-file {:cache-dir cache-dir :checksum checksum}))))
 
 (defn- read-basis
-  "Returns the basis at path, or nil when it is absent or damaged. The
-  classpath is added either way, so a basis that will not read costs the
-  return value and nothing else."
+  "Returns the basis at path, or nil if the file is missing or cannot be read."
   [path]
   (when (and path (fs/exists? path))
     (try (edn/read-string {:default (fn [_tag val] val)} (slurp path))
          (catch Exception _ nil))))
 
 (defn- classpath-libs
-  "Returns the libs of basis that contribute to its classpath. A lib an
-  alias blanks out, such as the Clojure jar babashka replaces with its own,
-  stays in :libs but reaches no classpath root."
+  "Returns the set of libs on the basis classpath."
   [basis]
   (into #{} (keep (comp :lib-name val)) (:classpath basis)))
 
-(defn- add-libs!
-  "Resolves lib-coords against the libs already on the classpath, adds the
-  ones that are new and returns them sorted. A lib already present keeps
-  the version it has, as clojure.repl.deps/add-libs leaves it."
-  [lib-coords basis getenv]
-  (let [existing (:libs basis)
-        wanted (into {} (remove (fn [[lib _]] (contains? existing lib))) lib-coords)]
-    (when (seq wanted)
-      (let [procurer (dissoc basis :basis-config :paths :deps :aliases :argmap
-                             :classpath :classpath-roots :libs)
-            {:keys [added]} (tools-deps/resolve-added-libs
-                             {:existing existing :add wanted :procurer procurer}
-                             getenv)]
-        (when (seq added)
-          (cp/add-classpath (str/join cp/path-sep (mapcat :paths (vals added))))
-          (swap! current-basis update :libs merge added)
-          (vec (sort (keys added))))))))
+(def ^:private coord-keys
+  [:mvn/version :git/url :git/sha :git/tag :local/root :deps/root :deps/manifest
+   :exclusions])
+
+(defn- pinned-deps
+  "Returns the libs on the basis classpath as deps, at the versions they
+  resolved to. Merging these under a request holds them at those versions,
+  the way clojure.repl.deps/add-libs holds the libs it already has. A lib
+  an alias blanks out is left out, since naming it undoes the blanking."
+  [basis]
+  (let [on-classpath (classpath-libs basis)]
+    (reduce-kv (fn [m lib coord]
+                 (if (contains? on-classpath lib)
+                   (assoc m lib (select-keys coord coord-keys))
+                   m))
+               {}
+               (:libs basis))))
+
+(defn- add-new-roots!
+  "Adds the roots of classpath that are not on the classpath yet, so that
+  resolving again next to what is already loaded appends nothing."
+  [classpath]
+  (let [sep (re-pattern (java.util.regex.Pattern/quote cp/path-sep))
+        known (set (str/split (or (System/getProperty "java.class.path") "") sep))
+        fresh (remove known (str/split classpath sep))]
+    (when (seq fresh)
+      (cp/add-classpath (str/join cp/path-sep fresh)))))
 
 ;; We are optimizing for the 1-file script with deps scenario where people can
 ;; call this function to include e.g. {:deps {medley/medley
@@ -128,8 +129,8 @@
 ;; classpath.
 (defn add-deps
   "Resolves dependencies from a deps.edn map and adds them to the classpath.
-  Returns the libs added, sorted, or nil when none were. A lib already on
-  the classpath keeps the version it has and is not added again.
+  Returns a sorted vector of added libs, or nil if none were added.
+  Preserves versions of libs already on the classpath.
 
   Options: :aliases selects aliases by keyword, :force recomputes the
   classpath, :env replaces the environment, and :extra-env adds overrides.
@@ -164,7 +165,13 @@
                ;; happen with dynamic add-deps, but at least we don't invoke
                ;; clojure CLI's java process each time we call a script from a
                ;; different directory.
-               deps-map (assoc deps-map :deps-root (str deps-root))]
+               deps-map (assoc deps-map :deps-root (str deps-root))
+               ;; resolve next to what is already on the classpath: the libs
+               ;; there are pinned to the versions they resolved to, so they
+               ;; win over the request, and the classpath cache still answers
+               deps-map (if-let [pinned (not-empty (pinned-deps @current-basis))]
+                          (update deps-map :deps #(merge % pinned))
+                          deps-map)]
            (binding [*print-namespace-maps* false]
              (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
                                       {:replace-paths [] ;; babashka sets paths manually
@@ -195,20 +202,16 @@
                                                    (throw (Exception. message))))}
                               make-classpath-fn (assoc #'deps/*make-classpath-fn* make-classpath-fn)
                               deps-root (assoc #'deps/*dir* (str deps-root)))
-                   basis @current-basis]
-               (if (and (not force)
-                        (empty? aliases)
-                        (seq (:libs basis))
-                        (seq (:deps deps-map)))
-                 (add-libs! (:deps deps-map) basis getenv)
-                 (let [cp (with-out-str (with-bindings bindings
-                                          (apply deps/-main args)))
-                       cp (str/trim cp)
-                       cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")
-                       basis (read-basis (with-bindings bindings (basis-file args)))]
-                   (cp/add-classpath cp)
-                   (reset! current-basis basis)
-                   (not-empty (vec (sort (classpath-libs basis))))))))))))))
+                   prev @current-basis
+                   cp (with-out-str (with-bindings bindings
+                                      (apply deps/-main args)))
+                   cp (str/trim cp)
+                   cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")
+                   basis (read-basis (with-bindings bindings (basis-file args)))]
+               (add-new-roots! cp)
+               (reset! current-basis basis)
+               (let [before (classpath-libs prev)]
+                 (not-empty (vec (sort (remove before (classpath-libs basis))))))))))))))
 
 (def deps-namespace
   {'add-deps (sci/copy-var add-deps dns)

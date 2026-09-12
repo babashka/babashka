@@ -75,8 +75,7 @@
 (def ^:private last-basis-file (atom nil))
 
 (defn take-basis-file!
-  "Returns the basis file make-classpath! wrote since the previous call and
-  forgets it, or nil when the cached classpath was reused and nothing ran."
+  "Returns and clears the recorded basis file path, or nil if none is recorded."
   []
   (first (reset-vals! last-basis-file nil)))
 
@@ -114,21 +113,3 @@
                             config-dir (conj ['clojure.tools.deps.edn/user-config-dir
                                               (constantly config-dir)]))
                           run)))))))
-
-(defn resolve-added-libs
-  "Runs clojure.tools.deps/resolve-added-libs in this process. args is its
-  option map, taking :existing, the libs already resolved, :add, the libs
-  to add, and :procurer, the procurer config from the basis. getenv is the
-  lookup function the Maven layer reads its environment from. Returns a map
-  with :added, the libs resolved in addition to :existing, and :conflict,
-  the requested libs that lost to an existing one."
-  [args getenv]
-  (let [ctx (common/ctx)]
-    (sci/eval-form ctx (list 'require ''clojure.tools.deps
-                             ''babashka.impl.mvn.env))
-    (locking run-lock
-      (gitlibs-dir! ctx (getenv "GITLIBS"))
-      (sci/eval-form ctx
-                     (override-form [['babashka.impl.mvn.env/getenv getenv]]
-                                    (list 'clojure.tools.deps/resolve-added-libs
-                                          (list 'quote args)))))))
