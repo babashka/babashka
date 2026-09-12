@@ -5,6 +5,7 @@
             [babashka.impl.common :refer [bb-edn]]
             [babashka.process :as process]
             [borkdude.deps :as deps]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [sci.core :as sci]))
 
@@ -51,12 +52,91 @@
 ;;;; end merge edn files
 
 
+;;;; basis
+
+;; deps.clj caches the basis next to the classpath file.
+
+(def ^:private current-basis (atom nil))
+
+(defn reset-basis!
+  "Clears the cached basis."
+  []
+  (reset! current-basis nil))
+
+(defn- basis-file
+  "Returns the basis file path for args."
+  [args]
+  (let [cli-opts (deps/parse-cli-opts args)
+        config-dir (deps/get-config-dir)
+        install-dir (deps/get-install-dir)
+        deps-edn (deps/get-local-deps-edn {:cli-opts cli-opts})
+        config-paths (deps/get-config-paths {:cli-opts cli-opts
+                                             :deps-edn deps-edn
+                                             :config-dir config-dir
+                                             :install-dir install-dir})
+        {:keys [cache-dir cache-dir-key]}
+        (deps/get-cache-dir* {:deps-edn deps-edn :config-dir config-dir})
+        checksum (deps/get-checksum {:cli-opts cli-opts
+                                     :config-paths config-paths
+                                     :cache-dir-key cache-dir-key})]
+    (deps/get-basis-file {:cache-dir cache-dir :checksum checksum})))
+
+(defn- read-basis
+  "Returns the basis at path, or nil if the file is missing or cannot be read."
+  [path]
+  (when (and path (fs/exists? path))
+    (try (edn/read-string {:default (fn [_tag val] val)} (slurp path))
+         (catch Exception _ nil))))
+
+(defn- classpath-libs
+  "Returns the set of libs on the basis classpath."
+  [basis]
+  (into #{} (keep (comp :lib-name val)) (:classpath basis)))
+
+(def ^:private coord-keys
+  [:mvn/version :git/url :git/sha :git/tag :local/root :deps/root :deps/manifest
+   :exclusions])
+
+(defn- pinned-deps
+  "Returns dependency coordinates for libs on the basis classpath at their
+  resolved versions."
+  [basis]
+  (let [on-classpath (classpath-libs basis)]
+    (reduce-kv (fn [m lib coord]
+                 (if (contains? on-classpath lib)
+                   (assoc m lib (select-keys coord coord-keys))
+                   m))
+               {}
+               (:libs basis))))
+
+(defn- merge-basis
+  "Merges the libs and classpath of basis into prev, so that a call records
+  what it resolved without dropping what another call recorded."
+  [prev basis]
+  (if prev
+    (-> prev
+        (update :libs merge (:libs basis))
+        (update :classpath merge (:classpath basis)))
+    basis))
+
+(defn- add-new-roots!
+  "Adds roots from classpath, excluding roots already on the classpath."
+  [classpath]
+  (let [sep (re-pattern (java.util.regex.Pattern/quote cp/path-sep))
+        known (set (str/split (or (System/getProperty "java.class.path") "") sep))
+        fresh (remove known (str/split classpath sep))]
+    (when (seq fresh)
+      (cp/add-classpath (str/join cp/path-sep fresh)))))
+
 ;; We are optimizing for the 1-file script with deps scenario where people can
 ;; call this function to include e.g. {:deps {medley/medley
 ;; {:mvn/version "1.3.3"}}}. Optionally they can include aliases, to modify the
 ;; classpath.
 (defn add-deps
   "Resolves dependencies from a deps.edn map and adds them to the classpath.
+  Returns a sorted vector of added libs, or nil if none were added.
+  Preserves versions of libs already on the classpath.
+
   Options: :aliases selects aliases by keyword, :force recomputes the
   classpath, :env replaces the environment, and :extra-env adds overrides.
 
@@ -90,7 +170,11 @@
                ;; happen with dynamic add-deps, but at least we don't invoke
                ;; clojure CLI's java process each time we call a script from a
                ;; different directory.
-               deps-map (assoc deps-map :deps-root (str deps-root))]
+               deps-map (assoc deps-map :deps-root (str deps-root))
+               ;; Existing versions take precedence over requested versions.
+               deps-map (if-let [pinned (not-empty (pinned-deps @current-basis))]
+                          (update deps-map :deps #(merge % pinned))
+                          deps-map)]
            (binding [*print-namespace-maps* false]
              (let [deps-map (assoc-in deps-map [:aliases :org.babashka/defaults]
                                       {:replace-paths [] ;; babashka sets paths manually
@@ -124,8 +208,15 @@
                    cp (with-out-str (with-bindings bindings
                                       (apply deps/-main args)))
                    cp (str/trim cp)
-                   cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")]
-               (cp/add-classpath cp)))))))))
+                   cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")
+                   basis (read-basis (with-bindings bindings (basis-file args)))]
+               (add-new-roots! cp)
+               ;; the libs this call added are the ones its own update
+               ;; introduced, so a call running next to another reports
+               ;; what it contributed and not what the other did
+               (let [[prev now] (swap-vals! current-basis merge-basis basis)]
+                 (not-empty (vec (sort (remove (classpath-libs prev)
+                                               (classpath-libs now))))))))))))))
 
 (def deps-namespace
   {'add-deps (sci/copy-var add-deps dns)

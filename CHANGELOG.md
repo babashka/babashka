@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- `babashka.deps/add-deps` returns a sorted vector of added libs, or `nil` if none were added, and preserves versions already on the classpath
 - Keep output from realizing lazy values separate from nREPL evaluation results
 - [babashka.nrepl#67](https://github.com/babashka/babashka.nrepl/issues/67): Preserve source columns in nREPL evaluations
 - Add `bb repl --connect [addr]` to connect to an nREPL server with completion, eldoc, documentation lookup and Ctrl-C interruption. Accepts `host:port`, a port or `unix://path`. Reads `.nrepl-port` by default.
