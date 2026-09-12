@@ -111,6 +111,16 @@
                {}
                (:libs basis))))
 
+(defn- merge-basis
+  "Merges the libs and classpath of basis into prev, so that a call records
+  what it resolved without dropping what another call recorded."
+  [prev basis]
+  (if prev
+    (-> prev
+        (update :libs merge (:libs basis))
+        (update :classpath merge (:classpath basis)))
+    basis))
+
 (defn- add-new-roots!
   "Adds roots from classpath, excluding roots already on the classpath."
   [classpath]
@@ -197,16 +207,18 @@
                                                    (throw (Exception. message))))}
                               make-classpath-fn (assoc #'deps/*make-classpath-fn* make-classpath-fn)
                               deps-root (assoc #'deps/*dir* (str deps-root)))
-                   prev @current-basis
                    cp (with-out-str (with-bindings bindings
                                       (apply deps/-main args)))
                    cp (str/trim cp)
                    cp (str/replace cp (re-pattern (str cp/path-sep "+$")) "")
                    basis (read-basis (with-bindings bindings (basis-file args)))]
                (add-new-roots! cp)
-               (reset! current-basis basis)
-               (let [before (classpath-libs prev)]
-                 (not-empty (vec (sort (remove before (classpath-libs basis))))))))))))))
+               ;; the libs this call added are the ones its own update
+               ;; introduced, so a call running next to another reports
+               ;; what it contributed and not what the other did
+               (let [[prev now] (swap-vals! current-basis merge-basis basis)]
+                 (not-empty (vec (sort (remove (classpath-libs prev)
+                                               (classpath-libs now))))))))))))))
 
 (def deps-namespace
   {'add-deps (sci/copy-var add-deps dns)
