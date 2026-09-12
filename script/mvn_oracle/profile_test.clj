@@ -129,6 +129,13 @@
       (is (not (file {:missing nil} dir)))
       (is (file {:missing "someFile.txt"} dir))
       (is (file {:missing "${basedir}/someFile.txt"} dir)))
+    (testing "a basedir holding characters a replacement string would eat"
+      (let [odd (fs/file dir "we$ird\\dir")]
+        (fs/create-dirs odd)
+        (spit (fs/file odd "file.txt") "")
+        (is (file {:exists "${basedir}"} (str odd)))
+        (is (file {:exists "${basedir}/file.txt"} (str odd)))
+        (is (not (file {:missing "${basedir}/file.txt"} (str odd))))))
     (testing "testIsActiveExistsFileExists"
       (is (file {:exists "file.txt"} dir))
       (is (file {:exists "${basedir}"} dir))

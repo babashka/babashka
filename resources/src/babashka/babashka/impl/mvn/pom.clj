@@ -248,7 +248,7 @@
 
 (defn- file-active? [{:keys [exists missing]} basedir]
   (when basedir
-    (let [path #(str/replace % #"\$\{(project\.)?basedir\}" (str basedir))
+    (let [path #(str/replace % #"\$\{(project\.)?basedir\}" (constantly (str basedir)))
           f (fn [p] (let [p (path p)] (if (fs/absolute? p) p (str (fs/path basedir p)))))]
       (cond
         exists (fs/exists? (f exists))
