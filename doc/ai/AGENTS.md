@@ -105,18 +105,29 @@ standard run. Clerk and nREPL are the worked examples. The nREPL block
 loads most of its namespaces from the checkout, and keeps the few files
 sci cannot read as copies that shadow it.
 
-To re-sync a copied file after bumping a library, let git merge the churn.
-Write the file at the old sha and at the new sha to temporary files, then
-merge both into the copy, which `git merge-file` edits in place:
+Re-sync a copied file after bumping a library by letting git merge the
+churn. The `:git-sha` in the registry is what makes this work: it records
+the upstream revision the copy was made from, so git can tell our edits
+apart from upstream's. Write that revision and the new one to temporary
+files, then merge both into the copy:
 
 ```
-git -C <checkout> show <old-sha>:<path-in-library> > /tmp/base.clj
-git -C <checkout> show <new-sha>:<path-in-library> > /tmp/other.clj
-git merge-file test-resources/lib_tests/<lib>/<file> /tmp/base.clj /tmp/other.clj
+cd ~/.gitlibs/libs/nrepl/nrepl/<old-sha>
+git fetch origin
+git show <old-sha>:test/clojure/nrepl/core_test.clj > /tmp/base.clj
+git show <new-sha>:test/clojure/nrepl/core_test.clj > /tmp/other.clj
+cd ~/dev/babashka
+git merge-file test-resources/lib_tests/nrepl/core_test.clj /tmp/base.clj /tmp/other.clj
 ```
 
-Upstream changes elsewhere in the file apply on their own. Only a collision
-with one of our own edits leaves conflict markers to resolve.
+The last command rewrites the copy in place and exits with the number of
+conflicts. Upstream changes elsewhere in the file apply on their own, and
+only a region both sides edited leaves conflict markers.
+
+Repeat for each copied file, then set `:git-sha` in the registry to the new
+revision, because that revision is the base for the next bump. Leave it
+stale and the next re-sync replays changes already taken, which surfaces as
+conflicts that should not exist.
 
 ### Maven layer tests
 
