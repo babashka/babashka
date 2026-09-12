@@ -1,39 +1,54 @@
 #!/usr/bin/env bb
-;; Copy the sources babashka bundles into resources/src/babashka, where bb's
-;; load-fn serves them from: tools.deps, tools.deps.edn and tools.gitlibs,
-;; which resolve deps in-process, tools.build with the parts of
-;; tools.namespace and java.classpath its compile-clj needs, and nREPL,
-;; whose Java classes go to src-java.
-;; Only the files listed in `shipped` are copied; anything else in the jars
-;; is reported, so an upgrade shows every upstream addition for a decision.
-;; Patches to shipped files are written here between BB-PATCH markers with
-;; the upstream form kept under #_. The tools.deps version also goes into
-;; the procurer's User-Agent, the nREPL version into nrepl.version.
+;; Refresh the sources babashka bundles in resources/src/babashka, where bb's
+;; load-fn serves them from, and nREPL's Java classes in src-java.
+;;
+;; Those files are the source of truth, not build output: babashka's changes
+;; live in them, each marked BB-PATCH with the upstream form kept under #_.
+;; This script only brings upstream's changes in, by three-way merging every
+;; shipped file against the version it currently holds, which script/vendored.edn
+;; records. Files we never touched come across wholesale; files we did keep our
+;; changes, and a collision leaves conflict markers to resolve by hand.
+;;
+;; Usage:
+;;   bb script/vendor_bundled_sources.clj                    ; refresh at the current pins
+;;   bb script/vendor_bundled_sources.clj nrepl/nrepl 1.8.0  ; bump one artifact
+;;
+;; Only the files listed in `shipped` are taken; anything else in the jars is
+;; reported, so an upgrade shows every upstream addition for a decision.
 (require '[babashka.fs :as fs]
+         '[babashka.process :refer [shell]]
+         '[clojure.edn :as edn]
          '[clojure.set :as set]
-         '[clojure.string :as str]
-         '[rewrite-clj.zip :as z])
+         '[clojure.string :as str])
 
 (def m2 (str (fs/expand-home "~/.m2/repository")))
 
-(def tools-deps-version "0.31.1638")
-(def tools-deps-edn-version "0.9.42")
-(def nrepl-version "1.7.0")
-(def orchard-version "0.44.0")
+(def pins-file "script/vendored.edn")
 
-(defn- jar [group artifact version]
-  (str m2 "/" (str/replace group "." "/") "/" artifact "/" version "/"
-       artifact "-" version ".jar"))
+(def pins
+  "The versions the files in the tree came from."
+  (edn/read-string (slurp pins-file)))
 
-(def jars
-  [(jar "org.clojure" "tools.deps" tools-deps-version)
-   (jar "org.clojure" "tools.deps.edn" tools-deps-edn-version)
-   (jar "org.clojure" "tools.gitlibs" "2.6.217")
-   (jar "io.github.clojure" "tools.build" "0.10.14")
-   (jar "org.clojure" "tools.namespace" "1.5.1")
-   (jar "org.clojure" "java.classpath" "1.1.1")
-   (jar "nrepl" "nrepl" nrepl-version)
-   (jar "cider" "orchard" orchard-version)])
+(def bumped
+  "The versions to move to: the pins, with the command line applied."
+  (let [[lib version] *command-line-args*]
+    (if lib
+      (let [lib (symbol lib)]
+        (assert (contains? pins lib) (str "Not a vendored artifact: " lib))
+        (assert version "Give a version to bump to")
+        (assoc pins lib version))
+      pins)))
+
+(defn- jar [lib version]
+  (str m2 "/" (str/replace (namespace lib) "." "/") "/" (name lib) "/" version "/"
+       (name lib) "-" version ".jar"))
+
+(defn- jars-for [versions]
+  (mapv (fn [[lib version]] (jar lib version)) versions))
+
+(def tools-deps-version (bumped 'org.clojure/tools.deps))
+(def tools-deps-edn-version (bumped 'org.clojure/tools.deps.edn))
+(def nrepl-version (bumped 'nrepl/nrepl))
 
 ;; Upstream files shipped verbatim, edn.clj with the patch below.
 (def shipped
@@ -178,362 +193,99 @@
 (def target "resources/src/babashka")
 (def java-target "src-java")
 
-(defn- patch
-  "`source` with the form `upstream` replaced by `ours`, kept under #_ and
-  marked BB-PATCH with `why`. `upstream` must be one complete form, so the
-  discard covers exactly it, and occur `n` times (default 1)."
-  ([source upstream ours why] (patch source upstream ours why 1))
-  ([source upstream ours why n]
-   (let [found (dec (count (str/split source (re-pattern (java.util.regex.Pattern/quote upstream)) -1)))]
-     (assert (= n found) (str "expected " n " occurrences, found " found ": " upstream)))
-   (str/replace source upstream (str "#_" upstream " ;; BB-PATCH " why "\n" ours))))
+(defn- extract
+  "Unzips `jars` into a fresh directory and returns it."
+  [jars]
+  (let [dir (fs/create-temp-dir)]
+    (doseq [jar jars]
+      (fs/unzip jar dir {:replace-existing true}))
+    dir))
 
-(defn- subst
-  "`source` with `from` replaced by `to`, `n` times (default 1). For renames
-  inside a form, where a discarded upstream copy has no place: a protocol
-  imported as a class, interop on a protocol instance."
-  ([source from to] (subst source from to 1))
-  ([source from to n]
-   (let [found (dec (count (str/split source (re-pattern (java.util.regex.Pattern/quote from)) -1)))]
-     (assert (= n found) (str "expected " n " occurrences, found " found ": " from)))
-   (str/replace source from to)))
+(defn- merge-file!
+  "Brings upstream's changes to `rel` into `dest`, keeping ours. Returns
+  :added when we did not have the file, :clean, or the conflict count."
+  [dest rel old new]
+  (let [ours (fs/file dest rel)
+        base (fs/file old rel)
+        theirs (fs/file new rel)]
+    (fs/create-dirs (fs/parent ours))
+    (cond
+      (not (fs/exists? ours))
+      (do (fs/copy theirs ours {:replace-existing true}) :added)
 
-;; nREPL's eval threads get the main thread's 8 MB stack, in the image the
-;; default is a sixteenth of it.
-(def java-patches
-  {"nrepl/SessionThread.java"
-   (fn [s]
-     (subst s "        this.runFn = runFn;\n"
-            "        super(null, null, name, 8L * 1024 * 1024); // BB-PATCH the main thread's stack size\n        this.runFn = runFn;\n"))
-   "nrepl/DaemonThreadFactory.java"
-   (fn [s]
-     (subst s "        Thread t = new Thread(r);\n"
-            "        Thread t = new Thread(null, r, \"\", 8L * 1024 * 1024); // BB-PATCH the main thread's stack size\n"))})
+      (not (fs/exists? base))
+      (do (fs/copy theirs ours {:replace-existing true}) :added)
 
-;; What sci cannot run as it is: Compiler internals, deftype and defrecord
-;; over a Java interface, a private clojure.core var, a jar resource, and a
-;; protocol imported as if it were a Java interface.
-(def nrepl-patches
-  {"nrepl/middleware/caught.clj"
-   (fn [s]
-     (-> s
-         (patch "(nrepl.transport Transport)" "" "a sci protocol is not a class")
-         (subst "(reify Transport" "(reify transport/Transport")))
-   "nrepl/middleware/print.clj"
-   (fn [s]
-     (-> s
-         (patch "(nrepl.transport Transport)" "" "a sci protocol is not a class")
-         (subst "(reify Transport" "(reify transport/Transport")))
-   "nrepl/middleware/load_file.clj"
-   (fn [s]
-     (-> s
-         (patch "(clojure.lang Compiler)" "" "the image has no Compiler")
-         (patch "(nrepl.transport Transport)" "" "a sci protocol is not a class")
-         (subst "^Transport transport]" "transport]")
-         (subst "(reify Transport" "(reify nrepl.transport/Transport")
-         (subst "(.recv transport" "(nrepl.transport/recv transport" 2)
-         (subst "(.send transport" "(nrepl.transport/send transport" 2)
-         (patch "(defn- per-file-bindings [msg]
-  {Compiler/METHOD nil
-   Compiler/LOCAL_ENV nil
-   Compiler/LOOP_LOCALS nil
-   Compiler/NEXT_LOCAL_NUM 0
-   ;; We don't set LINE_BEFORE, COLUMN_BEFORE, LINE_AFTER, COLUMN_AFTER because
-   ;; it looks like it doesn't change much for our usecase. But this is still to
-   ;; be confirmed.
-   #'*read-eval* true
-   ;; This function runs in \"server context\" (not yet in session context), so
-   ;; make sure to resolve dynvar variables from session.
-   #'*ns* (resolve-in-session msg *ns*)
-   #'*unchecked-math* (resolve-in-session msg *unchecked-math*)
-   #'*warn-on-reflection* (resolve-in-session msg *warn-on-reflection*)
-   #'*data-readers* (resolve-in-session msg *data-readers*)})"
-                "(defn- per-file-bindings [msg]
-  {#'*read-eval* true
-   #'*ns* (resolve-in-session msg *ns*)
-   #'*unchecked-math* (resolve-in-session msg *unchecked-math*)
-   #'*warn-on-reflection* (resolve-in-session msg *warn-on-reflection*)
-   #'*data-readers* (resolve-in-session msg *data-readers*)})"
-                "sci has no compiler state to reset per file")))
-   "nrepl/middleware/interruptible_eval.clj"
-   (fn [s]
-     (-> s
-         (patch "(clojure.lang Compiler$CompilerException
-                 LineNumberingPushbackReader LispReader$ReaderException)"
-                "(clojure.lang LineNumberingPushbackReader)"
-                "the image has no Compiler or LispReader")
-         (patch "(or (instance? ThreadDeath (clojure.main/root-cause e))
-      (and (instance? Compiler$CompilerException e)
-           (instance? ThreadDeath (.getCause e))))"
-                "(instance? ThreadDeath (clojure.main/root-cause e))"
-                "no CompilerException in sci")
-         (patch "(when (and file file-name)
-                                     {Compiler/SOURCE_PATH file
-                                      Compiler/SOURCE file-name})"
-                "{#'*file* (or file \"NO_SOURCE_PATH\")}"
-                "Set *file* to the source path or NO_SOURCE_PATH")
-         (patch "(instance? LispReader$ReaderException e)"
-                "(= :sci.error/parse (:type (ex-data e)))"
-                "sci reader errors are ex-info")
-         (patch "(Compiler/eval input true)" "(clojure.core/eval input)" "sci eval, eval is shadowed by the message key")
-         (patch "(catch Throwable e
-                  (caught e))"
-                "(catch ^{:sci/callstack true} Throwable e
-                  (caught e))"
-                "Preserve the original exception and its sci stack frames")))
-   "nrepl/middleware/session.clj"
-   (fn [s]
-     (-> s
-       (patch "(.put q -1)" "(.put q (int -1))"
-              "the EOF marker: QueuePollingReader compares with an Integer, a Long never equals it; fixed upstream in nrepl#470, after 1.7.0")
-         (patch "(clojure.lang Compiler LineNumberingPushbackReader)"
-                "(clojure.lang LineNumberingPushbackReader)"
-                "the image has no Compiler")
-         (patch "(defn- add-per-message-bindings
-  \"Add dynamic bindings to `bindings-map` that must be rebound for each message.\"
-  [{:keys [session file out-limit] :as msg} bindings-map]
-  (let [;; *out* and *err* must be rebound on each new message.
-        ;; TODO: out-limit -> out-buffer-size | err-buffer-size
-        ;; TODO: new options: out-quota | err-quota
-        opts {::print/buffer-size (or out-limit (get (meta session) :out-limit))}
-        out (print/replying-PrintWriter :out msg opts)
-        err (print/replying-PrintWriter :err msg opts)]
-    (-> bindings-map
-        (assoc #'*msg* msg
-               Compiler/LOADER (classloader/dynamic-classloader)
-               #'*out* out
-               #'*err* err
-               ;; clojure.test captures *out* at load-time, so we need to make
-               ;; sure runtime output of test status/results is redirected
-               ;; properly. There might be more cases like this, but we can't do
-               ;; much about it besides patching like this. We intentionally
-               ;; don't require beforehand in order to not add to loading times.
-               (resolve 'clojure.test/*test-out*) out)
-        (cond->
-         file (assoc #'*file* file)))))"
-                "(defn- add-per-message-bindings
-  \"Add dynamic bindings to `bindings-map` that must be rebound for each message.\"
-  [{:keys [session file out-limit] :as msg} bindings-map]
-  (let [opts {::print/buffer-size (or out-limit (get (meta session) :out-limit))}
-        out (print/replying-PrintWriter :out msg opts)
-        err (print/replying-PrintWriter :err msg opts)]
-    (-> bindings-map
-        (assoc #'*msg* msg
-               #'*out* out
-               #'*err* err
-               (resolve 'clojure.test/*test-out*) out)
-        (cond->
-         file (assoc #'*file* file)))))"
-                "no classloader binding in sci")
-         (patch "(dissoc #'*msg* Compiler/LOADER)" "(dissoc #'*msg*)" "no classloader binding in sci")))
-   "nrepl/socket.clj"
-   (fn [s]
-     (-> s
-         (patch "(defrecord BufferedOutputChannel
-           [^SocketChannel channel ^ByteBuffer buffer]
+      :else
+      (let [{:keys [exit]} (shell {:continue true :out :string :err :string}
+                                  "git" "merge-file" (str ours) (str base) (str theirs))]
+        (if (zero? exit) :clean exit)))))
 
-  java.io.Flushable
-  (flush [_this] ;; Underscore was added to satisfy clj-kondo
-    (.flip buffer)
-    (.write channel buffer)
-    (.clear buffer))
+(defn- stamp!
+  "Replaces the value matched by `re` in `file` with `value`."
+  [file re value what]
+  (let [source (slurp file)]
+    (assert (re-find re source) (str what " not found in " file))
+    (spit file (str/replace source re value))))
 
-  Writable
-  (write [this byte-array]
-    (.write this byte-array 0 (count byte-array)))
-  (write [this byte-array offset length]
-    (if (> length (.capacity buffer))
-      (do
-        (.flush this)
-        (.write channel (ByteBuffer/wrap byte-array offset length)))
-      (do
-        (when (> length (.remaining buffer))
-          (.flush this))
-        (.put buffer byte-array offset length)))))"
-                "(defn buffered-output-channel [^SocketChannel channel bytes]
-  (assert (.isBlocking channel))
-  (let [^ByteBuffer buffer (ByteBuffer/allocate bytes)
-        flush! (fn []
-                 (.flip buffer)
-                 (.write channel buffer)
-                 (.clear buffer))]
-    (reify
-      java.io.Flushable
-      (flush [_this] (flush!))
-      Writable
-      (write [this byte-array]
-        (write this byte-array 0 (count byte-array)))
-      (write [_this byte-array offset length]
-        (if (> length (.capacity buffer))
-          (do (flush!)
-              (.write channel (ByteBuffer/wrap byte-array offset length)))
-          (do (when (> length (.remaining buffer))
-                (flush!))
-              (.put buffer byte-array offset length)))))))"
-                "sci defrecord cannot implement a Java interface, reify can")
-         (patch "(defn buffered-output-channel [^SocketChannel channel bytes]
-  (assert (.isBlocking channel))
-  (->BufferedOutputChannel channel (ByteBuffer/allocate bytes)))"
-                ""
-                "replaced above")))
-   "nrepl/server.clj"
-   (fn [s]
-     (-> s
-         (patch "(close [this] (stop-server this))" ""
-                "sci defrecord cannot implement a Java interface, use stop-server")
-         (subst "  java.io.Closeable\n  #_(close" "  #_(close")))
-   "nrepl/transport.clj"
-   (fn [s]
-     (-> s
-         (patch "(deftype FnTransport [recv-fn send-fn close]
-  Transport
-  (send [this msg] (send-fn msg) this)
-  (recv [this] (.recv this Long/MAX_VALUE))
-  (recv [_this timeout] (recv-fn timeout))
-  java.io.Closeable
-  (close [_this] (close)))"
-                "(defn- fn-transport* [recv-fn send-fn close]
-  (reify
-    Transport
-    (send [this msg] (send-fn msg) this)
-    (recv [this] (recv this Long/MAX_VALUE))
-    (recv [_this timeout] (recv-fn timeout))
-    java.io.Closeable
-    (close [_this] (close))))"
-                "sci deftype cannot implement a Java interface, reify can")
-         (subst "(FnTransport.\n" "(fn-transport*\n")))
-   "orchard/print.clj"
-   (fn [s]
-     (-> s
-         (patch "(clojure.lang AFunction Compiler IDeref IPending IPersistentMap MultiFn
-                 IPersistentSet IPersistentVector IRecord Keyword Namespace
-                 RT Symbol TaggedLiteral Var)"
-                "(clojure.lang AFunction IDeref IPending IPersistentMap MultiFn
-                 IPersistentSet IPersistentVector IRecord Keyword
-                 RT Symbol TaggedLiteral)
-   (sci.lang Namespace Var)"
-                "no Compiler in the image; sci's vars and namespaces are its own types")
-         (patch "(Compiler/demunge (.getName (class x)))"
-                "(clojure.main/demunge (.getName (class x)))"
-                "no Compiler in the image")
-         (patch "(defmethod print :record [x, ^Writer w]
-  (.write w \"#\")
-  (.write w (if *short-record-names*
-              (.getSimpleName (class x))
-              (.getName (class x))))
-  (print-map x w))"
-                "(defmethod print :record [x, ^Writer w]
-  (.write w \"#\")
-  (.write w (let [full-name (.getName (type x))]
-              (if *short-record-names*
-                (subs full-name (inc (.lastIndexOf full-name \".\")))
-                full-name)))
-  (print-map x w))"
-                "every sci record is a SciRecord, its name is on the sci type")
-         ;; interop on Clojure values needs reflection registration in the
-         ;; image, the core functions do not
-         (subst "(.write w (.toString x))" "(.write w (str x))")
-         (subst "(.toString kw)" "(str kw)" 2)
-         (subst "(not (.isRealized ^IPending x))" "(not (realized? x))")))
-   "orchard/pp.clj"
-   (fn [s]
-     ;; every sci record is a SciRecord, its name is on the sci type
-     (-> s
-         (subst "(.getSimpleName (class coll))"
-                "(let [n (.getName (type coll))] (subs n (inc (.lastIndexOf n \".\"))))")
-         (subst "(.getName (class coll))" "(.getName (type coll))")))
-   "orchard/java/compatibility.clj"
-   (fn [s]
-     (patch s "(catch Exception ~'_ ::access-denied)"
-            "(catch Throwable ~'_ ::access-denied)"
-            "an unregistered field throws MissingReflectionRegistrationError in the image" 2))
-   "orchard/inspect/analytics.clj"
-   (fn [s]
-     (-> s
-         (patch "(definline ^:private inc-if [val condition]
-  `(cond-> ~val ~condition inc))"
-                "(defn- inc-if [val condition] (cond-> val condition inc))"
-                "sci has no definline")
-         (subst "(.iterator coll)" "(RT/iter coll)" 3)))
-   "orchard/inspect.clj"
-   (fn [s]
-     (-> s
-         (subst "(if-not (.isBound obj)" "(if-not (bound? obj)")
-         (patch "(#'clojure.reflect/parse-flags (.getModifiers obj) :class)"
-            "(let [m (.getModifiers obj)]
-                                 (remove nil? [(when (Modifier/isPublic m) :public)
-                                               (when (Modifier/isAbstract m) :abstract)
-                                               (when (Modifier/isFinal m) :final)
-                                               (when (Modifier/isStatic m) :static)]))"
-            "clojure.reflect's private parse-flags is not reachable in sci" 2)))
-   "nrepl/version.clj"
-   (fn [s]
-     (patch s "(get-version \"nrepl\" \"nrepl\")"
-            (str "\"" nrepl-version "\"")
-            "the pom.properties resource is not in the image"))})
-
-(defn patch-root-deps
-  "edn.clj with root-deps replaced: upstream reads the root deps.edn as a
-  jar resource, which the image cannot see, so the data is embedded."
-  [source root-deps-edn]
-  (let [zloc (-> (z/of-string source)
-                 (z/find-value z/next 'root-deps)
-                 z/up)
-        upstream (z/string zloc)
-        _ (assert (str/starts-with? upstream "(defn root-deps") upstream)
-        ours (binding [*print-namespace-maps* false]
-               (str "(defn root-deps\n"
-                    "  \"The root deps.edn of tools.deps.edn " tools-deps-edn-version
-                    ", embedded by script/vendor_bundled_sources.clj.\"\n"
-                    "  []\n"
-                    "  '" (pr-str root-deps-edn) ")"))
-        block (str ";; BB-PATCH the root deps.edn is a jar resource the image cannot see\n"
-                   "#_" upstream "\n\n"
-                   ours "\n"
-                   ";; END-BB-PATCH")]
-    (str/replace-first source upstream block)))
-
-(when-let [absent (seq (remove fs/exists? jars))]
-  (println "Not in ~/.m2, resolve them first:")
-  (run! #(println " " %) absent)
-  (System/exit 1))
-
-(let [tmp (fs/create-temp-dir)]
-  (doseq [jar jars]
-    (fs/unzip jar tmp {:replace-existing true}))
-  (let [upstream (->> (concat (fs/glob tmp "clojure/**") (fs/glob tmp "nrepl/**") (fs/glob tmp "orchard/**") (fs/glob tmp "mx/**"))
+(let [old-jars (jars-for pins)
+      new-jars (jars-for bumped)]
+  (when-let [absent (seq (remove fs/exists? (distinct (concat old-jars new-jars))))]
+    (println "Not in ~/.m2, resolve them first:")
+    (run! #(println " " %) absent)
+    (System/exit 1))
+  (let [old (extract old-jars)
+        new (extract new-jars)
+        upstream (->> (concat (fs/glob new "clojure/**") (fs/glob new "nrepl/**")
+                              (fs/glob new "orchard/**") (fs/glob new "mx/**"))
                       (filter fs/regular-file?)
-                      (map #(str (fs/relativize tmp %)))
+                      (map #(str (fs/relativize new %)))
                       (remove #(or (str/ends-with? % ".class") (str/ends-with? % ".so")))
                       set)
         missing (remove upstream (concat shipped java-shipped stand-ins dropped))
-        new (sort (remove (set/union shipped java-shipped stand-ins dropped) upstream))
-        root-deps-edn (read-string (slurp (fs/file tmp "clojure/tools/deps/deps.edn")))]
-    (doseq [rel (sort shipped)]
-      (fs/create-dirs (fs/parent (fs/file target rel)))
-      (cond (= "clojure/tools/deps/edn.clj" rel)
-            (spit (fs/file target rel) (patch-root-deps (slurp (fs/file tmp rel)) root-deps-edn))
-            (nrepl-patches rel)
-            (spit (fs/file target rel) ((nrepl-patches rel) (slurp (fs/file tmp rel))))
-            :else
-            (fs/copy (fs/file tmp rel) (fs/file target rel) {:replace-existing true}))
-      (println rel))
-    (doseq [rel (sort java-shipped)]
-      (fs/create-dirs (fs/parent (fs/file java-target rel)))
-      (if-let [p (java-patches rel)]
-        (spit (fs/file java-target rel) (p (slurp (fs/file tmp rel))))
-        (fs/copy (fs/file tmp rel) (fs/file java-target rel) {:replace-existing true}))
-      (println rel))
-    (let [http "resources/src/babashka/babashka/impl/mvn/http.clj"
-          source (slurp http)
-          re #"\(def \^:private tools-deps-version \"[^\"]+\"\)"]
-      (assert (re-find re source) "tools-deps-version not found in http.clj")
-      (spit http (str/replace source re (str "(def ^:private tools-deps-version \"" tools-deps-version "\")"))))
-    (when (seq new)
+        added (sort (remove (set/union shipped java-shipped stand-ins dropped) upstream))
+        results (concat
+                 (for [rel (sort shipped)] [rel (merge-file! target rel old new)])
+                 (for [rel (sort java-shipped)] [rel (merge-file! java-target rel old new)]))
+        conflicted (remove (comp #{:clean} second) results)]
+    (doseq [[rel status] results
+            :when (not= :clean status)]
+      (println (format "%-52s %s" rel (case status
+                                        :added "new here, taken from upstream"
+                                        (str status " conflict(s)")))))
+    ;; versions babashka embeds rather than reads at run time
+    (stamp! "resources/src/babashka/babashka/impl/mvn/http.clj"
+            #"\(def \^:private tools-deps-version \"[^\"]+\"\)"
+            (str "(def ^:private tools-deps-version \"" tools-deps-version "\")")
+            "tools-deps-version")
+    (stamp! (str (fs/file target "nrepl/version.clj"))
+            #"(;; BB-PATCH the pom.properties resource is not in the image\n)\"[^\"]+\""
+            (str "$1\"" nrepl-version "\"")
+            "nrepl version literal")
+    ;; the root deps.edn is embedded in edn.clj, so it must match the jar we pin
+    (let [embedded (let [src (slurp (str (fs/file target "clojure/tools/deps/edn.clj")))
+                         i (str/last-index-of src "(defn root-deps")
+                         body (last (read-string (subs src i)))]
+                     (if (and (seq? body) (= 'quote (first body))) (second body) body))
+          upstream-deps (read-string (slurp (str (fs/file new "clojure/tools/deps/deps.edn"))))]
+      (when-not (= embedded upstream-deps)
+        (println "\nThe root deps.edn embedded in clojure/tools/deps/edn.clj is stale.")
+        (println "Replace the map in its root-deps with the one from tools.deps.edn"
+                 (bumped 'org.clojure/tools.deps.edn))
+        (System/exit 1)))
+    (when (seq added)
       (println "\nUpstream files not shipped, decide per file:")
-      (run! #(println " " %) new))
+      (run! #(println " " %) added))
     (when (seq missing)
       (println "\nListed here but gone upstream:")
       (run! #(println " " %) missing))
-    (fs/delete-tree tmp)
+    (when (not= pins bumped)
+      (spit pins-file (str/replace (slurp pins-file)
+                                   (re-pattern (str "(?m)^(\\s*" (java.util.regex.Pattern/quote (str (first (first (remove (fn [[k v]] (= v (pins k))) bumped))))) "\\s+)\"[^\"]+\"" ))
+                                   (str "$1\"" (second (first (remove (fn [[k v]] (= v (pins k))) bumped))) "\"")))
+      (println "\nscript/vendored.edn updated"))
+    (fs/delete-tree old)
+    (fs/delete-tree new)
+    (when (seq conflicted)
+      (println "\nResolve the conflict markers before committing."))
     (when (seq missing) (System/exit 1))))

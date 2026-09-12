@@ -3,4 +3,6 @@
         #_{:local/root "../gh-release-artifact"}
         {:git/url "https://github.com/borkdude/gh-release-artifact"
          :git/sha "4a9a74f0e50e897c45df8cc70684360eb30fce80"}}
- :tasks {release-artifact babashka.release-artifact/release}}
+ :tasks {release-artifact babashka.release-artifact/release
+         resync {:doc "Re-sync copied upstream files with a newer revision"
+                 :exec-fn resync/resync}}}

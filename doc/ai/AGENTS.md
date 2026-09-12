@@ -108,7 +108,7 @@ sci cannot read as copies that shadow it.
 Re-sync the copies after a library releases a new version with:
 
 ```
-bb script/lib_tests/resync.clj nrepl/nrepl <new-sha>
+bb --config .build/bb.edn --deps-root . resync --lib nrepl/nrepl --new-sha <sha>
 ```
 
 The task reads the revision the copies were taken from out of the registry,
@@ -132,6 +132,16 @@ the Maven sources from the tree; with `--image` they run against the
 sources bundled in `./bb`, which is what CI does. Test cases ported from
 Maven, the resolver and plexus live here.
 
+`tools_deps_test.clj` runs tools.deps's own suite from its gitlibs checkout.
+Its `faken` test helper imports a resolver class the image does not have, so
+a patched copy lives under `script/mvn_oracle/patched/` and goes first on the
+classpath. That directory carries its own pin in `upstream.edn`, and the same
+task re-syncs it:
+
+```
+bb --config .build/bb.edn --deps-root . resync --dir script/mvn_oracle/patched --new-sha <sha>
+```
+
 `script/mvn_oracle/run.clj` compares bb's resolution against tools.deps over
 a corpus. It needs the network, so it is run by hand after changes to the
 procurer, and every difference it turns up becomes a case in a test script.
@@ -143,6 +153,36 @@ on the JVM stage, and after the native build runs both again plus
 `./bb script/mvn_oracle/tests.clj --image`. `build-windows.yml` is the
 Windows equivalent. Both trigger only on pushes to master and on pull
 requests against master, so pushing a branch runs no CI.
+
+## Bundled sources
+
+`resources/src/babashka` and `src-java` hold the sources babashka bundles:
+tools.deps, tools.build, gitlibs, nREPL and orchard. They are the source of
+truth, not build output. Babashka's changes live in those files, each marked
+`BB-PATCH` with the upstream form kept under `#_`, so editing one is an
+ordinary edit.
+
+`script/vendored.edn` records the version each artifact's files came from.
+To take a new upstream version, name the artifact and the version:
+
+```
+bb script/vendor_bundled_sources.clj nrepl/nrepl 1.8.0
+```
+
+That three-way merges every shipped file, with the recorded version as the
+common ancestor. Files with no local changes come across wholesale, files we
+patched keep their changes, and a region both sides touched is left with
+conflict markers. It then writes the new version back into the pin file, and
+reports upstream files that are new or gone so each gets a decision.
+
+Two values are stamped rather than merged, because they are read from jar
+resources the image does not have: the nREPL version in `nrepl/version.clj`
+and the tools.deps version in the procurer's User-Agent. The root `deps.edn`
+embedded in `clojure/tools/deps/edn.clj` is checked instead of regenerated,
+and the run fails when it no longer matches the pinned `tools.deps.edn`.
+
+Running the script with no arguments refreshes at the current pins and must
+leave the tree byte-identical. That is the regression test for this machinery.
 
 ## Feature System
 

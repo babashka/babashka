@@ -1,0 +1,7 @@
+;; Where the copies in this directory came from, and the revision they were
+;; taken from. Re-sync them with:
+;;   bb script/resync.clj dir script/mvn_oracle/patched <new-sha>
+{:lib org.clojure/tools.deps
+ :git-url "https://github.com/clojure/tools.deps"
+ :git-sha "6c6e293b50fdbc6ea44e2a2ad246b90eb94f2539"
+ :upstream-path "src/test/clojure"}
