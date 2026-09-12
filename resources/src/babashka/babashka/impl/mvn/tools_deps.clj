@@ -67,6 +67,18 @@
    :cache (model-cache)
    :basedir nil})
 
+(defn- parse-pom
+  "The raw model of a POM, naming the artifact when the file will not parse.
+  A damaged POM in the local repository is the usual cause."
+  [text {:keys [group artifact version]}]
+  (try
+    (pom/parse text)
+    (catch Exception e
+      (throw (ex-info (str "Could not read POM of " group ":" artifact ":pom:" version
+                           ": " (ex-message e))
+                      {:group group :artifact artifact :version version}
+                      e)))))
+
 (defn- effective-model
   "The effective model for lib and coord, following relocations."
   [lib coord config]
@@ -78,7 +90,7 @@
             _ (when-not text
                 (throw (ex-info (not-found-message (assoc gav :extension "pom") (repos config))
                                 {:lib lib :coord coord})))
-            model (pom/effective-model (pom/parse text) ctx)
+            model (pom/effective-model (parse-pom text gav) ctx)
             relocation (:relocation model)]
         (if (and relocation (< hops 10))
           (recur {:group (or (:group relocation) (:group gav))

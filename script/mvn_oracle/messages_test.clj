@@ -36,6 +36,23 @@
          (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
                     :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2/"}}}))))
 
+(deftest damaged-pom-test
+  (testing "a POM in the local repository that will not parse names the artifact"
+    (fs/with-temp-dir [dir {}]
+      (let [remote (fs/file dir "remote")
+            local (fs/file dir "local")
+            d (fs/file remote "bad" "lib" "1.0.0")]
+        (fs/create-dirs d)
+        (spit (fs/file d "lib-1.0.0.pom")
+              "<project><modelVersion>4.0.0</modelVersion><groupId>bad</groupId><artifactId>lib</artifactId><version>1.0.0</version></project>")
+        (spit (fs/file d "lib-1.0.0.jar") "PK")
+        (fs/create-dirs (fs/file local "bad" "lib" "1.0.0"))
+        (spit (fs/file local "bad" "lib" "1.0.0" "lib-1.0.0.pom") "not xml at all")
+        (is (str/starts-with? (str (failure {:deps '{bad/lib {:mvn/version "1.0.0"}}
+                                             :mvn/repos {"local-file" {:url (str (.toURI (fs/file remote)))}}
+                                             :mvn/local-repo (str local)}))
+                              "Could not read POM of bad:lib:pom:1.0.0"))))))
+
 (deftest s3-test
   (is (= "S3 repository private (s3://bucket/releases/) requires the JVM resolver. Set BABASHKA_DEPS_RESOLVER=jvm."
          (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
