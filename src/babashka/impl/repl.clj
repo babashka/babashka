@@ -32,7 +32,12 @@
   "Default :caught hook for repl"
   [^Throwable e]
   (sci/with-bindings {sci/out @sci/err}
-    (let [d (ex-data e)
+    (let [e (if (and (:clojure.error/phase (ex-data e))
+                     (str/blank? (.getMessage e))
+                     (ex-cause e))
+              (ex-cause e)
+              e)
+          d (ex-data e)
           sci-error? (identical? :sci/error (:type d))
           ;; Use the first non-built-in sci frame for a plain exception's location.
           {:keys [:file :line :column]} (if sci-error?

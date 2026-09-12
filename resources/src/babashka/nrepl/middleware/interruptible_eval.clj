@@ -17,8 +17,7 @@
                  LineNumberingPushbackReader LispReader$ReaderException) ;; BB-PATCH the image has no Compiler or LispReader
 (clojure.lang LineNumberingPushbackReader)
    (java.io PushbackReader StringReader Writer)
-   #_(java.lang.reflect Field) ;; BB-PATCH no reflection on the reader's column field
-))
+   (java.lang.reflect Field)))
 
 (def ^:dynamic *msg*
   "The message currently being evaluated."
@@ -28,7 +27,7 @@
   [^LineNumberingPushbackReader reader line]
   (-> reader (.setLineNumber line)))
 
-#_(defn- set-column!
+(defn- set-column!
   [^LineNumberingPushbackReader reader column]
   (when-let [field (->> LineNumberingPushbackReader
                         (.getDeclaredFields)
@@ -36,8 +35,7 @@
                         first)]
     (-> ^Field field
         (doto (.setAccessible true))
-        (.set reader column)))) ;; BB-PATCH the column field is set through reflection
-(defn- set-column! [_reader _column] nil)
+        (.set reader column))))
 
 (defn- source-logging-pushback-reader
   [code line column]

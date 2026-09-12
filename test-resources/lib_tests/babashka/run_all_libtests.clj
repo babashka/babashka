@@ -162,6 +162,65 @@
           (swap! status update :fail (fnil inc 0))))))))
 
 
+;;;; nrepl
+;; nREPL's own suite against the bundled server, from the checkout pinned in
+;; bb-tested-libs.edn. Three of its test files need changes that sci can read.
+;; Those copies live next to this one under nrepl/, each deviation marked
+;; BB-TEST-PATCH, and they shadow the checkout. Everything else loads from the
+;; checkout unchanged.
+
+(def nrepl-namespaces
+  '[nrepl.core-test
+    nrepl.middleware.session-test
+    nrepl.middleware.interruptible-eval-test
+    nrepl.middleware.load-file-test
+    nrepl.describe-test
+    nrepl.edn-test
+    nrepl.sanity-test
+    nrepl.response-test
+    nrepl.middleware-test
+    nrepl.misc-test
+    nrepl.util.lookup-test
+    nrepl.middleware.print-test
+    nrepl.transport-test])
+
+(def nrepl-skipped
+  "Upstream tests that need what the image does not have: Clojure's
+  DynamicClassLoader, a JVMTI agent to stop a thread, GregorianCalendar, JVM
+  frame names, and a var for every public (babashka's user/*input* is a value)."
+  '{nrepl.core-test [hotloading-common-classloader-test
+                     non-interruptible-stop-thread
+                     session-*out*-writer-length-translation]
+    nrepl.middleware.interruptible-eval-test [preserves-source-location-test]
+    nrepl.util.lookup-test [bencode-test]})
+
+(let [nrepl-nss (filter #(str/starts-with? (str %) "nrepl.") ns-args)]
+  (when (and (or (empty? ns-args) (seq nrepl-nss))
+             (not (windows?)))
+    (if-not (= "native" (System/getenv "BABASHKA_TEST_ENV"))
+      (println "Skipping nREPL's own tests (native only, set BABASHKA_TEST_ENV=native)")
+      ;; the standard run above cloned the checkout and put its :test-paths on
+      ;; the classpath, where our copies shadow the files we had to change
+      (let [{:keys [git-sha]} (get (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
+                                   'nrepl/nrepl)
+            checkout (fs/file (fs/home) ".gitlibs" "libs" "nrepl" "nrepl" git-sha)
+            nss (if (seq nrepl-nss) nrepl-nss nrepl-namespaces)]
+        ;; core_test resolves its sample files against this
+        (System/setProperty "nrepl.basedir" (str checkout))
+        ;; babashka does not ship nrepl.spec, which core_test registers specs from
+        (load-file (str (fs/file checkout "src" "clojure" "nrepl" "spec.clj")))
+        (binding [*ns* *ns*
+                  ;; the fixture set!s these, which needs a thread binding
+                  *print-length* nil
+                  *print-level* nil]
+          (run! require nss)
+          (doseq [[ns vars] nrepl-skipped
+                  v vars]
+            (some-> (find-ns ns) (ns-resolve v) (alter-meta! assoc :skip-bb true)))
+          (doseq [n nss]
+            (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb :flaky)) not))
+            (swap! status (fn [st] (merge-with + st (dissoc (t/run-tests n) :type))))))))))
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]

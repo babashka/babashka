@@ -30,12 +30,15 @@
   `{sci.lang.Var {:fields [{:name "ns"}
                             {:name "sym"}]
                   :methods [{:name "bindRoot"}]} ;; nrepl.util.out
-    sci.lang.Namespace {:fields [{:name "name"}]}
+    sci.lang.Namespace {:fields [{:name "name"}]
+                        :methods [{:name "getName"}]} ;; nrepl.util.lookup callers
     sci.lang.Type {:methods [{:name "getName"}]}
     babashka.impl.SciMap {:allPublicConstructors true
                           :allPublicMethods true}
     clojure.lang.LineNumberingPushbackReader {:allPublicConstructors true
-                                              :allPublicMethods true}
+                                              :allPublicMethods true
+                                              ;; nrepl.middleware.interruptible-eval/set-column!
+                                              :fields [{:name "_columnNumber"}]}
     java.lang.Thread
     {:allPublicConstructors true
      ;; generated with `public-declared-method-names`, see in

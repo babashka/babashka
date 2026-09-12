@@ -486,7 +486,32 @@
                           set)))
               (testing "all frames have function names, including top-level frames"
                 (is (every? #(seq (bytes->str (get % "fn"))) (:stacktrace cause)))
-                (is (some #(= "user/fn" (bytes->str (get % "name"))) (:stacktrace cause)))))))))))
+                (is (some #(= "user/fn" (bytes->str (get % "name"))) (:stacktrace cause))))))
+          (testing "a reader error names what is wrong, not the wrapper"
+            (let [err (str/join (keep :err (send {"op" "eval" "code" "(comment {:a} 1)"})))]
+              (is (str/includes? err "must contain an even number of forms"))))
+          (testing "the file, line and column of the message reach the var"
+            (send {"op" "eval" "code" "(defn located [])"
+                   "file" "src/a/b.clj" "line" 42 "column" 10})
+            (is (= ["[\"src/a/b.clj\" 42 10]"]
+                   (keep :value (send {"op" "eval"
+                                       "code" "((juxt :file :line :column) (meta #'located))"}))))))))))
+
+(deftest ^:skip-windows nrepl-printing-test
+  (with-bb-script 1674
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1674 :quiet true}))"
+    (fn []
+      (with-session 1674
+        (fn [send]
+          (testing "streamed printing keeps printed output out of the value"
+            (let [replies (send {"op" "eval"
+                                 "code" "(->> (range 2) (map println))"
+                                 "nrepl.middleware.print/stream?" "1"})]
+              (is (= ["0\n" "1\n"] (keep :out replies)))
+              (is (= ["(nil nil)"] (keep :value replies)))))
+          (testing "the session's print settings apply to the value"
+            (send {"op" "eval" "code" "(set! *print-length* 3)"})
+            (is (= ["(0 1 2 ...)"] (keep :value (send {"op" "eval" "code" "(range 10)"}))))))))))
 
 (deftest ^:skip-windows nrepl-cider-ops-test
   (with-bb-script 1671
