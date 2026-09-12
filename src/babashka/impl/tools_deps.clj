@@ -72,13 +72,6 @@
 
 (def ^:private run-lock (Object.))
 
-(def ^:private last-basis-file (atom nil))
-
-(defn take-basis-file!
-  "Returns and clears the recorded basis file path, or nil if none is recorded."
-  []
-  (first (reset-vals! last-basis-file nil)))
-
 (defn make-classpath!
   "Runs clojure.tools.deps.script.make-classpath2 in this process with the
   arguments deps.clj passes to it. dir is the project directory. opts
@@ -98,7 +91,6 @@
       (when (seq errors)
         (throw (ex-info (str/join "\n" errors) {:args args})))
       (let [options (absolutize-files dir options)
-            _ (reset! last-basis-file (:basis-file options))
             run (list 'clojure.tools.deps.util.dir/with-dir
                       (list 'clojure.java.io/file (str dir))
                       (list (symbol (str make-classpath-ns) "run")

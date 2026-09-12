@@ -3,7 +3,6 @@
             [babashka.fs :as fs]
             [babashka.impl.classpath :as cp]
             [babashka.impl.common :refer [bb-edn]]
-            [babashka.impl.tools-deps :as tools-deps]
             [babashka.process :as process]
             [borkdude.deps :as deps]
             [clojure.edn :as edn]
@@ -67,21 +66,20 @@
 (defn- basis-file
   "Returns the basis file path for args."
   [args]
-  (or (tools-deps/take-basis-file!)
-      (let [cli-opts (deps/parse-cli-opts args)
-            config-dir (deps/get-config-dir)
-            install-dir (deps/get-install-dir)
-            deps-edn (deps/get-local-deps-edn {:cli-opts cli-opts})
-            config-paths (deps/get-config-paths {:cli-opts cli-opts
-                                                 :deps-edn deps-edn
-                                                 :config-dir config-dir
-                                                 :install-dir install-dir})
-            {:keys [cache-dir cache-dir-key]}
-            (deps/get-cache-dir* {:deps-edn deps-edn :config-dir config-dir})
-            checksum (deps/get-checksum {:cli-opts cli-opts
-                                         :config-paths config-paths
-                                         :cache-dir-key cache-dir-key})]
-        (deps/get-basis-file {:cache-dir cache-dir :checksum checksum}))))
+  (let [cli-opts (deps/parse-cli-opts args)
+        config-dir (deps/get-config-dir)
+        install-dir (deps/get-install-dir)
+        deps-edn (deps/get-local-deps-edn {:cli-opts cli-opts})
+        config-paths (deps/get-config-paths {:cli-opts cli-opts
+                                             :deps-edn deps-edn
+                                             :config-dir config-dir
+                                             :install-dir install-dir})
+        {:keys [cache-dir cache-dir-key]}
+        (deps/get-cache-dir* {:deps-edn deps-edn :config-dir config-dir})
+        checksum (deps/get-checksum {:cli-opts cli-opts
+                                     :config-paths config-paths
+                                     :cache-dir-key cache-dir-key})]
+    (deps/get-basis-file {:cache-dir cache-dir :checksum checksum})))
 
 (defn- read-basis
   "Returns the basis at path, or nil if the file is missing or cannot be read."
