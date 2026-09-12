@@ -30,4 +30,21 @@
  {:name "release" :deps {clj-kondo/clj-kondo {:mvn/version "RELEASE"}}}
  ;; git dep with a pom.xml manifest, contrib parent from the repositories
  {:name "tools-cli-git" :deps {org.clojure/tools.cli {:git/url "https://github.com/clojure/tools.cli"
-                                                       :git/sha "717e187ec98e6a75c7f26a3120fbe9eecc434f05"}}}]
+                                                       :git/sha "717e187ec98e6a75c7f26a3120fbe9eecc434f05"}}}
+ ;; Real Clojure application graphs: deep transitive trees where mediation bites.
+ {:name "aws-api" :deps {com.cognitect.aws/api {:mvn/version "0.8.692"}
+                         com.cognitect.aws/endpoints {:mvn/version "1.1.12.772"}
+                         com.cognitect.aws/s3 {:mvn/version "868.2.1580.0"}}}
+ {:name "xtdb" :deps {com.xtdb/xtdb-core {:mvn/version "1.24.3"}}}
+ {:name "datalevin" :deps {datalevin/datalevin {:mvn/version "0.9.10"}}}
+ ;; A jackson diamond pulled in through two libraries at once.
+ {:name "malli-jsonista" :deps {metosin/malli {:mvn/version "0.16.4"}
+                                metosin/jsonista {:mvn/version "0.3.11"}}}
+ ;; Exclusions used in anger.
+ {:name "clj-http-excl" :deps {clj-http/clj-http {:mvn/version "3.13.0"
+                                                  :exclusions [commons-codec/commons-codec
+                                                               org.apache.httpcomponents/httpcore]}}}
+ ;; Classifier plus OS-activated profiles, the behaviour this release changed.
+ {:name "lwjgl" :deps {org.lwjgl/lwjgl {:mvn/version "3.3.4"}
+                       org.lwjgl/lwjgl$natives-linux {:mvn/version "3.3.4"}}}
+]
