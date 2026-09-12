@@ -4,12 +4,12 @@
 ;; markers to resolve by hand, and the recorded revision moves to the new one.
 ;;
 ;; Run through the bb task:
-;;   bb --config .build/bb.edn --deps-root . resync lib --lib nrepl/nrepl --new-sha <sha>
-;;   bb --config .build/bb.edn --deps-root . resync dir --dir script/mvn_oracle/patched --new-sha <sha>
+;;   bb --config .build/bb.edn --deps-root . resync --lib nrepl/nrepl --new-sha <sha>
+;;   bb --config .build/bb.edn --deps-root . resync --dir script/mvn_oracle/patched --new-sha <sha>
 ;;
-;; lib takes its pin from test-resources/lib_tests/bb-tested-libs.edn and
+;; --lib takes its pin from test-resources/lib_tests/bb-tested-libs.edn and
 ;; merges the copies under test-resources/lib_tests/<copies>, which defaults
-;; to the library's name. dir takes its pin from <dir>/upstream.edn and
+;; to the library's name. --dir takes its pin from <dir>/upstream.edn and
 ;; merges everything under that directory.
 (ns resync
   (:require [babashka.fs :as fs]
@@ -89,14 +89,7 @@
   (when (seq (remove (comp #{:clean} second) results))
     (println "Resolve the conflict markers before committing.")))
 
-(defn lib
-  "Re-syncs the copies of a library listed in the lib tests registry."
-  {:org.babashka/cli {:spec {:lib {:desc "Library, as in the registry, e.g. nrepl/nrepl"
-                                   :require true}
-                             :new-sha {:desc "Revision to re-sync to"
-                                       :require true}
-                             :copies {:desc "Directory under test-resources/lib_tests, defaults to the library name"}}}}
-  [{:keys [lib new-sha copies]}]
+(defn- resync-lib [{:keys [lib new-sha copies]}]
   (let [lib (symbol lib)
         entry (get (edn/read-string (slurp registry)) lib)
         _ (when-not entry (die "No entry for" (str lib) "in" registry))
@@ -113,13 +106,7 @@
     (replace-sha registry (str lib) git-sha new-sha)
     (println "\n:git-sha in" registry "is now" new-sha)))
 
-(defn dir
-  "Re-syncs the copies in a directory that carries its own upstream.edn."
-  {:org.babashka/cli {:spec {:dir {:desc "Directory holding the copies and upstream.edn"
-                                   :require true}
-                             :new-sha {:desc "Revision to re-sync to"
-                                       :require true}}}}
-  [{:keys [dir new-sha]}]
+(defn- resync-dir [{:keys [dir new-sha]}]
   (let [descriptor (fs/file dir "upstream.edn")
         _ (when-not (fs/exists? descriptor) (die "No upstream.edn in" dir))
         {:keys [lib git-url git-sha upstream-path]} (edn/read-string (slurp (str descriptor)))
@@ -130,3 +117,17 @@
     (report results)
     (replace-sha (str descriptor) ":git-sha" git-sha new-sha)
     (println "\n:git-sha in" (str descriptor) "is now" new-sha)))
+
+(defn resync
+  "Re-syncs copied upstream files with a newer revision."
+  {:org.babashka/cli
+   {:spec {:lib {:desc "Library in the lib tests registry, e.g. nrepl/nrepl"}
+           :dir {:desc "Directory holding the copies and their upstream.edn"}
+           :new-sha {:desc "Revision to re-sync to" :require true}
+           :copies {:desc "Directory under test-resources/lib_tests, defaults to the library name"}}}}
+  [{:keys [lib dir] :as opts}]
+  (cond
+    (and lib dir) (die "Give either --lib or --dir, not both")
+    lib (resync-lib opts)
+    dir (resync-dir opts)
+    :else (die "Give --lib <library> or --dir <directory>")))
