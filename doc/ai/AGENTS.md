@@ -1,7 +1,6 @@
 # AGENTS.md
 
-Guidance for coding agents working in this repository. The root `CLAUDE.md`
-is a symlink to this file and is not tracked by git.
+Guidance for coding agents working in this repository.
 
 ## Project Overview
 
