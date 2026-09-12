@@ -115,6 +115,30 @@ accept what bb wrote.
   vectors, failure messages, and two end-to-end resolves through an http-kit
   server, one behind basic auth and one behind an authenticating proxy for a
   host that does not resolve.
+- tools.deps's own test suite at the bundled version, run by
+  `tools_deps_test.clj` in the library's checkout: 62 tests, the resolution
+  algorithm over a fake Maven repository, local POM deps, git deps, the
+  classpath script. Its test helper imports Aether's version scheme and is
+  loaded with that swapped for bb's port. The first run found one
+  difference: tools.deps reads build-helper `add-resource` directories in a
+  text form the plugin rejects, bb read only the documented form; bb reads
+  both now.
+- Maven's own unit tests, ported case by case into scripts next to the
+  others: the four profile activators (128 cases), the model interpolator
+  (the cases about versions, properties and urls), the version range and
+  constraint parser, the update policy analyzer, the snapshot version
+  resolver. Porting them rewrote the activators after Maven's (jdk ranges
+  by Maven's three-token compare, `regex:` os versions, unlisted os
+  families such as `linux`, empty properties), the range parser after
+  GenericVersionRange (wildcards, malformed ranges rejected), and `daily`
+  after DefaultUpdatePolicyAnalyzer (local midnight, not 24 hours).
+  The last batch: the repository layout, checksum sidecars, mirror
+  selection, nonProxyHosts and the plexus cipher vectors. It rewrote the
+  mirror selector after DefaultMirrorSelector (a mirror naming the
+  repository id wins over an earlier pattern, `mirrorOfLayouts`,
+  `localhost` as a host rather than a substring) and the sidecar reader
+  after ChecksumUtils (the `name = sum` form, `.md5` when a repository
+  publishes no `.sha1`).
 - CI runs the scripts on the built binary on Linux, macOS and Windows, and
   the JVM suite runs one resolve under each value of the switch.
 

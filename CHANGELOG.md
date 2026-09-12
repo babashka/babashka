@@ -37,7 +37,6 @@ A preview of the next release can be installed from
 - Fix constructor overload selection for `(Boolean. false)`
 - Add `clojure.java.process/io-task`
 - Support `(.-name ns)` on namespaces
-- The in-process resolver sends `babashka/<version> tools.deps/<version>` as its User-Agent, the way the Clojure CLI sends `ClojureCLI/<version> tools.deps/<version>`. `aether.connector.userAgent` overrides it.
 - Bump Clojure to `1.12.6`
 - Bump `babashka.cli` to `0.12.90`
 - Bump `clj-yaml` to `1.0.30`

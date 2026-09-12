@@ -57,5 +57,32 @@
         (is (thrown-with-msg? Exception #"password of server nexus"
                               (cipher/decrypt-password blob {:server "nexus" :file no-master})))))))
 
+(deftest plexus-vectors-test
+  (testing "DefaultPlexusCipherTest"
+    (is (= "my testing phrase"
+           (#'cipher/decrypt "LFulS0pAlmMHpDtm+81oPcqctcwpco5p4Fo7640/gqDRifCahXBefG4FxgKcu17v" "testtest"))))
+  (testing "PBECipherTest"
+    (is (= "veryOpenText" (#'cipher/decrypt "ibeHrdCOonkH7d7YnH7sarQLbwOk1ljkkM/z8hUhl4c=" "testtest"))))
+  (testing "SecUtilTest: a password under a master under settings.security"
+    (fs/with-temp-dir [dir {}]
+      (let [f (fs/file dir "settings-security.xml")]
+        (spit f "<settingsSecurity><master>{1wQaa6S/o8MH7FnaTNL53XmhT5O0SEGXQi3gC49o6OY=}</master></settingsSecurity>")
+        (is (= "testtest" (cipher/decrypt-password "{BteqUEnqHecHM7MZfnj9FwLcYbdInWxou1C929Txa0A=}" {:file (str f)})))))))
+
+(deftest braces-test
+  (let [no-braces "This is a test"
+        normal "Comment {This is a test} other comment with a: }"
+        escaped "\\{This is a test\\}"
+        mixed "Comment {foo\\{This is a test\\}} other comment with a: }"]
+    (testing "encrypted?"
+      (is (not (#'cipher/encrypted? no-braces)))
+      (is (#'cipher/encrypted? normal))
+      (is (not (#'cipher/encrypted? escaped)))
+      (is (#'cipher/encrypted? mixed)))
+    (testing "undecorate"
+      (is (= no-braces (#'cipher/undecorate normal)))
+      (is (= (str "foo\\{" no-braces "\\}") (#'cipher/undecorate mixed)))
+      (is (= "aaa" (#'cipher/undecorate "{aaa}"))))))
+
 (let [{:keys [fail error]} (t/run-tests 'cipher-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

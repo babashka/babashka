@@ -125,8 +125,8 @@
 (defn- hex [^bytes bs]
   (apply str (map #(format "%02x" (bit-and % 0xff)) bs)))
 
-(defn- sha1 [file]
-  (let [md (MessageDigest/getInstance "SHA-1")
+(defn- digest [algorithm file]
+  (let [md (MessageDigest/getInstance algorithm)
         buf (byte-array 8192)]
     (with-open [in (io/input-stream file)]
       (loop []
@@ -136,21 +136,33 @@
             (recur)))))
     (hex (.digest md))))
 
+(defn- parse-checksum
+  "The checksum in a sidecar file, read the way ChecksumUtils reads it:
+  the first non-blank line, the last word of a \"name = sum\" line and
+  the first word of any other."
+  [text]
+  (let [line (or (some #(let [l (str/trim %)] (when (seq l) l)) (str/split-lines text)) "")]
+    (if (re-matches #".+= [0-9A-Fa-f]+" line)
+      (subs line (inc (str/last-index-of line " ")))
+      (if-let [i (str/index-of line " ")]
+        (subs line 0 i)
+        line))))
+
 (defn- remote-checksum
-  "The sha1 published next to url, or nil."
+  "[algorithm checksum] from the sha1 published next to url, else its md5.
+  nil when the repository publishes neither."
   [url opts]
-  (some-> (fetch (str url ".sha1") opts)
-          str/trim
-          (str/split #"\s+")
-          first
-          str/lower-case))
+  (some (fn [[ext algorithm]]
+          (when-let [text (fetch (str url ext) opts)]
+            [algorithm (str/lower-case (parse-checksum text))]))
+        [[".sha1" "SHA-1"] [".md5" "MD5"]]))
 
 (defn- verify!
   "Applies the checksum policy to a downloaded file."
   [url file {:keys [checksum label] :or {checksum :warn} :as opts}]
   (when-not (= :ignore checksum)
-    (let [expected (remote-checksum url opts)
-          actual (when expected (sha1 file))]
+    (let [[algorithm expected] (remote-checksum url opts)
+          actual (when expected (digest algorithm file))]
       (cond
         (nil? expected)
         (let [message (str "Checksum validation failed for " label ", no checksums available")]

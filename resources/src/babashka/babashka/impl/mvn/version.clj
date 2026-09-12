@@ -146,28 +146,58 @@
   (let [r (compare-parsed (parse a) (parse b))]
     (cond (neg? r) -1 (pos? r) 1 :else 0)))
 
-(defn- parse-bound
-  "[low,high) style restriction into {:low :low-inclusive :high :high-inclusive}."
-  [s]
-  (let [s (str/trim s)
-        low-inclusive (str/starts-with? s "[")
-        high-inclusive (str/ends-with? s "]")
-        inner (subs s 1 (dec (count s)))
-        [low high] (if (str/includes? inner ",")
-                     (map str/trim (str/split inner #"," 2))
-                     [inner inner])]
-    {:low (when-not (str/blank? low) low)
-     :low-inclusive low-inclusive
-     :high (when-not (str/blank? high) high)
-     :high-inclusive high-inclusive}))
+(defn- invalid [range why]
+  (throw (ex-info (str "Invalid version range " range ", " why) {:range range})))
 
-(defn- parse-range
-  "The restrictions of a Maven version range such as [1.0,2.0) or
-  [1.0],[2.0,). A plain version is a single soft restriction."
+(defn- parse-bound
+  "One [low,high) style restriction into {:low :low-inclusive :high
+  :high-inclusive}, after maven-resolver-util's GenericVersionRange: a
+  single version is [v], [v.*] spans v.min to v.max, a bound may be empty."
   [s]
-  (if (re-find #"^[\[(]" s)
-    (mapv parse-bound (re-seq #"[\[(][^\]\)]*[\]\)]" s))
-    [{:low s :low-inclusive true :high s :high-inclusive true}]))
+  (let [low-inclusive (cond (str/starts-with? s "[") true
+                            (str/starts-with? s "(") false
+                            :else (invalid s "a range must start with either [ or ("))
+        high-inclusive (cond (str/ends-with? s "]") true
+                             (str/ends-with? s ")") false
+                             :else (invalid s "a range must end with either ] or )"))
+        inner (subs s 1 (dec (count s)))
+        comma (str/index-of inner ",")]
+    (if (nil? comma)
+      (let [v (str/trim inner)]
+        (when-not (and low-inclusive high-inclusive)
+          (invalid s "single version must be surrounded by []"))
+        (if (str/ends-with? v ".*")
+          (let [prefix (subs v 0 (dec (count v)))]
+            {:low (str prefix "min") :low-inclusive true :high (str prefix "max") :high-inclusive true})
+          {:low v :low-inclusive true :high v :high-inclusive true}))
+      (let [low (str/trim (subs inner 0 comma))
+            high (str/trim (subs inner (inc comma)))]
+        (when (str/includes? high ",")
+          (invalid s "bounds may not contain additional ','"))
+        (when (and (seq low) (seq high) (neg? (compare-versions high low)))
+          (invalid s "lower bound must not be greater than upper bound"))
+        {:low (not-empty low) :low-inclusive low-inclusive
+         :high (not-empty high) :high-inclusive high-inclusive}))))
+
+(defn parse-range
+  "The restrictions of a version constraint such as [1.0,2.0) or
+  [1.0],[2.0,), after GenericVersionScheme.parseVersionConstraint. A plain
+  version is a single restriction. Throws on a malformed constraint."
+  [s]
+  (loop [process (str/trim s) ranges []]
+    (if (or (str/starts-with? process "[") (str/starts-with? process "("))
+      (let [i1 (str/index-of process ")")
+            i2 (str/index-of process "]")
+            end (if (or (nil? i2) (and i1 (< i1 i2))) i1 i2)]
+        (when (nil? end) (invalid s "unbounded"))
+        (let [after (str/trim (subs process (inc end)))
+              after (if (str/starts-with? after ",") (str/trim (subs after 1)) after)]
+          (recur after (conj ranges (parse-bound (subs process 0 (inc end)))))))
+      (do (when (and (seq process) (seq ranges))
+            (invalid s (str "expected [ or ( but got " process)))
+          (if (empty? ranges)
+            [{:low s :low-inclusive true :high s :high-inclusive true}]
+            ranges)))))
 
 (defn- in-bound? [version {:keys [low low-inclusive high high-inclusive]}]
   (and (or (nil? low)
