@@ -47,4 +47,8 @@
  ;; Classifier plus OS-activated profiles, the behaviour this release changed.
  {:name "lwjgl" :deps {org.lwjgl/lwjgl {:mvn/version "3.3.4"}
                        org.lwjgl/lwjgl$natives-linux {:mvn/version "3.3.4"}}}
+
+ ;; netty-all's POM activates a profile on <family>linux</family> that adds the
+ ;; epoll transport, so this is the OS-activation path, not just a classifier.
+ {:name "netty-all" :deps {io.netty/netty-all {:mvn/version "4.1.115.Final"}}}
 ]
