@@ -162,21 +162,111 @@
           (swap! status update :fail (fnil inc 0))))))))
 
 
-;;;; nrepl (native only - the runner spawns the binary under test)
-;; nREPL's own suite from the checkout pinned in bb-tested-libs.edn, with the
-;; forms sci cannot read rewritten. See script/nrepl_tests.clj.
+;;;; nrepl
+;; nREPL's own suite against the bundled server, from the checkout pinned in
+;; bb-tested-libs.edn. The sources are rewritten where sci cannot read them:
+;; the Server record has no close, type hints name classes the image does not
+;; expose, nrepl.spec is not shipped, and the reader reports its own message.
+
+(defn- nrepl-sources
+  "Test files in load order, each with its substitutions."
+  [checkout]
+  [["test/clojure/nrepl/test_helpers.clj" []]
+   ["test/clojure/nrepl/core_test.clj"
+    [["(require 'nrepl.spec) ;; Load for side effects (register specs)."
+      (str "(load-file \"" (fs/file checkout "src" "clojure" "nrepl" "spec.clj") "\")
+(defmacro with-server [[sym expr] & body]
+  `(let [~sym ~expr] (try ~@body (finally (server/stop-server ~sym)))))")]
+     ["(with-open [^Server server (server/start-server :transport-fn transport-fn)]"
+      "(with-server [server (server/start-server :transport-fn transport-fn)]"]
+     ["(with-open [^Server s (server/start-server :transport-fn *transport-fn*"
+      "(with-server [s (server/start-server :transport-fn *transport-fn*"]
+     ["(with-open [^Server s2 (server/start-server :transport-fn *transport-fn*"
+      "(with-server [s2 (server/start-server :transport-fn *transport-fn*"]
+     ["(.close *server*)" "(server/stop-server *server*)"]
+     ["(.close server)" "(server/stop-server server)"]
+     ;; Match bb's reader error message.
+     ["#\"(?s)^Syntax error reading source at[^\\n]+[\\r]?\\nMap literal must contain an even number of forms[\\r]?\\n\""
+      "#\"Map literals? must contain an even number of forms\""]]]
+   ["test/clojure/nrepl/middleware/session_test.clj" []]
+   ["test/clojure/nrepl/middleware/interruptible_eval_test.clj" []]
+   ["test/clojure/nrepl/middleware/load_file_test.clj" []]
+   ["test/clojure/nrepl/describe_test.clj" []]
+   ["test/clojure/nrepl/edn_test.clj"
+    [["(with-open [^Server server (server/start-server :transport-fn transport/edn"
+      "(nrepl.core-test/with-server [server (server/start-server :transport-fn transport/edn"]]]
+   ["test/clojure/nrepl/sanity_test.clj" []]
+   ["test/clojure/nrepl/response_test.clj" []]
+   ["test/clojure/nrepl/middleware_test.clj" []]
+   ["test/clojure/nrepl/misc_test.clj" []]
+   ["test/clojure/nrepl/util/lookup_test.clj"
+    ;; sci exposes let as a macro.
+    [["          :special-form \"true\"}\n         (lookup 'clojure.core 'let)"
+      "          :macro \"true\"}\n         (lookup 'clojure.core 'let)"]]]
+   ["test/clojure/nrepl/middleware/print_test.clj" []]
+   ["test/clojure/nrepl/transport_test.clj" []]])
+
+(def nrepl-namespaces
+  '[nrepl.core-test
+    nrepl.middleware.session-test
+    nrepl.middleware.interruptible-eval-test
+    nrepl.middleware.load-file-test
+    nrepl.describe-test
+    nrepl.edn-test
+    nrepl.sanity-test
+    nrepl.response-test
+    nrepl.middleware-test
+    nrepl.misc-test
+    nrepl.util.lookup-test
+    nrepl.middleware.print-test
+    nrepl.transport-test])
+
+(def nrepl-skipped
+  "Upstream tests that need what the image does not have: Clojure's
+  DynamicClassLoader, a JVMTI agent to stop a thread, GregorianCalendar, JVM
+  frame names, and a var for every public (babashka's user/*input* is a value)."
+  '{nrepl.core-test [hotloading-common-classloader-test
+                     non-interruptible-stop-thread
+                     session-*out*-writer-length-translation]
+    nrepl.middleware.interruptible-eval-test [preserves-source-location-test]
+    nrepl.util.lookup-test [bencode-test]})
+
 (let [nrepl-nss (filter #(str/starts-with? (str %) "nrepl.") ns-args)]
   (when (and (or (empty? ns-args) (seq nrepl-nss))
              (not (windows?)))
     (if-not (= "native" (System/getenv "BABASHKA_TEST_ENV"))
       (println "Skipping nREPL's own tests (native only, set BABASHKA_TEST_ENV=native)")
-      (let [bb-cmd (str (fs/file (System/getProperty "user.dir") "bb"))
-            {:keys [exit]} (apply shell {:continue true
-                                         :env (dissoc (into {} (System/getenv)) "BABASHKA_CLASSPATH")}
-                                  bb-cmd "script/nrepl_tests.clj" (map str nrepl-nss))]
-        (if (zero? exit)
-          (swap! status update :test (fnil inc 0))
-          (swap! status update :fail (fnil inc 0)))))))
+      (let [{:keys [git-sha git-url]} (get (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
+                                           'nrepl/nrepl)
+            checkout (fs/file (fs/home) ".gitlibs" "libs" "nrepl" "nrepl" git-sha)]
+        (when-not (fs/exists? checkout)
+          (println "Fetching nrepl/nrepl at" git-sha)
+          (sh "git" "clone" (str git-url) (str checkout))
+          (sh "git" "-C" (str checkout) "checkout" git-sha))
+        ;; core_test resolves its sample files against this
+        (System/setProperty "nrepl.basedir" (str checkout))
+        ;; test/ holds resources the tests read, blns.txt among them. Its
+        ;; sources sit under clojure/, so require cannot reach them there
+        ;; and the rewritten copies below stay the ones that count.
+        (add-classpath (str (fs/file checkout "test")))
+        (doseq [[file substs] (nrepl-sources checkout)]
+          (load-string
+           (-> (reduce (fn [s [from to]]
+                         (assert (str/includes? s from) (str file ": " from))
+                         (str/replace s from to))
+                       (slurp (fs/file checkout file))
+                       substs)
+               (str/replace #"\^(nrepl\.transport\.FnTransport|nrepl\.server\.Server|Server)\s+" ""))))
+        (doseq [[ns vars] nrepl-skipped
+                v vars]
+          (some-> (find-ns ns) (ns-resolve v) (alter-meta! assoc :skip-bb true)))
+        ;; the fixture set!s these, which needs a thread binding
+        (binding [*ns* *ns*
+                  *print-length* nil
+                  *print-level* nil]
+          (doseq [n (if (seq nrepl-nss) nrepl-nss nrepl-namespaces)]
+            (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb :flaky)) not))
+            (swap! status (fn [st] (merge-with + st (dissoc (t/run-tests n) :type))))))))))
 
 ;;;; final exit code
 
