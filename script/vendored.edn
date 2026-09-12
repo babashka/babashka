@@ -1,0 +1,12 @@
+;; The upstream versions the files under resources/src/babashka and src-java
+;; came from. script/vendor_bundled_sources.clj merges against these, then
+;; writes the new versions back. Not under resources/src/babashka on purpose:
+;; everything there is embedded in the image.
+{org.clojure/tools.deps "0.31.1638"
+ org.clojure/tools.deps.edn "0.9.42"
+ org.clojure/tools.gitlibs "2.6.217"
+ io.github.clojure/tools.build "0.10.14"
+ org.clojure/tools.namespace "1.5.1"
+ org.clojure/java.classpath "1.1.1"
+ nrepl/nrepl "1.7.0"
+ cider/orchard "0.44.0"}
