@@ -154,6 +154,36 @@ on the JVM stage, and after the native build runs both again plus
 Windows equivalent. Both trigger only on pushes to master and on pull
 requests against master, so pushing a branch runs no CI.
 
+## Bundled sources
+
+`resources/src/babashka` and `src-java` hold the sources babashka bundles:
+tools.deps, tools.build, gitlibs, nREPL and orchard. They are the source of
+truth, not build output. Babashka's changes live in those files, each marked
+`BB-PATCH` with the upstream form kept under `#_`, so editing one is an
+ordinary edit.
+
+`script/vendored.edn` records the version each artifact's files came from.
+To take a new upstream version, name the artifact and the version:
+
+```
+bb script/vendor_bundled_sources.clj nrepl/nrepl 1.8.0
+```
+
+That three-way merges every shipped file, with the recorded version as the
+common ancestor. Files with no local changes come across wholesale, files we
+patched keep their changes, and a region both sides touched is left with
+conflict markers. It then writes the new version back into the pin file, and
+reports upstream files that are new or gone so each gets a decision.
+
+Two values are stamped rather than merged, because they are read from jar
+resources the image does not have: the nREPL version in `nrepl/version.clj`
+and the tools.deps version in the procurer's User-Agent. The root `deps.edn`
+embedded in `clojure/tools/deps/edn.clj` is checked instead of regenerated,
+and the run fails when it no longer matches the pinned `tools.deps.edn`.
+
+Running the script with no arguments refreshes at the current pins and must
+leave the tree byte-identical. That is the regression test for this machinery.
+
 ## Feature System
 
 Babashka has optional features controlled by environment variables during build:
