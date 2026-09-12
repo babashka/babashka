@@ -4,8 +4,7 @@
    [babashka.impl.common :as common]
    [babashka.impl.nrepl.sci :as sci-helpers]
    [babashka.nrepl.server :as server]
-   [sci.core :as sci]
-   [sci.impl.io :as sio]))
+   [sci.core :as sci]))
 
 (defn start-server!
   ([]
@@ -30,23 +29,7 @@
   [sym-str ns-str]
   (sci-helpers/lookup (common/ctx) sym-str :ns-str ns-str))
 
-(defn pr-on
-  "Prints `x` to `w` using the session's print settings. Output from realizing
-  lazy values goes to the session's `*out*`."
-  [x ^java.io.Writer w]
-  (binding [*print-length* @sio/print-length
-            *print-level* @sio/print-level
-            *print-meta* @sio/print-meta
-            *print-namespace-maps* @sio/print-namespace-maps
-            *print-readably* @sio/print-readably
-            *print-dup* @sio/print-dup-var]
-    (if *print-dup*
-      (print-dup x w)
-      (print-method x w))
-    nil))
-
 (def sci-helpers-namespace
   (let [ns-sci (sci/create-ns 'babashka.nrepl.impl.sci)]
     {'completions (sci/copy-var completions ns-sci)
-     'lookup (sci/copy-var lookup ns-sci)
-     'pr-on (sci/copy-var pr-on ns-sci)}))
+     'lookup (sci/copy-var lookup ns-sci)}))

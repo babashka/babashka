@@ -223,10 +223,7 @@
    (fn [s]
      (-> s
          (patch "(nrepl.transport Transport)" "" "a sci protocol is not a class")
-         (subst "(reify Transport" "(reify transport/Transport")
-         (patch "@#'clojure.core/pr-on"
-                "babashka.nrepl.impl.sci/pr-on"
-                "pr-on is private to clojure.core and absent in sci")))
+         (subst "(reify Transport" "(reify transport/Transport")))
    "nrepl/middleware/load_file.clj"
    (fn [s]
      (-> s
