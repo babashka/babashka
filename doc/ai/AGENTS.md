@@ -105,11 +105,18 @@ standard run. Clerk and nREPL are the worked examples. The nREPL block
 loads most of its namespaces from the checkout, and keeps the few files
 sci cannot read as copies that shadow it.
 
-To re-sync a copied file after bumping a library, let git merge the churn:
-take the file at the old sha as the base, the file at the new sha as
-theirs, your copy as ours, and run `git merge-file ours base theirs`.
-Upstream changes elsewhere in the file apply on their own, and only a
-collision with one of our own edits leaves conflict markers to resolve.
+To re-sync a copied file after bumping a library, let git merge the churn.
+Write the file at the old sha and at the new sha to temporary files, then
+merge both into the copy, which `git merge-file` edits in place:
+
+```
+git -C <checkout> show <old-sha>:<path-in-library> > /tmp/base.clj
+git -C <checkout> show <new-sha>:<path-in-library> > /tmp/other.clj
+git merge-file test-resources/lib_tests/<lib>/<file> /tmp/base.clj /tmp/other.clj
+```
+
+Upstream changes elsewhere in the file apply on their own. Only a collision
+with one of our own edits leaves conflict markers to resolve.
 
 ### Maven layer tests
 
