@@ -8,10 +8,15 @@
   (:require [babashka.classpath :as cp]
             [babashka.fs :as fs]
             [babashka.process :as p]
+            [clojure.edn :as edn]
             [clojure.string :as str]))
 
-(def git-sha "6c6e293b50fdbc6ea44e2a2ad246b90eb94f2539") ; v0.31.1638
-(def git-url "https://github.com/clojure/tools.deps")
+(def upstream
+  "The pin for the patched copies, which bb script/resync.clj also updates."
+  (edn/read-string (slurp "script/mvn_oracle/patched/upstream.edn")))
+
+(def git-sha (:git-sha upstream))
+(def git-url (:git-url upstream))
 (def namespaces '[clojure.tools.deps.test-deps
                   clojure.tools.deps.extensions.test-git
                   clojure.tools.deps.extensions.test-pom

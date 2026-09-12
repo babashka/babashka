@@ -108,7 +108,7 @@ sci cannot read as copies that shadow it.
 Re-sync the copies after a library releases a new version with:
 
 ```
-bb script/lib_tests/resync.clj nrepl/nrepl <new-sha>
+bb script/resync.clj lib nrepl/nrepl <new-sha>
 ```
 
 The task reads the revision the copies were taken from out of the registry,
@@ -135,8 +135,12 @@ Maven, the resolver and plexus live here.
 `tools_deps_test.clj` runs tools.deps's own suite from its gitlibs checkout.
 Its `faken` test helper imports a resolver class the image does not have, so
 a patched copy lives under `script/mvn_oracle/patched/` and goes first on the
-classpath. Re-sync it the same way as the lib test copies, with a three-way
-merge against the revision it was taken from.
+classpath. That directory carries its own pin in `upstream.edn`, and the same
+task re-syncs it:
+
+```
+bb script/resync.clj dir script/mvn_oracle/patched <new-sha>
+```
 
 `script/mvn_oracle/run.clj` compares bb's resolution against tools.deps over
 a corpus. It needs the network, so it is run by hand after changes to the
