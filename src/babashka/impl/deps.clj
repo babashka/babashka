@@ -100,10 +100,8 @@
    :exclusions])
 
 (defn- pinned-deps
-  "Returns the libs on the basis classpath as deps, at the versions they
-  resolved to. Merging these under a request holds them at those versions,
-  the way clojure.repl.deps/add-libs holds the libs it already has. A lib
-  an alias blanks out is left out, since naming it undoes the blanking."
+  "Returns dependency coordinates for libs on the basis classpath at their
+  resolved versions."
   [basis]
   (let [on-classpath (classpath-libs basis)]
     (reduce-kv (fn [m lib coord]
@@ -114,8 +112,7 @@
                (:libs basis))))
 
 (defn- add-new-roots!
-  "Adds the roots of classpath that are not on the classpath yet, so that
-  resolving again next to what is already loaded appends nothing."
+  "Adds roots from classpath, excluding roots already on the classpath."
   [classpath]
   (let [sep (re-pattern (java.util.regex.Pattern/quote cp/path-sep))
         known (set (str/split (or (System/getProperty "java.class.path") "") sep))
@@ -166,9 +163,7 @@
                ;; clojure CLI's java process each time we call a script from a
                ;; different directory.
                deps-map (assoc deps-map :deps-root (str deps-root))
-               ;; resolve next to what is already on the classpath: the libs
-               ;; there are pinned to the versions they resolved to, so they
-               ;; win over the request, and the classpath cache still answers
+               ;; Existing versions take precedence over requested versions.
                deps-map (if-let [pinned (not-empty (pinned-deps @current-basis))]
                           (update deps-map :deps #(merge % pinned))
                           deps-map)]

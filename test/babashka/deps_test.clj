@@ -357,11 +357,11 @@ true
       older (babashka.deps/add-deps '{:deps {org.clojure/data.csv {:mvn/version \"1.0.0\"}}})]
   (prn {:first-add first-add :second-add second-add :duplicate duplicate :older older}))
 ")]
-    (testing "the libs resolved are returned, without the Clojure jar babashka replaces with its own"
+    (testing "returns added libs, excluding bundled Clojure"
       (is (= '[org.clojure/data.csv] first-add)))
-    (testing "a later call returns only the libs it added"
+    (testing "returns only newly added libs on subsequent calls"
       (is (= '[org.clojure/tools.cli] second-add)))
-    (testing "a lib already on the classpath is not added again"
+    (testing "returns nil for an existing lib"
       (is (nil? duplicate)))
-    (testing "an older version does not replace the one already present"
+    (testing "returns nil for an older version of an existing lib"
       (is (nil? older)))))
