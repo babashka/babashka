@@ -101,9 +101,15 @@ To skip a single upstream test rather than a whole namespace, give its var
 
 A library whose tests need their own working directory, extra dependencies
 or a spawned process gets a block at the end of the driver, after the
-standard run. Clerk and nREPL are the worked examples. Such a block may
-also rewrite what sci cannot read before running it, which is what the
-nREPL block does.
+standard run. Clerk and nREPL are the worked examples. The nREPL block
+loads most of its namespaces from the checkout, and keeps the few files
+sci cannot read as copies that shadow it.
+
+To re-sync a copied file after bumping a library, let git merge the churn:
+take the file at the old sha as the base, the file at the new sha as
+theirs, your copy as ours, and run `git merge-file ours base theirs`.
+Upstream changes elsewhere in the file apply on their own, and only a
+collision with one of our own edits leaves conflict markers to resolve.
 
 ### Maven layer tests
 
