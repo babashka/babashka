@@ -164,51 +164,10 @@
 
 ;;;; nrepl
 ;; nREPL's own suite against the bundled server, from the checkout pinned in
-;; bb-tested-libs.edn. The sources are rewritten where sci cannot read them:
-;; the Server record has no close, type hints name classes the image does not
-;; expose, nrepl.spec is not shipped, and the reader reports its own message.
-
-(defn- nrepl-sources
-  "Test files in load order, each with its substitutions."
-  [checkout]
-  [["test/clojure/nrepl/test_helpers.clj" []]
-   ["test/clojure/nrepl/core_test.clj"
-    [["(require 'nrepl.spec) ;; Load for side effects (register specs)."
-      (str "(load-file \"" (fs/file checkout "src" "clojure" "nrepl" "spec.clj") "\")
-(defmacro with-server [[sym expr] & body]
-  `(let [~sym ~expr] (try ~@body (finally (server/stop-server ~sym)))))")]
-     ["(with-open [^Server server (server/start-server :transport-fn transport-fn)]"
-      "(with-server [server (server/start-server :transport-fn transport-fn)]"]
-     ["(with-open [^Server s (server/start-server :transport-fn *transport-fn*"
-      "(with-server [s (server/start-server :transport-fn *transport-fn*"]
-     ["(with-open [^Server s2 (server/start-server :transport-fn *transport-fn*"
-      "(with-server [s2 (server/start-server :transport-fn *transport-fn*"]
-     ["(.close *server*)" "(server/stop-server *server*)" 2]
-     ["(.close server)" "(server/stop-server server)"]
-     ;; Match bb's reader error message.
-     ["#\"(?s)^Syntax error reading source at[^\\n]+[\\r]?\\nMap literal must contain an even number of forms[\\r]?\\n\""
-      "#\"Map literals? must contain an even number of forms\""]
-     ;; Wait for the first chunk rather than guessing how long the print buffer
-     ;; takes to fill, which loses the race on a slow or emulated machine.
-     ["          _ (Thread/sleep 100)"
-      "          _ (first eval-responses)"]]]
-   ["test/clojure/nrepl/middleware/session_test.clj" []]
-   ["test/clojure/nrepl/middleware/interruptible_eval_test.clj" []]
-   ["test/clojure/nrepl/middleware/load_file_test.clj" []]
-   ["test/clojure/nrepl/describe_test.clj" []]
-   ["test/clojure/nrepl/edn_test.clj"
-    [["(with-open [^Server server (server/start-server :transport-fn transport/edn"
-      "(nrepl.core-test/with-server [server (server/start-server :transport-fn transport/edn" 2]]]
-   ["test/clojure/nrepl/sanity_test.clj" []]
-   ["test/clojure/nrepl/response_test.clj" []]
-   ["test/clojure/nrepl/middleware_test.clj" []]
-   ["test/clojure/nrepl/misc_test.clj" []]
-   ["test/clojure/nrepl/util/lookup_test.clj"
-    ;; sci exposes let as a macro.
-    [["          :special-form \"true\"}\n         (lookup 'clojure.core 'let)"
-      "          :macro \"true\"}\n         (lookup 'clojure.core 'let)"]]]
-   ["test/clojure/nrepl/middleware/print_test.clj" []]
-   ["test/clojure/nrepl/transport_test.clj" []]])
+;; bb-tested-libs.edn. Three of its test files need changes that sci can read.
+;; Those copies live next to this one under nrepl/, each deviation marked
+;; BB-TEST-PATCH, and they shadow the checkout. Everything else loads from the
+;; checkout unchanged.
 
 (def nrepl-namespaces
   '[nrepl.core-test
@@ -242,36 +201,29 @@
       (println "Skipping nREPL's own tests (native only, set BABASHKA_TEST_ENV=native)")
       (let [{:keys [git-sha git-url]} (get (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
                                            'nrepl/nrepl)
-            checkout (fs/file (fs/home) ".gitlibs" "libs" "nrepl" "nrepl" git-sha)]
+            checkout (fs/file (fs/home) ".gitlibs" "libs" "nrepl" "nrepl" git-sha)
+            nss (if (seq nrepl-nss) nrepl-nss nrepl-namespaces)]
         (when-not (fs/exists? checkout)
           (println "Fetching nrepl/nrepl at" git-sha)
           (sh "git" "clone" (str git-url) (str checkout))
           (sh "git" "-C" (str checkout) "checkout" git-sha))
         ;; core_test resolves its sample files against this
         (System/setProperty "nrepl.basedir" (str checkout))
-        ;; test/ holds resources the tests read, blns.txt among them. Its
-        ;; sources sit under clojure/, so require cannot reach them there
-        ;; and the rewritten copies below stay the ones that count.
+        ;; test/ holds the resources the tests read, test/clojure the namespaces
+        ;; that needed no changes
         (add-classpath (str (fs/file checkout "test")))
-        (doseq [[file substs] (nrepl-sources checkout)]
-          (load-string
-           (-> (reduce (fn [s [from to expected]]
-                         (let [expected (or expected 1)
-                               found (dec (count (str/split s (re-pattern (java.util.regex.Pattern/quote from)) -1)))]
-                           (assert (= expected found)
-                                   (str file ": expected " expected " occurrence(s), found " found ": " from)))
-                         (str/replace s from to))
-                       (slurp (fs/file checkout file))
-                       substs)
-               (str/replace #"\^(nrepl\.transport\.FnTransport|nrepl\.server\.Server|Server)\s+" ""))))
-        (doseq [[ns vars] nrepl-skipped
-                v vars]
-          (some-> (find-ns ns) (ns-resolve v) (alter-meta! assoc :skip-bb true)))
-        ;; the fixture set!s these, which needs a thread binding
+        (add-classpath (str (fs/file checkout "test" "clojure")))
+        ;; babashka does not ship nrepl.spec, which core_test registers specs from
+        (load-file (str (fs/file checkout "src" "clojure" "nrepl" "spec.clj")))
         (binding [*ns* *ns*
+                  ;; the fixture set!s these, which needs a thread binding
                   *print-length* nil
                   *print-level* nil]
-          (doseq [n (if (seq nrepl-nss) nrepl-nss nrepl-namespaces)]
+          (run! require nss)
+          (doseq [[ns vars] nrepl-skipped
+                  v vars]
+            (some-> (find-ns ns) (ns-resolve v) (alter-meta! assoc :skip-bb true)))
+          (doseq [n nss]
             (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb :flaky)) not))
             (swap! status (fn [st] (merge-with + st (dissoc (t/run-tests n) :type))))))))))
 
