@@ -132,6 +132,12 @@ the Maven sources from the tree; with `--image` they run against the
 sources bundled in `./bb`, which is what CI does. Test cases ported from
 Maven, the resolver and plexus live here.
 
+`tools_deps_test.clj` runs tools.deps's own suite from its gitlibs checkout.
+Its `faken` test helper imports a resolver class the image does not have, so
+a patched copy lives under `script/mvn_oracle/patched/` and goes first on the
+classpath. Re-sync it the same way as the lib test copies, with a three-way
+merge against the revision it was taken from.
+
 `script/mvn_oracle/run.clj` compares bb's resolution against tools.deps over
 a corpus. It needs the network, so it is run by hand after changes to the
 procurer, and every difference it turns up becomes a case in a test script.
