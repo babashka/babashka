@@ -183,18 +183,22 @@
       "(with-server [s (server/start-server :transport-fn *transport-fn*"]
      ["(with-open [^Server s2 (server/start-server :transport-fn *transport-fn*"
       "(with-server [s2 (server/start-server :transport-fn *transport-fn*"]
-     ["(.close *server*)" "(server/stop-server *server*)"]
+     ["(.close *server*)" "(server/stop-server *server*)" 2]
      ["(.close server)" "(server/stop-server server)"]
      ;; Match bb's reader error message.
      ["#\"(?s)^Syntax error reading source at[^\\n]+[\\r]?\\nMap literal must contain an even number of forms[\\r]?\\n\""
-      "#\"Map literals? must contain an even number of forms\""]]]
+      "#\"Map literals? must contain an even number of forms\""]
+     ;; Wait for the first chunk rather than guessing how long the print buffer
+     ;; takes to fill, which loses the race on a slow or emulated machine.
+     ["          _ (Thread/sleep 100)"
+      "          _ (first eval-responses)"]]]
    ["test/clojure/nrepl/middleware/session_test.clj" []]
    ["test/clojure/nrepl/middleware/interruptible_eval_test.clj" []]
    ["test/clojure/nrepl/middleware/load_file_test.clj" []]
    ["test/clojure/nrepl/describe_test.clj" []]
    ["test/clojure/nrepl/edn_test.clj"
     [["(with-open [^Server server (server/start-server :transport-fn transport/edn"
-      "(nrepl.core-test/with-server [server (server/start-server :transport-fn transport/edn"]]]
+      "(nrepl.core-test/with-server [server (server/start-server :transport-fn transport/edn" 2]]]
    ["test/clojure/nrepl/sanity_test.clj" []]
    ["test/clojure/nrepl/response_test.clj" []]
    ["test/clojure/nrepl/middleware_test.clj" []]
@@ -251,8 +255,11 @@
         (add-classpath (str (fs/file checkout "test")))
         (doseq [[file substs] (nrepl-sources checkout)]
           (load-string
-           (-> (reduce (fn [s [from to]]
-                         (assert (str/includes? s from) (str file ": " from))
+           (-> (reduce (fn [s [from to expected]]
+                         (let [expected (or expected 1)
+                               found (dec (count (str/split s (re-pattern (java.util.regex.Pattern/quote from)) -1)))]
+                           (assert (= expected found)
+                                   (str file ": expected " expected " occurrence(s), found " found ": " from)))
                          (str/replace s from to))
                        (slurp (fs/file checkout file))
                        substs)
