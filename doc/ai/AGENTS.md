@@ -102,7 +102,7 @@ To skip a single upstream test rather than a whole namespace, give its var
 
 A library whose tests need their own working directory, extra dependencies
 or a spawned process gets a block at the end of the driver, after the
-standard run. Clerk is the worked example.
+standard run. Clerk and nREPL are the worked examples.
 
 ### Maven layer tests
 
@@ -118,10 +118,16 @@ procurer, and every difference it turns up becomes a case in a test script.
 
 ### nREPL's own test suite
 
-`script/nrepl_tests.clj` runs nREPL's upstream tests from a pinned gitlibs
-checkout, rewriting the few forms sci cannot load, and skipping tests that
-need a JVM-only facility. Run it when bundled nREPL is bumped and the
-patches in `script/vendor_bundled_sources.clj` are re-applied.
+`script/nrepl_tests.clj` runs nREPL's upstream tests against the bundled
+server. It reads the pinned sha from `bb-tested-libs.edn`, clones into
+`~/.gitlibs`, rewrites the few forms sci cannot load, and skips tests that
+need a JVM-only facility. The lib tests driver runs it as one of its
+non-standard blocks, against the built binary, so it is part of
+`script/run_lib_tests` on Linux and macOS.
+
+Run it alone with `./bb script/nrepl_tests.clj [namespace ...]`, which is
+what to do when bundled nREPL is bumped and the patches in
+`script/vendor_bundled_sources.clj` are re-applied.
 
 ### CI
 
