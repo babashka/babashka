@@ -36,11 +36,16 @@ public class QueuePollingReader extends Reader {
 
         // For subsuquent read chars, only poll the queue for data already
         // there, and when queue becomes empty, return the number of chars read.
+        // BB-PATCH drain under the monitor the stdin op holds while it enqueues
+        // a chunk, so a chunk is seen whole: a partial drain leaves the reader
+        // one delimiter short and it asks for input a second time.
         int i = 1;
-        while (i < len) {
-            Object c = queue.poll();
-            if (c == null) break;
-            buf[off + i++] = (char)c;
+        synchronized (queue) {
+            while (i < len) {
+                Object c = queue.poll();
+                if (c == null) break;
+                buf[off + i++] = (char)c;
+            }
         }
         return i;
     }
