@@ -15,7 +15,8 @@
       :author "Stephen C. Gilardi and Rich Hickey"
       :no-doc true}
     babashka.impl.clojure.main
-  (:refer-clojure :exclude [with-bindings]))
+  (:refer-clojure :exclude [with-bindings])
+  (:require [sci.core :as sci]))
 
 (set! *warn-on-reflection* true)
 
@@ -64,6 +65,111 @@ by default when a new command-line REPL is started."} repl-requires
     (if-let [cause (.getCause cause)]
       (recur cause)
       cause)))
+
+(defn- file-name
+  "Helper to get just the file name part of a path or nil"
+  [full-path]
+  (when full-path
+    (try (.getName (java.io.File. ^String full-path))
+         (catch Throwable _ nil))))
+
+(defn- file-path
+  "Helper to get the relative path to the source file or nil"
+  [full-path]
+  (when full-path
+    (try
+      (let [path (.getPath (java.io.File. ^String full-path))
+            cd-path (str (.getAbsolutePath (java.io.File. "")) "/")]
+        (if (.startsWith path cd-path)
+          (subs path (count cd-path))
+          path))
+      (catch Throwable _ full-path))))
+
+(def ^:private no-source #{"NO_SOURCE_FILE" "NO_SOURCE_PATH" "<repl>"})
+
+(def ^:private sci-error-types #{:sci/error :sci.error/parse :edamame/error})
+
+(defn- sci-frames
+  "The sci stack frames recorded with an error, read from its ex-data."
+  [data]
+  (when-let [callstack (:sci.impl/callstack data)]
+    (sci/stacktrace (ex-info "" {:sci.impl/callstack callstack}))))
+
+(defn- frame-symbol [frame]
+  (when-let [n (:name frame)]
+    (symbol (str (:ns frame)) (str n))))
+
+(defn ex-triage
+  "Returns an analysis of the phase, error, cause, and location of an error that occurred
+  based on Throwable data, as returned by Throwable->map. All attributes other than phase
+  are optional:
+    :clojure.error/phase - keyword phase indicator, one of:
+      :read-source :compile-syntax-check :compilation :macro-syntax-check :macroexpansion
+      :execution :read-eval-result :print-eval-result
+    :clojure.error/source - file name (no path)
+    :clojure.error/path - source path
+    :clojure.error/line - integer line number
+    :clojure.error/column - integer column number
+    :clojure.error/symbol - symbol being expanded/compiled/invoked
+    :clojure.error/class - cause exception class symbol
+    :clojure.error/cause - cause exception message
+    :clojure.error/spec - explain-data for spec error"
+  [datafied-throwable]
+  ;; BB-PATCH the JVM trace is sci's interpreter, so location and symbol come
+  ;; from the ex-data sci attaches to the error instead
+  (let [{:keys [via phase]} datafied-throwable
+        {:keys [type message data]} (last via)
+        {:clojure.spec.alpha/keys [problems fn] :clojure.spec.test.alpha/keys [caller]} data
+        top-data (:data (first via))
+        frames (or (:sci/stacktrace datafied-throwable) (sci-frames top-data))
+        user-frame (some #(when-not (:sci/built-in %) %) frames)
+        phase (or phase
+                  (case (:phase top-data)
+                    "parse" :read-source
+                    "analysis" :compile-syntax-check
+                    (when (some :macro frames) :macroexpansion))
+                  :execution)
+        ;; a sci error carries its location in ex-data, an original exception in its frames
+        loc (if (:line top-data) top-data user-frame)
+        {:keys [line column]} loc
+        file (let [f (:file loc)] (when-not (no-source f) f))
+        ;; sci throws its own errors as ex-info, where Clojure reports RuntimeException
+        class (if (contains? sci-error-types (:type data)) 'java.lang.RuntimeException type)]
+    (assoc
+     (case phase
+       :read-source
+       (cond-> {}
+         line (assoc :clojure.error/line line)
+         column (assoc :clojure.error/column column)
+         file (assoc :clojure.error/source (file-name file)
+                     :clojure.error/path (file-path file))
+         message (assoc :clojure.error/cause message))
+
+       (:compile-syntax-check :compilation :macro-syntax-check :macroexpansion)
+       (let [sym (frame-symbol (some #(when (:macro %) %) frames))]
+         (cond-> {}
+           line (assoc :clojure.error/line line)
+           column (assoc :clojure.error/column column)
+           file (assoc :clojure.error/source (file-name file)
+                       :clojure.error/path (file-path file))
+           sym (assoc :clojure.error/symbol sym)
+           class (assoc :clojure.error/class class)
+           message (assoc :clojure.error/cause message)
+           problems (assoc :clojure.error/spec data)))
+
+       (:read-eval-result :print-eval-result :execution)
+       (let [sym (or fn (frame-symbol (some #(when-not (:sci/built-in %) %) frames)))
+             file (first (remove #(or (nil? %) (no-source %)) [(:file caller) file]))
+             err-line (or (:line caller) line)]
+         (cond-> {}
+           class (assoc :clojure.error/class class)
+           err-line (assoc :clojure.error/line err-line)
+           (and column (not (:line caller))) (assoc :clojure.error/column column)
+           message (assoc :clojure.error/cause message)
+           sym (assoc :clojure.error/symbol sym)
+           file (assoc :clojure.error/source (file-name file))
+           problems (assoc :clojure.error/spec data))))
+     :clojure.error/phase phase)))
 
 (defn skip-if-eol
   "If the next character on stream s is a newline, skips it, otherwise

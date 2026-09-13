@@ -455,6 +455,7 @@ Use bb run --help to show this help output.
                                               {:ns clojure-main-ns})
                       'with-read-known (sci/copy-var clojure-main/with-read-known clojure-main-ns)
                       'root-cause (sci/copy-var clojure-main/root-cause clojure-main-ns)
+                      'ex-triage (sci/copy-var clojure-main/ex-triage clojure-main-ns)
                       'skip-if-eol (sci/copy-var clojure-main/skip-if-eol clojure-main-ns)
                       'main main-var}
        'clojure.test t/clojure-test-namespace
