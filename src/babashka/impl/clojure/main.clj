@@ -121,15 +121,18 @@ by default when a new command-line REPL is started."} repl-requires
         {:keys [type message data]} (last via)
         {:clojure.spec.alpha/keys [problems fn] :clojure.spec.test.alpha/keys [caller]} data
         top-data (:data (first via))
-        frames (sci-frames top-data)
+        frames (or (:sci/stacktrace datafied-throwable) (sci-frames top-data))
+        user-frame (some #(when-not (:sci/built-in %) %) frames)
         phase (or phase
                   (case (:phase top-data)
                     "parse" :read-source
                     "analysis" :compile-syntax-check
                     (when (some :macro frames) :macroexpansion))
                   :execution)
-        {:keys [line column]} top-data
-        file (let [f (:file top-data)] (when-not (no-source f) f))
+        ;; a sci error carries its location in ex-data, an original exception in its frames
+        loc (if (:line top-data) top-data user-frame)
+        {:keys [line column]} loc
+        file (let [f (:file loc)] (when-not (no-source f) f))
         ;; sci throws its own errors as ex-info, where Clojure reports RuntimeException
         class (if (contains? sci-error-types (:type data)) 'java.lang.RuntimeException type)]
     (assoc

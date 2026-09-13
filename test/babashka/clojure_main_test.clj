@@ -61,6 +61,12 @@
                            :cause "Divide by zero"}
            (edn/read-string
             (tu/bb nil "-e" "(try (/ 1 0) (catch Exception e (prn (clojure.main/ex-triage (Throwable->map e)))))")))))
+  (testing "an original exception caught with its sci callstack, as nREPL does, names the function"
+    (let [triage (edn/read-string
+                  (tu/bb nil "-e" "(defn inner [x] (/ x 0)) (try (inner 1) (catch ^{:sci/callstack true} Throwable e (prn (clojure.main/ex-triage (Throwable->map e)))))"))]
+      (is (= 'user/inner (:clojure.error/symbol triage)))
+      (is (= 'java.lang.ArithmeticException (:clojure.error/class triage)))
+      (is (= 1 (:clojure.error/line triage)))))
   (testing "a reader error is triaged as reading source"
     (let [triage (edn/read-string
                   (tu/bb nil "-e" "(try (load-string \"(foo\") (catch Exception e (prn (clojure.main/ex-triage (Throwable->map e)))))"))]

@@ -1,7 +1,8 @@
 (ns babashka.impl.clojure.core
   {:no-doc true}
   (:refer-clojure :exclude [future read+string clojure-version with-precision
-                            send-via send send-off sync into-array load])
+                            send-via send send-off sync into-array load
+                            Throwable->map])
   (:require [babashka.impl.common :as common]
             [clojure.core :as c]
             [clojure.string :as str]
@@ -157,6 +158,14 @@
                  symbol)]
       (sci/binding [sci/ns sci/ns]
         (sci/eval-form (store/get-ctx) (list 'require (list 'quote ns)))))))
+
+(defn Throwable->map
+  [o]
+  ;; the JVM trace of interpreted code is sci's evaluator, so add the sci frames
+  (let [m (c/Throwable->map o)
+        frames (some (fn [e] (seq (try (sci/stacktrace e) (catch Throwable _ nil))))
+                     (take-while some? (iterate ex-cause o)))]
+    (cond-> m frames (assoc :sci/stacktrace (vec frames)))))
 
 (def core-extras
   {;; agents
