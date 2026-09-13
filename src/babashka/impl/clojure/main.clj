@@ -130,7 +130,8 @@ by default when a new command-line REPL is started."} repl-requires
                   :execution)
         {:keys [line column]} top-data
         file (let [f (:file top-data)] (when-not (no-source f) f))
-        class (when-not (contains? sci-error-types (:type data)) type)]
+        ;; sci throws its own errors as ex-info, where Clojure reports RuntimeException
+        class (if (contains? sci-error-types (:type data)) 'java.lang.RuntimeException type)]
     (assoc
      (case phase
        :read-source

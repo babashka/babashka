@@ -43,10 +43,10 @@
                              :line 3
                              :column 3}
              execution)))
-    (testing "an unresolved symbol is a syntax error without an exception class"
+    (testing "an unresolved symbol is a syntax error reported as a RuntimeException"
       (is (= :compile-syntax-check (:clojure.error/phase unresolved)))
       (is (= "Unable to resolve symbol: nope" (:clojure.error/cause unresolved)))
-      (is (not (contains? unresolved :clojure.error/class))))
+      (is (= 'java.lang.RuntimeException (:clojure.error/class unresolved))))
     (testing "an error thrown by a macro names the macro"
       (is (= :macroexpansion (:clojure.error/phase macro)))
       (is (= 'user/m (:clojure.error/symbol macro)))
