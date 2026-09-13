@@ -243,7 +243,35 @@
           (is (every? string? cp))
           (is (pos? (count cp)))
           ;; dev-resources doesn't exist
-          (is (pos? (count (filter fs/exists? cp)))))))))
+          (is (pos? (count (filter fs/exists? cp))))))
+      (testing "stdin"
+        (let [eval-with-stdin
+              (fn [code stdin]
+                (let [eval-id (new-id!)]
+                  (bencode/write-bencode os {"op" "eval" "code" code "session" session "id" eval-id})
+                  (loop [asked 0 value nil]
+                    (let [msg (read-reply in session eval-id)
+                          status (set (:status msg))
+                        asked (if (contains? status "need-input")
+                                (do (bencode/write-bencode os {"op" "stdin" "stdin" stdin
+                                                               "session" session "id" (new-id!)})
+                                    (read-reply in session @id)
+                                    (inc asked))
+                                asked)
+                        value (or (:value msg) value)]
+                    (if (contains? status "done")
+                      {:asked asked :value value}
+                      (recur asked value))))))]
+          (testing "a form is read from one stdin chunk, asked for once"
+            (let [{:keys [asked value]} (eval-with-stdin "(read)" ":ohai\n")]
+              (is (= 1 asked))
+              (is (= ":ohai" value))))
+          (testing "the newline after the form is not left for the next read"
+            (bencode/write-bencode os {"op" "stdin" "stdin" "a\n" "session" session "id" (new-id!)})
+            (read-reply in session @id)
+            (let [{:keys [asked value]} (eval-with-stdin "(read-line)" nil)]
+              (is (= 0 asked))
+              (is (= "\"a\"" value)))))))))
 
 (defn- eval-over-the-wire
   "Evaluates `code` in the server on `port`, for stopping the in-process
