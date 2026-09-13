@@ -3,6 +3,7 @@
    [babashka.fs :as fs]
    [babashka.impl.classpath :as cp]
    [babashka.impl.common :as common]
+   [babashka.impl.deps :as deps]
    [babashka.main :as main]
    [babashka.process :as p]
    [clojure.string :as str]
@@ -46,6 +47,7 @@
   (alter-var-root #'cp/the-url-loader (constantly (delay (cp/new-loader []))))
   (reset! main/env {})
   (vreset! common/bb-edn nil)
+  (deps/reset-basis!)
   (System/clearProperty "babashka.config")
   (let [args (cond-> args *bb-edn-path*
                      (->> (list* "--config" *bb-edn-path* "--deps-root" ".")))
