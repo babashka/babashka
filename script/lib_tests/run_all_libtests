@@ -12,6 +12,10 @@ else
 fi
 
 export PATH
+# The process tests put a program in the working directory and expect a bare
+# name not to find it. A developer with this checkout on PATH, to run the
+# dev build as bb, would find it, so the checkout is dropped from PATH.
+PATH=$(echo "$PATH" | tr ':' '\n' | grep -vx "$(pwd)" | grep -vx "$(pwd)/" | paste -sd: -)
 PATH=$(pwd)/process/target/test/on-path:$PATH
 
 export BABASHKA_CLASSPATH
