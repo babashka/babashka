@@ -43,6 +43,7 @@ A preview of the next release can be installed from
 - Bump `babashka.cli` to `0.12.90`
 - Bump `clj-yaml` to `1.0.30`
 - Bump `http-client` to `0.4.25`
+- Bump `edamame` to `1.6.44`
 
 ## 1.13.220 (2026-08-31)
 
