@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- [#1974](https://github.com/babashka/babashka/issues/1974): Add `clojure.main/ex-triage` with sci error phases and source locations
 - `babashka.deps/add-deps` returns a sorted vector of added libs, or `nil` if none were added, and preserves versions already on the classpath
 - Keep output from realizing lazy values separate from nREPL evaluation results
 - [babashka.nrepl#67](https://github.com/babashka/babashka.nrepl/issues/67): Preserve source columns in nREPL evaluations
