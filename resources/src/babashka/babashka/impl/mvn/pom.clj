@@ -313,24 +313,32 @@
 
 ;; Interpolation
 
-(defn- model-values [{:keys [group artifact version packaging parent]} basedir]
-  (let [with-prefixes (fn [k v] (when v {(str "project." k) v (str "pom." k) v k v}))]
-    (merge (with-prefixes "groupId" group)
-           (with-prefixes "artifactId" artifact)
-           (with-prefixes "version" version)
-           (with-prefixes "packaging" packaging)
-           (when parent
-             {"project.parent.groupId" (:group parent)
-              "project.parent.artifactId" (:artifact parent)
-              "project.parent.version" (:version parent)
-              "parent.version" (:version parent)
-              "parent.groupId" (:group parent)})
-           (when basedir
-             {"basedir" (str basedir) "project.basedir" (str basedir)}))))
+(defn- model-values
+  "The model expressions babashka resolves, see ADR 0012: :basedir,
+  :prefixed with project. and pom., and :unprefixed."
+  [{:keys [group artifact version packaging parent]} basedir]
+  (let [fields (into {} (filter val) {"groupId" group "artifactId" artifact
+                                      "version" version "packaging" packaging})]
+    {:basedir (when basedir {"basedir" (str basedir) "project.basedir" (str basedir)})
+     :prefixed (merge (into {} (for [[k v] fields, prefix ["project." "pom."]] [(str prefix k) v]))
+                      (when parent
+                        {"project.parent.groupId" (:group parent)
+                         "project.parent.artifactId" (:artifact parent)
+                         "project.parent.version" (:version parent)}))
+     :unprefixed (merge fields
+                        (when parent
+                          {"parent.version" (:version parent)
+                           "parent.groupId" (:group parent)}))}))
 
-(defn- interpolator [model basedir]
-  (let [values (merge (:properties model) (model-values model basedir))
-        lookup (fn [k] (or (get values k) (property-value k)))]
+(defn- interpolator
+  "Resolves expressions in Maven's order: basedir, project. and pom. model
+  expressions, the POM's properties, system properties and the environment,
+  then unprefixed model expressions."
+  [model basedir]
+  (let [{dirs :basedir :keys [prefixed unprefixed]} (model-values model basedir)
+        properties (:properties model)
+        lookup (fn [k] (or (get dirs k) (get prefixed k) (get properties k)
+                           (property-value k) (get unprefixed k)))]
     (fn interpolate [s]
       (if (and (string? s) (str/includes? s "${"))
         (loop [s s depth 0]
