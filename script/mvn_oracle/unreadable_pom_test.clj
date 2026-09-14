@@ -1,6 +1,5 @@
 #!/usr/bin/env bb
-;; POMs that are missing or do not parse. tools.deps tells Maven's resolver
-;; to ignore such descriptors, so the artifact resolves without dependencies.
+;; POMs that are missing or do not parse, resolved without dependencies.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/unreadable_pom_test.clj
 (ns unreadable-pom-test
   (:require [babashka.classpath :as cp]
@@ -9,8 +8,7 @@
             [clojure.string :as str]
             [clojure.test :as t :refer [deftest is testing]]))
 
-;; add-deps keeps resolving the libs it already added, so the tests share one
-;; repository and its files stay on disk until every test has run
+;; add-deps resolves earlier libs again, so all tests share one repository
 (def ^:private tmp (fs/create-temp-dir))
 (def ^:private remote (fs/file tmp "remote"))
 (def ^:private local (fs/file tmp "local"))
@@ -21,11 +19,11 @@
        (apply str body) "</project>"))
 
 (def ^:private missing-dependency
-  "A dependency no repository has, which fails the resolve if it is read."
+  "A dependency no repository has. Resolving it fails."
   "<dependencies><dependency><groupId>nope</groupId><artifactId>nope</artifactId><version>1.0.0</version></dependency></dependencies>")
 
 (defn- publish!
-  "A jar for bad/<artifact> 1.0.0, and its POM unless pom-text is nil."
+  "Writes a jar for bad/<artifact> 1.0.0, and its POM unless pom-text is nil."
   [artifact pom-text]
   (let [d (fs/file remote "bad" artifact "1.0.0")]
     (fs/create-dirs d)
@@ -52,17 +50,17 @@
     (publish! "damaged" (pom "damaged" missing-dependency))
     (fs/create-dirs (fs/file local "bad" "damaged" "1.0.0"))
     (spit (fs/file local "bad" "damaged" "1.0.0" "damaged-1.0.0.pom") "not xml at all")
-    (is (str/includes? (resolve! "damaged") "WARNING: ignoring the POM of bad:damaged:1.0.0, it does not parse"))
+    (is (str/includes? (resolve! "damaged") "WARNING: The POM for bad:damaged:1.0.0 is invalid"))
     (is (on-classpath? "damaged"))))
 
 (deftest parse-error-test
-  (testing "an undeclared entity past the start of the document"
+  (testing "a POM with an undeclared entity is ignored with a warning"
     (publish! "entity" (pom "entity" "<name>&bogus;</name>" missing-dependency))
-    (is (str/includes? (resolve! "entity") "WARNING: ignoring the POM of bad:entity:1.0.0"))
+    (is (str/includes? (resolve! "entity") "WARNING: The POM for bad:entity:1.0.0 is invalid"))
     (is (on-classpath? "entity")))
-  (testing "content after the root element"
+  (testing "a POM with content after the root element is ignored with a warning"
     (publish! "junk" (str (pom "junk" missing-dependency) "<<<junk"))
-    (is (str/includes? (resolve! "junk") "WARNING: ignoring the POM of bad:junk:1.0.0"))
+    (is (str/includes? (resolve! "junk") "WARNING: The POM for bad:junk:1.0.0 is invalid"))
     (is (on-classpath? "junk"))))
 
 (deftest unreadable-parent-test
@@ -71,7 +69,7 @@
     (publish! "child" (str "<project><modelVersion>4.0.0</modelVersion>"
                            "<parent><groupId>bad</groupId><artifactId>parent</artifactId><version>1.0.0</version></parent>"
                            "<artifactId>child</artifactId>" missing-dependency "</project>"))
-    (resolve! "child")
+    (is (str/includes? (resolve! "child") "WARNING: The POM for bad:child:1.0.0 is invalid"))
     (is (on-classpath? "child"))))
 
 (deftest missing-pom-test

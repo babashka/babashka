@@ -75,10 +75,9 @@
   {:dependencies [] :licenses []})
 
 (defn- effective-model
-  "The effective model for lib and coord, following relocations. tools.deps
-  tells Maven's resolver to ignore missing and invalid descriptors, so a
-  missing POM, or one that does not parse with its parents and BOMs, leaves
-  the artifact without dependencies."
+  "The effective model for lib and coord, following relocations. Without
+  dependencies when the POM is missing, or when it or a parent or BOM does
+  not parse."
   [lib coord config]
   (let [ctx (pom-ctx config)
         [group artifact] (coords/lib->names lib)]
@@ -89,8 +88,8 @@
                          (catch Exception e
                            (if (unreadable? e)
                              (binding [*out* *err*]
-                               (println (str "WARNING: ignoring the POM of " (:group gav) ":" (:artifact gav) ":" (:version gav)
-                                             ", it does not parse: " (ex-message e)))
+                               (println (str "WARNING: The POM for " (:group gav) ":" (:artifact gav) ":" (:version gav)
+                                             " is invalid, transitive dependencies will not be available: " (ex-message e)))
                                no-descriptor)
                              (throw e))))
               relocation (:relocation model)]

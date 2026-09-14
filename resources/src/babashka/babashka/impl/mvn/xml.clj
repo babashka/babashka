@@ -8,12 +8,11 @@
             [clojure.string :as str]))
 
 (defn parse
-  "Parses XML text the way Maven's readers accept it: a byte order mark is
-  skipped and the HTML character entities they know are resolved. The whole
-  document is read before the tree is built, so an error anywhere in it
-  throws here."
+  "Parses XML text, skipping a byte order mark and resolving the HTML
+  character entities Maven's readers know. Throws on an error anywhere in
+  the document."
   [s]
-  (let [s (if (str/starts-with? s "﻿") (subs s 1) s)
+  (let [s (if (str/starts-with? s "\uFEFF") (subs s 1) s)
         s (str/replace s #"&([A-Za-z][A-Za-z0-9]*);"
                        (fn [[entity name]] (get entities/replacements name entity)))]
     (tree/event-tree (doall (xml/event-seq (java.io.StringReader. s) {})))))

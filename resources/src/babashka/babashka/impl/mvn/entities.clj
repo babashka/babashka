@@ -1,6 +1,6 @@
 (ns babashka.impl.mvn.entities
   "The character entities Maven's POM reader resolves beyond XML's own,
-  from plexus-xml's EntityReplacementMap; Apache License 2.0, see
+  from plexus-xml's EntityReplacementMap. Apache License 2.0, see
   NOTICE.md."
   {:no-doc true})
 

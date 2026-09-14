@@ -101,7 +101,7 @@
                     (some-> (x/child el "plugins") (x/children "plugin")))}))
 
 (defn parse
-  "The raw model of a POM. Throws an ex-info of :type ::unreadable when the
+  "The raw model of a POM. Throws ex-info with :type ::unreadable when the
   text does not parse."
   [s]
   (let [root (try (x/parse s)
