@@ -32,6 +32,7 @@
 
 (def ^:private repos
   {"local" {:url (do (file-repo! (fs/file tmp "repo") "managed")
+                     (file-repo! (fs/file tmp "repo") "unprofiled")
                      (file-repo! (fs/file tmp "repo") "profiled"))}})
 
 (def ^:private local-repo (str (fs/file tmp "m2")))
@@ -61,27 +62,42 @@
                      {:force true})
       (is (on-classpath? "managed-1.0.0.jar")))))
 
-(deftest parent-profile-on-disk-test
-  (testing "a file activation in a parent on disk checks the parent's directory"
-    (let [dir (fs/file tmp "profile")
-          parent (fs/file dir "project" "parent")
-          child (fs/file parent "child")]
-      (fs/create-dirs child)
-      (spit (fs/file parent "marker") "")
-      (spit (fs/file parent "pom.xml")
-            (pom "<groupId>example</groupId><artifactId>profile-parent</artifactId><version>1</version><packaging>pom</packaging>"
-                 "<profiles><profile><id>marker</id><activation><file><exists>marker</exists></file></activation>"
-                 "<dependencies><dependency><groupId>example</groupId><artifactId>profiled</artifactId><version>1.0.0</version></dependency></dependencies>"
-                 "</profile></profiles>"))
-      (spit (fs/file child "pom.xml")
-            (pom "<parent><groupId>example</groupId><artifactId>profile-parent</artifactId><version>1</version></parent>"
-                 "<artifactId>profile-child</artifactId>"))
-      (deps/add-deps {:deps {'example/profile-child {:local/root (str child)}}
+(defn- profile-project!
+  "A parent with a profile activated by a marker file, adding example/<dep>,
+  and a child below it. Returns the child's directory."
+  [dir id dep]
+  (let [parent (fs/file dir "project" "parent")
+        child (fs/file parent "child")]
+    (fs/create-dirs child)
+    (spit (fs/file parent "pom.xml")
+          (pom "<groupId>example</groupId><artifactId>" id "-parent</artifactId><version>1</version><packaging>pom</packaging>"
+               "<profiles><profile><id>marker</id><activation><file><exists>marker</exists></file></activation>"
+               "<dependencies><dependency><groupId>example</groupId><artifactId>" dep "</artifactId><version>1.0.0</version></dependency></dependencies>"
+               "</profile></profiles>"))
+    (spit (fs/file child "pom.xml")
+          (pom "<parent><groupId>example</groupId><artifactId>" id "-parent</artifactId><version>1</version></parent>"
+               "<artifactId>" id "-child</artifactId>"))
+    child))
+
+(deftest parent-profile-activation-test
+  (testing "a parent's file activation checks the directory of the project being built"
+    (let [child (profile-project! (fs/file tmp "profile-on") "profile-on" "profiled")]
+      (spit (fs/file child "marker") "")
+      (deps/add-deps {:deps {'example/profile-on-child {:local/root (str child)}}
                       :mvn/repos repos
                       :mvn/local-repo local-repo
                       :deps-resolver :bb}
                      {:force true})
-      (is (on-classpath? "profiled-1.0.0.jar")))))
+      (is (on-classpath? "profiled-1.0.0.jar"))))
+  (testing "a marker only next to the parent leaves the profile off"
+    (let [child (profile-project! (fs/file tmp "profile-off") "profile-off" "unprofiled")]
+      (spit (fs/file (fs/parent child) "marker") "")
+      (deps/add-deps {:deps {'example/profile-off-child {:local/root (str child)}}
+                      :mvn/repos repos
+                      :mvn/local-repo local-repo
+                      :deps-resolver :bb}
+                     {:force true})
+      (is (not (on-classpath? "unprofiled-1.0.0.jar"))))))
 
 (let [{:keys [fail error]} (t/run-tests 'local-pom-test)]
   (fs/delete-tree tmp)

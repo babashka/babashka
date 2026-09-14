@@ -396,7 +396,8 @@
                             {:parent parent})))
           (when-not parent-dir
             (swap! cache assoc [:raw (gav-key parent)] parent-raw))
-          (recur (inject-profiles parent-raw parent-dir) parent-dir acc (conj seen (gav-key parent))))
+          ;; Maven checks every parent's profile activation against the project being built
+          (recur (inject-profiles parent-raw basedir) parent-dir acc (conj seen (gav-key parent))))
         acc))))
 
 (defn- import-managed
