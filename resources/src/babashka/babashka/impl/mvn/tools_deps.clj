@@ -67,37 +67,51 @@
    :cache (model-cache)
    :basedir nil})
 
-(defn- parse-pom
-  "The raw model of a POM, naming the artifact when the file will not parse.
-  A damaged POM in the local repository is the usual cause."
-  [text {:keys [group artifact version]}]
-  (try
-    (pom/parse text)
-    (catch Exception e
-      (throw (ex-info (str "Could not read POM of " group ":" artifact ":pom:" version
-                           ": " (ex-message e))
-                      {:group group :artifact artifact :version version}
-                      e)))))
+(defn- unreadable? [e]
+  (some #(= :babashka.impl.mvn.pom/unreadable (:type (ex-data %)))
+        (take-while some? (iterate ex-cause e))))
+
+(def ^:private no-descriptor
+  {:dependencies [] :licenses []})
+
+(defn- invalid-key [gav]
+  [:babashka.impl.mvn/invalid-pom gav])
+
+(defn- invalid-pom
+  "no-descriptor for gav, whose POM does not parse. Warns once per session."
+  [gav e]
+  (session/retrieve (invalid-key gav)
+                    (fn []
+                      (binding [*out* *err*]
+                        (println (str "WARNING: The POM for " (:group gav) ":" (:artifact gav) ":" (:version gav)
+                                      " is invalid, transitive dependencies will not be available: " (ex-message e))))
+                      true))
+  no-descriptor)
 
 (defn- effective-model
-  "The effective model for lib and coord, following relocations."
+  "The effective model for lib and coord, following relocations. Without
+  dependencies when the POM is missing, or when it or a parent or BOM does
+  not parse."
   [lib coord config]
   (let [ctx (pom-ctx config)
         [group artifact] (coords/lib->names lib)]
     (loop [gav {:group group :artifact artifact :version (:mvn/version coord)}
            hops 0]
-      (let [text (read-pom config gav [])
-            _ (when-not text
-                (throw (ex-info (not-found-message (assoc gav :extension "pom") (repos config))
-                                {:lib lib :coord coord})))
-            model (pom/effective-model (parse-pom text gav) (assoc ctx :coords gav))
-            relocation (:relocation model)]
-        (if (and relocation (< hops 10))
-          (recur {:group (or (:group relocation) (:group gav))
-                  :artifact (or (:artifact relocation) (:artifact gav))
-                  :version (or (:version relocation) (:version gav))}
-                 (inc hops))
-          model)))))
+      (if-let [text (when-not (session/retrieve (invalid-key gav))
+                      (read-pom config gav []))]
+        (let [model (try (pom/effective-model (pom/parse text) (assoc ctx :coords gav))
+                         (catch Exception e
+                           (if (unreadable? e)
+                             (invalid-pom gav e)
+                             (throw e))))
+              relocation (:relocation model)]
+          (if (and relocation (< hops 10))
+            (recur {:group (or (:group relocation) (:group gav))
+                    :artifact (or (:artifact relocation) (:artifact gav))
+                    :version (or (:version relocation) (:version gav))}
+                   (inc hops))
+            model))
+        no-descriptor))))
 
 (defn- dep->data [{:keys [group artifact version type classifier scope optional exclusions]}]
   (let [extension (coords/type->extension type)

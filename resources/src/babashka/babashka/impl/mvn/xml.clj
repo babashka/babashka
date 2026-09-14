@@ -2,11 +2,20 @@
   "Reading Maven's XML files with data.xml. Tags are compared by local
   name, the POM and settings namespaces do not matter here."
   {:no-doc true}
-  (:require [clojure.data.xml :as xml]
+  (:require [babashka.impl.mvn.entities :as entities]
+            [clojure.data.xml :as xml]
+            [clojure.data.xml.tree :as tree]
             [clojure.string :as str]))
 
-(defn parse [s]
-  (xml/parse-str s))
+(defn parse
+  "Parses XML text, skipping a byte order mark and resolving the HTML
+  character entities Maven's readers know. Throws on an error anywhere in
+  the document."
+  [s]
+  (let [s (if (str/starts-with? s "\uFEFF") (subs s 1) s)
+        s (str/replace s #"&([A-Za-z][A-Za-z0-9]*);"
+                       (fn [[entity name]] (get entities/replacements name entity)))]
+    (tree/event-tree (doall (xml/event-seq (java.io.StringReader. s) {})))))
 
 (defn- tag= [tag el]
   (and (map? el) (= tag (name (:tag el)))))

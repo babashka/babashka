@@ -101,9 +101,12 @@
                     (some-> (x/child el "plugins") (x/children "plugin")))}))
 
 (defn parse
-  "The raw model of a POM."
+  "The raw model of a POM. Throws ex-info with :type ::unreadable when the
+  text does not parse."
   [s]
-  (let [root (x/parse s)
+  (let [root (try (x/parse s)
+                  (catch Exception e
+                    (throw (ex-info (ex-message e) {:type ::unreadable} e))))
         parent (x/child root "parent")]
     (merge (gav root)
            {:packaging (or (x/child-text root "packaging") "jar")

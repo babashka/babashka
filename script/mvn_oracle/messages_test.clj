@@ -28,30 +28,13 @@
     (str (.toURI (fs/file dir)))))
 
 (deftest not-found-test
-  (is (= "Could not find artifact nope:nope:pom:1.0.0 in central (https://repo1.maven.org/maven2/), clojars (https://repo.clojars.org/)"
+  (is (= "Could not find artifact nope:nope:jar:1.0.0 in central (https://repo1.maven.org/maven2/), clojars (https://repo.clojars.org/)"
          (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}}))))
 
 (deftest unreachable-test
   (is (= "Could not transfer nope/nope/1.0.0/nope-1.0.0.pom from dead (https://nonexistent.invalid/maven2/): nonexistent.invalid"
          (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
                     :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2/"}}}))))
-
-(deftest damaged-pom-test
-  (testing "a POM in the local repository that will not parse names the artifact"
-    (fs/with-temp-dir [dir {}]
-      (let [remote (fs/file dir "remote")
-            local (fs/file dir "local")
-            d (fs/file remote "bad" "lib" "1.0.0")]
-        (fs/create-dirs d)
-        (spit (fs/file d "lib-1.0.0.pom")
-              "<project><modelVersion>4.0.0</modelVersion><groupId>bad</groupId><artifactId>lib</artifactId><version>1.0.0</version></project>")
-        (spit (fs/file d "lib-1.0.0.jar") "PK")
-        (fs/create-dirs (fs/file local "bad" "lib" "1.0.0"))
-        (spit (fs/file local "bad" "lib" "1.0.0" "lib-1.0.0.pom") "not xml at all")
-        (is (str/starts-with? (str (failure {:deps '{bad/lib {:mvn/version "1.0.0"}}
-                                             :mvn/repos {"local-file" {:url (str (.toURI (fs/file remote)))}}
-                                             :mvn/local-repo (str local)}))
-                              "Could not read POM of bad:lib:pom:1.0.0"))))))
 
 (deftest s3-test
   (is (= "S3 repository private (s3://bucket/releases/) requires the JVM resolver. Set BABASHKA_DEPS_RESOLVER=jvm."
@@ -66,7 +49,7 @@
               "<settings><mirrors><mirror><id>bucket-mirror</id><url>https://repo.clojars.org/</url><mirrorOf>private</mirrorOf></mirror></mirrors></settings>")
         (System/setProperty "user.home" (str home))
         (try
-          (is (= "Could not find artifact nope:nope:pom:1.0.0 in central (https://repo1.maven.org/maven2/), clojars (https://repo.clojars.org/), bucket-mirror (https://repo.clojars.org/)"
+          (is (= "Could not find artifact nope:nope:jar:1.0.0 in central (https://repo1.maven.org/maven2/), clojars (https://repo.clojars.org/), bucket-mirror (https://repo.clojars.org/)"
                  (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
                             :mvn/repos {"private" {:url "s3://bucket/releases/"}}})))
           (finally (System/setProperty "user.home" real-home)))))))
