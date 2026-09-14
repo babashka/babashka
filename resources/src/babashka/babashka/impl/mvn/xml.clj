@@ -37,5 +37,11 @@
 (defn child-text [el tag]
   (text (child el tag)))
 
+(defn true-text?
+  "Whether s reads as true, ignoring case, as Maven's readers parse a boolean
+  with Boolean/valueOf."
+  [s]
+  (.equalsIgnoreCase "true" ^String s))
+
 (defn tag-name [el]
   (name (:tag el)))

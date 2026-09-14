@@ -48,7 +48,14 @@
     (testing "the metadata is cached in the local repository under the repository's id"
       (is (fs/exists? (fs/file local "org/apache/maven/its/dep-mng5324/07.20.3-SNAPSHOT/maven-metadata-test.xml"))))
     (testing "no metadata, no snapshot"
-      (is (nil? (metadata/snapshot-file-name local test-repo (artifact nil "1.0-SNAPSHOT")))))))
+      (is (nil? (metadata/snapshot-file-name local test-repo (artifact nil "1.0-SNAPSHOT")))))
+    (testing "localCopy ignores case, as Maven's metadata reader parses it"
+      (let [local-copy-dir (fs/file remote "org/apache/maven/its/dep-mng5324/2.0-SNAPSHOT")]
+        (fs/create-dirs local-copy-dir)
+        (spit (fs/file local-copy-dir "maven-metadata.xml")
+              "<metadata><versioning><snapshot><timestamp>20120809.112920</timestamp><buildNumber>97</buildNumber><localCopy>TRUE</localCopy></snapshot></versioning></metadata>")
+        (is (= "dep-mng5324-2.0-SNAPSHOT.jar"
+               (metadata/snapshot-file-name local test-repo (artifact nil "2.0-SNAPSHOT"))))))))
 
 (let [{:keys [fail error]} (t/run-tests 'snapshot-test)]
   (fs/delete-tree dir)

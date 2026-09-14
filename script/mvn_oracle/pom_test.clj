@@ -185,7 +185,15 @@
     (testing "activeByDefault profiles inject dependencies, interpolated"
       (is (= "2.4.0" (:version (dep model "org.example" "from-profile")))))
     (testing "a property activation without the property stays off"
-      (is (nil? (dep model "org.example" "never"))))))
+      (is (nil? (dep model "org.example" "never")))))
+  (testing "optional and activeByDefault ignore case, as Maven's POM reader parses them"
+    (let [model (effective (pom "<groupId>org.example</groupId><artifactId>booleans</artifactId><version>1</version>"
+                                "<dependencies><dependency><groupId>medley</groupId><artifactId>medley</artifactId><version>1.4.0</version><optional>TRUE</optional></dependency></dependencies>"
+                                "<profiles><profile><id>on</id><activation><activeByDefault>True</activeByDefault></activation>"
+                                "<dependencies><dependency><groupId>org.example</groupId><artifactId>from-profile</artifactId><version>1</version></dependency></dependencies>"
+                                "</profile></profiles>"))]
+      (is (true? (:optional (dep model "medley" "medley"))))
+      (is (some? (dep model "org.example" "from-profile"))))))
 
 (deftest disk-parent-test
   (testing "a parent on disk wins over a copy of it cached from a repository"

@@ -23,7 +23,7 @@
         snapshot (x/child versioning "snapshot")]
     {:timestamp (x/child-text snapshot "timestamp")
      :build-number (x/child-text snapshot "buildNumber")
-     :local-copy (= "true" (x/child-text snapshot "localCopy"))
+     :local-copy (x/true-text? (x/child-text snapshot "localCopy"))
      :snapshot-versions (mapv (fn [sv]
                                 {:classifier (x/child-text sv "classifier")
                                  :extension (x/child-text sv "extension")

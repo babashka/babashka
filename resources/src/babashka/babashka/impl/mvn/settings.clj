@@ -5,7 +5,7 @@
   {:no-doc true}
   (:require [babashka.fs :as fs]
             [babashka.impl.mvn.env :as env]
-            [babashka.impl.mvn.xml :refer [child child-text children elements text]]
+            [babashka.impl.mvn.xml :refer [child child-text children elements text true-text?]]
             [clojure.string :as str]))
 
 (defn interpolate
@@ -32,7 +32,7 @@
 
 (defn- proxy-entry [el]
   {:id (child-text el "id")
-   :active (not= "false" (child-text el "active"))
+   :active (if-let [active (child-text el "active")] (true-text? active) true)
    :protocol (or (child-text el "protocol") "http")
    :host (interpolate (child-text el "host"))
    :port (some-> (child-text el "port") parse-long)
@@ -46,7 +46,7 @@
 
 (defn- profile [el]
   [(child-text el "id")
-   {:active-by-default (= "true" (some-> (child el "activation") (child-text "activeByDefault")))
+   {:active-by-default (true-text? (some-> (child el "activation") (child-text "activeByDefault")))
     :repositories (mapv repository (some-> (child el "repositories") (children "repository")))
     :properties (into {} (for [p (some-> (child el "properties") elements)]
                            [(name (:tag p)) (text p)]))}])
