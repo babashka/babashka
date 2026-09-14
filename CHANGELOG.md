@@ -9,27 +9,25 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#1974](https://github.com/babashka/babashka/issues/1974): Add `clojure.main/ex-triage` with sci error phases and source locations
-- `babashka.deps/add-deps` returns a sorted vector of added libs, or `nil` if none were added, and preserves versions already on the classpath
-- Keep output from realizing lazy values separate from nREPL evaluation results
-- [babashka.nrepl#67](https://github.com/babashka/babashka.nrepl/issues/67): Preserve source columns in nREPL evaluations
+- Resolve dependencies without a JVM by default. Set `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, to use Java as before
+- Make `clojure.tools.deps` and its script namespaces, including `clojure.tools.deps.script.make-classpath2`, available to scripts
+- Bundle `clojure.tools.build.api`, with patched `install` and `javac` for babashka. A tools.build dependency on the classpath takes precedence and runs from source
 - Add `bb repl --connect [addr]` to connect to an nREPL server with completion, eldoc, documentation lookup and Ctrl-C interruption. Accepts `host:port`, a port or `unix://path`. Reads `.nrepl-port` by default.
-- Run nREPL 1.7.0 from bundled source
+- Run nREPL 1.7.0 from bundled source. Make `nrepl.core`, `nrepl.server`, `nrepl.transport`, `nrepl.middleware` and `nrepl.misc` available to scripts
 - Bind the nREPL server to `127.0.0.1` by default instead of `0.0.0.0`. Use `bb --nrepl-server 0.0.0.0:1667` in Docker
+- Replace the `:xform` option of `babashka.nrepl.server/start-server!` with `:middleware`, accepting middleware vars with nREPL descriptors. See [examples/nrepl_middleware.clj](examples/nrepl_middleware.clj)
 - Bundle nREPL ops for the CIDER inspector, test runner (`C-c C-t`) and `cider-version`
+- Add the nREPL `interrupt` op. Interruption is cooperative and does not stop tight loops
 - Run the nREPL server on a Unix domain socket with the `:socket` option of `babashka.nrepl.server/start-server!`
-- Add `reify` support for `java.io.Flushable`
-- Increase the nREPL eval thread stack size to 8 MB to match the main thread and allow deeper recursion
-- [#1518](https://github.com/babashka/babashka/issues/1518): Print sci stack frames in `clojure.test` error reports, both inside and outside `is`
+- [babashka.nrepl#72](https://github.com/babashka/babashka.nrepl/issues/72): Isolate REPL bindings such as `*1`, `*e` and `*ns*` per session and preserve them when reconnecting with the same session id
 - Show sci stack frames in CIDER's error buffer via `analyze-last-stacktrace`
 - Report the original exception class and source location in nREPL eval errors and preserve sci stack frames on `*e`
-- [babashka.nrepl#72](https://github.com/babashka/babashka.nrepl/issues/72): Isolate REPL bindings such as `*1`, `*e` and `*ns*` per session and preserve them when reconnecting with the same session id
-- Add the nREPL `interrupt` op. Interruption is cooperative and does not stop tight loops
-- Replace the `:xform` option of `babashka.nrepl.server/start-server!` with `:middleware`, accepting middleware vars with nREPL descriptors. See [examples/nrepl_middleware.clj](examples/nrepl_middleware.clj)
-- Report `File does not exist` for `bb ""` and `bb " "` instead of `StringIndexOutOfBoundsException` or `FileNotFoundException`
-- Resolve dependencies without a JVM by default. Set `:deps-resolver :jvm` in `bb.edn` or the `add-deps` map, or `BABASHKA_DEPS_RESOLVER=jvm`, to use Java as before
-- Bundle `clojure.tools.build.api`, with patched `install` and `javac` for babashka. A tools.build dependency on the classpath takes precedence and runs from source
-- Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.
+- Keep output from realizing lazy values separate from nREPL evaluation results
+- [babashka.nrepl#67](https://github.com/babashka/babashka.nrepl/issues/67): Preserve source columns in nREPL evaluations
+- Increase the nREPL eval thread stack size to 8 MB to match the main thread and allow deeper recursion
+- [#1974](https://github.com/babashka/babashka/issues/1974): Add `clojure.main/ex-triage` with sci error phases and source locations
+- [#1518](https://github.com/babashka/babashka/issues/1518): Print sci stack frames in `clojure.test` error reports, both inside and outside `is`
+- `babashka.deps/add-deps` returns a sorted vector of added libs, or `nil` if none were added, and preserves versions already on the classpath
 - Use tools.build for `bb uberjar`, with the same exclusions as depstar. Duplicate files no longer print warnings
 - Fix `bb uberjar` failing on macOS when dependencies contain both `META-INF/LICENSE` and `META-INF/license/`
 - A `:depends` task's `:exec-fn` receives all parsed options, the runner-level `:cli` defaults included. With `:restrict` it receives only the options it declares
@@ -37,8 +35,11 @@ A preview of the next release can be installed from
 - A `:depends` task's `:restrict` falls back to the runner-level `:restrict`
 - [#2040](https://github.com/babashka/babashka/issues/2040): allow bulk `.get` and `.put` with primitive arrays on typed NIO buffers (`IntBuffer`, `FloatBuffer`, `LongBuffer`, `DoubleBuffer`, `ShortBuffer`)
 - Fix constructor overload selection for `(Boolean. false)`
+- Add `reify` support for `java.io.Flushable`
 - Add `clojure.java.process/io-task`
 - Support `(.-name ns)` on namespaces
+- Report `File does not exist` for `bb ""` and `bb " "` instead of `StringIndexOutOfBoundsException` or `FileNotFoundException`
+- Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.
 - Bump Clojure to `1.12.6`
 - Bump `babashka.cli` to `0.12.90`
 - Bump `clj-yaml` to `1.0.30`
