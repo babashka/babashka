@@ -48,7 +48,7 @@
         org.clojure/data.priority-map {:mvn/version "1.1.0"}
         insn/insn {:mvn/version "0.5.4"}
         org.clojure/core.rrb-vector {:mvn/version "0.2.0"}
-        org.babashka/cli {:mvn/version "0.12.90"}
+        org.babashka/cli {:mvn/version "0.12.91"}
         org.babashka/http-client {:mvn/version "0.4.25"}
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.23.2"}
@@ -211,7 +211,7 @@
                                               :git/sha "9b8f3a49cfc2f5a46375d59b9b341162d91d2226"
                                               :deps/root "cloverage"}
                          io.github.nextjournal/clerk {:git/url "https://github.com/nextjournal/clerk"
-                                                      :git/sha "49cb599d8b397b3cac96d658d2c335ffca31ee6d"}}
+                                                      :git/sha "4c2599946256592858ca2d65e8d453f9f77489ba"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
