@@ -100,7 +100,15 @@
         (is (= "1.6.0" (:version async)))
         (is (= [{:group "org.clojure" :artifact "tools.analyzer.jvm" :version nil}] (:exclusions async)))))
     (testing "an imported BOM manages too"
-      (is (= "1.4.0" (:version (dep model "medley" "medley")))))))
+      (is (= "1.4.0" (:version (dep model "medley" "medley"))))))
+  (testing "a managed optional does not apply"
+    (let [model (effective (pom "<groupId>org.example</groupId><artifactId>managed-optional</artifactId><version>1</version>"
+                                "<dependencyManagement><dependencies>"
+                                "<dependency><groupId>medley</groupId><artifactId>medley</artifactId><version>1.4.0</version><optional>true</optional></dependency>"
+                                "</dependencies></dependencyManagement>"
+                                "<dependencies><dependency><groupId>medley</groupId><artifactId>medley</artifactId></dependency></dependencies>"))]
+      (is (= "1.4.0" (:version (dep model "medley" "medley"))))
+      (is (false? (:optional (dep model "medley" "medley")))))))
 
 (deftest inherited-coordinates-cache-test
   (let [bom-parent (fn [v] (pom "<groupId>org.example</groupId><artifactId>bom-parent</artifactId><version>" v "</version><packaging>pom</packaging>"))
