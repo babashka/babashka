@@ -104,7 +104,7 @@
             (server/server-stop! stop)))))))
 
 (deftest pom-from-other-repository-test
-  (testing "a POM cached from another repository counts as missing, the artifact resolves without its dependencies"
+  (testing "an artifact whose POM is cached from another repository resolves without its dependencies"
     (fs/with-temp-dir [dir {}]
       (let [local (fs/file dir "local")
             d (fs/file local "g" "b" "1")]

@@ -186,6 +186,7 @@
   (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))
         dir (str (fs/parent dest))
         file-name (str (fs/file-name dest))
+        rel (coords/relative-path artifact)
         policy (if (coords/snapshot? version) :snapshots :releases)]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
     (locking (lock-for dest)
@@ -195,10 +196,9 @@
           ;; Aether's existence check: the cached file stays, the repository is recorded
           (some (fn [repo]
                   (when (and (get-in repo [policy :enabled])
-                             (let [rel (coords/relative-path artifact)]
-                               (http/exists? (str (:url repo) rel)
-                                             {:auth (:auth repo) :proxy (:proxy repo)
-                                              :repo-id (:id repo) :label rel})))
+                             (http/exists? (str (:url repo) rel)
+                                           {:auth (:auth repo) :proxy (:proxy repo)
+                                            :repo-id (:id repo) :label rel}))
                     (record-remote! dir file-name (:id repo))
                     dest))
                 repos))

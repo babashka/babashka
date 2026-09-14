@@ -98,12 +98,12 @@
         :else (throw (ex-info (str "HTTP " status " for " url) {:url url :status status}))))))
 
 (defn exists?
-  "Whether url is present, without downloading it: a HEAD request, as
-  Aether's existence check sends, or the file of a file: URL."
+  "Whether url exists, checked with a HEAD request like Aether's existence
+  check, or on disk for a file: URL."
   [url opts]
   (if (file-url? url)
     (fs/exists? (file-url->path url))
-    (let [{:keys [status]} (request! :head url (assoc (request-opts opts)
+    (let [{:keys [status]} (request! :head url (assoc (request-opts opts) :as :string
                                                       :repo-id (:repo-id opts) :label (:label opts)))]
       (cond
         (= 200 status) true
