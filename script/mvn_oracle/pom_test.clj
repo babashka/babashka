@@ -159,6 +159,25 @@
     (testing "a property activation without the property stays off"
       (is (nil? (dep model "org.example" "never"))))))
 
+(deftest disk-parent-test
+  (testing "a parent on disk wins over a copy of it cached from a repository"
+    (let [parent (fn [managed]
+                   (pom "<groupId>org.example</groupId><artifactId>shared-parent</artifactId><version>1</version><packaging>pom</packaging>"
+                        "<dependencyManagement><dependencies>" managed "</dependencies></dependencyManagement>"))
+          repo-parent (parent "")
+          disk-parent (parent "<dependency><groupId>medley</groupId><artifactId>medley</artifactId><version>1.4.0</version></dependency>")
+          child (fn [artifact]
+                  (pom "<parent><groupId>org.example</groupId><artifactId>shared-parent</artifactId><version>1</version></parent>"
+                       "<artifactId>" artifact "</artifactId>"
+                       "<dependencies><dependency><groupId>medley</groupId><artifactId>medley</artifactId></dependency></dependencies>"))
+          ctx {:read-pom (fn [{:keys [basedir]} _repos]
+                           (if basedir {:text disk-parent :basedir "/checkout"} repo-parent))
+               :cache (atom {})}]
+      (pom/effective-model (pom/parse (child "from-repo"))
+                           (assoc ctx :coords {:group "org.example" :artifact "from-repo" :version "1"}))
+      (is (= "1.4.0" (:version (dep (pom/effective-model (pom/parse (child "local")) (assoc ctx :basedir "/checkout/local"))
+                                    "medley" "medley")))))))
+
 (deftest relocation-test
   (let [text (pom "<groupId>xml-apis</groupId><artifactId>xml-apis</artifactId><version>2.0.2</version>"
                   "<distributionManagement><relocation><groupId>xml-apis</groupId><artifactId>xml-apis</artifactId><version>1.0.b2</version></relocation></distributionManagement>")]

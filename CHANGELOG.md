@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Find a `pom.xml` parent on disk relative to the POM that declares it, so `:local/root` projects with more than two POM levels resolve without the JVM
+
 ## 1.13.222 (2026-09-14)
 
 Read the release blog post [here](https://blog.michielborkent.nl/babashka-1.13.222.html).

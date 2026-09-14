@@ -365,22 +365,39 @@
 (defn- gav-key [{:keys [group artifact version]}]
   [group artifact version])
 
+(defn coordinates
+  "The group, artifact and version of a raw model. A POM that leaves out its
+  group or version inherits them from its parent."
+  [{:keys [group artifact version parent]}]
+  [(or group (:group parent)) artifact (or version (:version parent))])
+
 (defn- lineage
-  "The raw models with profiles injected, child first, up the parent chain."
+  "The raw models with profiles injected, child first, up the parent chain.
+  read-pom gets the directory of the POM that declares the parent as
+  :basedir, nil for a POM from a repository. Only parents from a
+  repository are cached, a parent on disk is read again."
   [raw {:keys [read-pom basedir cache]}]
   (loop [model (inject-profiles raw basedir)
+         dir basedir
          acc []
          seen #{}]
     (let [acc (conj acc model)
           {:keys [parent]} model]
       (if (and parent (not (seen (gav-key parent))))
-        (let [parent-raw (or (get @cache [:raw (gav-key parent)])
-                             (some-> (read-pom parent (:repositories model)) parse))]
+        (let [cached (when-not dir (get @cache [:raw (gav-key parent)]))
+              [parent-raw parent-dir]
+              (if cached
+                [cached nil]
+                (let [found (read-pom (assoc parent :basedir dir) (:repositories model))
+                      {:keys [text basedir]} (if (map? found) found {:text found})]
+                  (when text [(parse text) basedir])))]
           (when-not parent-raw
             (throw (ex-info (str "Could not find parent POM " (:group parent) ":" (:artifact parent) ":" (:version parent))
                             {:parent parent})))
-          (swap! cache assoc [:raw (gav-key parent)] parent-raw)
-          (recur (inject-profiles parent-raw nil) acc (conj seen (gav-key parent))))
+          (when-not parent-dir
+            (swap! cache assoc [:raw (gav-key parent)] parent-raw))
+          ;; Maven checks every parent's profile activation against the project being built
+          (recur (inject-profiles parent-raw basedir) parent-dir acc (conj seen (gav-key parent))))
         acc))))
 
 (defn- import-managed
@@ -415,7 +432,8 @@
 
 (defn effective-model
   "The effective model for a raw one. ctx: :read-pom, a function of a gav
-  map and the repositories the POM declares that returns POM text or nil,
+  map and the repositories the POM declares that returns POM text, a map of
+  :text and :basedir for a POM read from disk, or nil,
   :cache, an atom, :basedir for a local POM, and :coords, the gav map the
   POM was requested with. The cache keys on :coords, or on :basedir for a
   local POM. Without either the model is not cached."
