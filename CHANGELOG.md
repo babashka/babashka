@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Resolve a parent version range, such as `<version>[0.3.0,1)</version>`, to the highest version the repositories list
 - Read booleans in POMs, `settings.xml` and repository metadata regardless of case, such as `<optional>TRUE</optional>`
 - Let a POM property such as `<version>` win over the unprefixed `${version}` model expression
 - Read POMs with a byte order mark or HTML character entities

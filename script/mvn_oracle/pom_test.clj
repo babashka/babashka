@@ -214,6 +214,21 @@
       (is (= "1.4.0" (:version (dep (pom/effective-model (pom/parse (child "local")) (assoc ctx :basedir "/checkout/local"))
                                     "medley" "medley")))))))
 
+(deftest parent-version-range-test
+  (let [poms {["org.example" "ranged-parent" "2.0"]
+              (pom "<groupId>org.example</groupId><artifactId>ranged-parent</artifactId><version>2.0</version><packaging>pom</packaging>")}
+        child (pom "<parent><groupId>org.example</groupId><artifactId>ranged-parent</artifactId><version>[1.0,3.0)</version></parent>"
+                   "<artifactId>ranged-child</artifactId><version>1</version>"
+                   "<dependencies><dependency><groupId>org.example</groupId><artifactId>sibling</artifactId><version>${project.parent.version}</version></dependency></dependencies>")
+        ctx {:read-pom (fn [{:keys [group artifact version]} _repos] (get poms [group artifact version]))
+             :resolve-version (fn [_parent _repos] "2.0")
+             :cache (atom {})}
+        model (pom/effective-model (pom/parse child) ctx)]
+    (testing "the parent's version is the one resolve-version picks within the range"
+      (is (= "2.0" (get-in model [:parent :version]))))
+    (testing "${project.parent.version} is the resolved version"
+      (is (= "2.0" (:version (dep model "org.example" "sibling")))))))
+
 (deftest relocation-test
   (let [text (pom "<groupId>xml-apis</groupId><artifactId>xml-apis</artifactId><version>2.0.2</version>"
                   "<distributionManagement><relocation><groupId>xml-apis</groupId><artifactId>xml-apis</artifactId><version>1.0.b2</version></relocation></distributionManagement>")]

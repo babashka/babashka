@@ -33,6 +33,7 @@
 (def ^:private repos
   {"local" {:url (do (file-repo! (fs/file tmp "repo") "managed")
                      (file-repo! (fs/file tmp "repo") "unprofiled")
+                     (file-repo! (fs/file tmp "repo") "ranged")
                      (file-repo! (fs/file tmp "repo") "profiled"))}})
 
 (def ^:private local-repo (str (fs/file tmp "m2")))
@@ -98,6 +99,27 @@
                       :deps-resolver :bb}
                      {:force true})
       (is (not (on-classpath? "unprofiled-1.0.0.jar"))))))
+
+(deftest parent-range-on-disk-test
+  (testing "a parent on disk whose version is in the parent's range is used without the repositories"
+    (let [parent (fs/file tmp "range" "project")
+          child (fs/file parent "child")]
+      (fs/create-dirs child)
+      (spit (fs/file parent "pom.xml")
+            (pom "<groupId>example</groupId><artifactId>range-parent</artifactId><version>2</version><packaging>pom</packaging>"
+                 "<dependencyManagement><dependencies>"
+                 "<dependency><groupId>example</groupId><artifactId>ranged</artifactId><version>1.0.0</version></dependency>"
+                 "</dependencies></dependencyManagement>"))
+      (spit (fs/file child "pom.xml")
+            (pom "<parent><groupId>example</groupId><artifactId>range-parent</artifactId><version>[1,3)</version></parent>"
+                 "<artifactId>range-child</artifactId><version>1</version>"
+                 "<dependencies><dependency><groupId>example</groupId><artifactId>ranged</artifactId></dependency></dependencies>"))
+      (deps/add-deps {:deps {'example/range-child {:local/root (str child)}}
+                      :mvn/repos repos
+                      :mvn/local-repo local-repo
+                      :deps-resolver :bb}
+                     {:force true})
+      (is (on-classpath? "ranged-1.0.0.jar")))))
 
 (let [{:keys [fail error]} (t/run-tests 'local-pom-test)]
   (fs/delete-tree tmp)
