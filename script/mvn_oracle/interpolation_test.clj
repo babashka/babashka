@@ -36,8 +36,10 @@
     (is (= "${test}/somepath" (property (model "<properties><p>${test}/somepath</p></properties>") "p"))))
   (testing "testShouldNotThrowExceptionOnReferenceToValueContainingNakedExpression"
     (is (= "test/somepath" (property (model "<properties><test>test</test><p>${test}/somepath</p></properties>") "p"))))
-  (testing "testShouldThrowExceptionOnRecursiveScmConnectionReference: a self reference ends"
-    (is (string? (property (model "<properties><p>${p}/somepath</p></properties>") "p"))))
+  (testing "testShouldThrowExceptionOnRecursiveScmConnectionReference"
+    (is (thrown-with-msg? clojure.lang.ExceptionInfo
+                          #"^Detected the following recursive expression cycle in 'p': \[p\]$"
+                          (model "<properties><p>${p}/somepath</p></properties>"))))
   (testing "testEnvars"
     ;; HOME is not set on Windows, so any plainly named variable will do
     (let [[k v] (first (filter (fn [[k v]] (and (seq v) (re-matches #"[A-Za-z_][A-Za-z0-9_]*" k)))

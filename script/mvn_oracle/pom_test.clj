@@ -5,6 +5,7 @@
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/pom_test.clj
 (ns pom-test
   (:require [babashka.impl.mvn.pom :as pom]
+            [clojure.string :as str]
             [clojure.test :as t :refer [deftest is testing]]))
 
 (defn- pom [& body]
@@ -228,6 +229,46 @@
       (is (= "2.0" (get-in model [:parent :version]))))
     (testing "${project.parent.version} is the resolved version"
       (is (= "2.0" (:version (dep model "org.example" "sibling")))))))
+
+(defn- failure
+  "The ex-info the effective model of text throws with poms as the repository."
+  [poms text]
+  (try (pom/effective-model (pom/parse text)
+                            {:read-pom (fn [{:keys [group artifact version]} _repos] (get poms [group artifact version]))
+                             :cache (atom {})})
+       nil
+       (catch clojure.lang.ExceptionInfo e e)))
+
+(deftest cycle-test
+  (testing "a property cycle fails with plexus-interpolation's message"
+    (let [e (failure {} (pom "<groupId>org.example</groupId><artifactId>props</artifactId><version>1</version>"
+                             "<properties><a>${b}</a><b>${a}</b></properties>"))]
+      (is (= :babashka.impl.mvn.pom/invalid (:type (ex-data e))))
+      (is (str/starts-with? (ex-message e) "Detected the following recursive expression cycle in '"))))
+  (testing "parents that form a cycle fail with Maven's message"
+    (let [poms {["org.example" "cycle-a" "1"]
+                (pom "<parent><groupId>org.example</groupId><artifactId>cycle-b</artifactId><version>1</version></parent>"
+                     "<artifactId>cycle-a</artifactId><packaging>pom</packaging>")
+                ["org.example" "cycle-b" "1"]
+                (pom "<parent><groupId>org.example</groupId><artifactId>cycle-a</artifactId><version>1</version></parent>"
+                     "<artifactId>cycle-b</artifactId><packaging>pom</packaging>")}
+          e (failure poms (pom "<parent><groupId>org.example</groupId><artifactId>cycle-a</artifactId><version>1</version></parent>"
+                               "<artifactId>cycle-child</artifactId>"))]
+      (is (= :babashka.impl.mvn.pom/invalid (:type (ex-data e))))
+      (is (= "The parents form a cycle: org.example:cycle-child:1 -> org.example:cycle-a:1 -> org.example:cycle-b:1 -> org.example:cycle-a:1"
+             (ex-message e)))))
+  (testing "BOM imports that form a cycle fail with Maven's message"
+    (let [import (fn [artifact]
+                   (str "<dependencyManagement><dependencies><dependency><groupId>org.example</groupId><artifactId>" artifact
+                        "</artifactId><version>1</version><type>pom</type><scope>import</scope></dependency></dependencies></dependencyManagement>"))
+          poms {["org.example" "bom-x" "1"]
+                (pom "<groupId>org.example</groupId><artifactId>bom-x</artifactId><version>1</version><packaging>pom</packaging>" (import "bom-y"))
+                ["org.example" "bom-y" "1"]
+                (pom "<groupId>org.example</groupId><artifactId>bom-y</artifactId><version>1</version><packaging>pom</packaging>" (import "bom-x"))}
+          e (failure poms (pom "<groupId>org.example</groupId><artifactId>consumer</artifactId><version>1</version>" (import "bom-x")))]
+      (is (= :babashka.impl.mvn.pom/invalid (:type (ex-data e))))
+      (is (= "The dependencies of type=pom and with scope=import form a cycle: org.example:consumer:1 -> org.example:bom-x:1 -> org.example:bom-y:1 -> org.example:bom-x:1"
+             (ex-message e))))))
 
 (deftest relocation-test
   (let [text (pom "<groupId>xml-apis</groupId><artifactId>xml-apis</artifactId><version>2.0.2</version>"

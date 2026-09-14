@@ -339,15 +339,20 @@
         properties (:properties model)
         lookup (fn [k] (or (get dirs k) (get prefixed k) (get properties k)
                            (property-value k) (get unprefixed k)))]
-    (fn interpolate [s]
-      (if (and (string? s) (str/includes? s "${"))
-        (loop [s s depth 0]
-          (let [s' (str/replace s #"\$\{([^}]+)\}"
-                                (fn [[whole k]] (let [v (lookup k)] (if (some? v) (str v) whole))))]
-            (if (or (= s s') (>= depth 10))
-              s'
-              (recur s' (inc depth)))))
-        s))))
+    (fn interpolate
+      ([s] (interpolate s []))
+      ([s trail]
+       (if (and (string? s) (str/includes? s "${"))
+         (str/replace s #"\$\{([^}]+)\}"
+                      (fn [[whole k]]
+                        (when-let [i (first (keep-indexed #(when (= k %2) %1) trail))]
+                          ;; plexus-interpolation's InterpolationCycleException
+                          (throw (ex-info (str "Detected the following recursive expression cycle in '" k "': ["
+                                               (str/join ", " (subvec trail i)) "]")
+                                          {:type ::invalid :expression k})))
+                        (let [v (lookup k)]
+                          (if (some? v) (interpolate (str v) (conj trail k)) whole))))
+         s)))))
 
 (defn- interpolate-dependency [f d]
   (-> d
@@ -382,6 +387,12 @@
   [{:keys [group artifact version parent]}]
   [(or group (:group parent)) artifact (or version (:version parent))])
 
+(defn- model-id
+  "groupId:artifactId:version of a raw model, as Maven names a model in its
+  problems."
+  [model]
+  (str/join ":" (coordinates model)))
+
 (defn- version-references-parent?
   "Whether version is an expression for the POM's own or its parent's version."
   [version]
@@ -400,9 +411,13 @@
          dir basedir
          file (when basedir (str (fs/file basedir "pom.xml")))
          acc []
-         seen #{}]
+         seen #{(coordinates raw)}]
     (let [{:keys [parent]} model]
-      (if (and parent (not (seen (gav-key parent))))
+      (when (and parent (seen (gav-key parent)))
+        (throw (ex-info (str "The parents form a cycle: "
+                             (str/join " -> " (concat (map model-id (conj acc model)) [(str/join ":" (gav-key parent))])))
+                        {:type ::invalid :parent parent})))
+      (if parent
         (let [read (fn [p]
                      (let [found (read-pom (assoc p :basedir dir) (:repositories model))]
                        (cond (map? found) (update found :version #(or % (:version p)))
@@ -435,10 +450,15 @@
 (defn- import-managed
   "dependencyManagement with import-scoped BOMs replaced by their managed
   dependencies. Entries already present win, earlier imports win over later."
-  [managed ctx repositories]
+  [managed {:keys [import-chain] :as ctx} repositories]
   (reduce (fn [acc dep]
             (if (import? dep)
               (let [{:keys [read-pom]} ctx
+                    id (model-id dep)
+                    _ (when (some #{id} import-chain)
+                        (throw (ex-info (str "The dependencies of type=pom and with scope=import form a cycle: "
+                                             (str/join " -> " (conj import-chain id)))
+                                        {:type ::invalid :bom dep})))
                     bom (some-> (read-pom dep repositories) parse)]
                 (when-not bom
                   (throw (ex-info (str "Could not find BOM " (:group dep) ":" (:artifact dep) ":" (:version dep))
@@ -479,7 +499,9 @@
         (let [models (lineage raw ctx)
               assembled (reduce inherit (first models) (rest models))
               model (interpolate-model assembled basedir)
-              managed (import-managed (:dependency-management model) ctx (:repositories model))
+              managed (import-managed (:dependency-management model)
+                                      (update ctx :import-chain (fnil conj []) (model-id model))
+                                      (:repositories model))
               model (-> model
                         (assoc :dependency-management managed)
                         (update :dependencies apply-management managed))]
