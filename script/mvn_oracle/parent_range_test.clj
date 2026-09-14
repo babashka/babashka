@@ -60,6 +60,21 @@
   (try (add! artifact) nil
        (catch Exception e (ex-message e))))
 
+(defn- err-of-add!
+  "Adds ranged/<artifact> 1.0 and returns what was written to *err*."
+  [artifact]
+  (let [err (java.io.StringWriter.)]
+    (binding [*err* err]
+      (add! artifact))
+    (str err)))
+
+(defn- on-classpath? [jar]
+  (some #(str/ends-with? % jar) (cp/split-classpath (cp/get-classpath))))
+
+(def ^:private missing-dependency
+  "A dependency no repository has. Resolving it fails."
+  "<dependencies><dependency><groupId>nope</groupId><artifactId>nope</artifactId><version>1.0.0</version></dependency></dependencies>")
+
 (deftest highest-in-range-test
   (testing "the parent is the highest version the metadata lists within the range"
     (child! "in-range" "[1.0,3.0)")
@@ -67,14 +82,54 @@
     (is (some #(str/ends-with? % "dep-2.0.jar") (cp/split-classpath (cp/get-classpath))))))
 
 (deftest no-match-test
-  (testing "a range no listed version satisfies fails in Maven's words"
+  (testing "a range that matches no listed version fails with Maven's message"
     (child! "no-match" "[5.0,6.0)")
     (is (= "No versions matched the requested parent version range '[5.0,6.0)'" (failure "no-match")))))
 
 (deftest no-upper-bound-test
-  (testing "a range without an upper bound fails in Maven's words"
+  (testing "an unbounded range fails with Maven's message"
     (child! "unbounded" "[1.0,)")
     (is (= "The requested parent version range '[1.0,)' does not specify an upper bound" (failure "unbounded")))))
+
+(deftest constant-version-test
+  (testing "a POM without a version under a parent version range resolves without its dependencies"
+    (publish! "no-version" "1.0"
+              (pom "<parent><groupId>ranged</groupId><artifactId>parent</artifactId><version>[1.0,3.0)</version></parent>"
+                   "<artifactId>no-version</artifactId>" missing-dependency)
+              true)
+    (is (str/includes? (err-of-add! "no-version")
+                       "The POM for ranged:no-version:1.0 is invalid, transitive dependencies will not be available: Version must be a constant"))
+    (is (on-classpath? "no-version-1.0.jar")))
+  (testing "a POM whose version is ${project.version} under a parent version range resolves without its dependencies"
+    (publish! "project-version" "1.0"
+              (pom "<parent><groupId>ranged</groupId><artifactId>parent</artifactId><version>[1.0,3.0)</version></parent>"
+                   "<artifactId>project-version</artifactId><version>${project.version}</version>" missing-dependency)
+              true)
+    (is (str/includes? (err-of-add! "project-version")
+                       "The POM for ranged:project-version:1.0 is invalid, transitive dependencies will not be available: Version must be a constant"))
+    (is (on-classpath? "project-version-1.0.jar"))))
+
+(deftest installed-parent-test
+  (testing "a parent listed only in the local repository's maven-metadata-local.xml resolves"
+    (let [dir (fs/file local "ranged" "installed-parent")]
+      (fs/create-dirs (fs/file dir "2.0"))
+      (spit (fs/file dir "2.0" "installed-parent-2.0.pom")
+            (pom "<groupId>ranged</groupId><artifactId>installed-parent</artifactId><version>2.0</version><packaging>pom</packaging>"
+                 "<dependencyManagement><dependencies>"
+                 "<dependency><groupId>ranged</groupId><artifactId>installed-dep</artifactId><version>1.0</version></dependency>"
+                 "</dependencies></dependencyManagement>"))
+      (spit (fs/file dir "maven-metadata-local.xml")
+            (str "<metadata><groupId>ranged</groupId><artifactId>installed-parent</artifactId><versioning>"
+                 "<versions><version>2.0</version></versions>"
+                 "</versioning></metadata>")))
+    (publish! "installed-dep" "1.0" (pom "<groupId>ranged</groupId><artifactId>installed-dep</artifactId><version>1.0</version>") true)
+    (publish! "installed-child" "1.0"
+              (pom "<parent><groupId>ranged</groupId><artifactId>installed-parent</artifactId><version>[1.0,3.0)</version></parent>"
+                   "<artifactId>installed-child</artifactId><version>1.0</version>"
+                   "<dependencies><dependency><groupId>ranged</groupId><artifactId>installed-dep</artifactId></dependency></dependencies>")
+              true)
+    (add! "installed-child")
+    (is (on-classpath? "installed-dep-1.0.jar"))))
 
 (let [{:keys [fail error]} (t/run-tests 'parent-range-test)]
   (fs/delete-tree tmp)

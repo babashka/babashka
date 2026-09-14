@@ -65,7 +65,7 @@
 
 (defn- parent-version
   "The highest version the repositories list within a parent's version
-  range, after Maven's DefaultModelResolver, with its errors."
+  range. Throws when no version matches or the range is unbounded."
   [config {:keys [group artifact version]} declared-repos]
   (let [{:keys [versions]} (metadata/versions (local-repo config) (pom-repos config declared-repos)
                                               {:group group :artifact artifact})
@@ -86,8 +86,8 @@
    :cache (model-cache)
    :basedir nil})
 
-(defn- unreadable? [e]
-  (some #(= :babashka.impl.mvn.pom/unreadable (:type (ex-data %)))
+(defn- invalid? [e]
+  (some #(#{:babashka.impl.mvn.pom/unreadable :babashka.impl.mvn.pom/invalid} (:type (ex-data %)))
         (take-while some? (iterate ex-cause e))))
 
 (def ^:private no-descriptor
@@ -97,7 +97,8 @@
   [:babashka.impl.mvn/invalid-pom gav])
 
 (defn- invalid-pom
-  "no-descriptor for gav, whose POM does not parse. Warns once per session."
+  "no-descriptor for gav, whose POM does not parse or is invalid. Warns once
+  per session."
   [gav e]
   (session/retrieve (invalid-key gav)
                     (fn []
@@ -110,7 +111,7 @@
 (defn- effective-model
   "The effective model for lib and coord, following relocations. Without
   dependencies when the POM is missing, or when it or a parent or BOM does
-  not parse."
+  not parse or is invalid."
   [lib coord config]
   (let [ctx (pom-ctx config)
         [group artifact] (coords/lib->names lib)]
@@ -120,7 +121,7 @@
                       (read-pom config gav []))]
         (let [model (try (pom/effective-model (pom/parse text) (assoc ctx :coords gav))
                          (catch Exception e
-                           (if (unreadable? e)
+                           (if (invalid? e)
                              (invalid-pom gav e)
                              (throw e))))
               relocation (:relocation model)]
@@ -294,10 +295,9 @@
 ;; Local pom.xml manifests, for :local/root and git deps without a deps.edn
 
 (defn- read-local-pom
-  "read-pom for a POM on disk: a parent named by relativePath comes from
-  disk when its coordinates match, or its version is in the parent's range,
-  looked up from the directory of the POM that declares it, the rest from the
-  repositories."
+  "read-pom for a POM on disk. The parent at relativePath, relative to the
+  POM that declares it, comes from disk when its coordinates match or its
+  version is in the declared range. Other POMs come from the repositories."
   [config]
   (fn [{:keys [group artifact version relative-path basedir] :as gav} declared-repos]
     (let [f (when basedir
@@ -310,7 +310,8 @@
                                  (if (coords/version-range? version)
                                    (version/in-range? v version)
                                    (= version v)))
-                        {:text text :basedir (str (fs/parent (fs/canonicalize f))) :version v})))]
+                        {:text text :basedir (str (fs/parent (fs/canonicalize f))) :version v
+                         :file (str (fs/canonicalize f))})))]
       (or on-disk (read-pom config gav declared-repos)))))
 
 (defn- local-model [{:keys [deps/root]} config]

@@ -34,6 +34,7 @@
   {"local" {:url (do (file-repo! (fs/file tmp "repo") "managed")
                      (file-repo! (fs/file tmp "repo") "unprofiled")
                      (file-repo! (fs/file tmp "repo") "ranged")
+                     (file-repo! (fs/file tmp "repo") "outside")
                      (file-repo! (fs/file tmp "repo") "profiled"))}})
 
 (def ^:private local-repo (str (fs/file tmp "m2")))
@@ -101,7 +102,7 @@
       (is (not (on-classpath? "unprofiled-1.0.0.jar"))))))
 
 (deftest parent-range-on-disk-test
-  (testing "a parent on disk whose version is in the parent's range is used without the repositories"
+  (testing "a parent on disk within the version range is used without the repositories"
     (let [parent (fs/file tmp "range" "project")
           child (fs/file parent "child")]
       (fs/create-dirs child)
@@ -120,6 +121,57 @@
                       :deps-resolver :bb}
                      {:force true})
       (is (on-classpath? "ranged-1.0.0.jar")))))
+
+(deftest parent-outside-range-on-disk-test
+  (testing "the repositories supply the parent when the one on disk is outside the version range"
+    (let [project (fs/file tmp "outside" "project")
+          child (fs/file project "child")
+          published (fs/file tmp "repo" "example" "outside-parent")]
+      (fs/create-dirs child)
+      (fs/create-dirs (fs/file published "2"))
+      (spit (fs/file project "pom.xml")
+            (pom "<groupId>example</groupId><artifactId>outside-parent</artifactId><version>5</version><packaging>pom</packaging>"
+                 "<dependencyManagement><dependencies>"
+                 "<dependency><groupId>example</groupId><artifactId>outside</artifactId><version>9.9.9</version></dependency>"
+                 "</dependencies></dependencyManagement>"))
+      (spit (fs/file published "2" "outside-parent-2.pom")
+            (pom "<groupId>example</groupId><artifactId>outside-parent</artifactId><version>2</version><packaging>pom</packaging>"
+                 "<dependencyManagement><dependencies>"
+                 "<dependency><groupId>example</groupId><artifactId>outside</artifactId><version>1.0.0</version></dependency>"
+                 "</dependencies></dependencyManagement>"))
+      (spit (fs/file published "maven-metadata.xml")
+            (str "<metadata><groupId>example</groupId><artifactId>outside-parent</artifactId><versioning>"
+                 "<versions><version>2</version></versions>"
+                 "</versioning></metadata>"))
+      (spit (fs/file child "pom.xml")
+            (pom "<parent><groupId>example</groupId><artifactId>outside-parent</artifactId><version>[1,3)</version></parent>"
+                 "<artifactId>outside-child</artifactId><version>1</version>"
+                 "<dependencies><dependency><groupId>example</groupId><artifactId>outside</artifactId></dependency></dependencies>"))
+      (deps/add-deps {:deps {'example/outside-child {:local/root (str child)}}
+                      :mvn/repos repos
+                      :mvn/local-repo local-repo
+                      :deps-resolver :bb}
+                     {:force true})
+      (is (on-classpath? "outside-1.0.0.jar")))))
+
+(deftest constant-version-on-disk-test
+  (testing "a project without a version fails under a parent version range"
+    (let [project (fs/file tmp "constant" "project")
+          child (fs/file project "child")]
+      (fs/create-dirs child)
+      (spit (fs/file project "pom.xml")
+            (pom "<groupId>example</groupId><artifactId>constant-parent</artifactId><version>2</version><packaging>pom</packaging>"))
+      (spit (fs/file child "pom.xml")
+            (pom "<parent><groupId>example</groupId><artifactId>constant-parent</artifactId><version>[1,3)</version></parent>"
+                 "<artifactId>constant-child</artifactId>"))
+      (is (= (str "Version must be a constant @ example:constant-child, " (fs/canonicalize (fs/file child "pom.xml")))
+             (try (deps/add-deps {:deps {'example/constant-child {:local/root (str child)}}
+                                  :mvn/repos repos
+                                  :mvn/local-repo local-repo
+                                  :deps-resolver :bb}
+                                 {:force true})
+                  nil
+                  (catch Exception e (ex-message e))))))))
 
 (let [{:keys [fail error]} (t/run-tests 'local-pom-test)]
   (fs/delete-tree tmp)

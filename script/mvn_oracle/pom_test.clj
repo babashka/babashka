@@ -224,7 +224,7 @@
              :resolve-version (fn [_parent _repos] "2.0")
              :cache (atom {})}
         model (pom/effective-model (pom/parse child) ctx)]
-    (testing "the parent's version is the one resolve-version picks within the range"
+    (testing "the parent's version is the version resolve-version returns"
       (is (= "2.0" (get-in model [:parent :version]))))
     (testing "${project.parent.version} is the resolved version"
       (is (= "2.0" (:version (dep model "org.example" "sibling")))))))
