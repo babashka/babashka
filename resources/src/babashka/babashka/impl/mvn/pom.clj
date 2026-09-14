@@ -423,6 +423,10 @@
          acc []
          seen #{(coordinates raw)}]
     (let [{:keys [parent]} model]
+      (when-let [field (and parent (first (filter #(empty? (get parent %)) [:group :artifact :version])))]
+        ;; DefaultModelValidator's raw model checks
+        (throw (ex-info (str "'parent." ({:group "groupId" :artifact "artifactId" :version "version"} field) "' is missing.")
+                        {:type ::invalid :parent parent})))
       (when (and parent (seen (gav-key parent)))
         (throw (ex-info (str "The parents form a cycle: "
                              (str/join " -> " (concat (map model-id (conj acc model)) [(str/join ":" (gav-key parent))])))

@@ -270,6 +270,16 @@
       (is (= "The dependencies of type=pom and with scope=import form a cycle: org.example:consumer:1 -> org.example:bom-x:1 -> org.example:bom-y:1 -> org.example:bom-x:1"
              (ex-message e))))))
 
+(deftest incomplete-parent-test
+  (testing "testIncompleteParent: a parent without groupId, artifactId or version fails with Maven's message"
+    (doseq [[field parent] [["groupId" "<artifactId>parent</artifactId><version>1.0</version>"]
+                            ["artifactId" "<groupId>org.example</groupId><version>1.0</version>"]
+                            ["version" "<groupId>org.example</groupId><artifactId>parent</artifactId>"]
+                            ["version" "<groupId>org.example</groupId><artifactId>parent</artifactId><version></version>"]]]
+      (let [e (failure poms (pom "<parent>" parent "</parent><groupId>org.example</groupId><artifactId>child</artifactId><version>1</version>"))]
+        (is (= :babashka.impl.mvn.pom/invalid (:type (ex-data e))))
+        (is (= (str "'parent." field "' is missing.") (ex-message e)))))))
+
 (deftest relocation-test
   (let [text (pom "<groupId>xml-apis</groupId><artifactId>xml-apis</artifactId><version>2.0.2</version>"
                   "<distributionManagement><relocation><groupId>xml-apis</groupId><artifactId>xml-apis</artifactId><version>1.0.b2</version></relocation></distributionManagement>")]

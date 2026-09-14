@@ -101,6 +101,16 @@
                               "bad:bom-user:1.0.0 -> bad:bom-x:1.0.0 -> bad:bom-y:1.0.0 -> bad:bom-x:1.0.0")))
       (is (on-classpath? "bom-user")))))
 
+(deftest incomplete-parent-test
+  (testing "a POM whose parent has no version resolves without its dependencies"
+    (publish! "noparentversion" (str "<project><modelVersion>4.0.0</modelVersion>"
+                                     "<parent><groupId>bad</groupId><artifactId>parent</artifactId></parent>"
+                                     "<groupId>bad</groupId><artifactId>noparentversion</artifactId><version>1.0.0</version>"
+                                     missing-dependency "</project>"))
+    (is (str/includes? (resolve! "noparentversion")
+                       "WARNING: The POM for bad:noparentversion:1.0.0 is invalid, transitive dependencies will not be available: 'parent.version' is missing."))
+    (is (on-classpath? "noparentversion"))))
+
 (deftest missing-pom-test
   (testing "a jar without a POM resolves"
     (publish! "nopom" nil)

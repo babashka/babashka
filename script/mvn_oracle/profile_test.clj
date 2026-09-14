@@ -1,7 +1,8 @@
 #!/usr/bin/env bb
 ;; babashka.impl.mvn.pom's profile activation against maven-model-builder's
 ;; JdkVersionProfileActivatorTest, OperatingSystemProfileActivatorTest,
-;; PropertyProfileActivatorTest and FileProfileActivatorTest (Maven 3.9.16),
+;; PropertyProfileActivatorTest, FileProfileActivatorTest and
+;; ComplexActivationTest (Maven 3.9.16),
 ;; the properties given instead of the JVM's.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/profile_test.clj
 (ns profile-test
@@ -147,6 +148,16 @@
       (is (not (file {:exists "${basedir}/file.txt"} nil)))
       (is (not (file {:missing "nope.txt"} nil))))
     (fs/delete-tree dir)))
+
+(deftest complex-activation-test
+  (testing "testAndConditionInActivation"
+    (let [dir (str (fs/create-temp-dir))
+          props {"myproperty" "test"}
+          active? (fn [activation] (#'pom/explicitly-active? {:activation activation} dir #(get props %)))]
+      (spit (fs/file dir "simple.xml") "")
+      (is (active? {:file {:exists "simple.xml"} :property {:name "myproperty" :value "test"}}))
+      (is (not (active? {:property {:name "myproperty" :value "test"} :file {:missing "simple.xml"}})))
+      (fs/delete-tree dir))))
 
 (let [{:keys [fail error]} (t/run-tests 'profile-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))
