@@ -187,9 +187,12 @@
 (def nrepl-skipped
   "Upstream tests that need what the image does not have: Clojure's
   DynamicClassLoader, a JVMTI agent to stop a thread, GregorianCalendar, JVM
-  frame names, and a var for every public (babashka's user/*input* is a value)."
+  frame names, and a var for every public (babashka's user/*input* is a value).
+  read-timeout leaves 100ms between the client's poll and a 1100ms eval, which
+  a slow CI machine overruns."
   '{nrepl.core-test [hotloading-common-classloader-test
                      non-interruptible-stop-thread
+                     read-timeout
                      session-*out*-writer-length-translation]
     nrepl.middleware.interruptible-eval-test [preserves-source-location-test]
     nrepl.util.lookup-test [bencode-test]})
