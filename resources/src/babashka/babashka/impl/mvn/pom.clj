@@ -374,7 +374,8 @@
 (defn- lineage
   "The raw models with profiles injected, child first, up the parent chain.
   read-pom gets the directory of the POM that declares the parent as
-  :basedir, nil for a POM from a repository."
+  :basedir, nil for a POM from a repository. Only parents from a
+  repository are cached, a parent on disk is read again."
   [raw {:keys [read-pom basedir cache]}]
   (loop [model (inject-profiles raw basedir)
          dir basedir
@@ -383,16 +384,19 @@
     (let [acc (conj acc model)
           {:keys [parent]} model]
       (if (and parent (not (seen (gav-key parent))))
-        (let [[parent-raw parent-dir]
-              (or (get @cache [:raw (gav-key parent)])
-                  (let [found (read-pom (assoc parent :basedir dir) (:repositories model))
-                        {:keys [text basedir]} (if (map? found) found {:text found})]
-                    (when text [(parse text) basedir])))]
+        (let [cached (when-not dir (get @cache [:raw (gav-key parent)]))
+              [parent-raw parent-dir]
+              (if cached
+                [cached nil]
+                (let [found (read-pom (assoc parent :basedir dir) (:repositories model))
+                      {:keys [text basedir]} (if (map? found) found {:text found})]
+                  (when text [(parse text) basedir])))]
           (when-not parent-raw
             (throw (ex-info (str "Could not find parent POM " (:group parent) ":" (:artifact parent) ":" (:version parent))
                             {:parent parent})))
-          (swap! cache assoc [:raw (gav-key parent)] [parent-raw parent-dir])
-          (recur (inject-profiles parent-raw nil) parent-dir acc (conj seen (gav-key parent))))
+          (when-not parent-dir
+            (swap! cache assoc [:raw (gav-key parent)] parent-raw))
+          (recur (inject-profiles parent-raw parent-dir) parent-dir acc (conj seen (gav-key parent))))
         acc))))
 
 (defn- import-managed
