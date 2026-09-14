@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.13.222 (2026-09-14)
 
 - Fix `No :mvn/version specified` when resolving dependencies on Jetty ee9 and ee10 caused by cached POMs sharing dependency management across versions
 - `bb nrepl-server` writes `.nrepl-port` on start and removes it on exit, so `bb repl --connect` finds the server without an address
