@@ -262,26 +262,24 @@
 
 (defn- read-local-pom
   "read-pom for a POM on disk: a parent named by relativePath comes from
-  disk when its coordinates match, the rest from the repositories."
-  [config root]
-  (fn [{:keys [group artifact version relative-path] :as gav} declared-repos]
-    (let [rel (or relative-path "../pom.xml")
-          f (let [f (fs/file root rel)] (if (fs/directory? f) (fs/file f "pom.xml") f))
-          on-disk (when (fs/exists? f)
-                    (let [text (slurp f)
-                          raw (pom/parse text)]
-                      (when (= [group artifact version]
-                               [(or (:group raw) (get-in raw [:parent :group]))
-                                (:artifact raw)
-                                (or (:version raw) (get-in raw [:parent :version]))])
-                        text)))]
+  disk when its coordinates match, looked up from the directory of the POM
+  that declares it, the rest from the repositories."
+  [config]
+  (fn [{:keys [group artifact version relative-path basedir] :as gav} declared-repos]
+    (let [f (when basedir
+              (let [f (fs/file basedir (or relative-path "../pom.xml"))]
+                (if (fs/directory? f) (fs/file f "pom.xml") f)))
+          on-disk (when (and f (fs/exists? f))
+                    (let [text (slurp f)]
+                      (when (= [group artifact version] (pom/coordinates (pom/parse text)))
+                        {:text text :basedir (str (fs/parent (fs/canonicalize f)))})))]
       (or on-disk (read-pom config gav declared-repos)))))
 
 (defn- local-model [{:keys [deps/root]} config]
   (let [root (str (fs/canonicalize root))
         text (slurp (fs/file root "pom.xml"))]
     (pom/effective-model (pom/parse text)
-                         {:read-pom (read-local-pom config root)
+                         {:read-pom (read-local-pom config)
                           :cache (model-cache)
                           :basedir root})))
 
