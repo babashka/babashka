@@ -419,8 +419,7 @@
           managed))
 
 (defn- apply-management
-  "Version, scope and exclusions from dependencyManagement. Maven does not
-  manage optional."
+  "Returns deps with a missing version, scope or exclusions taken from managed."
   [deps managed]
   (let [by-key (into {} (map (juxt dependency-key identity)) managed)]
     (mapv (fn [dep]

@@ -101,7 +101,7 @@
         (is (= [{:group "org.clojure" :artifact "tools.analyzer.jvm" :version nil}] (:exclusions async)))))
     (testing "an imported BOM manages too"
       (is (= "1.4.0" (:version (dep model "medley" "medley"))))))
-  (testing "optional is not taken from dependencyManagement"
+  (testing "a managed optional does not apply"
     (let [model (effective (pom "<groupId>org.example</groupId><artifactId>managed-optional</artifactId><version>1</version>"
                                 "<dependencyManagement><dependencies>"
                                 "<dependency><groupId>medley</groupId><artifactId>medley</artifactId><version>1.4.0</version><optional>true</optional></dependency>"
