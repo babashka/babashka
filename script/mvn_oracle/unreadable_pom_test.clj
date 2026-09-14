@@ -87,6 +87,20 @@
             (is (= [] (ext/coord-deps 'bad/twice {:mvn/version "1.0.0"} :mvn config))))))
       (is (= 1 (count (re-seq #"The POM for bad:twice:1\.0\.0 is invalid" (str err))))))))
 
+(deftest bom-cycle-test
+  (testing "BOM imports that form a cycle leave the importing artifact without dependencies"
+    (let [import (fn [artifact]
+                   (str "<dependencyManagement><dependencies><dependency><groupId>bad</groupId><artifactId>" artifact
+                        "</artifactId><version>1.0.0</version><type>pom</type><scope>import</scope></dependency></dependencies></dependencyManagement>"))]
+      (publish! "bom-x" (pom "bom-x" "<packaging>pom</packaging>" (import "bom-y")))
+      (publish! "bom-y" (pom "bom-y" "<packaging>pom</packaging>" (import "bom-x")))
+      (publish! "bom-user" (pom "bom-user" (import "bom-x") missing-dependency))
+      (is (str/includes? (resolve! "bom-user")
+                         (str "WARNING: The POM for bad:bom-user:1.0.0 is invalid, transitive dependencies will not be available: "
+                              "The dependencies of type=pom and with scope=import form a cycle: "
+                              "bad:bom-user:1.0.0 -> bad:bom-x:1.0.0 -> bad:bom-y:1.0.0 -> bad:bom-x:1.0.0")))
+      (is (on-classpath? "bom-user")))))
+
 (deftest missing-pom-test
   (testing "a jar without a POM resolves"
     (publish! "nopom" nil)
