@@ -271,3 +271,19 @@
   (testing "Attributes flag enums are accessible"
     (is (true? (bb '(some? (org.jline.terminal.Attributes$LocalFlag/valueOf "ECHO")))))
     (is (true? (bb '(some? (org.jline.terminal.Attributes$InputFlag/valueOf "ICRNL")))))))
+
+(deftest jline-colors-test
+  (testing "Colors is available"
+    (is (true? (bb '(class? org.jline.utils.Colors)))))
+  (testing "the default palettes are exposed as static fields"
+    (is (= 256 (bb '(count org.jline.utils.Colors/DEFAULT_COLORS_256))))
+    (is (= 88 (bb '(count org.jline.utils.Colors/DEFAULT_COLORS_88)))))
+  (testing "a palette index resolves to its RGB value"
+    (is (= 16711680 (bb '(org.jline.utils.Colors/rgbColor 196)))))
+  (testing "a color name resolves to its palette index"
+    (is (= 9 (bb '(org.jline.utils.Colors/rgbColor "red"))))
+    (is (nil? (bb '(org.jline.utils.Colors/rgbColor "no-such-color")))))
+  (testing "colors round to the nearest entry of a smaller palette"
+    (is (= 196 (bb '(org.jline.utils.Colors/roundRgbColor 255 0 0 256))))
+    (is (= 9 (bb '(org.jline.utils.Colors/roundColor 196 16))))
+    (is (= 9 (bb '(org.jline.utils.Colors/roundColor 196 16 "cie76"))))))

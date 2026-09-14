@@ -815,6 +815,7 @@
           org.jline.utils.AttributedString
           org.jline.utils.AttributedStringBuilder
           org.jline.utils.AttributedStyle
+          org.jline.utils.Colors
           org.jline.utils.InfoCmp$Capability
           org.jline.utils.NonBlockingReader
           org.jline.utils.Display
