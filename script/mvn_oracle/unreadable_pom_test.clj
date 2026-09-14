@@ -1,0 +1,85 @@
+#!/usr/bin/env bb
+;; POMs that are missing or do not parse. tools.deps tells Maven's resolver
+;; to ignore such descriptors, so the artifact resolves without dependencies.
+;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/unreadable_pom_test.clj
+(ns unreadable-pom-test
+  (:require [babashka.classpath :as cp]
+            [babashka.deps :as deps]
+            [babashka.fs :as fs]
+            [clojure.string :as str]
+            [clojure.test :as t :refer [deftest is testing]]))
+
+;; add-deps keeps resolving the libs it already added, so the tests share one
+;; repository and its files stay on disk until every test has run
+(def ^:private tmp (fs/create-temp-dir))
+(def ^:private remote (fs/file tmp "remote"))
+(def ^:private local (fs/file tmp "local"))
+
+(defn- pom [artifact & body]
+  (str "<project><modelVersion>4.0.0</modelVersion>"
+       "<groupId>bad</groupId><artifactId>" artifact "</artifactId><version>1.0.0</version>"
+       (apply str body) "</project>"))
+
+(def ^:private missing-dependency
+  "A dependency no repository has, which fails the resolve if it is read."
+  "<dependencies><dependency><groupId>nope</groupId><artifactId>nope</artifactId><version>1.0.0</version></dependency></dependencies>")
+
+(defn- publish!
+  "A jar for bad/<artifact> 1.0.0, and its POM unless pom-text is nil."
+  [artifact pom-text]
+  (let [d (fs/file remote "bad" artifact "1.0.0")]
+    (fs/create-dirs d)
+    (when pom-text (spit (fs/file d (str artifact "-1.0.0.pom")) pom-text))
+    (spit (fs/file d (str artifact "-1.0.0.jar")) "PK")))
+
+(defn- resolve!
+  "Adds bad/<artifact> 1.0.0 and returns what was written to *err*."
+  [artifact]
+  (let [err (java.io.StringWriter.)]
+    (binding [*err* err]
+      (deps/add-deps {:deps {(symbol "bad" artifact) {:mvn/version "1.0.0"}}
+                      :mvn/repos {"remote" {:url (str (.toURI remote))}}
+                      :mvn/local-repo (str local)
+                      :deps-resolver :bb}
+                     {:force true}))
+    (str err)))
+
+(defn- on-classpath? [artifact]
+  (some #(str/ends-with? % (str artifact "-1.0.0.jar")) (cp/split-classpath (cp/get-classpath))))
+
+(deftest damaged-local-pom-test
+  (testing "a damaged POM in the local repository is ignored with a warning"
+    (publish! "damaged" (pom "damaged" missing-dependency))
+    (fs/create-dirs (fs/file local "bad" "damaged" "1.0.0"))
+    (spit (fs/file local "bad" "damaged" "1.0.0" "damaged-1.0.0.pom") "not xml at all")
+    (is (str/includes? (resolve! "damaged") "WARNING: ignoring the POM of bad:damaged:1.0.0, it does not parse"))
+    (is (on-classpath? "damaged"))))
+
+(deftest parse-error-test
+  (testing "an undeclared entity past the start of the document"
+    (publish! "entity" (pom "entity" "<name>&bogus;</name>" missing-dependency))
+    (is (str/includes? (resolve! "entity") "WARNING: ignoring the POM of bad:entity:1.0.0"))
+    (is (on-classpath? "entity")))
+  (testing "content after the root element"
+    (publish! "junk" (str (pom "junk" missing-dependency) "<<<junk"))
+    (is (str/includes? (resolve! "junk") "WARNING: ignoring the POM of bad:junk:1.0.0"))
+    (is (on-classpath? "junk"))))
+
+(deftest unreadable-parent-test
+  (testing "a parent that does not parse leaves the child without dependencies"
+    (publish! "parent" "not xml at all")
+    (publish! "child" (str "<project><modelVersion>4.0.0</modelVersion>"
+                           "<parent><groupId>bad</groupId><artifactId>parent</artifactId><version>1.0.0</version></parent>"
+                           "<artifactId>child</artifactId>" missing-dependency "</project>"))
+    (resolve! "child")
+    (is (on-classpath? "child"))))
+
+(deftest missing-pom-test
+  (testing "a jar without a POM resolves"
+    (publish! "nopom" nil)
+    (is (not (str/includes? (resolve! "nopom") "bad:nopom")))
+    (is (on-classpath? "nopom"))))
+
+(let [{:keys [fail error]} (t/run-tests 'unreadable-pom-test)]
+  (fs/delete-tree tmp)
+  (System/exit (if (zero? (+ fail error)) 0 1)))

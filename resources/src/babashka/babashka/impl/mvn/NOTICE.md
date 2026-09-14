@@ -19,6 +19,8 @@ licensed under the Apache License, Version 2.0; a copy is in
 - `pom.clj`: the effective POM model after Maven's `DefaultModelBuilder`,
   `ModelMerger` and profile activators, for what dependency resolution
   needs.
+- `entities.clj`: the character entity table of plexus-xml 3.0.1's
+  `EntityReplacementMap`, which Maven's POM and settings readers resolve.
 - `settings.clj`: mirror and proxy selection after Maven's
   `DefaultMirrorSelector` and `DefaultProxySelector`.
 - `repo.clj` and `metadata.clj`: the local repository layout, the

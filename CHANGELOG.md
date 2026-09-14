@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Read POMs with a byte order mark or HTML character entities, and resolve an artifact whose POM is missing or does not parse without its dependencies, as the JVM resolver does
 - Include a dependency whose `dependencyManagement` entry is `optional`
 - Find a `pom.xml` parent on disk relative to the POM that declares it, so `:local/root` projects with more than two POM levels resolve without the JVM
 

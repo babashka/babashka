@@ -63,7 +63,15 @@
     (is (nil? (:group raw)))
     (is (= "jar" (:packaging raw)))
     (is (= 4 (count (:dependencies raw))))
-    (is (= ["on" "off"] (mapv :id (:profiles raw))))))
+    (is (= ["on" "off"] (mapv :id (:profiles raw)))))
+  (testing "a byte order mark and the HTML entities Maven's reader knows parse"
+    (let [raw (pom/parse (str "﻿" (pom "<groupId>g</groupId><artifactId>a</artifactId><version>1</version>"
+                                            "<properties><name>caf&eacute;&nbsp;&amp;</name></properties>")))]
+      (is (= "a" (:artifact raw)))
+      (is (= "café &" (get-in raw [:properties "name"])))))
+  (testing "text that does not parse throws :unreadable"
+    (is (= :babashka.impl.mvn.pom/unreadable
+           (:type (ex-data (try (pom/parse "not xml at all") (catch Exception e e))))))))
 
 (deftest duplicate-declarations-test
   ;; netty-all's flattened POM declares one artifact three times; Maven's
