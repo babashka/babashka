@@ -9,18 +9,23 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Use a file cached from an unlisted repository only when a listed repository has it
-- Detect a property, parent or BOM import cycle in a POM with Maven's message, and resolve the artifact without its dependencies
-- Detect a POM parent missing its groupId, artifactId or version with Maven's message, and resolve the artifact without its dependencies
-- Resolve a parent version range, such as `<version>[0.3.0,1)</version>`, to the highest version the repositories list
-- Reject a POM under a parent version range whose version is missing or an expression such as `${project.version}`, with Maven's `Version must be a constant`
+<details>
+<summary>Maven dependency resolution improvements</summary>
+
+- Reuse a file cached from an unlisted repository only if it is also available from a listed repository
+- Report property, parent or BOM import cycles in POMs with Maven's message and resolve the artifact without its dependencies
+- Report missing `groupId`, `artifactId` or `version` in a POM's parent declaration with Maven's message and resolve the artifact without its dependencies
+- Resolve parent version ranges, such as `<version>[0.3.0,1)</version>`, to the highest matching version listed by the repositories
+- Reject parent POMs selected by a version range if their version is missing or contains an expression such as `${project.version}`, with Maven's `Version must be a constant` message
 - Include versions from the local repository's `maven-metadata-local.xml` when resolving version ranges, `RELEASE` and `LATEST`
-- Read booleans in POMs, `settings.xml` and repository metadata regardless of case, such as `<optional>TRUE</optional>`
-- Let a POM property such as `<version>` win over the unprefixed `${version}` model expression
+- Parse booleans in POMs, `settings.xml` and repository metadata regardless of case, such as `<optional>TRUE</optional>`
+- Give POM properties precedence over unprefixed model expressions such as `${version}`
 - Read POMs with a byte order mark or HTML character entities
-- Resolve an artifact whose POM is missing or does not parse, without its dependencies
-- Include a dependency whose `dependencyManagement` entry is `optional`
-- Find a `pom.xml` parent on disk relative to the POM that declares it, so `:local/root` projects with more than two POM levels resolve without the JVM
+- Resolve artifacts without their dependencies when their POM is missing or cannot be parsed
+- Include dependencies even when their `dependencyManagement` entry is marked `optional`
+- Resolve local parent POM paths relative to the declaring POM, so `:local/root` projects with more than two POM levels resolve without the JVM
+
+</details>
 
 ## 1.13.222 (2026-09-14)
 
