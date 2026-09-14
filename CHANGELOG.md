@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- Look up POM expressions in Maven's order, so a property such as `<version>` wins over the unprefixed `${version}`
+- Let a POM property such as `<version>` win over the unprefixed `${version}` model expression
 - Read POMs with a byte order mark or HTML character entities
 - Resolve an artifact whose POM is missing or does not parse, without its dependencies
 - Include a dependency whose `dependencyManagement` entry is `optional`

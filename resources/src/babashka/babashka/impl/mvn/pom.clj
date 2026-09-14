@@ -314,8 +314,7 @@
 ;; Interpolation
 
 (defn- model-values
-  "The model expressions babashka resolves, see ADR 0012: :basedir,
-  :prefixed with project. and pom., and :unprefixed."
+  "Returns model expression values in :basedir, :prefixed and :unprefixed maps."
   [{:keys [group artifact version packaging parent]} basedir]
   (let [fields (into {} (filter val) {"groupId" group "artifactId" artifact
                                       "version" version "packaging" packaging})]
@@ -331,9 +330,9 @@
                            "parent.groupId" (:group parent)}))}))
 
 (defn- interpolator
-  "Resolves expressions in Maven's order: basedir, project. and pom. model
-  expressions, the POM's properties, system properties and the environment,
-  then unprefixed model expressions."
+  "Returns a function that resolves expressions in Maven's order: basedir,
+  project. and pom. model expressions, the POM's properties, system
+  properties and the environment, then unprefixed model expressions."
   [model basedir]
   (let [{dirs :basedir :keys [prefixed unprefixed]} (model-values model basedir)
         properties (:properties model)
