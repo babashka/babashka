@@ -330,6 +330,15 @@
                           {"parent.version" (:version parent)
                            "parent.groupId" (:group parent)}))}))
 
+(defn- naked-expression
+  "Returns `k` without its first pom. or project. prefix, as plexus's
+  PrefixAwareRecursionInterceptor compares expressions."
+  [k]
+  (if-let [prefix (first (filter #(str/starts-with? k %) ["pom." "project."]))]
+    (let [s (subs k (count prefix))]
+      (cond-> s (str/starts-with? s ".") (subs 1)))
+    k))
+
 (defn- interpolator
   "Returns a function that resolves expressions in Maven's order: basedir,
   project. and pom. model expressions, the POM's properties, system
@@ -345,13 +354,15 @@
        (if (and (string? s) (str/includes? s "${"))
          (str/replace s #"\$\{([^}]+)\}"
                       (fn [[whole k]]
-                        (when-let [i (first (keep-indexed #(when (= k %2) %1) trail))]
-                          ;; plexus-interpolation's InterpolationCycleException
-                          (throw (ex-info (str "Detected the following recursive expression cycle in '" k "': ["
-                                               (str/join ", " (subvec trail i)) "]")
-                                          {:type ::invalid :expression k})))
-                        (let [v (lookup k)]
-                          (if (some? v) (interpolate (str v) (conj trail k)) whole))))
+                        (let [naked (naked-expression k)]
+                          (when-let [i (first (keep-indexed #(when (= naked %2) %1) trail))]
+                            ;; plexus-interpolation's InterpolationCycleException
+                            (throw (ex-info (str "Resolving expression: '" whole "': "
+                                                 "Detected the following recursive expression cycle in '" k "': ["
+                                                 (str/join ", " (subvec trail i)) "]")
+                                            {:type ::invalid :expression k})))
+                          (let [v (lookup k)]
+                            (if (some? v) (interpolate (str v) (conj trail naked)) whole)))))
          s)))))
 
 (defn- interpolate-dependency [f d]
@@ -388,8 +399,7 @@
   [(or group (:group parent)) artifact (or version (:version parent))])
 
 (defn- model-id
-  "groupId:artifactId:version of a raw model, as Maven names a model in its
-  problems."
+  "The groupId:artifactId:version of a model or dependency."
   [model]
   (str/join ":" (coordinates model)))
 
