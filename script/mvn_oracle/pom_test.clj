@@ -124,6 +124,25 @@
     (testing "a BOM that inherits its version is cached per version"
       (is (= "1.4.0" (:version (dep (pom/effective-model (pom/parse (consumer "2")) ctx) "medley" "medley")))))))
 
+(deftest requested-coordinates-cache-test
+  (testing "a BOM whose version is a property is cached per requested version"
+    (let [bom (fn [v managed]
+                (pom "<groupId>org.example</groupId><artifactId>revision-bom</artifactId><version>${revision}</version><packaging>pom</packaging>"
+                     "<properties><revision>" v "</revision></properties>"
+                     "<dependencyManagement><dependencies>" managed "</dependencies></dependencyManagement>"))
+          poms {["org.example" "revision-bom" "1"] (bom "1" "")
+                ["org.example" "revision-bom" "2"] (bom "2" "<dependency><groupId>medley</groupId><artifactId>medley</artifactId><version>1.4.0</version></dependency>")}
+          consumer (fn [v]
+                     (pom "<groupId>org.example</groupId><artifactId>consumer-" v "</artifactId><version>1</version>"
+                          "<dependencyManagement><dependencies>"
+                          "<dependency><groupId>org.example</groupId><artifactId>revision-bom</artifactId><version>" v "</version><type>pom</type><scope>import</scope></dependency>"
+                          "</dependencies></dependencyManagement>"
+                          "<dependencies><dependency><groupId>medley</groupId><artifactId>medley</artifactId></dependency></dependencies>"))
+          ctx {:read-pom (fn [{:keys [group artifact version]} _repos] (get poms [group artifact version]))
+               :cache (atom {})}]
+      (pom/effective-model (pom/parse (consumer "1")) ctx)
+      (is (= "1.4.0" (:version (dep (pom/effective-model (pom/parse (consumer "2")) ctx) "medley" "medley")))))))
+
 (deftest interpolation-and-scope-test
   (let [model (effective child)
         sibling (dep model "org.example" "sibling")]

@@ -362,8 +362,8 @@
 
 (declare effective-model)
 
-(defn- gav-key [{:keys [group artifact version parent]}]
-  [(or group (:group parent)) artifact (or version (:version parent))])
+(defn- gav-key [{:keys [group artifact version]}]
+  [group artifact version])
 
 (defn- lineage
   "The raw models with profiles injected, child first, up the parent chain."
@@ -395,7 +395,7 @@
                   (throw (ex-info (str "Could not find BOM " (:group dep) ":" (:artifact dep) ":" (:version dep))
                                   {:bom dep})))
                 (merge-by-key acc
-                              (:dependency-management (effective-model bom (assoc ctx :basedir nil)))
+                              (:dependency-management (effective-model bom (assoc ctx :basedir nil :coords dep)))
                               dependency-key false))
               (conj acc dep)))
           []
@@ -416,10 +416,13 @@
 (defn effective-model
   "The effective model for a raw one. ctx: :read-pom, a function of a gav
   map and the repositories the POM declares that returns POM text or nil,
-  :cache, an atom, and :basedir for a local POM."
-  [raw {:keys [cache basedir] :as ctx}]
-  (let [k [:effective (gav-key raw) basedir]]
-    (or (get @cache k)
+  :cache, an atom, :basedir for a local POM, and :coords, the gav map the
+  POM was requested with. The cache keys on :coords, or on :basedir for a
+  local POM. Without either the model is not cached."
+  [raw {:keys [cache basedir coords] :as ctx}]
+  (let [k (cond coords [:effective (gav-key coords)]
+                basedir [:effective-local basedir])]
+    (or (when k (get @cache k))
         (let [models (lineage raw ctx)
               assembled (reduce inherit (first models) (rest models))
               model (interpolate-model assembled basedir)
@@ -427,7 +430,7 @@
               model (-> model
                         (assoc :dependency-management managed)
                         (update :dependencies apply-management managed))]
-          (swap! cache assoc k model)
+          (when k (swap! cache assoc k model))
           model))))
 
 (defn dependencies

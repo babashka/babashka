@@ -17,6 +17,8 @@
  {:name "junit" :deps {org.junit.jupiter/junit-jupiter {:mvn/version "5.11.2"}}}
  {:name "spring-boot" :deps {org.springframework.boot/spring-boot-starter {:mvn/version "3.3.4"}}}
  {:name "aws-s3" :deps {software.amazon.awssdk/s3 {:mvn/version "2.28.0"}}}
+ {:name "jetty-ee9-ee10" :deps {org.eclipse.jetty.ee9/jetty-ee9-servlet {:mvn/version "12.1.8"}
+                                org.eclipse.jetty.ee10/jetty-ee10-plus {:mvn/version "12.1.8"}}}
  ;; relocation
  {:name "xml-apis" :deps {xml-apis/xml-apis {:mvn/version "2.0.2"}}}
  ;; git dep next to mvn deps

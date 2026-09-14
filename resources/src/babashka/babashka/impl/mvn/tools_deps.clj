@@ -90,7 +90,7 @@
             _ (when-not text
                 (throw (ex-info (not-found-message (assoc gav :extension "pom") (repos config))
                                 {:lib lib :coord coord})))
-            model (pom/effective-model (parse-pom text gav) ctx)
+            model (pom/effective-model (parse-pom text gav) (assoc ctx :coords gav))
             relocation (:relocation model)]
         (if (and relocation (< hops 10))
           (recur {:group (or (:group relocation) (:group gav))
