@@ -362,8 +362,8 @@
 
 (declare effective-model)
 
-(defn- gav-key [{:keys [group artifact version]}]
-  [group artifact version])
+(defn- gav-key [{:keys [group artifact version parent]}]
+  [(or group (:group parent)) artifact (or version (:version parent))])
 
 (defn- lineage
   "The raw models with profiles injected, child first, up the parent chain."

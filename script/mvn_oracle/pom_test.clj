@@ -102,6 +102,28 @@
     (testing "an imported BOM manages too"
       (is (= "1.4.0" (:version (dep model "medley" "medley")))))))
 
+(deftest inherited-coordinates-cache-test
+  (let [bom-parent (fn [v] (pom "<groupId>org.example</groupId><artifactId>bom-parent</artifactId><version>" v "</version><packaging>pom</packaging>"))
+        bom (fn [v managed]
+              (pom "<parent><groupId>org.example</groupId><artifactId>bom-parent</artifactId><version>" v "</version></parent>"
+                   "<artifactId>inherited-bom</artifactId><packaging>pom</packaging>"
+                   "<dependencyManagement><dependencies>" managed "</dependencies></dependencyManagement>"))
+        poms {["org.example" "bom-parent" "1"] (bom-parent "1")
+              ["org.example" "bom-parent" "2"] (bom-parent "2")
+              ["org.example" "inherited-bom" "1"] (bom "1" "")
+              ["org.example" "inherited-bom" "2"] (bom "2" "<dependency><groupId>medley</groupId><artifactId>medley</artifactId><version>1.4.0</version></dependency>")}
+        consumer (fn [v]
+                   (pom "<groupId>org.example</groupId><artifactId>consumer-" v "</artifactId><version>1</version>"
+                        "<dependencyManagement><dependencies>"
+                        "<dependency><groupId>org.example</groupId><artifactId>inherited-bom</artifactId><version>" v "</version><type>pom</type><scope>import</scope></dependency>"
+                        "</dependencies></dependencyManagement>"
+                        "<dependencies><dependency><groupId>medley</groupId><artifactId>medley</artifactId></dependency></dependencies>"))
+        ctx {:read-pom (fn [{:keys [group artifact version]} _repos] (get poms [group artifact version]))
+             :cache (atom {})}]
+    (pom/effective-model (pom/parse (consumer "1")) ctx)
+    (testing "a BOM that inherits its version is cached per version"
+      (is (= "1.4.0" (:version (dep (pom/effective-model (pom/parse (consumer "2")) ctx) "medley" "medley")))))))
+
 (deftest interpolation-and-scope-test
   (let [model (effective child)
         sibling (dep model "org.example" "sibling")]
