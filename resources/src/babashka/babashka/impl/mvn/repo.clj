@@ -109,12 +109,12 @@
         (not-empty (into #{} (keep #(when (str/starts-with? % prefix) (subs % (count prefix)))) (keys props)))))))
 
 (defn- cached-available?
-  "Whether a cached file counts for repos, as Aether's enhanced local
-  repository manager decides: not listed, installed locally, or listed for
-  one of repos."
+  "Whether a cached file counts for repos, as Aether decides: no repos at
+  all, not listed, installed locally, or listed for one of repos."
   [dir file-name repos]
   (let [ids (tracked-ids dir file-name)]
-    (or (nil? ids)
+    (or (empty? repos)
+        (nil? ids)
         (contains? ids "")
         (boolean (some #(contains? ids (:id %)) repos)))))
 
