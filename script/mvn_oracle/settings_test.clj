@@ -53,6 +53,14 @@
   (is (= {"foo" "bar"} (get-in parsed [:profiles "always" :properties])))
   (is (true? (get-in parsed [:profiles "always" :active-by-default]))))
 
+(deftest boolean-case-test
+  (testing "booleans ignore case, as Maven's settings reader parses them"
+    (let [parsed (settings/parse "<settings><proxies><proxy><id>p</id><active>FALSE</active><host>h</host></proxy></proxies><profiles><profile><id>p</id><activation><activeByDefault>TRUE</activeByDefault></activation></profile></profiles></settings>")]
+      (is (false? (:active (first (:proxies parsed)))))
+      (is (true? (get-in parsed [:profiles "p" :active-by-default])))))
+  (testing "a proxy without active is active"
+    (is (true? (:active (first (:proxies (settings/parse "<settings><proxies><proxy><id>p</id><host>h</host></proxy></proxies></settings>"))))))))
+
 (deftest active-profile-repositories-test
   (is (= [{:id "always-repo" :url "https://always.example.com/"}
           {:id "listed-repo" :url "https://listed.example.com/"}]

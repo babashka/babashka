@@ -274,7 +274,7 @@
   (let [explicit (filter #(explicitly-active? % basedir property-value) profiles)]
     (if (seq explicit)
       explicit
-      (filter #(= "true" (get-in % [:activation :active-by-default])) profiles))))
+      (filter #(x/true-text? (get-in % [:activation :active-by-default])) profiles))))
 
 ;; Merging, after ModelMerger. Target entries keep their place, source
 ;; entries with new keys are appended. A dominant source replaces target
@@ -469,5 +469,5 @@
   (mapv (fn [{:keys [scope optional] :as d}]
           (assoc d
                  :scope (or scope "compile")
-                 :optional (= "true" optional)))
+                 :optional (x/true-text? optional)))
         (:dependencies model)))
