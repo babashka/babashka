@@ -168,6 +168,18 @@
     (is (= "compile" (:scope (dep model "org.clojure" "clojure"))))
     (is (false? (:optional (dep model "org.clojure" "clojure"))))))
 
+(deftest expression-order-test
+  (let [model (effective (pom "<groupId>org.example</groupId><artifactId>order</artifactId><version>1</version>"
+                              "<properties><version>3</version><project.version>9</project.version></properties>"
+                              "<dependencies>"
+                              "<dependency><groupId>org.example</groupId><artifactId>a</artifactId><version>${version}</version></dependency>"
+                              "<dependency><groupId>org.example</groupId><artifactId>b</artifactId><version>${project.version}</version></dependency>"
+                              "</dependencies>"))]
+    (testing "a property wins over an unprefixed model expression"
+      (is (= "3" (:version (dep model "org.example" "a")))))
+    (testing "a project. model expression wins over a property"
+      (is (= "1" (:version (dep model "org.example" "b")))))))
+
 (deftest profiles-test
   (let [model (effective child)]
     (testing "activeByDefault profiles inject dependencies, interpolated"
