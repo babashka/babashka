@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Fix `No :mvn/version specified` when resolving dependencies on Jetty ee9 and ee10 caused by cached POMs sharing dependency management across versions
 - Bump `org.babashka/cli` to `0.12.91`
 
 ## 1.13.221 (2026-09-14)
@@ -41,6 +42,7 @@ A preview of the next release can be installed from
 - Fix constructor overload selection for `(Boolean. false)`
 - Add `reify` support for `java.io.Flushable`
 - Add `clojure.java.process/io-task`
+- Add `org.jline.utils.Colors`
 - Support `(.-name ns)` on namespaces
 - Report `File does not exist` for `bb ""` and `bb " "` instead of `StringIndexOutOfBoundsException` or `FileNotFoundException`
 - Smaller binary: the bundled Clojure sources are stored gzipped, and jline's class files are no longer embedded a second time as resources.
