@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Use a file cached from an unlisted repository only when a listed repository has it
 - Detect a property, parent or BOM import cycle in a POM with Maven's message, and resolve the artifact without its dependencies
 - Detect a POM parent missing its groupId, artifactId or version with Maven's message, and resolve the artifact without its dependencies
 - Resolve a parent version range, such as `<version>[0.3.0,1)</version>`, to the highest version the repositories list

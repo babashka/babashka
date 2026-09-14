@@ -57,13 +57,13 @@
   (let [root (loop [t e] (if-let [c (.getCause t)] (recur c) t))]
     (.getMessage root)))
 
-(defn- get!
-  "GET with a transport failure reported as Aether reports it: what could
-  not be transferred, from which repository, and why. An unresolved host
-  has no message of its own, so the host stands in."
-  [url {:keys [repo-id label] :as opts}]
+(defn- request!
+  "A request with a transport failure reported as Aether reports it: what
+  could not be transferred, from which repository, and why. An unresolved
+  host has no message of its own, so the host stands in."
+  [method url {:keys [repo-id label] :as opts}]
   (try
-    (http/get url opts)
+    (http/request (assoc opts :method method :uri url))
     (catch Exception e
       (let [base (if (and label (str/ends-with? url label))
                    (subs url 0 (- (count url) (count label)))
@@ -90,11 +90,24 @@
   (if (file-url? url)
     (let [f (file-url->path url)]
       (when (fs/exists? f) (slurp f)))
-    (let [{:keys [status body]} (get! url (assoc (request-opts opts) :as :string
-                                                 :repo-id (:repo-id opts) :label (:label opts)))]
+    (let [{:keys [status body]} (request! :get url (assoc (request-opts opts) :as :string
+                                                          :repo-id (:repo-id opts) :label (:label opts)))]
       (cond
         (= 200 status) body
         (#{404 410} status) nil
+        :else (throw (ex-info (str "HTTP " status " for " url) {:url url :status status}))))))
+
+(defn exists?
+  "Whether url exists, checked with a HEAD request like Aether's existence
+  check, or on disk for a file: URL."
+  [url opts]
+  (if (file-url? url)
+    (fs/exists? (file-url->path url))
+    (let [{:keys [status]} (request! :head url (assoc (request-opts opts) :as :string
+                                                      :repo-id (:repo-id opts) :label (:label opts)))]
+      (cond
+        (= 200 status) true
+        (#{404 410} status) false
         :else (throw (ex-info (str "HTTP " status " for " url) {:url url :status status}))))))
 
 (defn- fetch-to-file
@@ -109,7 +122,7 @@
             (fs/copy f dest {:replace-existing true})
             true)
         false))
-    (let [{:keys [status body]} (get! url (assoc (request-opts opts) :repo-id repo-id :label label))]
+    (let [{:keys [status body]} (request! :get url (assoc (request-opts opts) :repo-id repo-id :label label))]
       ;; Close the response body for every status.
       (try
         (cond
