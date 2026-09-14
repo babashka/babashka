@@ -9,6 +9,9 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Resolve a parent version range, such as `<version>[0.3.0,1)</version>`, to the highest version the repositories list
+- Reject a POM under a parent version range whose version is missing or an expression such as `${project.version}`, with Maven's `Version must be a constant`
+- Include versions from the local repository's `maven-metadata-local.xml` when resolving version ranges, `RELEASE` and `LATEST`
 - Read booleans in POMs, `settings.xml` and repository metadata regardless of case, such as `<optional>TRUE</optional>`
 - Let a POM property such as `<version>` win over the unprefixed `${version}` model expression
 - Read POMs with a byte order mark or HTML character entities

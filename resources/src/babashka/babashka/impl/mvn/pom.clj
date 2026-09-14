@@ -5,6 +5,7 @@
   License 2.0, see NOTICE.md."
   {:no-doc true}
   (:require [babashka.fs :as fs]
+            [babashka.impl.mvn.coords :as coords]
             [babashka.impl.mvn.env :as env]
             [babashka.impl.mvn.xml :as x]
             [clojure.string :as str]))
@@ -381,34 +382,55 @@
   [{:keys [group artifact version parent]}]
   [(or group (:group parent)) artifact (or version (:version parent))])
 
+(defn- version-references-parent?
+  "Whether version is an expression for the POM's own or its parent's version."
+  [version]
+  (contains? #{"${pom.version}" "${project.version}" "${pom.parent.version}" "${project.parent.version}"}
+             version))
+
 (defn- lineage
   "The raw models with profiles injected, child first, up the parent chain.
   read-pom gets the directory of the POM that declares the parent as
   :basedir, nil for a POM from a repository. Only parents from a
-  repository are cached, a parent on disk is read again."
-  [raw {:keys [read-pom basedir cache]}]
+  repository are cached, a parent on disk is read again. A parent version
+  range matches a parent on disk first, otherwise resolve-version picks the
+  version. Each model's :parent holds the version used."
+  [raw {:keys [read-pom resolve-version basedir cache]}]
   (loop [model (inject-profiles raw basedir)
          dir basedir
+         file (when basedir (str (fs/file basedir "pom.xml")))
          acc []
          seen #{}]
-    (let [acc (conj acc model)
-          {:keys [parent]} model]
+    (let [{:keys [parent]} model]
       (if (and parent (not (seen (gav-key parent))))
-        (let [cached (when-not dir (get @cache [:raw (gav-key parent)]))
-              [parent-raw parent-dir]
-              (if cached
-                [cached nil]
-                (let [found (read-pom (assoc parent :basedir dir) (:repositories model))
-                      {:keys [text basedir]} (if (map? found) found {:text found})]
-                  (when text [(parse text) basedir])))]
+        (let [read (fn [p]
+                     (let [found (read-pom (assoc p :basedir dir) (:repositories model))]
+                       (cond (map? found) (update found :version #(or % (:version p)))
+                             found {:text found :version (:version p)})))
+              found (or (when-not dir (get @cache [:raw (gav-key parent)]))
+                        (read parent)
+                        (when (and resolve-version (coords/version-range? (:version parent)))
+                          (read (assoc parent :version (resolve-version parent (:repositories model))))))
+              parent-raw (or (:raw found) (some-> (:text found) parse))
+              parent-dir (:basedir found)]
           (when-not parent-raw
             (throw (ex-info (str "Could not find parent POM " (:group parent) ":" (:artifact parent) ":" (:version parent))
                             {:parent parent})))
+          (when (and (coords/version-range? (:version parent))
+                     (or (nil? (:version model)) (version-references-parent? (:version model))))
+            (throw (ex-info (str "Version must be a constant @ "
+                                 (str/join ":" (remove nil? [(or (:group model) (:group parent)) (:artifact model) (:version model)]))
+                                 (when file (str ", " file)))
+                            {:type ::invalid :artifact (:artifact model) :version (:version model) :file file})))
           (when-not parent-dir
-            (swap! cache assoc [:raw (gav-key parent)] parent-raw))
+            (swap! cache assoc [:raw (gav-key parent)] {:raw parent-raw :version (:version found)}))
           ;; Maven checks every parent's profile activation against the project being built
-          (recur (inject-profiles parent-raw basedir) parent-dir acc (conj seen (gav-key parent))))
-        acc))))
+          (recur (inject-profiles parent-raw basedir)
+                 parent-dir
+                 (:file found)
+                 (conj acc (assoc-in model [:parent :version] (:version found)))
+                 (conj seen (gav-key parent))))
+        (conj acc model)))))
 
 (defn- import-managed
   "dependencyManagement with import-scoped BOMs replaced by their managed
@@ -444,7 +466,9 @@
 (defn effective-model
   "The effective model for a raw one. ctx: :read-pom, a function of a gav
   map and the repositories the POM declares that returns POM text, a map of
-  :text and :basedir for a POM read from disk, or nil,
+  :text, :basedir, :version and :file for a POM read from disk, or nil,
+  :resolve-version, a function of a parent gav map with a version range and
+  the repositories the POM declares that returns a concrete version,
   :cache, an atom, :basedir for a local POM, and :coords, the gav map the
   POM was requested with. The cache keys on :coords, or on :basedir for a
   local POM. Without either the model is not cached."

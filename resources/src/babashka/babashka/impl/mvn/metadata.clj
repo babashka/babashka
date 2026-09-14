@@ -61,16 +61,20 @@
       (slurp file))))
 
 (defn versions
-  "All versions of the artifact across the enabled repositories, in Maven
-  order, with :latest and :release from the first repository that names
-  them."
+  "All versions of the artifact across the enabled repositories and the
+  local repository's maven-metadata-local.xml, in Maven order, with :latest
+  and :release from the first repository that names them."
   [local-repo repos artifact]
   (let [rel (coords/artifact-dir artifact)
-        found (keep (fn [repo]
-                      (when (get-in repo [:releases :enabled])
-                        (some-> (cached-text! local-repo repo rel (:releases repo))
-                                parse-artifact-metadata)))
-                    repos)]
+        installed (let [f (fs/file local-repo rel "maven-metadata-local.xml")]
+                    (when (fs/exists? f)
+                      (parse-artifact-metadata (slurp f))))
+        found (concat (keep (fn [repo]
+                              (when (get-in repo [:releases :enabled])
+                                (some-> (cached-text! local-repo repo rel (:releases repo))
+                                        parse-artifact-metadata)))
+                            repos)
+                      (when installed [installed]))]
     {:versions (->> found
                     (mapcat :versions)
                     distinct
