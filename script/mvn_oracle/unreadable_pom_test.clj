@@ -6,7 +6,10 @@
             [babashka.deps :as deps]
             [babashka.fs :as fs]
             [clojure.string :as str]
-            [clojure.test :as t :refer [deftest is testing]]))
+            [clojure.test :as t :refer [deftest is testing]]
+            [clojure.tools.deps.extensions :as ext]
+            [clojure.tools.deps.extensions.maven]
+            [clojure.tools.deps.util.session :as session]))
 
 ;; add-deps resolves earlier libs again, so all tests share one repository
 (def ^:private tmp (fs/create-temp-dir))
@@ -71,6 +74,18 @@
                            "<artifactId>child</artifactId>" missing-dependency "</project>"))
     (is (str/includes? (resolve! "child") "WARNING: The POM for bad:child:1.0.0 is invalid"))
     (is (on-classpath? "child"))))
+
+(deftest warn-once-test
+  (testing "an invalid POM warns once per session"
+    (publish! "twice" "not xml at all")
+    (let [err (java.io.StringWriter.)
+          config {:mvn/repos {"remote" {:url (str (.toURI remote))}}
+                  :mvn/local-repo (str local)}]
+      (session/with-session
+        (binding [*err* err]
+          (dotimes [_ 2]
+            (is (= [] (ext/coord-deps 'bad/twice {:mvn/version "1.0.0"} :mvn config))))))
+      (is (= 1 (count (re-seq #"The POM for bad:twice:1\.0\.0 is invalid" (str err))))))))
 
 (deftest missing-pom-test
   (testing "a jar without a POM resolves"

@@ -74,6 +74,20 @@
 (def ^:private no-descriptor
   {:dependencies [] :licenses []})
 
+(defn- invalid-key [gav]
+  [:babashka.impl.mvn/invalid-pom gav])
+
+(defn- invalid-pom
+  "no-descriptor for gav, whose POM does not parse. Warns once per session."
+  [gav e]
+  (session/retrieve (invalid-key gav)
+                    (fn []
+                      (binding [*out* *err*]
+                        (println (str "WARNING: The POM for " (:group gav) ":" (:artifact gav) ":" (:version gav)
+                                      " is invalid, transitive dependencies will not be available: " (ex-message e))))
+                      true))
+  no-descriptor)
+
 (defn- effective-model
   "The effective model for lib and coord, following relocations. Without
   dependencies when the POM is missing, or when it or a parent or BOM does
@@ -83,14 +97,12 @@
         [group artifact] (coords/lib->names lib)]
     (loop [gav {:group group :artifact artifact :version (:mvn/version coord)}
            hops 0]
-      (if-let [text (read-pom config gav [])]
+      (if-let [text (when-not (session/retrieve (invalid-key gav))
+                      (read-pom config gav []))]
         (let [model (try (pom/effective-model (pom/parse text) (assoc ctx :coords gav))
                          (catch Exception e
                            (if (unreadable? e)
-                             (binding [*out* *err*]
-                               (println (str "WARNING: The POM for " (:group gav) ":" (:artifact gav) ":" (:version gav)
-                                             " is invalid, transitive dependencies will not be available: " (ex-message e)))
-                               no-descriptor)
+                             (invalid-pom gav e)
                              (throw e))))
               relocation (:relocation model)]
           (if (and relocation (< hops 10))
