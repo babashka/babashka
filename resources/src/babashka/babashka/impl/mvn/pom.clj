@@ -331,7 +331,7 @@
                            "parent.groupId" (:group parent)}))}))
 
 (defn- naked-expression
-  "Returns `k` without its first pom. or project. prefix, as plexus's
+  "Returns `k` without a leading pom. or project. prefix, as plexus's
   PrefixAwareRecursionInterceptor compares expressions."
   [k]
   (if-let [prefix (first (filter #(str/starts-with? k %) ["pom." "project."]))]
