@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Fix `No :mvn/version specified` when resolving dependencies on Jetty ee9 and ee10 caused by cached POMs sharing dependency management across versions
+- `bb nrepl-server` writes `.nrepl-port` on start and removes it on exit, so `bb repl --connect` finds the server without an address
 - Bump `org.babashka/cli` to `0.12.91`
 
 ## 1.13.221 (2026-09-14)

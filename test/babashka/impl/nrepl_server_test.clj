@@ -306,6 +306,23 @@
           (when-let [proc @proc-state]
             (.destroy ^Process proc)))))))
 
+(deftest ^:skip-windows nrepl-port-file-test
+  (when tu/native?
+    (let [dir (fs/create-temp-dir)
+          port-file (fs/file dir ".nrepl-port")
+          proc (p/process {:dir (str dir) :err :inherit} (str (fs/absolutize "bb")) "nrepl-server" "0")]
+      (try
+        (testing "bb nrepl-server writes the port it listens on to .nrepl-port"
+          (is (wait/wait-for-path (str port-file) {:timeout 10000}))
+          (let [port (parse-long (str/trim (slurp port-file)))]
+            (is (pos? port))
+            (is (wait/wait-for-port "127.0.0.1" port {:timeout 10000}))))
+        (finally
+          (p/destroy proc)
+          @proc))
+      (testing "the port file is removed when the server exits"
+        (is (not (fs/exists? port-file)))))))
+
 (defn- with-bb-script
   "Runs `script` through bb, which starts an nREPL server on `port` and
   returns, then calls `f`. In-process on the JVM, a process natively."

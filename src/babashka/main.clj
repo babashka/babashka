@@ -375,8 +375,11 @@ Use bb run --help to show this help output.
   (socket-repl/start-repl! address ctx))
 
 (defn start-nrepl! [address]
-  (let [opts (nrepl-server/parse-opt address)]
-    (babashka.impl.nrepl-server/start-server! opts))
+  (let [opts (nrepl-server/parse-opt address)
+        {:keys [port]} (babashka.impl.nrepl-server/start-server! opts)]
+    (when port
+      (fs/delete-on-exit ".nrepl-port")
+      (spit ".nrepl-port" port)))
   (binding [*out* *err*]
     (println "For more info visit: https://book.babashka.org/#_nrepl"))
   ;; hang until SIGINT
