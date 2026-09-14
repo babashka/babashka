@@ -418,14 +418,16 @@
           []
           managed))
 
-(defn- apply-management [deps managed]
+(defn- apply-management
+  "Version, scope and exclusions from dependencyManagement. Maven does not
+  manage optional."
+  [deps managed]
   (let [by-key (into {} (map (juxt dependency-key identity)) managed)]
     (mapv (fn [dep]
             (if-let [m (get by-key (dependency-key dep))]
               (-> dep
                   (update :version #(or % (:version m)))
                   (update :scope #(or % (:scope m)))
-                  (update :optional #(or % (:optional m)))
                   (update :exclusions #(if (seq %) % (:exclusions m))))
               dep))
           deps)))

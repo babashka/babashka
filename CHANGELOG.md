@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Stop taking `optional` from `dependencyManagement`, which left out dependencies Maven includes
 - Find a `pom.xml` parent on disk relative to the POM that declares it, so `:local/root` projects with more than two POM levels resolve without the JVM
 
 ## 1.13.222 (2026-09-14)
