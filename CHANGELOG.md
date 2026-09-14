@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Fix dependency resolution giving a POM the managed versions of another version of the same artifact when both inherit their group and version from a parent, which failed with `No :mvn/version specified` for deps on Jetty ee9 and ee10
+- Add `org.jline.utils.Colors`
 - Bump `org.babashka/cli` to `0.12.91`
 
 ## 1.13.221 (2026-09-14)
