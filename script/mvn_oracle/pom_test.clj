@@ -271,7 +271,7 @@
              (ex-message e))))))
 
 (deftest incomplete-parent-test
-  (testing "testIncompleteParent: a parent without groupId, artifactId or version fails with Maven's message"
+  (testing "a parent missing its groupId, artifactId or version fails with Maven's message"
     (doseq [[field parent] [["groupId" "<artifactId>parent</artifactId><version>1.0</version>"]
                             ["artifactId" "<groupId>org.example</groupId><version>1.0</version>"]
                             ["version" "<groupId>org.example</groupId><artifactId>parent</artifactId>"]

@@ -424,7 +424,7 @@
          seen #{(coordinates raw)}]
     (let [{:keys [parent]} model]
       (when-let [field (and parent (first (filter #(empty? (get parent %)) [:group :artifact :version])))]
-        ;; DefaultModelValidator's raw model checks
+        ;; DefaultModelValidator's raw model parent checks
         (throw (ex-info (str "'parent." ({:group "groupId" :artifact "artifactId" :version "version"} field) "' is missing.")
                         {:type ::invalid :parent parent})))
       (when (and parent (seen (gav-key parent)))

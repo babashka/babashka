@@ -102,7 +102,7 @@
       (is (on-classpath? "bom-user")))))
 
 (deftest incomplete-parent-test
-  (testing "a POM whose parent has no version resolves without its dependencies"
+  (testing "a POM whose parent version is missing resolves without its dependencies"
     (publish! "noparentversion" (str "<project><modelVersion>4.0.0</modelVersion>"
                                      "<parent><groupId>bad</groupId><artifactId>parent</artifactId></parent>"
                                      "<groupId>bad</groupId><artifactId>noparentversion</artifactId><version>1.0.0</version>"

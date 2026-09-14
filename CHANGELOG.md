@@ -10,7 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Detect a property, parent or BOM import cycle in a POM with Maven's message, and resolve the artifact without its dependencies
-- Resolve an artifact whose POM names a parent without groupId, artifactId or version, without its dependencies
+- Detect a POM parent missing its groupId, artifactId or version with Maven's message, and resolve the artifact without its dependencies
 - Resolve a parent version range, such as `<version>[0.3.0,1)</version>`, to the highest version the repositories list
 - Reject a POM under a parent version range whose version is missing or an expression such as `${project.version}`, with Maven's `Version must be a constant`
 - Include versions from the local repository's `maven-metadata-local.xml` when resolving version ranges, `RELEASE` and `LATEST`
