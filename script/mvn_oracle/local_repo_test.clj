@@ -64,6 +64,10 @@
         (let [local (fs/file dir "requested")]
           (cache! local ["a-1.jar>local="])
           (is (some? (resolve local [empty-repo])))))
+      (testing "a file from another repository is used when no repository is listed"
+        (let [local (fs/file dir "no-repos")]
+          (cache! local ["a-1.jar>other="])
+          (is (some? (resolve local [])))))
       (testing "testDoNotFindDifferentContext: a file from another repository is not used"
         (let [local (fs/file dir "other")]
           (cache! local ["a-1.jar>other="])
