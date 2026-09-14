@@ -8,6 +8,7 @@
             [babashka.impl.mvn.http :as http]
             [babashka.impl.mvn.metadata :as metadata]
             [babashka.impl.mvn.settings :as settings]
+            [clojure.java.io :as io]
             [clojure.string :as str]))
 
 (def standard-repos
@@ -95,6 +96,28 @@
     (when-not (str/includes? existing line)
       (spit marker (str existing line "\n")))))
 
+(defn- tracked-ids
+  "The repository ids _remote.repositories lists for file-name, \"\" for a
+  locally installed file. nil when the file is not listed."
+  [dir file-name]
+  (let [marker (fs/file dir "_remote.repositories")]
+    (when (fs/exists? marker)
+      (let [props (java.util.Properties.)
+            prefix (str file-name ">")]
+        (with-open [r (io/reader marker)]
+          (.load props r))
+        (not-empty (into #{} (keep #(when (str/starts-with? % prefix) (subs % (count prefix)))) (keys props)))))))
+
+(defn- cached-available?
+  "Whether a cached file counts for repos, as Aether's enhanced local
+  repository manager decides: not listed, installed locally, or listed for
+  one of repos."
+  [dir file-name repos]
+  (let [ids (tracked-ids dir file-name)]
+    (or (nil? ids)
+        (contains? ids "")
+        (boolean (some #(contains? ids (:id %)) repos)))))
+
 ;; tools.deps resolves in parallel, and parents and BOMs are shared, so two
 ;; threads can want the same file. One monitor per path.
 (def ^:private locks (atom {}))
@@ -156,15 +179,29 @@
 
 (defn resolve-file!
   "The artifact's file in the local repository, downloaded from the first
-  repository that has it. nil when none does. A snapshot is refreshed when
-  the repository's metadata names a newer build."
+  repository that has it. nil when none does. A cached file from a
+  repository outside repos is used once one of repos has it too. A snapshot
+  is refreshed when the repository's metadata names a newer build."
   [local-repo repos {:keys [version] :as artifact}]
   (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))
+        dir (str (fs/parent dest))
+        file-name (str (fs/file-name dest))
         policy (if (coords/snapshot? version) :snapshots :releases)]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
     (locking (lock-for dest)
       (if (and (fs/exists? dest) (not (coords/snapshot? version)))
-        dest
+        (if (cached-available? dir file-name repos)
+          dest
+          ;; Aether's existence check: the cached file stays, the repository is recorded
+          (some (fn [repo]
+                  (when (and (get-in repo [policy :enabled])
+                             (let [rel (coords/relative-path artifact)]
+                               (http/exists? (str (:url repo) rel)
+                                             {:auth (:auth repo) :proxy (:proxy repo)
+                                              :repo-id (:id repo) :label rel})))
+                    (record-remote! dir file-name (:id repo))
+                    dest))
+                repos))
         (loop [[repo & more] repos]
           (when repo
             (or (when (get-in repo [policy :enabled])
