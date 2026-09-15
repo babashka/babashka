@@ -3,14 +3,20 @@
 ;; mirror matching after Maven's DefaultMirrorSelector.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/settings_test.clj
 (ns settings-test
-  (:require [babashka.impl.mvn.settings :as settings]
-            [clojure.test :as t :refer [deftest is testing]]))
+  (:require [babashka.fs :as fs]
+            [babashka.impl.mvn.repo :as repo]
+            [babashka.impl.mvn.settings :as settings]
+            [clojure.test :as t :refer [deftest is testing]]
+            [clojure.tools.deps.extensions :as ext]
+            [clojure.tools.deps.extensions.maven]
+            [clojure.tools.deps.util.session :as session]))
 
 (def settings-xml
   "<settings>
-     <localRepository>${user.home}/other-m2</localRepository>
      <servers>
-       <server><id>nexus</id><username>${env.PATH}</username><password>secret</password></server>
+       <server><id>nexus</id><username>${env.PATH}</username><password>secret</password>
+         <configuration><httpHeaders><property><name>Job-Token</name><value>${env.PATH}</value></property></httpHeaders></configuration>
+       </server>
      </servers>
      <mirrors>
        <mirror><id>internal</id><url>https://nexus.example.com/maven2</url><mirrorOf>*,!clojars</mirrorOf></mirror>
@@ -41,8 +47,8 @@
 (def parsed (settings/parse settings-xml))
 
 (deftest parse-test
-  (is (= (str (System/getProperty "user.home") "/other-m2") (:local-repository parsed)))
-  (is (= {:username (System/getenv "PATH") :password "secret"} (get-in parsed [:servers "nexus"])))
+  (is (= {:username (System/getenv "PATH") :password "secret" :headers {"Job-Token" (System/getenv "PATH")}}
+         (get-in parsed [:servers "nexus"])))
   (is (= [{:id "internal" :url "https://nexus.example.com/maven2" :mirror-of "*,!clojars" :mirror-of-layouts nil}] (:mirrors parsed)))
   (is (= [{:id "corp" :active true :protocol "https" :host "proxy.example.com" :port 3128
            :username nil :password nil :non-proxy-hosts "localhost|*.example.com"}
@@ -185,6 +191,50 @@
     (is (nil? (settings/mirror-for [b] (repo "a"))))
     (is (= c (settings/mirror-for [c] (repo "a"))))
     (is (nil? (settings/mirror-for [d] (repo "a"))))))
+
+(deftest server-headers-test
+  (testing "a mirrored repository takes the headers of the mirror's server"
+    (let [s (settings/parse (str "<settings><servers><server><id>corp</id><configuration><httpHeaders>"
+                                 "<property><name>Private-Token</name><value>t</value></property>"
+                                 "</httpHeaders></configuration></server></servers>"
+                                 "<mirrors><mirror><id>corp</id><url>https://mirror.example.com/</url><mirrorOf>private</mirrorOf></mirror></mirrors></settings>"))]
+      (is (= {"Private-Token" "t"} (:headers (repo/remote-repo s ["private" {:url "https://private.example.com/"}]))))
+      (is (nil? (:headers (repo/remote-repo s ["other" {:url "https://other.example.com/"}])))))))
+
+(deftest header-property-test
+  (let [parse (fn [props]
+                (settings/parse (str "<settings><servers><server><id>s</id><configuration><httpHeaders>"
+                                     props "</httpHeaders></configuration></server></servers></settings>")))]
+    (testing "header names are interpolated like values"
+      (is (= {(str "X-" (System/getProperty "user.name")) "v"}
+             (get-in (parse "<property><name>X-${user.name}</name><value>v</value></property>") [:servers "s" :headers]))))
+    (testing "a blank value reads as an empty string"
+      (doseq [value ["<value></value>" "<value> </value>"]]
+        (is (= {"X" ""} (get-in (parse (str "<property><name>X</name>" value "</property>")) [:servers "s" :headers]))
+            value)))
+    (testing "a property with a blank name is left out"
+      (is (nil? (get-in (parse "<property><name></name><value>v</value></property>") [:servers "s" :headers]))))
+    (testing "of names that differ only in case, the last property wins"
+      (is (= {"x" "b"} (get-in (parse "<property><name>X</name><value>a</value></property><property><name>x</name><value>b</value></property>")
+                               [:servers "s" :headers]))))
+    (testing "a property without a name or value element is an error"
+      (doseq [props ["<property><value>v</value></property>" "<property><name>n</name></property>"]]
+        (is (thrown-with-msg? clojure.lang.ExceptionInfo #"^Invalid httpHeaders property for server s in settings.xml"
+                              (parse props))
+            props)))))
+
+(deftest local-repository-test
+  (testing "localRepository in settings.xml is ignored"
+    (fs/with-temp-dir [home {}]
+      (fs/create-dirs (fs/file home ".m2"))
+      (spit (fs/file home ".m2" "settings.xml") "<settings><localRepository>/elsewhere</localRepository></settings>")
+      (let [real-home (System/getProperty "user.home")]
+        (System/setProperty "user.home" (str home))
+        (try
+          (session/with-session
+            (is (= (str (fs/path home ".m2" "repository"))
+                   (:base (ext/lib-location 'g/a {:mvn/version "1"} {})))))
+          (finally (System/setProperty "user.home" real-home)))))))
 
 (let [{:keys [fail error]} (t/run-tests 'settings-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

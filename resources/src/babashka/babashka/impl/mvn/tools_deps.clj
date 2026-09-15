@@ -17,11 +17,14 @@
 (defn- settings []
   (session/retrieve :babashka.impl.mvn/settings settings/read-settings))
 
+;; session/retrieve is ConcurrentHashMap.computeIfAbsent, which throws
+;; "Recursive update" when its function retrieves too, so look up first.
 (defn- repos [{:keys [mvn/repos]}]
-  (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos (settings))))
+  (let [s (settings)]
+    (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos s))))
 
 (defn- local-repo [config]
-  (repo/local-repo config (settings)))
+  (repo/local-repo config))
 
 (defn- model-cache []
   (session/retrieve :babashka.impl.mvn/models #(atom {})))
@@ -225,10 +228,11 @@
 ;; Versions from metadata
 
 (defn- artifact-versions [lib config]
-  (let [[group artifact] (coords/lib->names lib)]
+  (let [[group artifact] (coords/lib->names lib)
+        local (local-repo config)
+        remotes (repos config)]
     (session/retrieve [:babashka.impl.mvn/versions lib]
-                      #(metadata/versions (local-repo config) (repos config)
-                                          {:group group :artifact artifact}))))
+                      #(metadata/versions local remotes {:group group :artifact artifact}))))
 
 (defn- unresolved [lib coord]
   (ex-info (str "Unable to resolve " lib " version: " (:mvn/version coord))

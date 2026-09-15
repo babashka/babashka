@@ -42,12 +42,16 @@
       (str "babashka/" (or (System/getProperty "babashka.version") "unknown")
            " tools.deps/" tools-deps-version)))
 
-(defn- request-opts [{:keys [auth proxy]}]
+(defn- request-opts
+  "Returns request options for a repository's :auth, :proxy and :headers."
+  [{:keys [auth proxy headers]}]
   (cond-> {:as :stream
            :throw false
            :follow-redirects :normal
            :timeout 120000
-           :headers {"User-Agent" (user-agent)}}
+           :headers (merge (when-not (some #(.equalsIgnoreCase "User-Agent" ^String %) (keys headers))
+                             {"User-Agent" (user-agent)})
+                           headers)}
     auth (assoc :basic-auth auth)
     proxy (assoc :client (client-for proxy))))
 
@@ -193,7 +197,7 @@
 (defn download!
   "Downloads url to dest atomically and verifies the checksum using opts.
   Returns dest, or nil when the file is absent.
-  opts: :auth [user pass], :proxy, :checksum :warn/:fail/:ignore, :repo-id
+  opts: :auth [user pass], :proxy, :headers, :checksum :warn/:fail/:ignore, :repo-id
   and :label for messages."
   [url dest opts]
   (let [dest (str dest)

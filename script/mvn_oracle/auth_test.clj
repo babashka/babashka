@@ -7,6 +7,9 @@
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :as t :refer [deftest is testing]]
+            [clojure.tools.deps.extensions :as ext]
+            [clojure.tools.deps.extensions.maven]
+            [clojure.tools.deps.util.session :as session]
             [org.httpkit.server :as server])
   (:import [java.util Base64]
            [java.util.zip ZipEntry ZipOutputStream]))
@@ -79,6 +82,44 @@
         (finally
           (when (System/getenv "AUTH_TEST_DEBUG") (prn :seen @seen))
           (server/server-stop! stop))))))
+
+(deftest http-headers-test
+  (testing "every request to a repository carries its server's settings.xml headers"
+    (fs/with-temp-dir [dir {}]
+      (let [root (fs/file dir "repo")
+            seen (atom [])
+            stop (server/run-server (fn [{:keys [uri headers]}]
+                                      (let [token (get headers "private-token")]
+                                        (swap! seen conj {:token token :user-agent (get headers "user-agent")})
+                                        (if (not= "secret" token)
+                                          {:status 401 :body "no token"}
+                                          (let [f (fs/file root (subs uri 1))]
+                                            (if (fs/regular-file? f) {:status 200 :body (fs/file f)} {:status 404 :body "missing"})))))
+                                    {:port 0 :legacy-return-value? false})
+            port (server/server-port stop)
+            real-home (System/getProperty "user.home")]
+        (try
+          (write-artifact! root)
+          (fs/create-dirs (fs/file dir ".m2"))
+          (spit (fs/file dir ".m2" "settings.xml")
+                (str "<settings><servers><server><id>gitlab</id><configuration><httpHeaders>"
+                     "<property><name>Private-Token</name><value>wrong</value></property>"
+                     "<property><name>private-token</name><value>secret</value></property>"
+                     "<property><name></name><value>dropped</value></property>"
+                     "<property><name>user-agent</name><value>custom</value></property>"
+                     "</httpHeaders></configuration></server></servers></settings>"))
+          (System/setProperty "user.home" (str dir))
+          (let [config {:mvn/repos {"gitlab" {:url (str "http://localhost:" port "/")}}
+                        :mvn/local-repo (str (fs/file dir "local-repo"))}]
+            (session/with-session
+              (is (= [] (ext/coord-deps 'auth-test/lib {:mvn/version "1.0.0"} :mvn config)))
+              (is (fs/exists? (first (ext/coord-paths 'auth-test/lib {:mvn/version "1.0.0"} :mvn config))))))
+          (is (seq @seen))
+          (testing "each header is sent once with its last value, and a nameless one is skipped"
+            (is (every? #{{:token "secret" :user-agent "custom"}} @seen)))
+          (finally
+            (System/setProperty "user.home" real-home)
+            (server/server-stop! stop)))))))
 
 (let [{:keys [fail error]} (t/run-tests 'auth-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

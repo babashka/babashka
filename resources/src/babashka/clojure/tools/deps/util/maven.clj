@@ -17,7 +17,7 @@
 (def default-local-repo repo/default-local-repo)
 
 (def cached-local-repo
-  (delay repo/default-local-repo))
+  (delay (repo/user-local-repo)))
 
 (def lib->names coords/lib->names)
 

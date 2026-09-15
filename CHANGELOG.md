@@ -13,6 +13,8 @@ A preview of the next release can be installed from
 <summary>Maven dependency resolution improvements</summary>
 
 - Reuse a file cached from an unlisted repository only if it is also available from a listed repository
+- Send the HTTP headers configured for a server in `settings.xml`, such as a GitLab `Private-Token`
+- Ignore `<localRepository>` in `settings.xml`, as the Clojure CLI does, and use `:mvn/local-repo` or `~/.m2/repository`
 - Report property, parent or BOM import cycles in POMs with Maven's message and resolve the artifact without its dependencies
 - Report missing `groupId`, `artifactId` or `version` in a POM's parent declaration with Maven's message and resolve the artifact without its dependencies
 - Resolve parent version ranges, such as `<version>[0.3.0,1)</version>`, to the highest matching version listed by the repositories

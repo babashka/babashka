@@ -46,7 +46,7 @@
         repo (if mirror
                {:id (:id mirror) :url (with-slash (:url mirror))}
                repo)
-        {:keys [username password]} (get servers (:id repo))]
+        {:keys [username password headers]} (get servers (:id repo))]
     ;; Check the repository URL after applying mirrors.
     (when (str/starts-with? (:url repo) "s3:")
       (throw (ex-info (str "S3 repository " (:id repo) " (" (:url repo) ") requires the JVM resolver."
@@ -56,6 +56,7 @@
                    :releases (policy name (or releases {}))
                    :snapshots (policy name (or snapshots {})))
       username (assoc :auth [username (cipher/decrypt-password password {:server (:id repo)})])
+      (seq headers) (assoc :headers headers)
       (proxy-for settings (:url repo)) (assoc :proxy (proxy-for settings (:url repo))))))
 
 (defn remote-repos
@@ -78,13 +79,18 @@
                         (map #(remote-repo settings %)))
                   entries))))
 
-(def default-local-repo
+(defn user-local-repo
+  "Returns .m2/repository under the current user.home."
+  []
   (str (fs/path (System/getProperty "user.home") ".m2" "repository")))
 
+(def default-local-repo (user-local-repo))
+
 (defn local-repo
-  "The local repository: :mvn/local-repo, then settings, then ~/.m2."
-  [{:keys [mvn/local-repo]} settings]
-  (or local-repo (:local-repository settings) default-local-repo))
+  "Returns :mvn/local-repo, else .m2/repository under the current user.home.
+  Ignores localRepository in settings.xml, as the JVM tools.deps does."
+  [{:keys [mvn/local-repo]}]
+  (or local-repo (user-local-repo)))
 
 (defn- record-remote!
   "Notes in _remote.repositories which repository a file came from, the way
@@ -170,6 +176,7 @@
           (when (http/download! (str (:url repo) rel) dest
                                 {:auth (:auth repo)
                                  :proxy (:proxy repo)
+                                 :headers (:headers repo)
                                  :checksum (get-in repo [policy :checksum])
                                  :repo-id (:id repo)
                                  :label rel})
@@ -197,7 +204,7 @@
           (some (fn [repo]
                   (when (and (get-in repo [policy :enabled])
                              (http/exists? (str (:url repo) rel)
-                                           {:auth (:auth repo) :proxy (:proxy repo)
+                                           {:auth (:auth repo) :proxy (:proxy repo) :headers (:headers repo)
                                             :repo-id (:id repo) :label rel}))
                     (record-remote! dir file-name (:id repo))
                     dest))
