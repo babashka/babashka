@@ -1,6 +1,6 @@
 #!/usr/bin/env bb
-;; Repositories a POM declares: its parent resolves from them, an http: one
-;; included, as the JVM tools.deps 0.31.1646 resolves it.
+;; A POM's parent resolves from the repositories the POM declares, http: ones
+;; included, as in the JVM tools.deps 0.31.1646.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/pom_repositories_test.clj
 (ns pom-repositories-test
   (:require [babashka.fs :as fs]

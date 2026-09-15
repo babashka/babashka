@@ -37,8 +37,7 @@
 
 (defn- check-http!
   "Throws for an http: :mvn/repos entry unless CLOJURE_CLI_ALLOW_HTTP_REPO is
-  set, as the JVM tools.deps does. Repositories a POM declares are not
-  checked."
+  set."
   [[_ {:keys [url] :as config}]]
   (when (and (str/starts-with? url "http:") (nil? (env/getenv "CLOJURE_CLI_ALLOW_HTTP_REPO")))
     (throw (ex-info (str "Invalid repo url (http not supported): " url) (or config {})))))
