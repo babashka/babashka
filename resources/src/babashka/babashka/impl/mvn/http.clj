@@ -200,13 +200,15 @@
   ;; unique across processes started together
   (str file "." (java.util.UUID/randomUUID) ".tmp"))
 
+(def ^:private windows? (fs/windows?))
+
 (defn move-into-place!
   "Moves tmp over file atomically. On Windows writes it into file in place,
   as Aether does, since replacing a file another process holds open fails
   there. Deletes tmp."
   [tmp file]
   (try
-    (if (fs/windows?)
+    (if windows?
       (with-open [in (io/input-stream (fs/file tmp))
                   out (io/output-stream (fs/file file))]
         (io/copy in out))
