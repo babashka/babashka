@@ -218,8 +218,9 @@
       dest)))
 
 (defn- confirm-cached!
-  "Returns the cached dest when it counts for repos, or once one of repos
-  enabled for policy has remote-name, which is then recorded. nil otherwise."
+  "Returns dest when the cached file counts for repos. Otherwise records the
+  first repository enabled for policy that has remote-name and returns dest,
+  or nil when none has it."
   [repos artifact remote-name dest policy]
   (let [dir (str (fs/parent dest))
         file-name (str (fs/file-name dest))
