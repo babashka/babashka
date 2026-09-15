@@ -72,6 +72,15 @@
                                             "<properties><name>caf&eacute;&nbsp;&amp;</name></properties>")))]
       (is (= "a" (:artifact raw)))
       (is (= "caf\u00E9\u00A0&" (get-in raw [:properties "name"])))))
+  (testing "a POM with namespaces and an element name that is not a valid XML qualified name parses"
+    (let [raw (pom/parse (str "<project xmlns=\"http://maven.apache.org/POM/4.0.0\""
+                              " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
+                              " xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd\">"
+                              "<modelVersion>4.0.0</modelVersion><groupId>g</groupId><artifactId>a</artifactId><version>1</version>"
+                              "<build><plugins><plugin><artifactId>maven-compiler-plugin</artifactId>"
+                              "<configuration><compilerArguments><Xlint:-unchecked/></compilerArguments></configuration>"
+                              "</plugin></plugins></build></project>"))]
+      (is (= ["g" "a" "1"] ((juxt :group :artifact :version) raw)))))
   (testing "text that does not parse throws :unreadable"
     (is (= :babashka.impl.mvn.pom/unreadable
            (:type (ex-data (try (pom/parse "not xml at all") (catch Exception e e))))))))

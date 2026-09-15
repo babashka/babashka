@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 <details>
 <summary>Maven dependency resolution improvements</summary>
 
+- [#2152](https://github.com/babashka/babashka/issues/2152): Read POMs, `settings.xml` and repository metadata without XML namespaces, as Maven does, so an element such as `<Xlint:-unchecked/>` no longer fails resolution
 - Resolve a timestamped snapshot version, such as `1.0-20240101.123456-3`, to that build instead of the newest one
 - Resolve `${project.name}` and `${parent.artifactId}` in a POM
 - Report a missing artifact with the same message as the Clojure CLI
