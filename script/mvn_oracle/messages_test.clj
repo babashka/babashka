@@ -35,7 +35,7 @@
   (is (= "Could not transfer nope/nope/1.0.0/nope-1.0.0.pom from dead (https://nonexistent.invalid/maven2/): nonexistent.invalid"
          (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
                     :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2/"}}})))
-  (testing "the repository URL as configured, without a trailing slash"
+  (testing "a repository URL without a trailing slash is named as configured"
     (is (= "Could not transfer nope/nope/1.0.0/nope-1.0.0.pom from dead (https://nonexistent.invalid/maven2): nonexistent.invalid"
            (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
                       :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2"}}})))))
