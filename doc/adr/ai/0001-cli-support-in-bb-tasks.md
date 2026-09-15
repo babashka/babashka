@@ -348,6 +348,15 @@ applied (#2103). That last part needed babashka.cli to report which options came
 from the command line: without it, a spec `:default` already in the parsed map
 beat the dependency's own `:exec-args`.
 
+A plain `:task` target is not in options land. Its body reads
+`*command-line-args*`, which is sequence-of-strings land (Sean Corfield's
+phrasing), and bb cannot tell which of those strings are a dependency's options.
+So a task that is not called directly on the command line gets options only
+from a target that parses. A CLI dependency of a plain target gets its own
+`:exec-args` and spec `:default`s, over those of the runner-level `:cli`: the
+map `bb dep` builds from an empty command line. A plain `:task` dependency of a
+CLI target gets no options either, because a body has no way to receive them.
+
 ## Library support in babashka.cli
 
 This feature drove these additions, used by the task layer above.
