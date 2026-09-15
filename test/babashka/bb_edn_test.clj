@@ -785,14 +785,15 @@ even more stuff here\"
                                              :exec-fn babashka.tasks-cli/target-spit}}}
         (test-utils/bb nil "-cp" "test-resources" "tst" "--out" out)
         (is (= "body\nhandler:-a\ntarget\n" (slurp out))))))
-  (testing "a plain task runs with a CLI dep in :depends, skipping its handler"
+  (testing "a plain task runs a CLI dep in :depends before its body"
     (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
       (let [out (str (fs/file (fs/create-temp-dir) "plain.txt"))]
-        (test-utils/with-config '{:tasks {-a {:exec-fn babashka.tasks-cli/mark-task}
-                                          tst {:depends [-a]
-                                               :task (spit (last *command-line-args*) "target\n" :append true)}}}
+        (test-utils/with-config {:tasks {'-a {:exec-fn 'babashka.tasks-cli/mark-task
+                                              :exec-args {:out out}}
+                                         'tst '{:depends [-a]
+                                                :task (spit (last *command-line-args*) "target\n" :append true)}}}
           (apply test-utils/bb nil "-cp" "test-resources" (concat args ["--out" out]))
-          (is (= "target\n" (slurp out)) (str "for " args))))))
+          (is (= "handler:-a\ntarget\n" (slurp out)) (str "for " args))))))
   (testing "a :cmd task may name a CLI task in :depends"
     (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build}
                                       deploy {:depends [-build]
@@ -922,6 +923,17 @@ even more stuff here\"
                                                   :cmd {"sub" {:exec-fn babashka.tasks-cli/dep-build}}}
                                          'tst (val target)}}
           (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "tst") "TREE"))))))
+  (testing "a plain target runs a CLI dep's handler with the dep's own defaults, not the command line"
+    (doseq [args [["tst"] ["run" "--parallel" "tst"]]]
+      (test-utils/with-config '{:tasks {-build {:exec-fn babashka.tasks-cli/dep-build
+                                                :exec-args {:target "dev"}}
+                                        tst {:depends [-build]
+                                             :task (prn :target)}}}
+        (is (= [{:target "dev" :ran :dep-build} :target]
+               (map edn/read-string
+                    (str/split-lines
+                     (apply test-utils/bb nil "-cp" "test-resources" (concat args ["--target" "prod"])))))
+            (str "for " args)))))
   (testing ":cmd may be a symbol naming a def of the command tree"
     (test-utils/with-config '{:tasks {deploy {:cmd babashka.tasks-cli/deploy-tree}}}
       (is (= {:environment "staging" :message "msg" :ran :lock}

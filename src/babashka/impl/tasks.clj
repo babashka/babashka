@@ -333,8 +333,8 @@
 
 (def ^:dynamic *cli-target?*
   "True while assembling for a target that dispatches, which is what binds
-  `dep-opts-sym`. A plain target has no parse, so its CLI dependencies keep
-  contributing nothing rather than referring to a symbol that is not there."
+  `dep-opts-sym`. A plain target does not parse, so its CLI dependencies get
+  only their own defaults."
   false)
 
 (def dep-opts-sym
@@ -508,14 +508,15 @@
          ;; a body form. Both go through the same pipeline, and a `:cli` task
          ;; keeps its dispatch either way: the symbol call is its default action
          qualified? (qualified-symbol? task)
-         dep-cli-node (when (and (not last?) *cli-target?*)
+         dep-cli-node (when-not last?
                         (cli-node task-map))
          prog (if qualified?
                 (format "(apply %s *command-line-args*)" task)
                 (pr-str task))
          prog (if dep-cli-node
                 (format "(do %s (babashka.tasks/-run-cli-dep '%s \"%s\" %s '%s requiring-resolve))"
-                        prog (pr-str dep-cli-node) task-name dep-opts-sym
+                        prog (pr-str dep-cli-node) task-name
+                        (if *cli-target?* dep-opts-sym "{}")
                         (pr-str (:cli (:tasks @bb-edn))))
                 prog)
          prog (wrap-enter-leave task-name prog enter leave)
