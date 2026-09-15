@@ -194,10 +194,14 @@
             (throw (ex-info message {:url url :expected expected :actual actual}))
             (printerrln message)))))))
 
+(def ^:private random
+  ;; ThreadLocalRandom repeats its sequence in bb processes started together
+  (delay (java.security.SecureRandom.)))
+
 (defn temp-file
   "Returns a path next to file named file.<random>.tmp."
   [file]
-  (str file "." (Long/toUnsignedString (.nextLong (java.util.concurrent.ThreadLocalRandom/current))) ".tmp"))
+  (str file "." (Long/toUnsignedString (.nextLong ^java.security.SecureRandom @random)) ".tmp"))
 
 (defn move-into-place!
   "Moves tmp over file atomically, or copies it on Windows. Deletes tmp."
