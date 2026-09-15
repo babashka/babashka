@@ -201,11 +201,15 @@
   (str file "." (java.util.UUID/randomUUID) ".tmp"))
 
 (defn move-into-place!
-  "Moves tmp over file atomically, or copies it on Windows. Deletes tmp."
+  "Moves tmp over file atomically. On Windows writes it into file in place,
+  as Aether does, since replacing a file another process holds open fails
+  there. Deletes tmp."
   [tmp file]
   (try
     (if (fs/windows?)
-      (fs/copy tmp file {:replace-existing true})
+      (with-open [in (io/input-stream (fs/file tmp))
+                  out (io/output-stream (fs/file file))]
+        (io/copy in out))
       (fs/move tmp file {:atomic-move true :replace-existing true}))
     (finally
       (fs/delete-if-exists tmp))))
