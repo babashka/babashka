@@ -92,8 +92,8 @@
      :release (some :release found)}))
 
 (defn- merge-info
-  "Keeps the newest version under key, as DefaultVersionResolver's merge:
-  a later updated stamp replaces the entry."
+  "Stores version under key when key has no entry or updated is later than
+  the entry's."
   [infos key updated version repo]
   (let [info (get infos key)]
     (if (or (nil? info) (and updated (pos? (compare updated (:updated info)))))
@@ -125,9 +125,8 @@
 
 (defn- local-versioning
   "The versioning of the local repository's maven-metadata-local.xml for a
-  snapshot version, nil without one. Build numbers there are remote data
-  under a misused id, so the entry is repaired to a local copy, as
-  DefaultVersionResolver repairs it."
+  snapshot version, nil without one. A build number there resets the entry
+  to a local copy."
   [local-repo rel]
   (let [f (fs/file local-repo rel "maven-metadata-local.xml")]
     (when (fs/exists? f)
@@ -137,11 +136,11 @@
           versioning)))))
 
 (defn resolve-snapshot
-  "The build to use for a -SNAPSHOT artifact, after DefaultVersionResolver:
-  the newest entry for its classifier and extension across the local
-  repository's metadata and the enabled repositories'. Returns {:version v
-  :repo r}, :repo nil for the local repository. Returns the base version
-  with :repo :none when no metadata names a build."
+  "Returns the build of a -SNAPSHOT artifact with the newest metadata entry
+  for its classifier and extension, across the local repository and the
+  enabled repositories, as {:version v :repo r}. :repo is nil for the local
+  repository. Returns the base version with :repo :none when no metadata
+  names a build."
   [local-repo repos {:keys [version classifier extension] :as artifact}]
   (let [rel (coords/version-dir artifact)
         key (snapshot-key classifier extension)

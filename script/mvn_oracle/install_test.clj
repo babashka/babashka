@@ -42,13 +42,13 @@
   (fs/create-dirs (fs/file project "src" "probe"))
   (spit (fs/file project "src" "probe" "core.clj") "(ns probe.core)")
   (spit (fs/file project "deps.edn") "{:paths [\"src\"]}")
-  (testing "a release: jar, POM, both marked installed, the version in the artifact's metadata"
+  (testing "a release installs jar and POM, marks both installed and lists the version in the artifact's metadata"
     (install! "1.0.0" nil)
     (is (= #{"lib-1.0.0.jar>=" "lib-1.0.0.pom>="} (tracking "1.0.0")))
     (is (str/includes? (slurp (fs/file local-repo "probe" "lib" "maven-metadata-local.xml")) "<version>1.0.0</version>"))
     (is (not (fs/exists? (fs/file local-repo "probe" "lib" "1.0.0" "maven-metadata-local.xml"))))
     (is (resolves? 'probe/lib "1.0.0")))
-  (testing "a snapshot: the version directory's metadata names a local copy and each installed file"
+  (testing "a snapshot writes version directory metadata naming a local copy and each installed file"
     (install! "2.0.0-SNAPSHOT" nil)
     (is (= #{"lib-2.0.0-SNAPSHOT.jar>=" "lib-2.0.0-SNAPSHOT.pom>="} (tracking "2.0.0-SNAPSHOT")))
     (is (= (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

@@ -242,10 +242,8 @@
             repos))))
 
 (defn- resolve-snapshot!
-  "A snapshot: the build the metadata resolves to, from the local
-  repository when its metadata wins or nothing resolves, else downloaded
-  from the repository whose metadata won, unless the cached file already
-  holds that build."
+  "Returns dest holding the build metadata/resolve-snapshot picks, cached or
+  downloaded from the repository that won, or nil when unavailable."
   [local-repo repos artifact dest]
   (let [dir (str (fs/parent dest))
         file-name (str (fs/file-name dest))
@@ -274,7 +272,7 @@
   "The artifact's file in the local repository, downloaded from the first
   repository that has it. nil when none does. A cached file from a
   repository outside repos is used once one of repos has it too. A snapshot
-  follows the newest metadata, the local repository's included."
+  follows the newest metadata, including the local repository's."
   [local-repo repos {:keys [version] :as artifact}]
   (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}

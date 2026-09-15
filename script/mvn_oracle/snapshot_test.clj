@@ -52,12 +52,12 @@
              (file-name local test-repo (artifact "classifierB" "07.20.3-SNAPSHOT"))))
       (is (= "dep-mng5324-07.20.3-20120809.112124-88-classifierA.jar"
              (file-name local test-repo (artifact "classifierA" "07.20.3-SNAPSHOT")))))
-    (testing "a classifier the metadata does not list stays at the base version, the listed builds do not stand in"
+    (testing "a classifier the metadata does not list resolves to the base version"
       (is (= {:version "07.20.3-SNAPSHOT" :repo :none}
              (metadata/resolve-snapshot local [test-repo] (artifact "classifierC" "07.20.3-SNAPSHOT")))))
     (testing "the metadata is cached in the local repository under the repository's id"
       (is (fs/exists? (fs/file local "org/apache/maven/its/dep-mng5324/07.20.3-SNAPSHOT/maven-metadata-test.xml"))))
-    (testing "no metadata anywhere: the base version, from no repository"
+    (testing "without metadata the base version resolves from no repository"
       (is (= {:version "1.0-SNAPSHOT" :repo :none}
              (metadata/resolve-snapshot local [test-repo] (artifact nil "1.0-SNAPSHOT")))))))
 
@@ -92,7 +92,7 @@
       (is (= {:version "07.20.3-SNAPSHOT" :repo nil} (metadata/resolve-snapshot local [test-repo] art))))))
 
 (deftest installed-snapshot-file-test
-  (testing "an installed snapshot's jar resolves without any repository, as Aether finds it through its tracking"
+  (testing "an installed snapshot's jar resolves without repositories"
     (let [local (str (fs/file dir "local3"))
           version-dir (fs/file local "g/a/1.0-SNAPSHOT")
           art {:group "g" :artifact "a" :version "1.0-SNAPSHOT" :extension "jar"}]
@@ -100,7 +100,7 @@
       (spit (fs/file version-dir "a-1.0-SNAPSHOT.jar") "PK")
       (spit (fs/file version-dir "_remote.repositories") "a-1.0-SNAPSHOT.jar>=\n")
       (is (= (str (fs/file version-dir "a-1.0-SNAPSHOT.jar")) (repo/resolve-file! local [] art)))
-      (testing "and with a repository that knows nothing of it"
+      (testing "and with a repository that does not have it"
         (is (= (str (fs/file version-dir "a-1.0-SNAPSHOT.jar"))
                (repo/resolve-file! local [(repo/remote-repo {} ["test" {:url (str (.toURI (fs/file remote)))}])] art)))))))
 

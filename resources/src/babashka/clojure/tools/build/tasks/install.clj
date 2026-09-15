@@ -8,7 +8,7 @@
   :basis :lib :classifier :version :jar-file :class-dir."
   {:no-doc true}
   (:require [babashka.fs :as fs]
-            [babashka.impl.mvn.xml :as x]
+            [babashka.impl.mvn.metadata :as metadata]
             [clojure.string :as str]
             [clojure.tools.build.api :as api]
             [clojure.tools.deps.util.maven :as mvn]))
@@ -69,10 +69,7 @@
         now (stamp)
         installed (map (fn [ext] {:classifier classifier :extension ext :value version :updated now}) extensions)
         existing (when (fs/exists? f)
-                   (let [versioning (x/child (x/parse (slurp f)) "versioning")]
-                     (for [sv (some-> (x/child versioning "snapshotVersions") (x/children "snapshotVersion"))]
-                       {:classifier (x/child-text sv "classifier") :extension (x/child-text sv "extension")
-                        :value (x/child-text sv "value") :updated (x/child-text sv "updated")})))
+                   (:snapshot-versions (metadata/parse-snapshot-metadata (slurp f))))
         kept (remove (fn [sv] (some #(= [(:classifier %) (:extension %)] [(:classifier sv) (:extension sv)]) installed))
                      existing)]
     (spit f (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
