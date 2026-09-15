@@ -37,7 +37,7 @@ A preview of the next release can be installed from
 
 </details>
 
-- [#2151](https://github.com/babashka/babashka/issues/2151): A `:task` task runs its `:exec-fn` dependencies, which get their own `:exec-args` and spec defaults
+- [#2151](https://github.com/babashka/babashka/issues/2151): An `:exec-fn` task in the `:depends` of a task with a `:task` body runs, with its own `:exec-args` and spec defaults
 
 ## 1.13.222 (2026-09-14)
 

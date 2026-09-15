@@ -333,8 +333,8 @@
 
 (def ^:dynamic *cli-target?*
   "True while assembling for a target that dispatches, which is what binds
-  `dep-opts-sym`. A plain target has no parse, so its CLI dependencies get only
-  their own defaults."
+  `dep-opts-sym`. A plain target does not parse, so its CLI dependencies get
+  only their own defaults."
   false)
 
 (def dep-opts-sym
