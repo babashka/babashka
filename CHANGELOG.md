@@ -7,11 +7,12 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.13.223 (2026-09-15)
+
+- Dep resolution improvements
 
 <details>
-<summary>Maven dependency resolution improvements</summary>
-
+<summary>Details:</summary>
 - [#2152](https://github.com/babashka/babashka/issues/2152): Read POMs, `settings.xml` and repository metadata without XML namespaces, as Maven does, so an element such as `<Xlint:-unchecked/>` no longer fails resolution
 - Resolve a timestamped snapshot version, such as `1.0-20240101.123456-3`, to that build instead of the newest one
 - Resolve `${project.name}` and `${parent.artifactId}` in a POM
@@ -34,7 +35,6 @@ A preview of the next release can be installed from
 - Resolve artifacts without their dependencies when their POM is missing or cannot be parsed
 - Include dependencies even when their `dependencyManagement` entry is marked `optional`
 - Resolve local parent POM paths relative to the declaring POM, so `:local/root` projects with more than two POM levels resolve without the JVM
-
 </details>
 
 - [#2151](https://github.com/babashka/babashka/issues/2151): An `:exec-fn` task in the `:depends` of a task with a `:task` body runs, with its own `:exec-args` and spec defaults
