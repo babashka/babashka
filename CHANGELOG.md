@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 <details>
 <summary>Maven dependency resolution improvements</summary>
 
+- Resolve a POM's parent and BOM imports from `http:` repositories the POM declares, as the Clojure CLI does
 - Reuse a file cached from an unlisted repository only if it is also available from a listed repository
 - Send the HTTP headers configured for a server in `settings.xml`, such as a GitLab `Private-Token`
 - Ignore `<localRepository>` in `settings.xml`, as the Clojure CLI does, and use `:mvn/local-repo` or `~/.m2/repository`

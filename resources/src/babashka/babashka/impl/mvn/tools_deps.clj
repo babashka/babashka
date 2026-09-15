@@ -48,12 +48,11 @@
 ;; POMs
 
 (defn- pom-repos
-  "Repositories a POM declares, after the configured ones. http ones are
-  dropped, Maven blocks those by default."
+  "Returns the configured repositories, then the ones a POM declares,
+  http: ones included."
   [config declared]
   (into (repos config)
         (comp (filter :url)
-              (remove #(str/starts-with? (:url %) "http:"))
               (map (fn [{:keys [id url]}] (repo/remote-repo (settings) [id {:url url}]))))
         declared))
 
