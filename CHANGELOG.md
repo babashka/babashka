@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 <details>
 <summary>Maven dependency resolution improvements</summary>
 
+- Resolve a locally installed `-SNAPSHOT` artifact, and pick a snapshot build the way Maven does: the newest metadata wins, the local repository's included. `install` now writes the version directory's `maven-metadata-local.xml` for a snapshot, as Maven does
 - Download to a unique temp file and lock `_remote.repositories`, so parallel resolves and processes sharing `~/.m2` do not corrupt downloads or lose entries
 - Resolve a POM's parent and BOM imports from `http:` repositories the POM declares, as the Clojure CLI does
 - Reuse a file cached from an unlisted repository only if it is also available from a listed repository
