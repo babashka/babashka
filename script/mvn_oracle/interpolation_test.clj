@@ -28,7 +28,7 @@
     (is (= "${something}" (dep-version (model (dep "${something}"))))))
   (testing "testTwoReferences"
     (is (= "foo-3.8.1" (dep-version (model (dep "${artifactId}-${version}"))))))
-  (testing "the POM's own name resolves, it is not inherited"
+  (testing "the POM's name resolves and an unset name stays literal"
     (is (= "1" (dep-version (pom/effective-model (pom/parse (str "<project><modelVersion>4.0.0</modelVersion><groupId>org.test</groupId><artifactId>foo</artifactId><version>3.8.1</version><name>1</name>" (dep "${project.name}") "</project>"))
                                                  {:read-pom (constantly nil) :cache (atom {})}))))
     (is (= "${name}" (dep-version (model (dep "${name}")))))))
