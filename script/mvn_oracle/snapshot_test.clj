@@ -8,6 +8,7 @@
   (:require [babashka.fs :as fs]
             [babashka.impl.mvn.metadata :as metadata]
             [babashka.impl.mvn.repo :as repo]
+            [clojure.string :as str]
             [clojure.test :as t :refer [deftest is testing]]))
 
 (def metadata-xml
@@ -107,24 +108,53 @@
 (defn- sha1 [^String s]
   (apply str (map #(format "%02x" %) (.digest (java.security.MessageDigest/getInstance "SHA-1") (.getBytes s)))))
 
-(deftest pinned-build-test
-  (let [local (str (fs/file dir "local4"))
-        remote4 (fs/file dir "remote4")
-        version-dir (fs/file remote4 "org/apache/maven/its/dep-mng5324/07.20.3-SNAPSHOT")
-        test-repo (repo/remote-repo {} ["test" {:url (str (.toURI (fs/file remote4)))}])
-        resolve (fn [version] (slurp (repo/resolve-file! local [test-repo] (artifact nil version))))]
+(defn- snapshot-repo
+  "Writes a file: repository with id under root holding the jar metadata and
+  builds, pairs of build and content. Returns the repository."
+  [root id builds]
+  (let [version-dir (fs/file root "org/apache/maven/its/dep-mng5324/07.20.3-SNAPSHOT")]
     (fs/create-dirs version-dir)
     (spit (fs/file version-dir "maven-metadata.xml") remote-jar-metadata-xml)
-    (doseq [[build content] [["20120809.112124-88" "88"] ["20120809.112920-97" "97"]]
+    (doseq [[build content] builds
             :let [jar (str "dep-mng5324-07.20.3-" build ".jar")]]
       (spit (fs/file version-dir jar) content)
       (spit (fs/file version-dir (str jar ".sha1")) (sha1 content)))
+    (repo/remote-repo {} [id {:url (str (.toURI (fs/file root)))}])))
+
+(deftest pinned-build-test
+  (let [local (str (fs/file dir "local4"))
+        test-repo (snapshot-repo (fs/file dir "remote4") "test"
+                                 [["20120809.112124-88" "88"] ["20120809.112920-97" "97"]])
+        resolve (fn [version] (slurp (repo/resolve-file! local [test-repo] (artifact nil version))))]
     (testing "a pinned build resolves to that build, not the newest in the metadata"
       (is (= "88" (resolve "07.20.3-20120809.112124-88"))))
     (testing "the -SNAPSHOT version then resolves to the newest build"
       (is (= "97" (resolve "07.20.3-SNAPSHOT"))))
     (testing "the pinned build resolves again after the newest one"
       (is (= "88" (resolve "07.20.3-20120809.112124-88"))))))
+
+(deftest unlisted-repository-test
+  (let [builds [["20120809.112124-88" "88"] ["20120809.112920-97" "97"]]
+        a (snapshot-repo (fs/file dir "remote-a") "a" builds)
+        b (snapshot-repo (fs/file dir "remote-b") "b" [])
+        c (snapshot-repo (fs/file dir "remote-c") "c" builds)
+        pinned (artifact nil "07.20.3-20120809.112124-88")
+        snapshot (artifact nil "07.20.3-SNAPSHOT")
+        local-pinned (str (fs/file dir "local5"))
+        local-snapshot (str (fs/file dir "local6"))
+        tracking (fn [local] (slurp (fs/file local "org/apache/maven/its/dep-mng5324/07.20.3-SNAPSHOT/_remote.repositories")))]
+    (is (repo/resolve-file! local-pinned [a] pinned))
+    (is (repo/resolve-file! local-snapshot [a] snapshot))
+    (testing "a pinned build cached from an unlisted repository is unavailable"
+      (is (nil? (repo/resolve-file! local-pinned [b] pinned))))
+    (testing "a -SNAPSHOT build cached from an unlisted repository is unavailable"
+      (is (nil? (repo/resolve-file! local-snapshot [b] snapshot))))
+    (testing "a cached pinned build counts once a listed repository has it"
+      (is (= "88" (slurp (repo/resolve-file! local-pinned [c] pinned))))
+      (is (str/includes? (tracking local-pinned) ">c=")))
+    (testing "a cached -SNAPSHOT build counts once the repository of its metadata has it"
+      (is (= "97" (slurp (repo/resolve-file! local-snapshot [c] snapshot))))
+      (is (str/includes? (tracking local-snapshot) ">c=")))))
 
 (let [{:keys [fail error]} (t/run-tests 'snapshot-test)]
   (fs/delete-tree dir)

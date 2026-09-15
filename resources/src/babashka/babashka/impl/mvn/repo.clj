@@ -217,25 +217,32 @@
       (record-remote! (str (fs/parent dest)) (str (fs/file-name dest)) (:id repo))
       dest)))
 
+(defn- confirm-cached!
+  "Returns the cached dest when it counts for repos, or once one of repos
+  enabled for policy has remote-name, which is then recorded. nil otherwise."
+  [repos artifact remote-name dest policy]
+  (let [dir (str (fs/parent dest))
+        file-name (str (fs/file-name dest))
+        rel (str (coords/version-dir artifact) "/" remote-name)]
+    (if (cached-available? dir file-name repos)
+      dest
+      ;; Aether's existence check: the cached file stays, the repository is recorded
+      (some (fn [repo]
+              (when (and (get-in repo [policy :enabled])
+                         (http/exists? (str (:url repo) rel)
+                                       {:auth (:auth repo) :proxy (:proxy repo) :headers (:headers repo)
+                                        :repo-id (:id repo) :label rel}))
+                (record-remote! dir file-name (:id repo))
+                dest))
+            repos))))
+
 (defn- resolve-release!
   "A release: the cached file when it counts for repos, else the first
   repository that has it."
   [repos artifact dest]
-  (let [dir (str (fs/parent dest))
-        file-name (str (fs/file-name dest))
-        rel (coords/relative-path artifact)]
+  (let [file-name (str (fs/file-name dest))]
     (if (fs/exists? dest)
-      (if (cached-available? dir file-name repos)
-        dest
-        ;; Aether's existence check: the cached file stays, the repository is recorded
-        (some (fn [repo]
-                (when (and (get-in repo [:releases :enabled])
-                           (http/exists? (str (:url repo) rel)
-                                         {:auth (:auth repo) :proxy (:proxy repo) :headers (:headers repo)
-                                          :repo-id (:id repo) :label rel}))
-                  (record-remote! dir file-name (:id repo))
-                  dest))
-              repos))
+      (confirm-cached! repos artifact file-name dest :releases)
       (some (fn [repo]
               (when (get-in repo [:releases :enabled])
                 (download! repo artifact file-name dest :releases)))
@@ -261,7 +268,7 @@
                 repos))
 
       (and (fs/exists? dest) (= remote-name (recorded-snapshot dir file-name)))
-      dest
+      (confirm-cached! [repo] artifact remote-name dest :snapshots)
 
       :else
       (when (download! repo artifact remote-name dest :snapshots)
@@ -276,7 +283,7 @@
         file-name (str (fs/file-name dest))
         remote-name (coords/file-name artifact)]
     (if (and (fs/exists? dest) (= remote-name (recorded-snapshot dir file-name)))
-      dest
+      (confirm-cached! repos artifact remote-name dest :snapshots)
       (some (fn [repo]
               (when (and (get-in repo [:snapshots :enabled])
                          (download! repo artifact remote-name dest :snapshots))
