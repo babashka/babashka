@@ -182,26 +182,6 @@
         (contains? ids "")
         (boolean (some #(contains? ids (:id %)) repos)))))
 
-;; A snapshot's local file carries the base version, so _babashka.snapshots
-;; in the version directory records which remote file it holds.
-
-(defn- snapshots-file [dir]
-  (fs/file dir "_babashka.snapshots"))
-
-(defn- recorded-snapshot [dir local-name]
-  (when-let [text (read-tracking-file (snapshots-file dir))]
-    (some (fn [line]
-            (let [[l r] (str/split line #">" 2)]
-              (when (= l local-name) r)))
-          (str/split-lines text))))
-
-(defn- record-snapshot! [dir local-name remote-name]
-  (update-tracking-file! (snapshots-file dir)
-                         (fn [text]
-                           (let [lines (remove #(or (str/blank? %) (str/starts-with? % (str local-name ">")))
-                                               (str/split-lines text))]
-                             (str (str/join "\n" (conj (vec lines) (str local-name ">" remote-name))) "\n")))))
-
 (defn- download!
   "Downloads the file named remote-name in the artifact's directory of repo
   to dest. Returns dest, nil when the repository does not have it."
@@ -219,12 +199,12 @@
 
 (defn- confirm-cached!
   "Returns dest when the cached file counts for repos. Otherwise records the
-  first repository enabled for policy that has remote-name and returns dest,
+  first repository enabled for policy that has the file and returns dest,
   or nil when none has it."
-  [repos artifact remote-name dest policy]
+  [repos artifact dest policy]
   (let [dir (str (fs/parent dest))
         file-name (str (fs/file-name dest))
-        rel (str (coords/version-dir artifact) "/" remote-name)]
+        rel (str (coords/version-dir artifact) "/" file-name)]
     (if (cached-available? dir file-name repos)
       dest
       ;; Aether's existence check: the cached file stays, the repository is recorded
@@ -237,60 +217,51 @@
                 dest))
             repos))))
 
-(defn- resolve-release!
-  "A release: the cached file when it counts for repos, else the first
-  repository that has it."
-  [repos artifact dest]
-  (let [file-name (str (fs/file-name dest))]
-    (if (fs/exists? dest)
-      (confirm-cached! repos artifact file-name dest :releases)
+(defn- resolve-remote!
+  "Returns dest: the cached file when it counts for repos, else downloaded
+  from the first repository enabled for policy that has it. nil when none
+  has it."
+  [repos artifact dest policy]
+  (if (fs/exists? dest)
+    (confirm-cached! repos artifact dest policy)
+    (let [file-name (str (fs/file-name dest))]
       (some (fn [repo]
-              (when (get-in repo [:releases :enabled])
-                (download! repo artifact file-name dest :releases)))
+              (when (get-in repo [policy :enabled])
+                (download! repo artifact file-name dest policy)))
             repos))))
 
-(defn- resolve-snapshot!
-  "Returns dest holding the build metadata/resolve-snapshot picks, cached or
-  downloaded from the repository that won, or nil when unavailable."
-  [local-repo repos artifact dest]
-  (let [dir (str (fs/parent dest))
-        file-name (str (fs/file-name dest))
-        {:keys [version repo]} (metadata/resolve-snapshot local-repo repos artifact)
-        remote-name (coords/file-name (assoc artifact :version version))]
-    (cond
-      (nil? repo)
-      (when (fs/exists? dest) dest)
-
-      (= :none repo)
-      (or (when (and (fs/exists? dest) (cached-available? dir file-name repos)) dest)
-          (some (fn [repo]
-                  (when (get-in repo [:snapshots :enabled])
-                    (download! repo artifact file-name dest :snapshots)))
-                repos))
-
-      (and (fs/exists? dest) (= remote-name (recorded-snapshot dir file-name)))
-      (confirm-cached! [repo] artifact remote-name dest :snapshots)
-
-      :else
-      (when (download! repo artifact remote-name dest :snapshots)
-        (record-snapshot! dir file-name remote-name)
-        dest))))
+(defn- copy-build!
+  "Copies the build file over dest when their length or last-modified time
+  differ and gives dest the build's time, as Aether's snapshot
+  normalization does. Returns dest."
+  [build dest]
+  (let [b (fs/file build)
+        d (fs/file dest)]
+    (when (or (not= (.length b) (.length d))
+              (not= (.lastModified b) (.lastModified d)))
+      (let [tmp (http/temp-file dest)]
+        (fs/copy build tmp {:replace-existing true})
+        (http/move-into-place! tmp dest)
+        (fs/set-last-modified-time dest (fs/last-modified-time build))))
+    dest))
 
 (defn- resolve-build!
-  "Returns dest holding the named timestamped build, cached or downloaded
-  from the first repository that has it, or nil when unavailable."
-  [repos artifact dest]
-  (let [dir (str (fs/parent dest))
-        file-name (str (fs/file-name dest))
-        remote-name (coords/file-name artifact)]
-    (if (and (fs/exists? dest) (= remote-name (recorded-snapshot dir file-name)))
-      (confirm-cached! repos artifact remote-name dest :snapshots)
-      (some (fn [repo]
-              (when (and (get-in repo [:snapshots :enabled])
-                         (download! repo artifact remote-name dest :snapshots))
-                (record-snapshot! dir file-name remote-name)
-                dest))
-            repos))))
+  "Returns dest holding the timestamped build version, kept under its own
+  name, cached or downloaded from repos, or nil when unavailable."
+  [repos artifact version dest]
+  (let [build (str (fs/file (fs/parent dest) (coords/file-name (assoc artifact :version version))))]
+    (when (resolve-remote! repos artifact build :snapshots)
+      (copy-build! build dest))))
+
+(defn- resolve-snapshot!
+  "Returns dest holding the build metadata/resolve-snapshot picks, or nil
+  when unavailable."
+  [local-repo repos artifact dest]
+  (let [{:keys [version repo]} (metadata/resolve-snapshot local-repo repos artifact)]
+    (cond
+      (nil? repo) (when (fs/exists? dest) dest)
+      (= :none repo) (resolve-remote! repos artifact dest :snapshots)
+      :else (resolve-build! [repo] artifact version dest))))
 
 (defn resolve-file!
   "The artifact's file in the local repository, downloaded from the first
@@ -304,5 +275,5 @@
     (locking (lock-for dest)
       (cond
         (str/ends-with? version "-SNAPSHOT") (resolve-snapshot! local-repo repos artifact dest)
-        (coords/snapshot? version) (resolve-build! repos artifact dest)
-        :else (resolve-release! repos artifact dest)))))
+        (coords/snapshot? version) (resolve-build! repos artifact version dest)
+        :else (resolve-remote! repos artifact dest :releases)))))

@@ -124,17 +124,17 @@
 (deftest pinned-build-test
   (let [local (str (fs/file dir "local4"))
         test-repo (snapshot-repo (fs/file dir "remote4") "test"
-                                 [["20120809.112124-88" "88"] ["20120809.112920-97" "97"]])
+                                 [["20120809.112124-88" "88"] ["20120809.112920-97" "9797"]])
         resolve (fn [version] (slurp (repo/resolve-file! local [test-repo] (artifact nil version))))]
     (testing "a pinned build resolves to that build, not the newest in the metadata"
       (is (= "88" (resolve "07.20.3-20120809.112124-88"))))
     (testing "the -SNAPSHOT version then resolves to the newest build"
-      (is (= "97" (resolve "07.20.3-SNAPSHOT"))))
+      (is (= "9797" (resolve "07.20.3-SNAPSHOT"))))
     (testing "the pinned build resolves again after the newest one"
       (is (= "88" (resolve "07.20.3-20120809.112124-88"))))))
 
 (deftest unlisted-repository-test
-  (let [builds [["20120809.112124-88" "88"] ["20120809.112920-97" "97"]]
+  (let [builds [["20120809.112124-88" "88"] ["20120809.112920-97" "9797"]]
         a (snapshot-repo (fs/file dir "remote-a") "a" builds)
         b (snapshot-repo (fs/file dir "remote-b") "b" [])
         c (snapshot-repo (fs/file dir "remote-c") "c" builds)
@@ -153,8 +153,42 @@
       (is (= "88" (slurp (repo/resolve-file! local-pinned [c] pinned))))
       (is (str/includes? (tracking local-pinned) ">c=")))
     (testing "a cached -SNAPSHOT build counts once the repository of its metadata has it"
-      (is (= "97" (slurp (repo/resolve-file! local-snapshot [c] snapshot))))
+      (is (= "9797" (slurp (repo/resolve-file! local-snapshot [c] snapshot))))
       (is (str/includes? (tracking local-snapshot) ">c=")))))
+
+(deftest build-files-test
+  (let [root (fs/file dir "remote-d")
+        d (snapshot-repo root "d" [["20120809.112124-88" "88"] ["20120809.112920-97" "9797"]])
+        local (str (fs/file dir "local7"))
+        version-dir (fs/file local "org/apache/maven/its/dep-mng5324/07.20.3-SNAPSHOT")
+        pinned (artifact nil "07.20.3-20120809.112124-88")
+        snapshot (artifact nil "07.20.3-SNAPSHOT")
+        resolve #(some-> (repo/resolve-file! local [d] %) slurp)]
+    (is (= "88" (resolve pinned)))
+    (is (= "9797" (resolve snapshot)))
+    (testing "each build is kept and tracked under its own name"
+      (is (= "88" (slurp (fs/file version-dir "dep-mng5324-07.20.3-20120809.112124-88.jar"))))
+      (is (= "9797" (slurp (fs/file version-dir "dep-mng5324-07.20.3-20120809.112920-97.jar"))))
+      (is (= #{"dep-mng5324-07.20.3-20120809.112124-88.jar>d=" "dep-mng5324-07.20.3-20120809.112920-97.jar>d="}
+             (set (filter #(str/includes? % ">") (str/split-lines (slurp (fs/file version-dir "_remote.repositories"))))))))
+    (testing "the -SNAPSHOT file is copied again after another tool overwrote it"
+      (spit (fs/file version-dir "dep-mng5324-07.20.3-SNAPSHOT.jar") "88")
+      (fs/set-last-modified-time (fs/file version-dir "dep-mng5324-07.20.3-SNAPSHOT.jar") (fs/millis->file-time 1000000))
+      (is (= "9797" (resolve snapshot))))
+    (testing "both builds resolve from the local repository once the repository is gone"
+      (fs/delete-tree root)
+      (is (= "88" (resolve pinned)))
+      (is (= "9797" (resolve snapshot)))
+      (is (= "88" (resolve pinned))))))
+
+(deftest shared-tracking-test
+  (testing "a repository tracked for one build does not count for another"
+    (let [b (snapshot-repo (fs/file dir "remote-b2") "b" [["20120809.112920-97" "9797"]])
+          x (snapshot-repo (fs/file dir "remote-x") "x" [["20120809.112124-88" "88"]])
+          local (str (fs/file dir "local8"))]
+      (is (= "9797" (slurp (repo/resolve-file! local [b] (artifact nil "07.20.3-SNAPSHOT")))))
+      (is (= "88" (slurp (repo/resolve-file! local [x] (artifact nil "07.20.3-20120809.112124-88")))))
+      (is (nil? (repo/resolve-file! local [b] (artifact nil "07.20.3-20120809.112124-88")))))))
 
 (let [{:keys [fail error]} (t/run-tests 'snapshot-test)]
   (fs/delete-tree dir)
