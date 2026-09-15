@@ -28,7 +28,7 @@
     (str (.toURI (fs/file dir)))))
 
 (deftest not-found-test
-  (is (= "Could not find artifact nope:nope:jar:1.0.0 in central (https://repo1.maven.org/maven2/), clojars (https://repo.clojars.org/)"
+  (is (= "The following artifacts could not be resolved: nope:nope:jar:1.0.0 (absent): Could not find artifact nope:nope:jar:1.0.0 in central (https://repo1.maven.org/maven2/)"
          (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}}))))
 
 (deftest unreachable-test
@@ -49,7 +49,7 @@
               "<settings><mirrors><mirror><id>bucket-mirror</id><url>https://repo.clojars.org/</url><mirrorOf>private</mirrorOf></mirror></mirrors></settings>")
         (System/setProperty "user.home" (str home))
         (try
-          (is (= "Could not find artifact nope:nope:jar:1.0.0 in central (https://repo1.maven.org/maven2/), clojars (https://repo.clojars.org/), bucket-mirror (https://repo.clojars.org/)"
+          (is (= "The following artifacts could not be resolved: nope:nope:jar:1.0.0 (absent): Could not find artifact nope:nope:jar:1.0.0 in central (https://repo1.maven.org/maven2/)"
                  (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
                             :mvn/repos {"private" {:url "s3://bucket/releases/"}}})))
           (finally (System/setProperty "user.home" real-home)))))))

@@ -124,5 +124,23 @@
                                       {:mvn/repos {"local" {:url (str (.toURI (fs/file dir "empty")))}}
                                        :mvn/local-repo (str local)})))))))))
 
+(deftest not-found-message-test
+  (fs/with-temp-dir [dir {}]
+    (let [local (fs/file dir "local")
+          empty-url (str (.toURI (fs/file dir "empty")))
+          message (fn [repos]
+                    (session/with-session
+                      (try (ext/coord-paths 'g/a {:mvn/version "1"} :mvn {:mvn/repos repos :mvn/local-repo (str local)}) nil
+                           (catch Exception e (ex-message e)))))]
+      (fs/create-dirs (fs/file dir "empty"))
+      (testing "a local file not confirmed by a listed repository is present, but unavailable"
+        (cache! local ["a-1.jar>other="])
+        (is (= (str "The following artifacts could not be resolved: g:a:jar:1 (present, but unavailable): Could not find artifact g:a:jar:1 in local (" empty-url "/)")
+               (message {"central" nil "clojars" nil "local" {:url empty-url}}))))
+      (testing "without repositories the message ends after the artifact"
+        (fs/delete (fs/file local "g" "a" "1" "a-1.jar"))
+        (is (= "The following artifacts could not be resolved: g:a:jar:1 (absent): Could not find artifact g:a:jar:1"
+               (message {"central" nil "clojars" nil})))))))
+
 (let [{:keys [fail error]} (t/run-tests 'local-repo-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))
