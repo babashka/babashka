@@ -81,6 +81,14 @@
                               "<configuration><compilerArguments><Xlint:-unchecked/></compilerArguments></configuration>"
                               "</plugin></plugins></build></project>"))]
       (is (= ["g" "a" "1"] ((juxt :group :artifact :version) raw)))))
+  (testing "a prefixed element is not read as its local name, as tools.deps reads POMs"
+    (let [raw (pom/parse (str "<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:p=\"http://maven.apache.org/POM/4.0.0\">"
+                              "<modelVersion>4.0.0</modelVersion><groupId>g</groupId><artifactId>a</artifactId><version>1</version>"
+                              "<dependencies>"
+                              "<dependency><groupId>medley</groupId><artifactId>medley</artifactId><version>1.4.0</version></dependency>"
+                              "<p:dependency><groupId>g</groupId><artifactId>prefixed</artifactId><version>1</version></p:dependency>"
+                              "</dependencies></project>"))]
+      (is (= ["medley"] (mapv :artifact (:dependencies raw))))))
   (testing "text that does not parse throws :unreadable"
     (is (= :babashka.impl.mvn.pom/unreadable
            (:type (ex-data (try (pom/parse "not xml at all") (catch Exception e e))))))))
