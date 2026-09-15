@@ -19,9 +19,9 @@ expression up in this order:
 5. unprefixed model expressions such as `${version}`, deprecated
 
 babashka's Maven layer resolves a fixed set: `groupId`, `artifactId`,
-`version` and `packaging` with and without a prefix, `project.parent.groupId`,
+`version`, `packaging` and `name` with and without a prefix, `project.parent.groupId`,
 `project.parent.artifactId`, `project.parent.version`, `parent.groupId`,
-`parent.version`, `basedir` and `project.basedir`. Before this decision these
+`parent.artifactId`, `parent.version`, `basedir` and `project.basedir`. Before this decision these
 values won over a property with the same name. grenadine resolves the same fixed set.
 
 A local repository of 11,592 POMs uses these expressions most:
@@ -34,7 +34,7 @@ A local repository of 11,592 POMs uses these expressions most:
 | `${project.artifactId}` | 1,757 | yes |
 | `${project.basedir}` | 1,233 | yes |
 | `${project.build.outputDirectory}` | 1,073 | no |
-| `${project.name}` | 931 | no |
+| `${project.name}` | 931 | yes |
 | `${project.organization.name}` | 349 | no |
 | `${project.url}` | 266 | no |
 

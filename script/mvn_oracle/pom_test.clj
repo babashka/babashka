@@ -98,7 +98,11 @@
     (testing "the parent's dependencies are inherited"
       (is (= "1.12.0" (:version (dep model "org.clojure" "clojure")))))
     (testing "the parent's properties interpolate, through one level of nesting"
-      (is (= "2.4.0" (get-in model [:properties "nested"]))))))
+      (is (= "2.4.0" (get-in model [:properties "nested"]))))
+    (testing "the parent's coordinates resolve with and without the project. prefix"
+      (let [model (effective (pom "<parent><groupId>org.example</groupId><artifactId>parent</artifactId><version>1.0</version></parent><artifactId>child</artifactId>"
+                                  "<dependencies><dependency><groupId>g</groupId><artifactId>a</artifactId><version>${parent.artifactId}-${project.parent.version}</version></dependency></dependencies>"))]
+        (is (= "parent-1.0" (:version (dep model "g" "a"))))))))
 
 (deftest management-test
   (let [model (effective child)]
