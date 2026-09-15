@@ -9,35 +9,35 @@ A preview of the next release can be installed from
 
 ## 1.13.223 (2026-09-15)
 
-- Dep resolution improvements
-
-<details>
-<summary>Details:</summary>
-- [#2152](https://github.com/babashka/babashka/issues/2152): Read POMs, `settings.xml` and repository metadata without XML namespaces, as Maven does, so an element such as `<Xlint:-unchecked/>` no longer fails resolution
-- Resolve a timestamped snapshot version, such as `1.0-20240101.123456-3`, to that build instead of the newest one
-- Resolve `${project.name}` and `${parent.artifactId}` in a POM
-- Report a missing artifact with the same message as the Clojure CLI
-- Resolve locally installed `-SNAPSHOT` artifacts and pick the snapshot build with the newest metadata, including the local repository's, as Maven does
-- Write `maven-metadata-local.xml` in the version directory when `install` installs a `-SNAPSHOT` version
-- Download to a unique temp file and lock `_remote.repositories`, so parallel resolves and processes sharing `~/.m2` do not corrupt downloads or lose entries
-- Resolve a POM's parent and BOM imports from `http:` repositories the POM declares, as the Clojure CLI does
-- Reuse a file cached from an unlisted repository only if it is also available from a listed repository
-- Send the HTTP headers configured for a server in `settings.xml`, such as a GitLab `Private-Token`
-- Ignore `<localRepository>` in `settings.xml`, as the Clojure CLI does, and use `:mvn/local-repo` or `~/.m2/repository`
-- Report property, parent or BOM import cycles in POMs with Maven's message and resolve the artifact without its dependencies
-- Report missing `groupId`, `artifactId` or `version` in a POM's parent declaration with Maven's message and resolve the artifact without its dependencies
-- Resolve parent version ranges, such as `<version>[0.3.0,1)</version>`, to the highest matching version listed by the repositories
-- Reject parent POMs selected by a version range if their version is missing or contains an expression such as `${project.version}`, with Maven's `Version must be a constant` message
-- Include versions from the local repository's `maven-metadata-local.xml` when resolving version ranges, `RELEASE` and `LATEST`
-- Parse booleans in POMs, `settings.xml` and repository metadata regardless of case, such as `<optional>TRUE</optional>`
-- Give POM properties precedence over unprefixed model expressions such as `${version}`
-- Read POMs with a byte order mark or HTML character entities
-- Resolve artifacts without their dependencies when their POM is missing or cannot be parsed
-- Include dependencies even when their `dependencyManagement` entry is marked `optional`
-- Resolve local parent POM paths relative to the declaring POM, so `:local/root` projects with more than two POM levels resolve without the JVM
-</details>
-
 - [#2151](https://github.com/babashka/babashka/issues/2151): An `:exec-fn` task in the `:depends` of a task with a `:task` body runs, with its own `:exec-args` and spec defaults
+- Dep resolution improvements
+  - <details>
+    <summary>Details:</summary>
+
+    - [#2152](https://github.com/babashka/babashka/issues/2152): Read POMs, `settings.xml` and repository metadata without XML namespaces, as Maven does, so an element such as `<Xlint:-unchecked/>` no longer fails resolution
+    - Resolve a timestamped snapshot version, such as `1.0-20240101.123456-3`, to that build instead of the newest one
+    - Resolve `${project.name}` and `${parent.artifactId}` in a POM
+    - Report a missing artifact with the same message as the Clojure CLI
+    - Resolve locally installed `-SNAPSHOT` artifacts and pick the snapshot build with the newest metadata, including the local repository's, as Maven does
+    - Write `maven-metadata-local.xml` in the version directory when `install` installs a `-SNAPSHOT` version
+    - Download to a unique temp file and lock `_remote.repositories`, so parallel resolves and processes sharing `~/.m2` do not corrupt downloads or lose entries
+    - Resolve a POM's parent and BOM imports from `http:` repositories the POM declares, as the Clojure CLI does
+    - Reuse a file cached from an unlisted repository only if it is also available from a listed repository
+    - Send the HTTP headers configured for a server in `settings.xml`, such as a GitLab `Private-Token`
+    - Ignore `<localRepository>` in `settings.xml`, as the Clojure CLI does, and use `:mvn/local-repo` or `~/.m2/repository`
+    - Report property, parent or BOM import cycles in POMs with Maven's message and resolve the artifact without its dependencies
+    - Report missing `groupId`, `artifactId` or `version` in a POM's parent declaration with Maven's message and resolve the artifact without its dependencies
+    - Resolve parent version ranges, such as `<version>[0.3.0,1)</version>`, to the highest matching version listed by the repositories
+    - Reject parent POMs selected by a version range if their version is missing or contains an expression such as `${project.version}`, with Maven's `Version must be a constant` message
+    - Include versions from the local repository's `maven-metadata-local.xml` when resolving version ranges, `RELEASE` and `LATEST`
+    - Parse booleans in POMs, `settings.xml` and repository metadata regardless of case, such as `<optional>TRUE</optional>`
+    - Give POM properties precedence over unprefixed model expressions such as `${version}`
+    - Read POMs with a byte order mark or HTML character entities
+    - Resolve artifacts without their dependencies when their POM is missing or cannot be parsed
+    - Include dependencies even when their `dependencyManagement` entry is marked `optional`
+    - Resolve local parent POM paths relative to the declaring POM, so `:local/root` projects with more than two POM levels resolve without the JVM
+
+    </details>
 
 ## 1.13.222 (2026-09-14)
 
