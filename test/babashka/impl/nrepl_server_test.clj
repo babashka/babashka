@@ -55,7 +55,9 @@
           (recur))))))
 
 (defn nrepl-test []
-  (with-open [socket (java.net.Socket. "127.0.0.1" 1668)
+  (with-open [socket (doto (java.net.Socket. "127.0.0.1" 1668)
+                       ;; a missed reply fails here instead of hanging CI
+                       (.setSoTimeout 30000))
               in (.getInputStream socket)
               in (java.io.PushbackInputStream. in)
               os (.getOutputStream socket)]
@@ -246,22 +248,28 @@
           (is (pos? (count (filter fs/exists? cp))))))
       (testing "stdin"
         (let [eval-with-stdin
+              ;; the eval's done and the stdin op's done arrive in either
+              ;; order, so both are awaited from one stream of replies
               (fn [code stdin]
                 (let [eval-id (new-id!)]
                   (bencode/write-bencode os {"op" "eval" "code" code "session" session "id" eval-id})
-                  (loop [asked 0 value nil]
-                    (let [msg (read-reply in session eval-id)
+                  (loop [asked 0 value nil pending #{eval-id}]
+                    (let [msg (read-msg (bencode/read-bencode in))
                           status (set (:status msg))
-                        asked (if (contains? status "need-input")
-                                (do (bencode/write-bencode os {"op" "stdin" "stdin" stdin
-                                                               "session" session "id" (new-id!)})
-                                    (read-reply in session @id)
-                                    (inc asked))
-                                asked)
-                        value (or (:value msg) value)]
-                    (if (contains? status "done")
-                      {:asked asked :value value}
-                      (recur asked value))))))]
+                          own? (and (= session (:session msg)) (contains? pending (:id msg)))
+                          stdin-id (when (and own? (contains? status "need-input"))
+                                     (let [stdin-id (new-id!)]
+                                       (bencode/write-bencode os {"op" "stdin" "stdin" stdin
+                                                                  "session" session "id" stdin-id})
+                                       stdin-id))
+                          asked (cond-> asked stdin-id inc)
+                          value (or (when own? (:value msg)) value)
+                          pending (cond-> pending
+                                    stdin-id (conj stdin-id)
+                                    (and own? (contains? status "done")) (disj (:id msg)))]
+                      (if (empty? pending)
+                        {:asked asked :value value}
+                        (recur asked value pending))))))]
           (testing "a form is read from one stdin chunk, asked for once"
             (let [{:keys [asked value]} (eval-with-stdin "(read)" ":ohai\n")]
               (is (= 1 asked))
