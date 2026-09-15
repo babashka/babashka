@@ -39,8 +39,8 @@
                     {:lib lib :coord coord}))))
 
 (defn- not-found-message
-  "tools.deps' wording for an artifact no repository has: the artifact,
-  whether the local repository holds a copy, and the first repository asked."
+  "Returns the tools.deps message for a missing artifact. Names the first
+  repository enabled for the artifact's release or snapshot policy."
   [{:keys [group artifact extension classifier version]} repos cached?]
   (let [gav (str group ":" artifact ":" extension (when classifier (str ":" classifier)) ":" version)
         policy (if (coords/snapshot? version) :snapshots :releases)

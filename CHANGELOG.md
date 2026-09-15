@@ -12,7 +12,7 @@ A preview of the next release can be installed from
 <details>
 <summary>Maven dependency resolution improvements</summary>
 
-- Report an artifact no repository has in the Clojure CLI's words: "The following artifacts could not be resolved: g:a:jar:v (absent): Could not find artifact g:a:jar:v in central (url)"
+- Report a missing artifact with the same message as the Clojure CLI
 - Resolve locally installed `-SNAPSHOT` artifacts and pick the snapshot build with the newest metadata, including the local repository's, as Maven does
 - Write `maven-metadata-local.xml` in the version directory when `install` installs a `-SNAPSHOT` version
 - Download to a unique temp file and lock `_remote.repositories`, so parallel resolves and processes sharing `~/.m2` do not corrupt downloads or lose entries
