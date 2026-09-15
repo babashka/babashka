@@ -135,12 +135,48 @@
       (fs/create-dirs (fs/file dir "empty"))
       (testing "a local file not confirmed by a listed repository is present, but unavailable"
         (cache! local ["a-1.jar>other="])
-        (is (= (str "The following artifacts could not be resolved: g:a:jar:1 (present, but unavailable): Could not find artifact g:a:jar:1 in local (" empty-url "/)")
+        (is (= (str "The following artifacts could not be resolved: g:a:jar:1 (present, but unavailable): Could not find artifact g:a:jar:1 in local (" empty-url ")")
                (message {"central" nil "clojars" nil "local" {:url empty-url}}))))
       (testing "without repositories the message ends after the artifact"
         (fs/delete (fs/file local "g" "a" "1" "a-1.jar"))
         (is (= "The following artifacts could not be resolved: g:a:jar:1 (absent): Could not find artifact g:a:jar:1"
                (message {"central" nil "clojars" nil})))))))
+
+(def ^:private snapshot-metadata
+  "<metadata modelVersion=\"1.1.0\"><groupId>g</groupId><artifactId>a</artifactId><version>1.0-SNAPSHOT</version><versioning>
+  <snapshot><timestamp>20240102.000000</timestamp><buildNumber>2</buildNumber></snapshot><lastUpdated>20240102000000</lastUpdated>
+  <snapshotVersions><snapshotVersion><extension>jar</extension><value>1.0-20240102.000000-2</value><updated>20240102000000</updated></snapshotVersion></snapshotVersions>
+  </versioning></metadata>")
+
+(deftest snapshot-not-found-message-test
+  (fs/with-temp-dir [dir {}]
+    (let [empty-url (str (.toURI (fs/file dir "empty")))
+          meta-url (str (.toURI (fs/file dir "meta")))
+          version-dir #(fs/file % "g" "a" "1.0-SNAPSHOT")
+          message (fn [local repos]
+                    (session/with-session
+                      (try (ext/coord-paths 'g/a {:mvn/version "1.0-SNAPSHOT"} :mvn {:mvn/repos repos :mvn/local-repo (str local)}) nil
+                           (catch Exception e (ex-message e)))))
+          expected #(str "The following artifacts could not be resolved: g:a:jar:1.0-SNAPSHOT (" % "): "
+                         "Could not find artifact g:a:jar:1.0-20240102.000000-2 in b (" meta-url ")")
+          both {"central" nil "clojars" nil "a" {:url empty-url} "b" {:url meta-url}}]
+      (fs/create-dirs (fs/file dir "empty"))
+      (fs/create-dirs (version-dir (fs/file dir "meta")))
+      (spit (fs/file (version-dir (fs/file dir "meta")) "maven-metadata.xml") snapshot-metadata)
+      (testing "a -SNAPSHOT names the build and the repository its metadata picks"
+        (is (= (expected "absent") (message (fs/file dir "local1") both))))
+      (testing "a -SNAPSHOT file without the build is absent"
+        (let [local (fs/file dir "local2")]
+          (fs/create-dirs (version-dir local))
+          (spit (fs/file (version-dir local) "a-1.0-SNAPSHOT.jar") "cached")
+          (is (= (expected "absent") (message local both)))))
+      (testing "the build cached from another repository is present, but unavailable"
+        (let [local (fs/file dir "local3")]
+          (fs/create-dirs (version-dir local))
+          (spit (fs/file (version-dir local) "a-1.0-20240102.000000-2.jar") "cached")
+          (spit (fs/file (version-dir local) "_remote.repositories") "a-1.0-20240102.000000-2.jar>c=\n")
+          (is (= (expected "present, but unavailable")
+                 (message local {"central" nil "clojars" nil "b" {:url meta-url}}))))))))
 
 (let [{:keys [fail error]} (t/run-tests 'local-repo-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

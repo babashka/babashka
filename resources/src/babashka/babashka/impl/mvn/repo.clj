@@ -48,10 +48,10 @@
   "One repository map from a :mvn/repos entry, with the mirror, auth and
   proxy from settings applied."
   [{:keys [mirrors servers] :as settings} [name {:keys [url snapshots releases]}]]
-  (let [repo {:id name :url (with-slash url)}
+  (let [repo {:id name :url (with-slash url) :display-url url}
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
-               {:id (:id mirror) :url (with-slash (:url mirror))}
+               {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror)}
                repo)
         {:keys [username password headers]} (get servers (:id repo))]
     ;; Check the repository URL after applying mirrors.
@@ -193,6 +193,7 @@
                            :headers (:headers repo)
                            :checksum (get-in repo [policy :checksum])
                            :repo-id (:id repo)
+                           :repo-url (:display-url repo)
                            :label rel})
       (record-remote! (str (fs/parent dest)) (str (fs/file-name dest)) (:id repo))
       dest)))
@@ -212,7 +213,7 @@
               (when (and (get-in repo [policy :enabled])
                          (http/exists? (str (:url repo) rel)
                                        {:auth (:auth repo) :proxy (:proxy repo) :headers (:headers repo)
-                                        :repo-id (:id repo) :label rel}))
+                                        :repo-id (:id repo) :repo-url (:display-url repo) :label rel}))
                 (record-remote! dir file-name (:id repo))
                 dest))
             repos))))
