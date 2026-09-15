@@ -65,7 +65,7 @@
   "A request with a transport failure reported as Aether reports it: what
   could not be transferred, from which repository, and why. An unresolved
   host has no message of its own, so the host stands in."
-  [method url {:keys [repo-id label] :as opts}]
+  [method url {:keys [repo-id repo-url label] :as opts}]
   (try
     (http/request (assoc opts :method method :uri url))
     (catch Exception e
@@ -74,7 +74,7 @@
                    url)
             why (or (root-message e) (.getHost (java.net.URI. url)))]
         (throw (ex-info (str "Could not transfer " (or label url)
-                             " from " (or repo-id base) " (" base "): " why)
+                             " from " (or repo-id base) " (" (or repo-url base) "): " why)
                         {:url url :repo-id repo-id} e))))))
 
 (defn- file-url? [url]
@@ -95,7 +95,7 @@
     (let [f (file-url->path url)]
       (when (fs/exists? f) (slurp f)))
     (let [{:keys [status body]} (request! :get url (assoc (request-opts opts) :as :string
-                                                          :repo-id (:repo-id opts) :label (:label opts)))]
+                                                          :repo-id (:repo-id opts) :repo-url (:repo-url opts) :label (:label opts)))]
       (cond
         (= 200 status) body
         (#{404 410} status) nil
@@ -108,7 +108,7 @@
   (if (file-url? url)
     (fs/exists? (file-url->path url))
     (let [{:keys [status]} (request! :head url (assoc (request-opts opts) :as :string
-                                                      :repo-id (:repo-id opts) :label (:label opts)))]
+                                                      :repo-id (:repo-id opts) :repo-url (:repo-url opts) :label (:label opts)))]
       (cond
         (= 200 status) true
         (#{404 410} status) false
@@ -118,7 +118,7 @@
   "GET url into dest. true when written, false when absent. Says so on
   stderr once the repository has answered, like Aether's transfer
   listener."
-  [url dest {:keys [repo-id label] :as opts}]
+  [url dest {:keys [repo-id repo-url label] :as opts}]
   (if (file-url? url)
     (let [f (file-url->path url)]
       (if (fs/exists? f)
@@ -126,7 +126,7 @@
             (fs/copy f dest {:replace-existing true})
             true)
         false))
-    (let [{:keys [status body]} (request! :get url (assoc (request-opts opts) :repo-id repo-id :label label))]
+    (let [{:keys [status body]} (request! :get url (assoc (request-opts opts) :repo-id repo-id :repo-url repo-url :label label))]
       ;; Close the response body for every status.
       (try
         (cond
@@ -212,8 +212,8 @@
 (defn download!
   "Downloads url to dest atomically and verifies the checksum using opts.
   Returns dest, or nil when the file is absent.
-  opts: :auth [user pass], :proxy, :headers, :checksum :warn/:fail/:ignore, :repo-id
-  and :label for messages."
+  opts: :auth [user pass], :proxy, :headers, :checksum :warn/:fail/:ignore, :repo-id,
+  :repo-url and :label for messages."
   [url dest opts]
   (let [dest (str dest)
         tmp (temp-file dest)]

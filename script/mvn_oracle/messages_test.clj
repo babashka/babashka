@@ -34,7 +34,11 @@
 (deftest unreachable-test
   (is (= "Could not transfer nope/nope/1.0.0/nope-1.0.0.pom from dead (https://nonexistent.invalid/maven2/): nonexistent.invalid"
          (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
-                    :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2/"}}}))))
+                    :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2/"}}})))
+  (testing "the repository URL as configured, without a trailing slash"
+    (is (= "Could not transfer nope/nope/1.0.0/nope-1.0.0.pom from dead (https://nonexistent.invalid/maven2): nonexistent.invalid"
+           (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
+                      :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2"}}})))))
 
 (deftest s3-test
   (is (= "S3 repository private (s3://bucket/releases/) requires the JVM resolver. Set BABASHKA_DEPS_RESOLVER=jvm."

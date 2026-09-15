@@ -55,11 +55,11 @@
 (defn- cached-text!
   "Metadata text from repo for the directory rel, from the cache when fresh,
   fetched and cached otherwise. nil when the repository has none."
-  [local-repo {:keys [id url auth proxy headers]} rel policy]
+  [local-repo {:keys [id url display-url auth proxy headers]} rel policy]
   (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))]
     (if (stale? file policy)
       (when-let [text (http/fetch (str url rel "/maven-metadata.xml")
-                                  {:auth auth :proxy proxy :headers headers :repo-id id :label (str rel "/maven-metadata.xml")})]
+                                  {:auth auth :proxy proxy :headers headers :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
         (fs/create-dirs (fs/parent file))
         ;; a parallel reader never sees a partial file
         (let [tmp (http/temp-file file)]
