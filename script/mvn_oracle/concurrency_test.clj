@@ -35,10 +35,19 @@
   (fs/with-temp-dir [dir {}]
     (testing "every repository line written at once ends up in _remote.repositories"
       (run-together threads #(#'repo/record-remote! (str dir) (str "a-" % ".jar") "central"))
-      (is (= threads (count (re-seq #"(?m)^a-\d+\.jar>central=$" (slurp (fs/file dir "_remote.repositories")))))))
-    (testing "every snapshot line written at once ends up in _babashka.snapshots"
-      (run-together threads #(#'repo/record-snapshot! (str dir) (str "b-" % "-SNAPSHOT.jar") (str "b-" % "-20260101.000000-1.jar")))
-      (is (= threads (count (str/split-lines (slurp (fs/file dir "_babashka.snapshots")))))))))
+      (is (= threads (count (re-seq #"(?m)^a-\d+\.jar>central=$" (slurp (fs/file dir "_remote.repositories")))))))))
+
+(deftest build-copies-test
+  (testing "a build copied over the -SNAPSHOT file from every thread at once leaves an intact copy with the build's time"
+    (fs/with-temp-dir [dir {}]
+      (let [build (str (fs/file dir "a-1.0-20260101.000000-1.jar"))
+            dest (str (fs/file dir "a-1.0-SNAPSHOT.jar"))
+            content (str/join (repeat 100000 "x"))]
+        (spit build content)
+        (run-together threads (fn [_] (#'repo/copy-build! build dest)))
+        (is (= content (slurp dest)))
+        (is (= (.lastModified (fs/file build)) (.lastModified (fs/file dest))))
+        (is (empty? (fs/glob dir "*.tmp")))))))
 
 (deftest tracking-files-across-processes-test
   (testing "repository lines several processes write at once all end up in _remote.repositories"
