@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 <details>
 <summary>Maven dependency resolution improvements</summary>
 
+- Resolve a timestamped snapshot version, such as `1.0-20240101.123456-3`, to that build instead of the newest one
 - Resolve `${project.name}` and `${parent.artifactId}` in a POM
 - Report a missing artifact with the same message as the Clojure CLI
 - Resolve locally installed `-SNAPSHOT` artifacts and pick the snapshot build with the newest metadata, including the local repository's, as Maven does
