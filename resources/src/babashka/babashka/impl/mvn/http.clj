@@ -42,12 +42,15 @@
       (str "babashka/" (or (System/getProperty "babashka.version") "unknown")
            " tools.deps/" tools-deps-version)))
 
-(defn- request-opts [{:keys [auth proxy]}]
+(defn- request-opts
+  "Request options for a repository: :auth, :proxy and :headers, the server's
+  HTTP headers from settings.xml."
+  [{:keys [auth proxy headers]}]
   (cond-> {:as :stream
            :throw false
            :follow-redirects :normal
            :timeout 120000
-           :headers {"User-Agent" (user-agent)}}
+           :headers (merge {"User-Agent" (user-agent)} headers)}
     auth (assoc :basic-auth auth)
     proxy (assoc :client (client-for proxy))))
 

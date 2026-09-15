@@ -46,7 +46,7 @@
         repo (if mirror
                {:id (:id mirror) :url (with-slash (:url mirror))}
                repo)
-        {:keys [username password]} (get servers (:id repo))]
+        {:keys [username password headers]} (get servers (:id repo))]
     ;; Check the repository URL after applying mirrors.
     (when (str/starts-with? (:url repo) "s3:")
       (throw (ex-info (str "S3 repository " (:id repo) " (" (:url repo) ") requires the JVM resolver."
@@ -56,6 +56,7 @@
                    :releases (policy name (or releases {}))
                    :snapshots (policy name (or snapshots {})))
       username (assoc :auth [username (cipher/decrypt-password password {:server (:id repo)})])
+      (seq headers) (assoc :headers headers)
       (proxy-for settings (:url repo)) (assoc :proxy (proxy-for settings (:url repo))))))
 
 (defn remote-repos
@@ -82,9 +83,11 @@
   (str (fs/path (System/getProperty "user.home") ".m2" "repository")))
 
 (defn local-repo
-  "The local repository: :mvn/local-repo, then settings, then ~/.m2."
-  [{:keys [mvn/local-repo]} settings]
-  (or local-repo (:local-repository settings) default-local-repo))
+  "The local repository: :mvn/local-repo, else ~/.m2/repository under
+  user.home at call time. settings.xml's localRepository is ignored, as the
+  JVM tools.deps ignores it."
+  [{:keys [mvn/local-repo]}]
+  (or local-repo (str (fs/path (System/getProperty "user.home") ".m2" "repository"))))
 
 (defn- record-remote!
   "Notes in _remote.repositories which repository a file came from, the way
@@ -170,6 +173,7 @@
           (when (http/download! (str (:url repo) rel) dest
                                 {:auth (:auth repo)
                                  :proxy (:proxy repo)
+                                 :headers (:headers repo)
                                  :checksum (get-in repo [policy :checksum])
                                  :repo-id (:id repo)
                                  :label rel})
@@ -197,7 +201,7 @@
           (some (fn [repo]
                   (when (and (get-in repo [policy :enabled])
                              (http/exists? (str (:url repo) rel)
-                                           {:auth (:auth repo) :proxy (:proxy repo)
+                                           {:auth (:auth repo) :proxy (:proxy repo) :headers (:headers repo)
                                             :repo-id (:id repo) :label rel}))
                     (record-remote! dir file-name (:id repo))
                     dest))

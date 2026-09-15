@@ -3,14 +3,20 @@
 ;; mirror matching after Maven's DefaultMirrorSelector.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/settings_test.clj
 (ns settings-test
-  (:require [babashka.impl.mvn.settings :as settings]
-            [clojure.test :as t :refer [deftest is testing]]))
+  (:require [babashka.fs :as fs]
+            [babashka.impl.mvn.repo :as repo]
+            [babashka.impl.mvn.settings :as settings]
+            [clojure.test :as t :refer [deftest is testing]]
+            [clojure.tools.deps.extensions :as ext]
+            [clojure.tools.deps.extensions.maven]
+            [clojure.tools.deps.util.session :as session]))
 
 (def settings-xml
   "<settings>
-     <localRepository>${user.home}/other-m2</localRepository>
      <servers>
-       <server><id>nexus</id><username>${env.PATH}</username><password>secret</password></server>
+       <server><id>nexus</id><username>${env.PATH}</username><password>secret</password>
+         <configuration><httpHeaders><property><name>Job-Token</name><value>${env.PATH}</value></property></httpHeaders></configuration>
+       </server>
      </servers>
      <mirrors>
        <mirror><id>internal</id><url>https://nexus.example.com/maven2</url><mirrorOf>*,!clojars</mirrorOf></mirror>
@@ -41,8 +47,8 @@
 (def parsed (settings/parse settings-xml))
 
 (deftest parse-test
-  (is (= (str (System/getProperty "user.home") "/other-m2") (:local-repository parsed)))
-  (is (= {:username (System/getenv "PATH") :password "secret"} (get-in parsed [:servers "nexus"])))
+  (is (= {:username (System/getenv "PATH") :password "secret" :headers {"Job-Token" (System/getenv "PATH")}}
+         (get-in parsed [:servers "nexus"])))
   (is (= [{:id "internal" :url "https://nexus.example.com/maven2" :mirror-of "*,!clojars" :mirror-of-layouts nil}] (:mirrors parsed)))
   (is (= [{:id "corp" :active true :protocol "https" :host "proxy.example.com" :port 3128
            :username nil :password nil :non-proxy-hosts "localhost|*.example.com"}
@@ -185,6 +191,28 @@
     (is (nil? (settings/mirror-for [b] (repo "a"))))
     (is (= c (settings/mirror-for [c] (repo "a"))))
     (is (nil? (settings/mirror-for [d] (repo "a"))))))
+
+(deftest server-headers-test
+  (testing "the mirror's server supplies the headers, as it supplies the credentials"
+    (let [s (settings/parse (str "<settings><servers><server><id>corp</id><configuration><httpHeaders>"
+                                 "<property><name>Private-Token</name><value>t</value></property>"
+                                 "</httpHeaders></configuration></server></servers>"
+                                 "<mirrors><mirror><id>corp</id><url>https://mirror.example.com/</url><mirrorOf>private</mirrorOf></mirror></mirrors></settings>"))]
+      (is (= {"Private-Token" "t"} (:headers (repo/remote-repo s ["private" {:url "https://private.example.com/"}]))))
+      (is (nil? (:headers (repo/remote-repo s ["other" {:url "https://other.example.com/"}])))))))
+
+(deftest local-repository-test
+  (testing "localRepository in settings.xml is ignored, as the JVM tools.deps ignores it"
+    (fs/with-temp-dir [home {}]
+      (fs/create-dirs (fs/file home ".m2"))
+      (spit (fs/file home ".m2" "settings.xml") "<settings><localRepository>/elsewhere</localRepository></settings>")
+      (let [real-home (System/getProperty "user.home")]
+        (System/setProperty "user.home" (str home))
+        (try
+          (session/with-session
+            (is (= (str (fs/path home ".m2" "repository"))
+                   (:base (ext/lib-location 'g/a {:mvn/version "1"} {})))))
+          (finally (System/setProperty "user.home" real-home)))))))
 
 (let [{:keys [fail error]} (t/run-tests 'settings-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

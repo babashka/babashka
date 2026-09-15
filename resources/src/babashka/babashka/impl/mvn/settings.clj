@@ -19,10 +19,17 @@
                        (System/getProperty key)
                        whole)))))
 
-(defn- server [el]
-  [(child-text el "id")
-   {:username (interpolate (child-text el "username"))
-    :password (interpolate (child-text el "password"))}])
+(defn- server
+  "A server's credentials, and the HTTP headers of its
+  configuration/httpHeaders as Maven's DefaultRepositorySystemSessionFactory
+  reads them."
+  [el]
+  (let [headers (into {} (for [p (some-> (child el "configuration") (child "httpHeaders") (children "property"))]
+                           [(child-text p "name") (interpolate (child-text p "value"))]))]
+    [(child-text el "id")
+     (cond-> {:username (interpolate (child-text el "username"))
+              :password (interpolate (child-text el "password"))}
+       (seq headers) (assoc :headers headers))]))
 
 (defn- mirror [el]
   {:id (child-text el "id")
@@ -55,8 +62,7 @@
   "Settings from an XML string."
   [s]
   (let [root (babashka.impl.mvn.xml/parse s)]
-    {:local-repository (interpolate (child-text root "localRepository"))
-     :servers (into {} (map server (some-> (child root "servers") (children "server"))))
+    {:servers (into {} (map server (some-> (child root "servers") (children "server"))))
      :mirrors (mapv mirror (some-> (child root "mirrors") (children "mirror")))
      :proxies (mapv proxy-entry (some-> (child root "proxies") (children "proxy")))
      :profiles (into {} (map profile (some-> (child root "profiles") (children "profile"))))
