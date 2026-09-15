@@ -61,9 +61,8 @@
        "      </snapshotVersion>\n"))
 
 (defn- add-snapshot-files!
-  "Records the installed files of a -SNAPSHOT version in the version
-  directory's maven-metadata-local.xml, as Resolver's installer does: a
-  local copy, one snapshotVersion per file, the newest first."
+  "Writes maven-metadata-local.xml in dir for a -SNAPSHOT install, with one
+  snapshotVersion per file and the installed files first."
   [dir group-id artifact-id version classifier extensions]
   (let [f (fs/file dir "maven-metadata-local.xml")
         now (stamp)
