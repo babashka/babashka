@@ -39,11 +39,16 @@
                     {:lib lib :coord coord}))))
 
 (defn- not-found-message
-  "Aether's wording: the artifact and every repository that was asked."
-  [{:keys [group artifact extension classifier version]} repos]
-  (str "Could not find artifact " group ":" artifact ":" extension
-       (when classifier (str ":" classifier)) ":" version
-       " in " (str/join ", " (map #(str (:id %) " (" (:url %) ")") repos))))
+  "tools.deps' wording for an artifact no repository has: the artifact,
+  whether the local repository holds a copy, and the first repository asked."
+  [{:keys [group artifact extension classifier version]} repos cached?]
+  (let [gav (str group ":" artifact ":" extension (when classifier (str ":" classifier)) ":" version)
+        policy (if (coords/snapshot? version) :snapshots :releases)
+        repo (first (filter #(get-in % [policy :enabled]) repos))]
+    (str "The following artifacts could not be resolved: " gav
+         (if cached? " (present, but unavailable)" " (absent)")
+         ": Could not find artifact " gav
+         (when repo (str " in " (:id repo) " (" (:url repo) ")")))))
 
 ;; POMs
 
@@ -221,7 +226,8 @@
   (when (= "jar" extension)
     (let [artifact (coords/artifact lib coord)]
       [(or (repo/resolve-file! (local-repo config) (repos config) artifact)
-           (throw (ex-info (not-found-message artifact (repos config))
+           (throw (ex-info (not-found-message artifact (repos config)
+                                              (fs/exists? (fs/path (local-repo config) (coords/local-relative-path artifact))))
                            {:lib lib :coord coord})))])))
 
 ;; Versions from metadata

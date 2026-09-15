@@ -171,7 +171,7 @@ nil" prelude port (pr-str m2))))]
       ;; the first artifact tools.deps asks for is not the one under
       ;; test but a root dep, so only the repository list is checked;
       ;; central and clojars behind one mirror are one entry
-      (is (str/starts-with? (str message) "Could not find artifact "))
+      (is (str/starts-with? (str message) "The following artifacts could not be resolved: "))
       (is (str/ends-with? (str message) (str " in m (" mirror-url ")"))))))
 
 (deftest task-inherits-resolver-test
