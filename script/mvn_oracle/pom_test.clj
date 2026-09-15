@@ -20,6 +20,9 @@
         "</dependencies></dependencyManagement>"
         "<dependencies><dependency><groupId>org.clojure</groupId><artifactId>clojure</artifactId><version>1.12.0</version></dependency></dependencies>")
 
+   ["org.example" "named-parent" "1.0"]
+   (pom "<groupId>org.example</groupId><artifactId>named-parent</artifactId><version>1.0</version><packaging>pom</packaging><name>Named</name>")
+
    ["org.example" "bom" "2.0"]
    (pom "<groupId>org.example</groupId><artifactId>bom</artifactId><version>2.0</version><packaging>pom</packaging>"
         "<dependencyManagement><dependencies>"
@@ -102,7 +105,11 @@
     (testing "the parent's coordinates resolve with and without the project. prefix"
       (let [model (effective (pom "<parent><groupId>org.example</groupId><artifactId>parent</artifactId><version>1.0</version></parent><artifactId>child</artifactId>"
                                   "<dependencies><dependency><groupId>g</groupId><artifactId>a</artifactId><version>${parent.artifactId}-${project.parent.version}</version></dependency></dependencies>"))]
-        (is (= "parent-1.0" (:version (dep model "g" "a"))))))))
+        (is (= "parent-1.0" (:version (dep model "g" "a"))))))
+    (testing "a child does not take its parent's name"
+      (let [model (effective (pom "<parent><groupId>org.example</groupId><artifactId>named-parent</artifactId><version>1.0</version></parent><artifactId>child</artifactId>"
+                                  "<dependencies><dependency><groupId>g</groupId><artifactId>a</artifactId><version>${project.name}</version></dependency></dependencies>"))]
+        (is (= "${project.name}" (:version (dep model "g" "a"))))))))
 
 (deftest management-test
   (let [model (effective child)]
