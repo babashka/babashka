@@ -1,6 +1,6 @@
 (ns babashka.impl.mvn.xml
-  "Reading Maven's XML files with data.xml. Tags are compared by local
-  name, the POM and settings namespaces do not matter here."
+  "Reading Maven's XML files with data.xml. Tags are compared by name, the
+  POM and settings namespaces do not matter here."
   {:no-doc true}
   (:require [babashka.impl.mvn.entities :as entities]
             [clojure.data.xml :as xml]
@@ -8,14 +8,14 @@
             [clojure.string :as str]))
 
 (defn parse
-  "Parses XML text, skipping a byte order mark and resolving the HTML
-  character entities Maven's readers know. Throws on an error anywhere in
-  the document."
+  "Parses XML text without XML namespaces, as Maven's readers do, skipping a
+  byte order mark and resolving the HTML character entities Maven's readers
+  know. Throws on an error anywhere in the document."
   [s]
   (let [s (if (str/starts-with? s "\uFEFF") (subs s 1) s)
         s (str/replace s #"&([A-Za-z][A-Za-z0-9]*);"
                        (fn [[entity name]] (get entities/replacements name entity)))]
-    (tree/event-tree (doall (xml/event-seq (java.io.StringReader. s) {})))))
+    (tree/event-tree (doall (xml/event-seq (java.io.StringReader. s) {:namespace-aware false})))))
 
 (defn- tag= [tag el]
   (and (map? el) (= tag (name (:tag el)))))
