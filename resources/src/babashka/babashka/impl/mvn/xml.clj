@@ -8,9 +8,9 @@
             [clojure.string :as str]))
 
 (defn parse
-  "Parses XML text without XML namespaces, as Maven's readers do, skipping a
-  byte order mark and resolving the HTML character entities Maven's readers
-  know. Throws on an error anywhere in the document."
+  "Parses XML text as Maven's readers do: without namespaces, skipping a byte
+  order mark and resolving the HTML character entities those readers know.
+  Throws on an error anywhere in the document."
   [s]
   (let [s (if (str/starts-with? s "\uFEFF") (subs s 1) s)
         s (str/replace s #"&([A-Za-z][A-Za-z0-9]*);"
