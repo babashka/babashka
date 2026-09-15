@@ -79,15 +79,18 @@
                         (map #(remote-repo settings %)))
                   entries))))
 
-(def default-local-repo
+(defn user-local-repo
+  "Returns .m2/repository under the current user.home."
+  []
   (str (fs/path (System/getProperty "user.home") ".m2" "repository")))
 
+(def default-local-repo (user-local-repo))
+
 (defn local-repo
-  "The local repository: :mvn/local-repo, else ~/.m2/repository under
-  user.home at call time. settings.xml's localRepository is ignored, as the
-  JVM tools.deps ignores it."
+  "Returns :mvn/local-repo, else .m2/repository under the current user.home.
+  Ignores localRepository in settings.xml, as the JVM tools.deps does."
   [{:keys [mvn/local-repo]}]
-  (or local-repo (str (fs/path (System/getProperty "user.home") ".m2" "repository"))))
+  (or local-repo (user-local-repo)))
 
 (defn- record-remote!
   "Notes in _remote.repositories which repository a file came from, the way

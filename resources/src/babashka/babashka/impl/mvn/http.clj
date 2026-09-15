@@ -43,8 +43,7 @@
            " tools.deps/" tools-deps-version)))
 
 (defn- request-opts
-  "Request options for a repository: :auth, :proxy and :headers, the server's
-  HTTP headers from settings.xml."
+  "Returns request options for a repository's :auth, :proxy and :headers."
   [{:keys [auth proxy headers]}]
   (cond-> {:as :stream
            :throw false
@@ -196,7 +195,7 @@
 (defn download!
   "Downloads url to dest atomically and verifies the checksum using opts.
   Returns dest, or nil when the file is absent.
-  opts: :auth [user pass], :proxy, :checksum :warn/:fail/:ignore, :repo-id
+  opts: :auth [user pass], :proxy, :headers, :checksum :warn/:fail/:ignore, :repo-id
   and :label for messages."
   [url dest opts]
   (let [dest (str dest)

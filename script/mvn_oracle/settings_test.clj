@@ -193,7 +193,7 @@
     (is (nil? (settings/mirror-for [d] (repo "a"))))))
 
 (deftest server-headers-test
-  (testing "the mirror's server supplies the headers, as it supplies the credentials"
+  (testing "a mirrored repository takes the headers of the mirror's server"
     (let [s (settings/parse (str "<settings><servers><server><id>corp</id><configuration><httpHeaders>"
                                  "<property><name>Private-Token</name><value>t</value></property>"
                                  "</httpHeaders></configuration></server></servers>"
@@ -201,8 +201,21 @@
       (is (= {"Private-Token" "t"} (:headers (repo/remote-repo s ["private" {:url "https://private.example.com/"}]))))
       (is (nil? (:headers (repo/remote-repo s ["other" {:url "https://other.example.com/"}])))))))
 
+(deftest header-property-test
+  (let [parse (fn [props]
+                (settings/parse (str "<settings><servers><server><id>s</id><configuration><httpHeaders>"
+                                     props "</httpHeaders></configuration></server></servers></settings>")))]
+    (testing "header names are interpolated like values"
+      (is (= {(str "X-" (System/getProperty "user.name")) "v"}
+             (get-in (parse "<property><name>X-${user.name}</name><value>v</value></property>") [:servers "s" :headers]))))
+    (testing "a property without a name or a value is an error, the JVM tools.deps does not start with one"
+      (doseq [props ["<property><value>v</value></property>" "<property><name>n</name></property>"]]
+        (is (thrown-with-msg? clojure.lang.ExceptionInfo #"^Invalid httpHeaders property for server s in settings.xml"
+                              (parse props))
+            props)))))
+
 (deftest local-repository-test
-  (testing "localRepository in settings.xml is ignored, as the JVM tools.deps ignores it"
+  (testing "localRepository in settings.xml is ignored"
     (fs/with-temp-dir [home {}]
       (fs/create-dirs (fs/file home ".m2"))
       (spit (fs/file home ".m2" "settings.xml") "<settings><localRepository>/elsewhere</localRepository></settings>")

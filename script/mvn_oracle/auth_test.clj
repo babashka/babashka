@@ -84,7 +84,7 @@
           (server/server-stop! stop))))))
 
 (deftest http-headers-test
-  (testing "the HTTP headers of a server in settings.xml go out with every request to its repository"
+  (testing "every request to a repository carries its server's settings.xml headers"
     (fs/with-temp-dir [dir {}]
       (let [root (fs/file dir "repo")
             seen (atom [])

@@ -85,12 +85,12 @@
           (is (nil? (resolve local [(file-remote "local" full-root :enabled false)]))))))))
 
 (deftest existence-check-over-http-test
-  (testing "the check is a HEAD request and the cached file stays"
+  (testing "the check is a HEAD request with the repository's headers, and the cached file stays"
     (fs/with-temp-dir [dir {}]
       (let [root (fs/file dir "remote")
             seen (atom [])
-            stop (server/run-server (fn [{:keys [uri request-method]}]
-                                      (swap! seen conj [request-method uri])
+            stop (server/run-server (fn [{:keys [uri request-method headers]}]
+                                      (swap! seen conj [request-method uri (get headers "private-token")])
                                       (let [f (fs/file root (subs uri 1))]
                                         (if (fs/exists? f)
                                           {:status 200 :body (slurp f)}
@@ -101,8 +101,8 @@
         (try
           (publish! root)
           (let [d (cache! local ["a-1.jar>other="])]
-            (is (some? (repo/resolve-file! (str local) [(remote "local" url)] artifact)))
-            (is (= [[:head "/g/a/1/a-1.jar"]] @seen))
+            (is (some? (repo/resolve-file! (str local) [(assoc (remote "local" url) :headers {"Private-Token" "secret"})] artifact)))
+            (is (= [[:head "/g/a/1/a-1.jar" "secret"]] @seen))
             (is (= "cached" (slurp (fs/file d "a-1.jar")))))
           (finally
             (server/server-stop! stop)))))))

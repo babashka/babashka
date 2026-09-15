@@ -20,13 +20,19 @@
                        whole)))))
 
 (defn- server
-  "A server's credentials, and the HTTP headers of its
-  configuration/httpHeaders as Maven's DefaultRepositorySystemSessionFactory
-  reads them."
+  "Returns [id credentials], with :headers from configuration/httpHeaders."
   [el]
-  (let [headers (into {} (for [p (some-> (child el "configuration") (child "httpHeaders") (children "property"))]
-                           [(child-text p "name") (interpolate (child-text p "value"))]))]
-    [(child-text el "id")
+  (let [id (child-text el "id")
+        headers (into {} (for [p (some-> (child el "configuration") (child "httpHeaders") (children "property"))
+                               :let [header-name (interpolate (child-text p "name"))
+                                     value (interpolate (child-text p "value"))]]
+                           (if (and header-name value)
+                             [header-name value]
+                             ;; the JVM tools.deps fails to start on such a property
+                             (throw (ex-info (str "Invalid httpHeaders property for server " id
+                                                  " in settings.xml: name and value are required")
+                                             {:server id})))))]
+    [id
      (cond-> {:username (interpolate (child-text el "username"))
               :password (interpolate (child-text el "password"))}
        (seq headers) (assoc :headers headers))]))
