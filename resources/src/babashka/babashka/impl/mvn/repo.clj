@@ -35,12 +35,18 @@
     (cond-> p
       (:password p) (update :password cipher/decrypt-password {:server (str "proxy " (:host p))}))))
 
+(defn- check-http!
+  "Throws for an http: :mvn/repos entry unless CLOJURE_CLI_ALLOW_HTTP_REPO is
+  set, as the JVM tools.deps does. Repositories a POM declares are not
+  checked."
+  [[_ {:keys [url] :as config}]]
+  (when (and (str/starts-with? url "http:") (nil? (env/getenv "CLOJURE_CLI_ALLOW_HTTP_REPO")))
+    (throw (ex-info (str "Invalid repo url (http not supported): " url) (or config {})))))
+
 (defn remote-repo
   "One repository map from a :mvn/repos entry, with the mirror, auth and
   proxy from settings applied."
-  [{:keys [mirrors servers] :as settings} [name {:keys [url snapshots releases] :as config}]]
-  (when (and (str/starts-with? url "http:") (nil? (env/getenv "CLOJURE_CLI_ALLOW_HTTP_REPO")))
-    (throw (ex-info (str "Invalid repo url (http not supported): " url) (or config {}))))
+  [{:keys [mirrors servers] :as settings} [name {:keys [url snapshots releases]}]]
   (let [repo {:id name :url (with-slash url)}
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
@@ -76,7 +82,9 @@
             []
             (into []
                   (comp (remove (fn [[_ config]] (nil? config)))
-                        (map #(remote-repo settings %)))
+                        (map (fn [entry]
+                               (check-http! entry)
+                               (remote-repo settings entry))))
                   entries))))
 
 (defn user-local-repo
