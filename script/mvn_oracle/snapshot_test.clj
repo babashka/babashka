@@ -123,7 +123,7 @@
       (is (= "88" (resolve "07.20.3-20120809.112124-88"))))
     (testing "the -SNAPSHOT version then resolves to the newest build"
       (is (= "97" (resolve "07.20.3-SNAPSHOT"))))
-    (testing "the pinned build again after the newest one"
+    (testing "the pinned build resolves again after the newest one"
       (is (= "88" (resolve "07.20.3-20120809.112124-88"))))))
 
 (let [{:keys [fail error]} (t/run-tests 'snapshot-test)]

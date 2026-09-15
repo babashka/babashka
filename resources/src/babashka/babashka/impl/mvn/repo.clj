@@ -269,8 +269,8 @@
         dest))))
 
 (defn- resolve-build!
-  "A timestamped snapshot build, taken as named: the cached file when it
-  holds that build, else the first repository that has it."
+  "Returns dest holding the named timestamped build, cached or downloaded
+  from the first repository that has it, or nil when unavailable."
   [repos artifact dest]
   (let [dir (str (fs/parent dest))
         file-name (str (fs/file-name dest))
@@ -287,8 +287,9 @@
 (defn resolve-file!
   "The artifact's file in the local repository, downloaded from the first
   repository that has it. nil when none does. A cached file from a
-  repository outside repos is used once one of repos has it too. A snapshot
-  follows the newest metadata, including the local repository's."
+  repository outside repos is used once one of repos has it too. A -SNAPSHOT
+  version follows the newest metadata, including the local repository's. A
+  timestamped build resolves as named."
   [local-repo repos {:keys [version] :as artifact}]
   (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
