@@ -8,8 +8,10 @@
             [babashka.impl.mvn.http :as http]
             [babashka.impl.mvn.metadata :as metadata]
             [babashka.impl.mvn.settings :as settings]
-            [clojure.java.io :as io]
-            [clojure.string :as str]))
+            [clojure.string :as str])
+  (:import [java.nio ByteBuffer]
+           [java.nio.channels FileChannel]
+           [java.nio.file OpenOption StandardOpenOption]))
 
 (def standard-repos
   {"central" {:url "https://repo1.maven.org/maven2/"}
@@ -99,27 +101,76 @@
   [{:keys [mvn/local-repo]}]
   (or local-repo (user-local-repo)))
 
+;; tools.deps resolves in parallel, and parents and BOMs are shared, so two
+;; threads can want the same file. One monitor per path.
+(def ^:private locks (atom {}))
+
+(defn- lock-for [path]
+  (let [path (str (fs/normalize (fs/absolutize path)))]
+    (or (get @locks path)
+        (get (swap! locks update path #(or % (Object.))) path))))
+
+;; Tracking files: a monitor per path for threads, a FileChannel lock for processes.
+
+(defn- read-channel [^FileChannel ch]
+  (let [buf (ByteBuffer/allocate (int (.size ch)))]
+    (.position ch 0)
+    (loop []
+      (when (and (.hasRemaining buf) (pos? (.read ch buf)))
+        (recur)))
+    (String. (.array buf) 0 (.position buf) "UTF-8")))
+
+(defn- read-tracking-file
+  "Returns the text of a tracking file, nil when it does not exist."
+  [file]
+  (let [path (fs/path file)]
+    #_{:clj-kondo/ignore [:locking-suspicious-lock]}
+    (locking (lock-for (str path))
+      (when (fs/exists? path)
+        (with-open [ch (FileChannel/open path (into-array OpenOption [StandardOpenOption/READ]))]
+          (.lock ch 0 Long/MAX_VALUE true)
+          (read-channel ch))))))
+
+(defn- update-tracking-file!
+  "Replaces the text of a tracking file with (f text). text is \"\" for a new file."
+  [file f]
+  (let [path (fs/path file)]
+    #_{:clj-kondo/ignore [:locking-suspicious-lock]}
+    (locking (lock-for (str path))
+      (with-open [ch (FileChannel/open path (into-array OpenOption [StandardOpenOption/READ
+                                                                     StandardOpenOption/WRITE
+                                                                     StandardOpenOption/CREATE]))]
+        (.lock ch)
+        (let [old (read-channel ch)
+              new (f old)]
+          (when (not= old new)
+            (.truncate ch 0)
+            (let [buf (ByteBuffer/wrap (.getBytes ^String new "UTF-8"))]
+              (loop []
+                (when (.hasRemaining buf)
+                  (.write ch buf)
+                  (recur))))))))))
+
 (defn- record-remote!
   "Notes in _remote.repositories which repository a file came from, the way
   Aether does, so the JVM tools.deps accepts the file later."
   [dir file-name repo-id]
-  (let [marker (fs/file dir "_remote.repositories")
-        line (str file-name ">" repo-id "=")
-        existing (if (fs/exists? marker) (slurp marker) "")]
-    (when-not (str/includes? existing line)
-      (spit marker (str existing line "\n")))))
+  (let [line (str file-name ">" repo-id "=")]
+    (update-tracking-file! (fs/file dir "_remote.repositories")
+                           (fn [existing]
+                             (if (str/includes? existing line)
+                               existing
+                               (str existing line "\n"))))))
 
 (defn- tracked-ids
   "The repository ids _remote.repositories lists for file-name, \"\" for a
   locally installed file. nil when the file is not listed."
   [dir file-name]
-  (let [marker (fs/file dir "_remote.repositories")]
-    (when (fs/exists? marker)
-      (let [props (java.util.Properties.)
-            prefix (str file-name ">")]
-        (with-open [r (io/reader marker)]
-          (.load props r))
-        (not-empty (into #{} (keep #(when (str/starts-with? % prefix) (subs % (count prefix)))) (keys props)))))))
+  (when-let [text (read-tracking-file (fs/file dir "_remote.repositories"))]
+    (let [props (java.util.Properties.)
+          prefix (str file-name ">")]
+      (.load props (java.io.StringReader. text))
+      (not-empty (into #{} (keep #(when (str/starts-with? % prefix) (subs % (count prefix)))) (keys props))))))
 
 (defn- cached-available?
   "Whether a cached file counts for repos, as Aether decides: no repos at
@@ -130,14 +181,6 @@
         (nil? ids)
         (contains? ids "")
         (boolean (some #(contains? ids (:id %)) repos)))))
-
-;; tools.deps resolves in parallel, and parents and BOMs are shared, so two
-;; threads can want the same file. One monitor per path.
-(def ^:private locks (atom {}))
-
-(defn- lock-for [path]
-  (or (get @locks path)
-      (get (swap! locks update path #(or % (Object.))) path)))
 
 (defn- remote-file-name
   "The file's name in repo. A -SNAPSHOT version names its timestamped file
@@ -154,18 +197,18 @@
   (fs/file dir "_babashka.snapshots"))
 
 (defn- recorded-snapshot [dir local-name]
-  (let [f (snapshots-file dir)]
-    (when (fs/exists? f)
-      (some (fn [line]
-              (let [[l r] (str/split line #">" 2)]
-                (when (= l local-name) r)))
-            (str/split-lines (slurp f))))))
+  (when-let [text (read-tracking-file (snapshots-file dir))]
+    (some (fn [line]
+            (let [[l r] (str/split line #">" 2)]
+              (when (= l local-name) r)))
+          (str/split-lines text))))
 
 (defn- record-snapshot! [dir local-name remote-name]
-  (let [f (snapshots-file dir)
-        lines (if (fs/exists? f) (str/split-lines (slurp f)) [])
-        lines (remove #(str/starts-with? % (str local-name ">")) lines)]
-    (spit f (str (str/join "\n" (conj (vec lines) (str local-name ">" remote-name))) "\n"))))
+  (update-tracking-file! (snapshots-file dir)
+                         (fn [text]
+                           (let [lines (remove #(or (str/blank? %) (str/starts-with? % (str local-name ">")))
+                                               (str/split-lines text))]
+                             (str (str/join "\n" (conj (vec lines) (str local-name ">" remote-name))) "\n")))))
 
 (defn- download-from!
   "Returns dest if cached or downloaded from repo, or nil if unavailable."
