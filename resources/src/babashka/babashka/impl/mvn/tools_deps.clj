@@ -39,16 +39,23 @@
                     {:lib lib :coord coord}))))
 
 (defn- not-found-message
-  "Returns the tools.deps message for a missing artifact. Names the first
-  repository enabled for the artifact's release or snapshot policy."
-  [{:keys [group artifact extension classifier version]} repos cached?]
-  (let [gav (str group ":" artifact ":" extension (when classifier (str ":" classifier)) ":" version)
-        policy (if (coords/snapshot? version) :snapshots :releases)
-        repo (first (filter #(get-in % [policy :enabled]) repos))]
-    (str "The following artifacts could not be resolved: " gav
+  "Returns the tools.deps message for a missing artifact. A -SNAPSHOT names
+  the build and repository its metadata picks, other versions the first
+  repository enabled for their release or snapshot policy. Present means
+  the named build's file is in the local repository."
+  [local-repo repos {:keys [group artifact extension classifier version] :as a}]
+  (let [gav #(str group ":" artifact ":" extension (when classifier (str ":" classifier)) ":" %)
+        picked (when (str/ends-with? version "-SNAPSHOT")
+                 (metadata/resolve-snapshot local-repo repos a))
+        [build repo] (if (map? (:repo picked))
+                       [(:version picked) (:repo picked)]
+                       [version (let [policy (if (coords/snapshot? version) :snapshots :releases)]
+                                  (first (filter #(get-in % [policy :enabled]) repos)))])
+        cached? (fs/exists? (fs/path local-repo (coords/version-dir a) (coords/file-name (assoc a :version build))))]
+    (str "The following artifacts could not be resolved: " (gav version)
          (if cached? " (present, but unavailable)" " (absent)")
-         ": Could not find artifact " gav
-         (when repo (str " in " (:id repo) " (" (:url repo) ")")))))
+         ": Could not find artifact " (gav build)
+         (when repo (str " in " (:id repo) " (" (:display-url repo) ")")))))
 
 ;; POMs
 
@@ -226,8 +233,7 @@
   (when (= "jar" extension)
     (let [artifact (coords/artifact lib coord)]
       [(or (repo/resolve-file! (local-repo config) (repos config) artifact)
-           (throw (ex-info (not-found-message artifact (repos config)
-                                              (fs/exists? (fs/path (local-repo config) (coords/local-relative-path artifact))))
+           (throw (ex-info (not-found-message (local-repo config) (repos config) artifact)
                            {:lib lib :coord coord})))])))
 
 ;; Versions from metadata

@@ -48,10 +48,10 @@
   "One repository map from a :mvn/repos entry, with the mirror, auth and
   proxy from settings applied."
   [{:keys [mirrors servers] :as settings} [name {:keys [url snapshots releases]}]]
-  (let [repo {:id name :url (with-slash url)}
+  (let [repo {:id name :url (with-slash url) :display-url url}
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
-               {:id (:id mirror) :url (with-slash (:url mirror))}
+               {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror)}
                repo)
         {:keys [username password headers]} (get servers (:id repo))]
     ;; Check the repository URL after applying mirrors.
