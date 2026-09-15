@@ -56,7 +56,10 @@
       (when-let [text (http/fetch (str url rel "/maven-metadata.xml")
                                   {:auth auth :proxy proxy :headers headers :repo-id id :label (str rel "/maven-metadata.xml")})]
         (fs/create-dirs (fs/parent file))
-        (spit file text)
+        ;; a parallel reader never sees a partial file
+        (let [tmp (http/temp-file file)]
+          (spit tmp text)
+          (http/move-into-place! tmp (str file)))
         text)
       (slurp file))))
 

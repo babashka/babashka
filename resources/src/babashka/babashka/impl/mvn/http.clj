@@ -194,6 +194,21 @@
             (throw (ex-info message {:url url :expected expected :actual actual}))
             (printerrln message)))))))
 
+(defn temp-file
+  "Returns a path next to file named file.<random>.tmp."
+  [file]
+  (str file "." (Long/toUnsignedString (.nextLong (java.util.concurrent.ThreadLocalRandom/current))) ".tmp"))
+
+(defn move-into-place!
+  "Moves tmp over file atomically, or copies it on Windows. Deletes tmp."
+  [tmp file]
+  (try
+    (if (fs/windows?)
+      (fs/copy tmp file {:replace-existing true})
+      (fs/move tmp file {:atomic-move true :replace-existing true}))
+    (finally
+      (fs/delete-if-exists tmp))))
+
 (defn download!
   "Downloads url to dest atomically and verifies the checksum using opts.
   Returns dest, or nil when the file is absent.
@@ -201,12 +216,12 @@
   and :label for messages."
   [url dest opts]
   (let [dest (str dest)
-        part (str dest ".part")]
+        tmp (temp-file dest)]
     (fs/create-dirs (fs/parent dest))
     (try
-      (when (fetch-to-file url part opts)
-        (verify! url part opts)
-        (fs/move part dest {:replace-existing true})
+      (when (fetch-to-file url tmp opts)
+        (verify! url tmp opts)
+        (move-into-place! tmp dest)
         dest)
       (finally
-        (when (fs/exists? part) (fs/delete part))))))
+        (fs/delete-if-exists tmp)))))
