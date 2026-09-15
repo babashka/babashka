@@ -104,6 +104,28 @@
         (is (= (str (fs/file version-dir "a-1.0-SNAPSHOT.jar"))
                (repo/resolve-file! local [(repo/remote-repo {} ["test" {:url (str (.toURI (fs/file remote)))}])] art)))))))
 
+(defn- sha1 [^String s]
+  (apply str (map #(format "%02x" %) (.digest (java.security.MessageDigest/getInstance "SHA-1") (.getBytes s)))))
+
+(deftest pinned-build-test
+  (let [local (str (fs/file dir "local4"))
+        remote4 (fs/file dir "remote4")
+        version-dir (fs/file remote4 "org/apache/maven/its/dep-mng5324/07.20.3-SNAPSHOT")
+        test-repo (repo/remote-repo {} ["test" {:url (str (.toURI (fs/file remote4)))}])
+        resolve (fn [version] (slurp (repo/resolve-file! local [test-repo] (artifact nil version))))]
+    (fs/create-dirs version-dir)
+    (spit (fs/file version-dir "maven-metadata.xml") remote-jar-metadata-xml)
+    (doseq [[build content] [["20120809.112124-88" "88"] ["20120809.112920-97" "97"]]
+            :let [jar (str "dep-mng5324-07.20.3-" build ".jar")]]
+      (spit (fs/file version-dir jar) content)
+      (spit (fs/file version-dir (str jar ".sha1")) (sha1 content)))
+    (testing "a pinned build resolves to that build, not the newest in the metadata"
+      (is (= "88" (resolve "07.20.3-20120809.112124-88"))))
+    (testing "the -SNAPSHOT version then resolves to the newest build"
+      (is (= "97" (resolve "07.20.3-SNAPSHOT"))))
+    (testing "the pinned build again after the newest one"
+      (is (= "88" (resolve "07.20.3-20120809.112124-88"))))))
+
 (let [{:keys [fail error]} (t/run-tests 'snapshot-test)]
   (fs/delete-tree dir)
   (System/exit (if (zero? (+ fail error)) 0 1)))

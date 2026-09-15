@@ -268,6 +268,22 @@
         (record-snapshot! dir file-name remote-name)
         dest))))
 
+(defn- resolve-build!
+  "A timestamped snapshot build, taken as named: the cached file when it
+  holds that build, else the first repository that has it."
+  [repos artifact dest]
+  (let [dir (str (fs/parent dest))
+        file-name (str (fs/file-name dest))
+        remote-name (coords/file-name artifact)]
+    (if (and (fs/exists? dest) (= remote-name (recorded-snapshot dir file-name)))
+      dest
+      (some (fn [repo]
+              (when (and (get-in repo [:snapshots :enabled])
+                         (download! repo artifact remote-name dest :snapshots))
+                (record-snapshot! dir file-name remote-name)
+                dest))
+            repos))))
+
 (defn resolve-file!
   "The artifact's file in the local repository, downloaded from the first
   repository that has it. nil when none does. A cached file from a
@@ -277,6 +293,7 @@
   (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
     (locking (lock-for dest)
-      (if (coords/snapshot? version)
-        (resolve-snapshot! local-repo repos artifact dest)
-        (resolve-release! repos artifact dest)))))
+      (cond
+        (str/ends-with? version "-SNAPSHOT") (resolve-snapshot! local-repo repos artifact dest)
+        (coords/snapshot? version) (resolve-build! repos artifact dest)
+        :else (resolve-release! repos artifact dest)))))

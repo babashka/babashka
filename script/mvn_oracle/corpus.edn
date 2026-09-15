@@ -26,6 +26,8 @@
                                                    :git/sha "a9fd7c02bd7201f36344b47142badc3c3ef22f88"}}}
  ;; metadata: a -SNAPSHOT coordinate and a version range
  {:name "snapshot" :deps {clj-kondo/clj-kondo {:mvn/version "2025.10.24-SNAPSHOT"}}}
+ ;; a pinned snapshot build
+ {:name "snapshot-build" :deps {clj-kondo/clj-kondo {:mvn/version "2025.10.24-20251120.193408-8"}}}
  {:name "range" :deps {org.clojure/data.json {:mvn/version "[2.4,2.5)"}}}
  ;; LATEST and RELEASE: clj-kondo has snapshots in its metadata, so they differ
  {:name "latest" :deps {clj-kondo/clj-kondo {:mvn/version "LATEST"}}}
