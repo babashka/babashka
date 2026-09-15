@@ -197,7 +197,7 @@
 (defn temp-file
   "Returns a path next to file named file.<random>.tmp."
   [file]
-  ;; ThreadLocalRandom repeated its sequence in native bb processes started together on macOS
+  ;; unique across processes started together
   (str file "." (java.util.UUID/randomUUID) ".tmp"))
 
 (defn move-into-place!
