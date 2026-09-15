@@ -23,15 +23,24 @@
   "Returns [id credentials], with :headers from configuration/httpHeaders."
   [el]
   (let [id (child-text el "id")
-        headers (into {} (for [p (some-> (child el "configuration") (child "httpHeaders") (children "property"))
-                               :let [header-name (interpolate (child-text p "name"))
-                                     value (interpolate (child-text p "value"))]]
-                           (if (and header-name value)
-                             [header-name value]
-                             ;; the JVM tools.deps fails to start on such a property
-                             (throw (ex-info (str "Invalid httpHeaders property for server " id
-                                                  " in settings.xml: name and value are required")
-                                             {:server id})))))]
+        headers (reduce
+                 (fn [acc p]
+                   (let [name-el (child p "name")
+                         value-el (child p "value")]
+                     (when-not (and name-el value-el)
+                       ;; the JVM tools.deps fails to start when either element is missing
+                       (throw (ex-info (str "Invalid httpHeaders property for server " id
+                                            " in settings.xml: name and value are required")
+                                       {:server id})))
+                     (let [header-name (or (interpolate (text name-el)) "")
+                           value (or (interpolate (text value-el)) "")]
+                       ;; skip a nameless header, and keep the last of names that differ only in case
+                       (if (= "" header-name)
+                         acc
+                         (assoc (into {} (remove #(.equalsIgnoreCase header-name ^String (key %))) acc)
+                                header-name value)))))
+                 {}
+                 (some-> (child el "configuration") (child "httpHeaders") (children "property")))]
     [id
      (cond-> {:username (interpolate (child-text el "username"))
               :password (interpolate (child-text el "password"))}

@@ -208,7 +208,16 @@
     (testing "header names are interpolated like values"
       (is (= {(str "X-" (System/getProperty "user.name")) "v"}
              (get-in (parse "<property><name>X-${user.name}</name><value>v</value></property>") [:servers "s" :headers]))))
-    (testing "a property without a name or a value is an error, the JVM tools.deps does not start with one"
+    (testing "a blank value reads as an empty string"
+      (doseq [value ["<value></value>" "<value> </value>"]]
+        (is (= {"X" ""} (get-in (parse (str "<property><name>X</name>" value "</property>")) [:servers "s" :headers]))
+            value)))
+    (testing "a property with a blank name is left out"
+      (is (nil? (get-in (parse "<property><name></name><value>v</value></property>") [:servers "s" :headers]))))
+    (testing "of names that differ only in case, the last property wins"
+      (is (= {"x" "b"} (get-in (parse "<property><name>X</name><value>a</value></property><property><name>x</name><value>b</value></property>")
+                               [:servers "s" :headers]))))
+    (testing "a property without a name or value element is an error"
       (doseq [props ["<property><value>v</value></property>" "<property><name>n</name></property>"]]
         (is (thrown-with-msg? clojure.lang.ExceptionInfo #"^Invalid httpHeaders property for server s in settings.xml"
                               (parse props))
