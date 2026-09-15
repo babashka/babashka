@@ -8,6 +8,7 @@
   :basis :lib :classifier :version :jar-file :class-dir."
   {:no-doc true}
   (:require [babashka.fs :as fs]
+            [babashka.impl.mvn.metadata :as metadata]
             [clojure.string :as str]
             [clojure.tools.build.api :as api]
             [clojure.tools.deps.util.maven :as mvn]))
@@ -51,6 +52,41 @@
                  "  </versioning>\n"
                  "</metadata>\n"))))
 
+(defn- snapshot-version-xml [{:keys [classifier extension value updated]}]
+  (str "      <snapshotVersion>\n"
+       (when classifier (str "        <classifier>" classifier "</classifier>\n"))
+       "        <extension>" extension "</extension>\n"
+       "        <value>" value "</value>\n"
+       "        <updated>" updated "</updated>\n"
+       "      </snapshotVersion>\n"))
+
+(defn- add-snapshot-files!
+  "Writes maven-metadata-local.xml in dir for a -SNAPSHOT install, with one
+  snapshotVersion per file and the installed files first."
+  [dir group-id artifact-id version classifier extensions]
+  (let [f (fs/file dir "maven-metadata-local.xml")
+        now (stamp)
+        installed (map (fn [ext] {:classifier classifier :extension ext :value version :updated now}) extensions)
+        existing (when (fs/exists? f)
+                   (:snapshot-versions (metadata/parse-snapshot-metadata (slurp f))))
+        kept (remove (fn [sv] (some #(= [(:classifier %) (:extension %)] [(:classifier sv) (:extension sv)]) installed))
+                     existing)]
+    (spit f (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                 "<metadata modelVersion=\"1.1.0\">\n"
+                 "  <groupId>" group-id "</groupId>\n"
+                 "  <artifactId>" artifact-id "</artifactId>\n"
+                 "  <versioning>\n"
+                 "    <lastUpdated>" now "</lastUpdated>\n"
+                 "    <snapshot>\n"
+                 "      <localCopy>true</localCopy>\n"
+                 "    </snapshot>\n"
+                 "    <snapshotVersions>\n"
+                 (apply str (map snapshot-version-xml (concat installed kept)))
+                 "    </snapshotVersions>\n"
+                 "  </versioning>\n"
+                 "  <version>" version "</version>\n"
+                 "</metadata>\n"))))
+
 (defn install
   [{:keys [basis lib classifier version jar-file class-dir] :as _params}]
   (let [{:mvn/keys [local-repo]} basis
@@ -63,11 +99,14 @@
         dir (fs/file artifact-dir version)
         base (str artifact-id "-" version (when classifier (str "-" classifier)))
         jar-name (str base ".jar")
-        pom-name (str base ".pom")]
+        pom-name (str base ".pom")
+        pom? (fs/exists? pom)]
     (fs/create-dirs dir)
     (fs/copy jar (fs/file dir jar-name) {:replace-existing true})
-    (when (fs/exists? pom)
+    (when pom?
       (fs/copy pom (fs/file dir pom-name) {:replace-existing true}))
-    (record-local! dir (cond-> [jar-name] (fs/exists? pom) (conj pom-name)))
+    (record-local! dir (cond-> [jar-name] pom? (conj pom-name)))
+    (when (str/ends-with? version "-SNAPSHOT")
+      (add-snapshot-files! dir group-id artifact-id version classifier (cond-> ["jar"] pom? (conj "pom"))))
     (add-version! artifact-dir group-id artifact-id version)
     nil))

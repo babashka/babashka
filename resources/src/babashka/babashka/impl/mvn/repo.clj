@@ -182,14 +182,6 @@
         (contains? ids "")
         (boolean (some #(contains? ids (:id %)) repos)))))
 
-(defn- remote-file-name
-  "The file's name in repo. A -SNAPSHOT version names its timestamped file
-  through the repository's metadata, nil when the repository has none."
-  [local-repo repo {:keys [version] :as artifact}]
-  (if (str/ends-with? version "-SNAPSHOT")
-    (metadata/snapshot-file-name local-repo repo artifact)
-    (coords/file-name artifact)))
-
 ;; A snapshot's local file carries the base version, so _babashka.snapshots
 ;; in the version directory records which remote file it holds.
 
@@ -210,57 +202,81 @@
                                                (str/split-lines text))]
                              (str (str/join "\n" (conj (vec lines) (str local-name ">" remote-name))) "\n")))))
 
-(defn- download-from!
-  "Returns dest if cached or downloaded from repo, or nil if unavailable."
-  [local-repo repo artifact dest policy]
-  (let [local-name (coords/local-file-name artifact)
-        dir (fs/parent dest)
-        snapshot? (coords/snapshot? (:version artifact))
-        remote-name (remote-file-name local-repo repo artifact)]
-    (when remote-name
-      (if (and (fs/exists? dest)
-               (or (not snapshot?)
-                   (= remote-name (recorded-snapshot dir local-name))))
+(defn- download!
+  "Downloads the file named remote-name in the artifact's directory of repo
+  to dest. Returns dest, nil when the repository does not have it."
+  [repo artifact remote-name dest policy]
+  (let [rel (str (coords/version-dir artifact) "/" remote-name)]
+    (when (http/download! (str (:url repo) rel) dest
+                          {:auth (:auth repo)
+                           :proxy (:proxy repo)
+                           :headers (:headers repo)
+                           :checksum (get-in repo [policy :checksum])
+                           :repo-id (:id repo)
+                           :label rel})
+      (record-remote! (str (fs/parent dest)) (str (fs/file-name dest)) (:id repo))
+      dest)))
+
+(defn- resolve-release!
+  "A release: the cached file when it counts for repos, else the first
+  repository that has it."
+  [repos artifact dest]
+  (let [dir (str (fs/parent dest))
+        file-name (str (fs/file-name dest))
+        rel (coords/relative-path artifact)]
+    (if (fs/exists? dest)
+      (if (cached-available? dir file-name repos)
         dest
-        (let [rel (str (coords/version-dir artifact) "/" remote-name)]
-          (when (http/download! (str (:url repo) rel) dest
-                                {:auth (:auth repo)
-                                 :proxy (:proxy repo)
-                                 :headers (:headers repo)
-                                 :checksum (get-in repo [policy :checksum])
-                                 :repo-id (:id repo)
-                                 :label rel})
-            (record-remote! dir local-name (:id repo))
-            (when snapshot? (record-snapshot! dir local-name remote-name))
-            dest))))))
+        ;; Aether's existence check: the cached file stays, the repository is recorded
+        (some (fn [repo]
+                (when (and (get-in repo [:releases :enabled])
+                           (http/exists? (str (:url repo) rel)
+                                         {:auth (:auth repo) :proxy (:proxy repo) :headers (:headers repo)
+                                          :repo-id (:id repo) :label rel}))
+                  (record-remote! dir file-name (:id repo))
+                  dest))
+              repos))
+      (some (fn [repo]
+              (when (get-in repo [:releases :enabled])
+                (download! repo artifact file-name dest :releases)))
+            repos))))
+
+(defn- resolve-snapshot!
+  "Returns dest holding the build metadata/resolve-snapshot picks, cached or
+  downloaded from the repository that won, or nil when unavailable."
+  [local-repo repos artifact dest]
+  (let [dir (str (fs/parent dest))
+        file-name (str (fs/file-name dest))
+        {:keys [version repo]} (metadata/resolve-snapshot local-repo repos artifact)
+        remote-name (coords/file-name (assoc artifact :version version))]
+    (cond
+      (nil? repo)
+      (when (fs/exists? dest) dest)
+
+      (= :none repo)
+      (or (when (and (fs/exists? dest) (cached-available? dir file-name repos)) dest)
+          (some (fn [repo]
+                  (when (get-in repo [:snapshots :enabled])
+                    (download! repo artifact file-name dest :snapshots)))
+                repos))
+
+      (and (fs/exists? dest) (= remote-name (recorded-snapshot dir file-name)))
+      dest
+
+      :else
+      (when (download! repo artifact remote-name dest :snapshots)
+        (record-snapshot! dir file-name remote-name)
+        dest))))
 
 (defn resolve-file!
   "The artifact's file in the local repository, downloaded from the first
   repository that has it. nil when none does. A cached file from a
   repository outside repos is used once one of repos has it too. A snapshot
-  is refreshed when the repository's metadata names a newer build."
+  follows the newest metadata, including the local repository's."
   [local-repo repos {:keys [version] :as artifact}]
-  (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))
-        dir (str (fs/parent dest))
-        file-name (str (fs/file-name dest))
-        rel (coords/relative-path artifact)
-        policy (if (coords/snapshot? version) :snapshots :releases)]
+  (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
     (locking (lock-for dest)
-      (if (and (fs/exists? dest) (not (coords/snapshot? version)))
-        (if (cached-available? dir file-name repos)
-          dest
-          ;; Aether's existence check: the cached file stays, the repository is recorded
-          (some (fn [repo]
-                  (when (and (get-in repo [policy :enabled])
-                             (http/exists? (str (:url repo) rel)
-                                           {:auth (:auth repo) :proxy (:proxy repo) :headers (:headers repo)
-                                            :repo-id (:id repo) :label rel}))
-                    (record-remote! dir file-name (:id repo))
-                    dest))
-                repos))
-        (loop [[repo & more] repos]
-          (when repo
-            (or (when (get-in repo [policy :enabled])
-                  (download-from! local-repo repo artifact dest policy))
-                (recur more))))))))
+      (if (coords/snapshot? version)
+        (resolve-snapshot! local-repo repos artifact dest)
+        (resolve-release! repos artifact dest)))))
