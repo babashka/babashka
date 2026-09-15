@@ -27,7 +27,10 @@
   (testing "testShouldNotInterpolateDependencyVersionWithInvalidReference"
     (is (= "${something}" (dep-version (model (dep "${something}"))))))
   (testing "testTwoReferences"
-    (is (= "foo-3.8.1" (dep-version (model (dep "${artifactId}-${version}")))))))
+    (is (= "foo-3.8.1" (dep-version (model (dep "${artifactId}-${version}"))))))
+  (testing "the POM's name resolves and an unset name stays literal"
+    (is (= "1" (dep-version (model (str "<name>1</name>" (dep "${project.name}"))))))
+    (is (= "${name}" (dep-version (model (dep "${name}")))))))
 
 (defn- property [m k] (get (:properties m) k))
 

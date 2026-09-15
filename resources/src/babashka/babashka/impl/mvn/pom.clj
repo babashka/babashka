@@ -111,6 +111,7 @@
         parent (x/child root "parent")]
     (merge (gav root)
            {:packaging (or (x/child-text root "packaging") "jar")
+            :name (x/child-text root "name")
             :parent (when parent
                       (assoc (gav parent) :relative-path (x/child-text parent "relativePath")))
             :properties (or (some-> (x/child root "properties") properties) {})
@@ -316,9 +317,9 @@
 
 (defn- model-values
   "Returns model expression values in :basedir, :prefixed and :unprefixed maps."
-  [{:keys [group artifact version packaging parent]} basedir]
+  [{:keys [group artifact version packaging name parent]} basedir]
   (let [fields (into {} (filter val) {"groupId" group "artifactId" artifact
-                                      "version" version "packaging" packaging})]
+                                      "version" version "packaging" packaging "name" name})]
     {:basedir (when basedir {"basedir" (str basedir) "project.basedir" (str basedir)})
      :prefixed (merge (into {} (for [[k v] fields, prefix ["project." "pom."]] [(str prefix k) v]))
                       (when parent
@@ -328,7 +329,8 @@
      :unprefixed (merge fields
                         (when parent
                           {"parent.version" (:version parent)
-                           "parent.groupId" (:group parent)}))}))
+                           "parent.groupId" (:group parent)
+                           "parent.artifactId" (:artifact parent)}))}))
 
 (defn- naked-expression
   "Returns `k` without a leading pom. or project. prefix, as plexus's
