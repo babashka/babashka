@@ -197,7 +197,8 @@
 (defn temp-file
   "Returns a path next to file named file.<random>.tmp."
   [file]
-  (str file "." (Long/toUnsignedString (.nextLong (java.util.concurrent.ThreadLocalRandom/current))) ".tmp"))
+  ;; unique across processes started together
+  (str file "." (java.util.UUID/randomUUID) ".tmp"))
 
 (defn move-into-place!
   "Moves tmp over file atomically, or copies it on Windows. Deletes tmp."

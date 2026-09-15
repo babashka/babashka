@@ -37,17 +37,29 @@
       (run-together threads #(#'repo/record-remote! (str dir) (str "a-" % ".jar") "central"))
       (is (= threads (count (re-seq #"(?m)^a-\d+\.jar>central=$" (slurp (fs/file dir "_remote.repositories")))))))))
 
+(def ^:private snapshot-metadata
+  "<metadata modelVersion=\"1.1.0\"><groupId>g</groupId><artifactId>a</artifactId><version>1.0-SNAPSHOT</version><versioning>
+  <snapshot><timestamp>20260101.000000</timestamp><buildNumber>1</buildNumber></snapshot><lastUpdated>20260101000000</lastUpdated>
+  <snapshotVersions><snapshotVersion><extension>jar</extension><value>1.0-20260101.000000-1</value><updated>20260101000000</updated></snapshotVersion></snapshotVersions>
+  </versioning></metadata>")
+
 (deftest build-copies-test
-  (testing "a build copied over the -SNAPSHOT file from every thread at once leaves an intact copy with the build's time"
+  (testing "threads resolving one -SNAPSHOT at once leave an intact copy with the build's time"
     (fs/with-temp-dir [dir {}]
-      (let [build (str (fs/file dir "a-1.0-20260101.000000-1.jar"))
-            dest (str (fs/file dir "a-1.0-SNAPSHOT.jar"))
-            content (str/join (repeat 100000 "x"))]
-        (spit build content)
-        (run-together threads (fn [_] (#'repo/copy-build! build dest)))
-        (is (= content (slurp dest)))
-        (is (= (.lastModified (fs/file build)) (.lastModified (fs/file dest))))
-        (is (empty? (fs/glob dir "*.tmp")))))))
+      (let [remote-dir (fs/file dir "remote" "g" "a" "1.0-SNAPSHOT")
+            local-dir (fs/file dir "local" "g" "a" "1.0-SNAPSHOT")
+            content (str/join (repeat 100000 "x"))
+            remote (repo/remote-repo {} ["r" {:url (str (.toURI (fs/file dir "remote")))
+                                              :snapshots {:checksum :ignore}}])
+            artifact {:group "g" :artifact "a" :version "1.0-SNAPSHOT" :extension "jar"}]
+        (fs/create-dirs remote-dir)
+        (spit (fs/file remote-dir "maven-metadata.xml") snapshot-metadata)
+        (spit (fs/file remote-dir "a-1.0-20260101.000000-1.jar") content)
+        (run-together threads (fn [_] (repo/resolve-file! (str (fs/file dir "local")) [remote] artifact)))
+        (is (= content (slurp (fs/file local-dir "a-1.0-SNAPSHOT.jar"))))
+        (is (= (.lastModified (fs/file local-dir "a-1.0-20260101.000000-1.jar"))
+               (.lastModified (fs/file local-dir "a-1.0-SNAPSHOT.jar"))))
+        (is (empty? (fs/glob local-dir "*.tmp")))))))
 
 (deftest tracking-files-across-processes-test
   (testing "repository lines several processes write at once all end up in _remote.repositories"
