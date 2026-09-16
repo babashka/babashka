@@ -14,7 +14,8 @@
         versioning (x/child root "versioning")]
     {:latest (x/child-text versioning "latest")
      :release (x/child-text versioning "release")
-     :versions (mapv x/text (some-> (x/child versioning "versions") (x/children "version")))}))
+     ;; an empty <version/> element, which a local install can write, is not a version
+     :versions (into [] (keep x/text) (some-> (x/child versioning "versions") (x/children "version")))}))
 
 (defn parse-snapshot-metadata
   "The versioning of a snapshot's maven-metadata.xml: :last-updated,

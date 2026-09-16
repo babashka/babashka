@@ -226,6 +226,31 @@ nil" prelude port (pr-str m2))))]
     (is (str/includes? metadata "<version>1.0</version>"))
     (is (= 42 x))))
 
+(deftest blank-local-metadata-version-test
+  ;; a local install writes an empty <version/> into maven-metadata-local.xml
+  (let [repo (str (fs/create-temp-dir))
+        dir (fs/file repo "demo" "demo")]
+    (fs/create-dirs dir)
+    (spit (fs/file dir "maven-metadata-local.xml")
+          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<metadata>
+  <groupId>demo</groupId>
+  <artifactId>demo</artifactId>
+  <versioning>
+    <release></release>
+    <versions>
+      <version></version>
+      <version>1.0</version>
+    </versions>
+    <lastUpdated>20220924101120</lastUpdated>
+  </versioning>
+</metadata>")
+    (is (= [{:mvn/version "1.0"}]
+           (bb (format "
+(require '[clojure.tools.deps.extensions :as ext] '[clojure.tools.deps.extensions.maven])
+(ext/find-versions 'demo/demo {:mvn/version \"RELEASE\"} :mvn {:mvn/repos {} :mvn/local-repo %s})
+" (pr-str repo)))))))
+
 (deftest dependency-test
   (is (= #{:a :c :b} (bb "
 (require '[babashka.deps :as deps])
