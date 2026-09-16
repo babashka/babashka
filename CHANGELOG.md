@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Ignore an empty `<version/>` element in `maven-metadata-local.xml` when listing an artifact's versions
+
 ## 1.13.223 (2026-09-15)
 
 - [#2151](https://github.com/babashka/babashka/issues/2151): An `:exec-fn` task in the `:depends` of a task with a `:task` body runs, with its own `:exec-args` and spec defaults
