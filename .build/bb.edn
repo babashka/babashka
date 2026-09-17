@@ -2,7 +2,7 @@
  :deps {borkdude/gh-release-artifact
         #_{:local/root "../gh-release-artifact"}
         {:git/url "https://github.com/borkdude/gh-release-artifact"
-         :git/sha "4a9a74f0e50e897c45df8cc70684360eb30fce80"}}
+         :git/sha "1164d14fe8e5a45d22e67799bc22cb8dc7eb2dec"}}
  :tasks {release-artifact babashka.release-artifact/release
          resync {:doc "Re-sync copied upstream files with a newer revision"
                  :exec-fn resync/resync}}}
