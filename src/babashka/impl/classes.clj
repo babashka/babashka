@@ -242,8 +242,19 @@
                {:name "next"}
                {:name "remove"}]}
     java.util.TimeZone
-    {:methods [{:name "getTimeZone"}
+    {:methods [{:name "getDefault"}
+               {:name "getTimeZone"}
                {:name "setDefault"}]}
+    java.util.Calendar
+    {:methods [{:name "getInstance"}
+               {:name "get"}
+               {:name "set"}
+               {:name "getTime"}
+               {:name "setTime"}]
+     :fields [{:name "HOUR_OF_DAY"}
+              {:name "MINUTE"}
+              {:name "SECOND"}
+              {:name "MILLISECOND"}]}
     java.net.URLClassLoader
     {:methods [{:name "close"}
                {:name "findResource"}
@@ -1002,6 +1013,8 @@
                                    java.io.ByteArrayOutputStream
                                    (instance? java.security.MessageDigest v)
                                    java.security.MessageDigest
+                                   (instance? java.util.Calendar v)
+                                   java.util.Calendar
                                    ;; streams
                                    (instance? java.io.InputStream v)
                                    java.io.InputStream
