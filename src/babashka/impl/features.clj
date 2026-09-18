@@ -35,7 +35,7 @@
   (require '[babashka.impl.xml]))
 
 (when libffi?
-  (require '[babashka.impl.libffi]))
+  (require '[babashka.ffi.impl.libffi]))
 
 (when yaml?
   (require '[babashka.impl.yaml]
