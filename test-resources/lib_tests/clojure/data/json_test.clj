@@ -15,7 +15,7 @@
   (is (= 42 (json/read (pbr "42"))))
   (is (= ["abc" "def"] (json/read (pbr "[\"abc\", \"def\"]")))))
 
-;; DJSON-50 - pass PBR to safely do repeated read
+;; DJSON-50: Use a PushbackReader for repeated reads.
 (deftest read-multiple
   (let [st "{\"foo\":\"some string\"}{\"foo\":\"another string\"}"
         pbr (pbr st)]
@@ -73,16 +73,16 @@
   ;; on-extra-throw-remaining
   (try
     (json/read-str "[42],abc" :extra-data-fn json/on-extra-throw-remaining)
-    (is false "expected exception to be thrown")
+    (is false "Expected an exception")
     (catch clojure.lang.ExceptionInfo e
       (is (= ",abc" (:remaining (ex-data e))))))
   (try
     (json/read-str "[1], 1]" :extra-data-fn json/on-extra-throw-remaining)
-    (is false "expected exception to be thrown")
+    (is false "Expected an exception")
     (catch clojure.lang.ExceptionInfo e
       (is (= ", 1]" (:remaining (ex-data e))))))
 
-  ;; check that empty input behavior not modified when :extra-data-fn specified
+  ;; Empty input respects :eof-value with :extra-data-fn.
   (is (= :hi (json/read-str ""
                :eof-error? false, :eof-value :hi, :extra-data-fn json/on-extra-throw)))
   (is (= :hi (json/read (java.io.StringReader. "")
