@@ -34,6 +34,7 @@
    [babashka.impl.core :as bbcore]
    [babashka.impl.curl :refer [curl-namespace]]
    [babashka.impl.data :as data]
+   [babashka.impl.data-json :refer [data-json-namespace]]
    [babashka.impl.datafy :refer [datafy-namespace]]
    [babashka.impl.deps :as deps :refer [deps-namespace]]
    [babashka.impl.edamame :refer [edamame-namespace]]
@@ -438,6 +439,7 @@ Use bb run --help to show this help output.
        'cheshire.core cheshire-core-namespace
        'cheshire.factory cheshire-factory-namespace
        'cheshire.generate cheshire-generate-namespace
+       'clojure.data.json data-json-namespace
        'clojure.data data/data-namespace
        'clojure.instant instant/instant-namespace
        'clojure.stacktrace stacktrace-namespace
