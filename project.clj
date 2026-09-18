@@ -17,6 +17,9 @@
   ;; ffi/src-java holds the call trampolines, generated in that repository
   :java-source-paths ["src-java" "ffi/src-java"]
   :resource-paths ["resources" "sci/resources" "ffi/resources"]
+  ;; linter configuration that libraries carry for their users. Nothing in
+  ;; bb reads it.
+  :uberjar-exclusions [#"^clj-kondo\.exports/"]
   :test-selectors {:default (complement (some-fn :windows-only :flaky))
                    :windows (complement (some-fn :skip-windows :flaky))
                    :non-flaky (complement :flaky)
