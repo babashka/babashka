@@ -3,9 +3,47 @@
             [clojure.test :refer :all]
             [clojure.string :as str]))
 
+(defn pbr
+  ([s]
+   (pbr s 64))
+  ([s size]
+   (if (< size 64)
+     (throw (RuntimeException. "Size must be >= 64"))
+     (java.io.PushbackReader. (java.io.StringReader. s) size))))
+
 (deftest read-from-pushback-reader
-  (let [s (java.io.PushbackReader. (java.io.StringReader. "42"))]
-    (is (= 42 (json/read s)))))
+  (is (= 42 (json/read (pbr "42"))))
+  (is (= ["abc" "def"] (json/read (pbr "[\"abc\", \"def\"]")))))
+
+;; DJSON-50 - pass PBR to safely do repeated read
+(deftest read-multiple
+  (let [st "{\"foo\":\"some string\"}{\"foo\":\"another string\"}"
+        pbr (pbr st)]
+    (is (= {"foo" "some string"} (json/read pbr)))
+    (is (= {"foo" "another string"} (json/read pbr))))
+
+  (let [st "{\"foo\":\"some string\"}{\"foo\":\"another long ......................................................... string\"}"
+        pbr (pbr st)]
+    (is (= {"foo" "some string"} (json/read pbr)))
+    (is (= {"foo" "another long ......................................................... string"} (json/read pbr)))))
+
+(defn read-then-eof [s]
+  (let [r (pbr s)
+        val (json/read r :eof-error? false :eof-value :EOF)]
+    (is (= :EOF (json/read r :eof-error? false :eof-value :EOF)))
+    val))
+
+(deftest read-multiple-eof
+  (are [expected s] (= expected (read-then-eof s))
+    1.2 "1.2"
+    0 "0"
+    1 "1"
+    1.0 "1.0"
+    "abc" "\"abc\""
+    "\u2202" "\"\u2202\""
+    [] "[]"
+    [1 2] "[1, 2]")
+  )
 
 (deftest read-from-reader
   (let [s (java.io.StringReader. "42")]
@@ -20,6 +58,35 @@
 (deftest read-bigint
   (is (= 123456789012345678901234567890N
          (json/read-str "123456789012345678901234567890"))))
+
+(deftest lenient-on-extra-data
+  (is (= [42] (json/read-str "[42],abc")))
+  (is (= [42] (json/read (java.io.StringReader. "[42],abc")))))
+
+(deftest strict-on-extra-data
+  ;; on-extra-throw
+  (is (thrown? clojure.lang.ExceptionInfo
+        (json/read-str "[42],abc" :extra-data-fn json/on-extra-throw)))
+  (is (thrown? clojure.lang.ExceptionInfo
+        (json/read (java.io.StringReader. "[42],abc") :extra-data-fn json/on-extra-throw)))
+
+  ;; on-extra-throw-remaining
+  (try
+    (json/read-str "[42],abc" :extra-data-fn json/on-extra-throw-remaining)
+    (is false "expected exception to be thrown")
+    (catch clojure.lang.ExceptionInfo e
+      (is (= ",abc" (:remaining (ex-data e))))))
+  (try
+    (json/read-str "[1], 1]" :extra-data-fn json/on-extra-throw-remaining)
+    (is false "expected exception to be thrown")
+    (catch clojure.lang.ExceptionInfo e
+      (is (= ", 1]" (:remaining (ex-data e))))))
+
+  ;; check that empty input behavior not modified when :extra-data-fn specified
+  (is (= :hi (json/read-str ""
+               :eof-error? false, :eof-value :hi, :extra-data-fn json/on-extra-throw)))
+  (is (= :hi (json/read (java.io.StringReader. "")
+               :eof-error? false, :eof-value :hi, :extra-data-fn json/on-extra-throw))))
 
 (deftest write-bigint
   (is (= "123456789012345678901234567890"
@@ -68,7 +135,7 @@
 
 (deftest read-objects
   (is (= {:k1 1, :k2 2, :k3 3, :k4 4, :k5 5, :k6 6, :k7 7, :k8 8
-          :k9 9, :k10 10, :k11 11, :k12 12, :k13 13, :k14 14, :k15 15, :k16 16}
+          :k9 9, :k10 10, :k11 11, :k12 12, :k13 13, :k14 14, :k15 15, :k16 16} 
          (json/read-str "{\"k1\": 1, \"k2\": 2, \"k3\": 3, \"k4\": 4,
                           \"k5\": 5, \"k6\": 6, \"k7\": 7, \"k8\": 8,
                           \"k9\": 9, \"k10\": 10, \"k11\": 11, \"k12\": 12,
@@ -122,7 +189,7 @@
                     :key-fn keyword
                     :value-fn (fn [k v]
                                 (if (= :date k)
-                                  (java.sql.Date/valueOf v)
+                                  (java.sql.Date/valueOf ^String v)
                                   v))))))
 
 (deftest omit-values
@@ -241,12 +308,11 @@
         roundtripped  (java.util.UUID/fromString (json/read-str (json/write-str uid)))]
     (is (= uid roundtripped))))
 
-;; BB-TEST-PATCH: bb doesn't have SimpleDateFormat
-#_(def ^java.text.SimpleDateFormat date-format
+(def ^java.text.SimpleDateFormat date-format
   (doto (java.text.SimpleDateFormat. "dd-MM-yyyy hh:mm:ss")
     (.setTimeZone  (java.util.TimeZone/getDefault))))
 
-#_(deftest print-util-date
+(deftest print-util-date
   (let [date (.parse date-format "24-03-2006 15:49:00")
         epoch-millis (.getTime date)]
     (is (= epoch-millis (-> date
@@ -255,7 +321,7 @@
                             java.time.Instant/parse
                             .toEpochMilli)))))
 
-#_(deftest print-sql-date
+(deftest print-sql-date
   (let [date (.parse date-format "24-03-2006 15:49:00")
         sql-date (java.sql.Date. (.getTime date))
         epoch-millis-start-of-day (.getTime (.getTime (doto (java.util.Calendar/getInstance)
@@ -275,7 +341,7 @@
     (is (= time (java.time.Instant/parse (json/read-str (json/write-str time)))))))
 
 
-#_(deftest print-time-supports-format
+(deftest print-time-supports-format
   (let [formatter (.withZone java.time.format.DateTimeFormatter/ISO_ZONED_DATE_TIME
                              (java.time.ZoneId/systemDefault))
         date (.parse date-format "24-03-2006 15:49:00")
@@ -365,6 +431,18 @@
   (is (thrown? java.io.EOFException
         (json/read-str "\"\\"))))
 
+(deftest throws-eof-in-arrays
+  (is (thrown? java.io.EOFException
+        (json/read-str "[1,")))
+  (is (thrown? java.io.EOFException
+        (json/read-str "[1,2,"))))
+
+(deftest throws-eof-in-objects
+  (is (thrown? java.io.EOFException
+        (json/read-str "{")))
+  (is (thrown? java.io.EOFException
+        (json/read-str "{\"\":1,"))))
+
 (deftest accept-eof
   (is (= ::eof (json/read-str "" :eof-error? false :eof-value ::eof))))
 
@@ -425,3 +503,13 @@
      (dotimes [_ 1000]
        (assert (= (json/read-str pass1-string)
                   (json/read-str (json/write-str (json/read-str pass1-string)))))))))
+
+(defn djson-54-default-write-fn [x out options]
+  (#'json/write-string (str x) out options))
+
+(deftest DJSON-54-test
+  (is (thrown? Exception (json/write-str {:foo (java.net.URI. "http://clojure.org")})))
+  (try (json/write-str {:foo (java.net.URI. "http://clojure.org")})
+       (catch Exception e
+         (is (= "Don't know how to write JSON of class java.net.URI" (.getMessage e)))))
+  (is (= "{\"foo\":\"http:\\/\\/clojure.org\"}" (json/write-str {:foo (java.net.URI. "http://clojure.org")} :default-write-fn djson-54-default-write-fn))))

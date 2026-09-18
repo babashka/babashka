@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Add `clojure.data.json`
 - Ignore an empty `<version/>` element in `maven-metadata-local.xml` when listing an artifact's versions
 
 ## 1.13.223 (2026-09-15)
