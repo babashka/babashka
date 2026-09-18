@@ -4,9 +4,7 @@
             [clojure.string :as str]))
 
 (defn current-branch []
-  (or (System/getenv "APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH")
-      (System/getenv "APPVEYOR_REPO_BRANCH")
-      (System/getenv "CIRCLE_BRANCH")
+  (or (System/getenv "CIRCLE_BRANCH")
       (System/getenv "GITHUB_REF_NAME")
       (System/getenv "CIRRUS_BRANCH")
       (-> (sh "git" "rev-parse" "--abbrev-ref" "HEAD")

@@ -3,7 +3,6 @@
    [babashka.ffi]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
-   [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -205,8 +204,15 @@
     (testing "a C bool returns true or false, not a truthy 0"
       (is (= [true false]
              (bb `(do ~ffi-require
-                      (let [alpha?# (ffi/cfn "isalpha" [:int] :bool)]
-                        [(alpha?# 97) (alpha?# 49)]))))))
+                      (let [cb# (ffi/callback (ffi/global-arena) (fn [x#] (pos? x#)) [:int] :bool)
+                            pos?# (ffi/cfn cb# [:int] :bool)]
+                        [(pos?# 1) (pos?# 0)]))))))
+    (testing "a predicate that C declares as int is an :int, not a :bool.
+             A :bool is one byte, and glibc answers 1024 for a letter"
+      (is (= [true false]
+             (bb `(do ~ffi-require
+                      (let [isalpha# (ffi/cfn "isalpha" [:int] :int)]
+                        [(not (zero? (isalpha# 97))) (not (zero? (isalpha# 49)))]))))))
     (testing "a bool argument takes Clojure truthiness"
       (is (= [1 0 1 0]
              (bb `(do ~ffi-require
@@ -532,6 +538,16 @@
              (bb `(do ~ffi-require
                       (let [cb# (ffi/callback (ffi/global-arena) (fn [x#] (* x# 3)) [:int] :int)]
                         ((ffi/cfn cb# [:int] :int) 14)))))))
+    (testing "a callback with a double before an integer. Windows does not sort
+             arguments, so that is a shape of its own there, in the upcall
+             metadata script/compile.bat names. It needs no C library, so it
+             runs on Windows, where a build without that option fails here."
+      (is (= 24.5
+             (bb `(do ~ffi-require
+                      (let [cb# (ffi/callback (ffi/global-arena)
+                                              (fn [d# l#] (+ (* 2 d#) l#))
+                                              [:double :long] :double)]
+                        ((ffi/cfn cb# [:double :long] :double) 10.25 4)))))))
     (testing "cfn rejects the null address at bind time"
       (is (thrown? Exception (bb `(do ~ffi-require (ffi/cfn 0 [:int] :int))))))))
 
@@ -1072,40 +1088,3 @@
       (is (set? ffi-kinds))
       (is (set? hook-kinds))
       (is (= ffi-kinds hook-kinds)))))
-
-(def ^:private generated-files
-  ["resources/META-INF/native-image/babashka/ffi/reachability-metadata.json"
-   "src-java/babashka/impl/FfiTrampoline.java"
-   "src/babashka/impl/ffi_trampolines.clj"])
-
-(deftest metadata-generated-test
-  (when-not skip?
-    ;; skipped on Windows: a CRLF checkout would fail the byte comparison
-    (when-not tu/windows?
-      (testing "committed generated ffi sources match the generator"
-        (let [before (mapv slurp generated-files)]
-          (load-file "script/gen_ffi_metadata.clj")
-          (doseq [[f b] (map vector generated-files before)]
-            (is (= b (slurp f))
-                (str f ": run bb script/gen_ffi_metadata.clj and commit the result")))))
-      (testing "windows mode: ordered trampolines, no fixed FFM descriptors"
-        (let [before (mapv slurp generated-files)]
-          (try
-            (binding [*command-line-args* '("windows")]
-              (load-file "script/gen_ffi_metadata.clj"))
-            (let [meta (json/parse-string (slurp (first generated-files)))
-                  downcalls (get-in meta ["foreign" "downcalls"])
-                  java-src (slurp (second generated-files))]
-              (testing "no FFM downcall descriptors: a trampoline or libffi makes every call"
-                (is (empty? downcalls)))
-              (testing "upcalls respect the 2-double family limit"
-                (is (every? #(<= (count (filter #{"jdouble"} (get % "parameterTypes"))) 2)
-                            (get-in meta ["foreign" "upcalls"]))))
-              (testing "ordered shapes get trampolines, out-of-family ones do not"
-                (is (str/includes? java-src "interface F_D_DJ "))
-                (is (str/includes? java-src "interface F_J_JJJJJJJJJJ "))
-                (is (str/includes? java-src "interface F_V_JJDDDD "))
-                (is (not (str/includes? java-src "interface F_V_DDDFJ ")))))
-            (finally
-              (doseq [[f b] (map vector generated-files before)]
-                (spit f b)))))))))

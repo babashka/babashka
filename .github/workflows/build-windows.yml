@@ -81,9 +81,6 @@ jobs:
 
               set GRAALVM_HOME=%JAVA_HOME%
 
-              rem ordered FFI shapes: the Win64 ABI assigns registers by position
-              call bb script\gen_ffi_metadata.clj windows
-
               call script/uberjar.bat
 
               call script/compile.bat
