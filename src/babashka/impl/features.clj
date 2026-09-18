@@ -35,7 +35,10 @@
   (require '[babashka.impl.xml]))
 
 (when libffi?
-  (require '[babashka.ffi.impl.libffi]))
+  ;; the version is in a namespace of its own: ffi_get_version arrived in
+  ;; libffi 3.5, and babashka.ffi has to link against an older one too
+  (require '[babashka.ffi.impl.libffi]
+           '[babashka.ffi.impl.libffi-version]))
 
 (when yaml?
   (require '[babashka.impl.yaml]
