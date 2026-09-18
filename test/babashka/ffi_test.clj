@@ -3,7 +3,6 @@
    [babashka.ffi]
    [babashka.process :as p]
    [babashka.test-utils :as tu]
-   [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
@@ -1072,40 +1071,3 @@
       (is (set? ffi-kinds))
       (is (set? hook-kinds))
       (is (= ffi-kinds hook-kinds)))))
-
-(def ^:private generated-files
-  ["resources/META-INF/native-image/babashka/ffi/reachability-metadata.json"
-   "src-java/babashka/impl/FfiTrampoline.java"
-   "src/babashka/impl/ffi_trampolines.clj"])
-
-(deftest metadata-generated-test
-  (when-not skip?
-    ;; skipped on Windows: a CRLF checkout would fail the byte comparison
-    (when-not tu/windows?
-      (testing "committed generated ffi sources match the generator"
-        (let [before (mapv slurp generated-files)]
-          (load-file "script/gen_ffi_metadata.clj")
-          (doseq [[f b] (map vector generated-files before)]
-            (is (= b (slurp f))
-                (str f ": run bb script/gen_ffi_metadata.clj and commit the result")))))
-      (testing "windows mode: ordered trampolines, no fixed FFM descriptors"
-        (let [before (mapv slurp generated-files)]
-          (try
-            (binding [*command-line-args* '("windows")]
-              (load-file "script/gen_ffi_metadata.clj"))
-            (let [meta (json/parse-string (slurp (first generated-files)))
-                  downcalls (get-in meta ["foreign" "downcalls"])
-                  java-src (slurp (second generated-files))]
-              (testing "no FFM downcall descriptors: a trampoline or libffi makes every call"
-                (is (empty? downcalls)))
-              (testing "upcalls respect the 2-double family limit"
-                (is (every? #(<= (count (filter #{"jdouble"} (get % "parameterTypes"))) 2)
-                            (get-in meta ["foreign" "upcalls"]))))
-              (testing "ordered shapes get trampolines, out-of-family ones do not"
-                (is (str/includes? java-src "interface F_D_DJ "))
-                (is (str/includes? java-src "interface F_J_JJJJJJJJJJ "))
-                (is (str/includes? java-src "interface F_V_JJDDDD "))
-                (is (not (str/includes? java-src "interface F_V_DDDFJ ")))))
-            (finally
-              (doseq [[f b] (map vector generated-files before)]
-                (spit f b)))))))))

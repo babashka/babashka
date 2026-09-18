@@ -14,8 +14,9 @@
                  "impl-java/src"]
   ;; for debugging Reflector.java code:
   ;; :java-source-paths ["sci/reflector/src-java"]
-  :java-source-paths ["src-java"]
-  :resource-paths ["resources" "sci/resources"]
+  ;; ffi/src-java holds the call trampolines, generated in that repository
+  :java-source-paths ["src-java" "ffi/src-java"]
+  :resource-paths ["resources" "sci/resources" "ffi/resources"]
   :test-selectors {:default (complement (some-fn :windows-only :flaky))
                    :windows (complement (some-fn :skip-windows :flaky))
                    :non-flaky (complement :flaky)
