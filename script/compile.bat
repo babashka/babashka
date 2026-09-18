@@ -49,6 +49,9 @@ Rem Pass the feature setting to image initialization.
 Rem "if defined", not a string compare: the value carries its own quotes
 if defined LIBFFI_ARG (set BABASHKA_FEATURE_LIBFFI=true) else (set BABASHKA_FEATURE_LIBFFI=false)
 
+Rem Windows assigns argument registers by position, so babashka.ffi loads its
+Rem ordered trampolines here. The callback shapes only they need are in a
+Rem metadata file of their own in the ffi submodule, which this option names.
 call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-jar" "target/babashka-%BABASHKA_VERSION%-standalone.jar" ^
   "-H:Name=bb" ^
@@ -58,6 +61,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--install-exit-handlers" ^
   %LIBFFI_ARG% ^
   -EBABASHKA_FEATURE_LIBFFI ^
+  "-H:ConfigurationResourceRoots=babashka/ffi/native-image-windows" ^
   %*
 
 if %errorlevel% neq 0 exit /b %errorlevel%

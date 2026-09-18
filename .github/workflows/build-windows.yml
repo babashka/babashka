@@ -81,12 +81,6 @@ jobs:
 
               set GRAALVM_HOME=%JAVA_HOME%
 
-              rem ordered FFI shapes: the Win64 ABI assigns registers by position.
-              rem The generator and its output live in the ffi submodule.
-              cd ffi
-              call bb script\gen_ffi_metadata.clj windows
-              cd ..
-
               call script/uberjar.bat
 
               call script/compile.bat

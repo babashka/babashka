@@ -531,6 +531,16 @@
              (bb `(do ~ffi-require
                       (let [cb# (ffi/callback (ffi/global-arena) (fn [x#] (* x# 3)) [:int] :int)]
                         ((ffi/cfn cb# [:int] :int) 14)))))))
+    (testing "a callback with a double before an integer. Windows does not sort
+             arguments, so that is a shape of its own there, in the upcall
+             metadata script/compile.bat names. It needs no C library, so it
+             runs on Windows, where a build without that option fails here."
+      (is (= 24.5
+             (bb `(do ~ffi-require
+                      (let [cb# (ffi/callback (ffi/global-arena)
+                                              (fn [d# l#] (+ (* 2 d#) l#))
+                                              [:double :long] :double)]
+                        ((ffi/cfn cb# [:double :long] :double) 10.25 4)))))))
     (testing "cfn rejects the null address at bind time"
       (is (thrown? Exception (bb `(do ~ffi-require (ffi/cfn 0 [:int] :int))))))))
 
