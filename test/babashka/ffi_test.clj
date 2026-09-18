@@ -204,8 +204,15 @@
     (testing "a C bool returns true or false, not a truthy 0"
       (is (= [true false]
              (bb `(do ~ffi-require
-                      (let [alpha?# (ffi/cfn "isalpha" [:int] :bool)]
-                        [(alpha?# 97) (alpha?# 49)]))))))
+                      (let [cb# (ffi/callback (ffi/global-arena) (fn [x#] (pos? x#)) [:int] :bool)
+                            pos?# (ffi/cfn cb# [:int] :bool)]
+                        [(pos?# 1) (pos?# 0)]))))))
+    (testing "a predicate that C declares as int is an :int, not a :bool.
+             A :bool is one byte, and glibc answers 1024 for a letter"
+      (is (= [true false]
+             (bb `(do ~ffi-require
+                      (let [isalpha# (ffi/cfn "isalpha" [:int] :int)]
+                        [(not (zero? (isalpha# 97))) (not (zero? (isalpha# 49)))]))))))
     (testing "a bool argument takes Clojure truthiness"
       (is (= [1 0 1 0]
              (bb `(do ~ffi-require
