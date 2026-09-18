@@ -296,7 +296,7 @@ Use bb run --help to show this help output.
   ;; run time makes the Clojure compiler reachable and grows the image by
   ;; 30MB.
   (when features/libffi?
-    @(resolve 'babashka.ffi.impl.libffi/version)))
+    @(resolve 'babashka.ffi.impl.libffi-version/version)))
 
 (defn- libffi-version
   "Returns the linked libffi version.
