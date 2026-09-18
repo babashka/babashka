@@ -43,7 +43,6 @@
    ".github/workflows/build.yml"
    ".github/workflows/build-windows.yml"
    ".circleci/script/gen_ci.clj"
-   "appveyor.yml"
    "project.clj"
    "script/bump_graal_version.clj"
    "script/install-graalvm"

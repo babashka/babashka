@@ -10,7 +10,6 @@ test/
 .gitignore
 .carve_ignore
 .gitmodules
-appveyor.yml
 CHANGES.md
 Dockerfile
 LICENSE
