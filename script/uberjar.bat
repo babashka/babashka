@@ -133,15 +133,10 @@ set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/rrb-vector
 set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/rrb-vector
 )
 
-Rem The feature profile puts the libffi bindings on the classpath for every
-Rem build but BABASHKA_LIBFFI=none. Whether the library is there is
-Rem compile.bat's question: it passes BABASHKA_FEATURE_LIBFFI to the builder,
-Rem and without it the bindings stay unreachable.
-if "%BABASHKA_LIBFFI%"=="none" (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/libffi
-) else (
-set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/libffi
-)
+Rem The libffi bindings come with the ffi submodule and are in every jar.
+Rem Whether an image links libffi is compile.bat's question: it passes
+Rem BABASHKA_FEATURE_LIBFFI to the builder, and without it the bindings stay
+Rem unreachable.
 
 call lein with-profiles %BABASHKA_LEIN_PROFILES% bb "(+ 1 2 3)"
 
