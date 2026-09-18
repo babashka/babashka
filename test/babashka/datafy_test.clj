@@ -69,7 +69,21 @@
 (d/nav x nil nil)"]
       (is (= [:data] (bb prog))))))
 
+(deftest datafy-namespace-test
+  (is (= '{:keys [:imports :interns :name :publics]
+           :name clojure.set
+           :union? true}
+         (bb "
+(require '[clojure.datafy :as d]
+         '[clojure.set])
+
+(let [m (d/datafy (find-ns 'clojure.set))]
+  {:keys (vec (sort (keys m)))
+   :name (:name m)
+   :union? (contains? (:publics m) 'union)})"))))
+
 ;;;; Scratch
 (comment
   (t/run-tests *ns*)
-  (datafy-test))
+  (datafy-test)
+  (datafy-namespace-test))

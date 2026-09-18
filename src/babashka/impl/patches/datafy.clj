@@ -1,7 +1,6 @@
 (ns babashka.impl.patches.datafy
   (:require ;; ensure datafy is loaded, we're going to override its
  ;; clojure.lang.Namespace implementation for datafy
-   [babashka.impl.common :refer [ctx]]
    [clojure.core.protocols :as p]
    [clojure.datafy]
    [clojure.reflect]
@@ -34,7 +33,7 @@
   Namespace
   (datafy [n]
     (with-meta {:name (sci-ns-name n)
-                :publics (->> n (sci-ns-publics (ctx)) sortmap)
-                :imports (->> n (sci-ns-imports (ctx)) sortmap)
-                :interns (->> n (sci-ns-interns (ctx)) sortmap)}
+                :publics (-> n sci-ns-publics sortmap)
+                :imports (-> n sci-ns-imports sortmap)
+                :interns (-> n sci-ns-interns sortmap)}
       (meta n))))
