@@ -10,15 +10,15 @@
 
 (def standard-repos repo/standard-repos)
 
-(defn- ^Server ->server
-  [id {:keys [username password]}]
+(defn- ->server
+  ^Server [id {:keys [username password]}]
   (doto (Server.)
     (.setId id)
     (.setUsername username)
     (.setPassword password)))
 
-(defn- ^Proxy ->proxy
-  [{:keys [id active protocol host port username password non-proxy-hosts]}]
+(defn- ->proxy
+  ^Proxy [{:keys [id active protocol host port username password non-proxy-hosts]}]
   (doto (Proxy.)
     (.setId id)
     (.setActive (boolean active))
