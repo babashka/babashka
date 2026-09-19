@@ -301,7 +301,20 @@
     :parameterTypes ["java.lang.Object" "java.lang.Object"]}
    {:name "putAll", :parameterTypes ["java.util.Map"]}
    {:name "putIfAbsent",
-    :parameterTypes ["java.lang.Object" "java.lang.Object"]}]}}
+    :parameterTypes ["java.lang.Object" "java.lang.Object"]}]}
+ org.apache.maven.settings.Settings
+ {:methods [{:name "<init>"} {:name "getActiveProxy"} {:name "getServers"}
+            {:name "addServer"}]}
+ org.apache.maven.settings.IdentifiableBase
+ {:methods [{:name "getId"} {:name "setId"}]}
+ org.apache.maven.settings.Server
+ {:methods [{:name "<init>"}
+            {:name "getUsername"} {:name "setUsername"}
+            {:name "getPassword"} {:name "setPassword"}]}
+ org.apache.maven.settings.Proxy
+ {:methods [{:name "<init>"} {:name "getHost"} {:name "getPort"}
+            {:name "setHost"} {:name "setPort"} {:name "setActive"}
+            {:name "getUsername"} {:name "getPassword"}]}}
 ))
 
 ;; Referenced by the sources without calling anything on them.

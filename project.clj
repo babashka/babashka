@@ -30,6 +30,7 @@
                  [org.clojure/tools.cli "1.4.256"]
                  [cheshire "6.2.0"]
                  [org.clojure/data.json "2.5.2"]
+                 [org.apache.maven/maven-settings "3.9.9"]
                  [nrepl/bencode "1.2.0"]
                  [borkdude/sci.impl.reflector "0.0.5"]
                  [org.babashka/sci.impl.types "0.0.3"]
