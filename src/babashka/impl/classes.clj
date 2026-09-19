@@ -304,7 +304,7 @@
     :parameterTypes ["java.lang.Object" "java.lang.Object"]}]}
  org.apache.maven.settings.Settings
  {:methods [{:name "<init>"} {:name "getActiveProxy"} {:name "getServers"}
-            {:name "addServer"}]}
+            {:name "addServer"} {:name "addProxy"} {:name "getProxies"}]}
  org.apache.maven.settings.IdentifiableBase
  {:methods [{:name "getId"} {:name "setId"}]}
  org.apache.maven.settings.Server
@@ -312,9 +312,13 @@
             {:name "getUsername"} {:name "setUsername"}
             {:name "getPassword"} {:name "setPassword"}]}
  org.apache.maven.settings.Proxy
- {:methods [{:name "<init>"} {:name "getHost"} {:name "getPort"}
-            {:name "setHost"} {:name "setPort"} {:name "setActive"}
-            {:name "getUsername"} {:name "getPassword"}]}}
+ {:methods [{:name "<init>"} {:name "isActive"} {:name "setActive"}
+            {:name "getProtocol"} {:name "setProtocol"}
+            {:name "getHost"} {:name "setHost"}
+            {:name "getPort"} {:name "setPort"}
+            {:name "getUsername"} {:name "setUsername"}
+            {:name "getPassword"} {:name "setPassword"}
+            {:name "getNonProxyHosts"} {:name "setNonProxyHosts"}]}}
 ))
 
 ;; Referenced by the sources without calling anything on them.
