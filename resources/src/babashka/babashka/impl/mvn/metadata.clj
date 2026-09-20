@@ -169,16 +169,19 @@
      (fn [text]
        (let [props (load-properties text)
              out (java.io.ByteArrayOutputStream.)]
-         (if (seq error)
-           (doto props
-             (.setProperty (str data-key ".error") error)
-             (.remove (str data-key ".lastUpdated"))
-             (.setProperty (str transfer-key ".lastUpdated") now))
-           (doto props
-             (.setProperty (str data-key ".lastUpdated") now)
-             (.remove (str transfer-key ".lastUpdated"))))
-         (when (nil? error) (.remove props (str data-key ".error")))
-         (when (= "" error) (.setProperty props (str data-key ".error") ""))
+         (cond
+           (nil? error) (doto props
+                          (.remove (str data-key ".error"))
+                          (.setProperty (str data-key ".lastUpdated") now)
+                          (.remove (str transfer-key ".lastUpdated")))
+           (= "" error) (doto props
+                          (.setProperty (str data-key ".error") "")
+                          (.setProperty (str data-key ".lastUpdated") now)
+                          (.remove (str transfer-key ".lastUpdated")))
+           :else (doto props
+                   (.setProperty (str data-key ".error") error)
+                   (.remove (str data-key ".lastUpdated"))
+                   (.setProperty (str transfer-key ".lastUpdated") now)))
          (.store props out "NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.")
          (.toString out "ISO-8859-1"))))))
 
@@ -191,16 +194,19 @@
   (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))
         cached #(when (fs/exists? file) (slurp file))]
     (if (update-required? file repo policy local-updated)
-      (let [text (try (http/fetch (str url rel "/maven-metadata.xml")
-                                  {:auth auth :proxy proxy :headers headers :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})
-                      (catch Exception e e))]
+      (let [[text ^Exception error]
+            (try [(http/fetch (str url rel "/maven-metadata.xml")
+                              {:auth auth :proxy proxy :headers headers :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
+                 (catch Exception e [nil e]))]
         (cond
-          (instance? Exception text)
-          (do (touch! file repo (or (not-empty (ex-message text)) (.getSimpleName (class text))))
+          error
+          (do (touch! file repo (or (not-empty (ex-message error)) (.getSimpleName (class error))))
               (cached))
 
           (nil? text)
-          (do (fs/delete-if-exists file)
+          (do (try (fs/delete-if-exists file)
+                   ;; Aether ignores a failed delete
+                   (catch Exception _ nil))
               (touch! file repo "")
               nil)
 

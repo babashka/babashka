@@ -7,7 +7,9 @@
 (ns update-policy-test
   (:require [babashka.fs :as fs]
             [babashka.impl.mvn.metadata :as metadata]
-            [clojure.test :as t :refer [deftest is testing]]))
+            [clojure.string :as str]
+            [clojure.test :as t :refer [deftest is testing]]
+            [org.httpkit.server :as server]))
 
 (def dir (fs/create-temp-dir))
 
@@ -100,6 +102,32 @@
       (spit (fs/file local "g/a/maven-metadata-local.xml") "not xml")
       (is (= {:version "1.0-SNAPSHOT" :repo :none} (metadata/resolve-snapshot local [repo] art)))
       (is (= [] (:versions (metadata/versions local [repo] art)))))))
+
+(deftest server-error-test
+  (let [local (str (fs/file dir "local-500"))
+        stop (server/run-server (fn [_] {:status 500 :body "down"}) {:port 0 :legacy-return-value? false})
+        url (str "http://localhost:" (server/server-port stop) "/")
+        policy {:enabled true :update :always}
+        repo {:id "broken" :url url :display-url url :snapshots policy :releases policy}
+        art {:group "g" :artifact "a" :version "1.0-SNAPSHOT" :extension "jar"}
+        version-dir (fs/file local "g/a/1.0-SNAPSHOT")]
+    (try
+      (fs/create-dirs version-dir)
+      (testing "a cached copy stays in use when the repository answers 500"
+        (spit (fs/file version-dir "maven-metadata-broken.xml")
+              "<metadata><versioning><snapshot><timestamp>20240101.000000</timestamp><buildNumber>1</buildNumber></snapshot><lastUpdated>20240101000000</lastUpdated></versioning></metadata>")
+        (is (= "1.0-20240101.000000-1" (:version (metadata/resolve-snapshot local [repo] art))))
+        (is (fs/exists? (fs/file version-dir "maven-metadata-broken.xml"))))
+      (testing "the failure is recorded"
+        (is (str/includes? (.getProperty (#'metadata/load-properties (slurp (fs/file version-dir "resolver-status.properties")))
+                                         "maven-metadata-broken.xml.error")
+                           "HTTP 500")))
+      (testing "the versions of an artifact come from the other sources"
+        (spit (fs/file local "g/a/maven-metadata-local.xml")
+              "<metadata><versioning><versions><version>1.0-SNAPSHOT</version></versions></versioning></metadata>")
+        (is (= ["1.0-SNAPSHOT"] (:versions (metadata/versions local [repo] art)))))
+      (finally
+        (server/server-stop! stop)))))
 
 (let [{:keys [fail error]} (t/run-tests 'update-policy-test)]
   (fs/delete-tree dir)
