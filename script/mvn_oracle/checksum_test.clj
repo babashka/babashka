@@ -118,9 +118,11 @@
                                                  (reset! contents "jar contents")
                                                  {:status 200 :body body})
                                     "/a/b.jar.sha1" {:status 200 :body (hex-digest "SHA-1" "jar contents")}
+                                    "/a/c.jar" {:status 200 :body "jar contents"}
                                     {:status 404}))
                                 {:port 0 :legacy-return-value? false})
-        url (str "http://localhost:" (server/server-port stop) "/a/b.jar")]
+        base (str "http://localhost:" (server/server-port stop) "/a/")
+        url (str base "b.jar")]
     (try
       (testing "a checksum mismatch downloads the file once more"
         (fs/with-temp-dir [dir {}]
@@ -134,8 +136,9 @@
         (fs/with-temp-dir [dir {}]
           (reset! requests [])
           (binding [*err* (java.io.StringWriter.)]
-            (http/download! (str url "x") (fs/file dir "out.jar") {:checksum :warn :label "b.jarx"}))
-          (is (= 1 (count @requests)))))
+            (http/download! (str base "c.jar") (fs/file dir "out.jar") {:checksum :warn :label "c.jar"}))
+          (is (fs/exists? (fs/file dir "out.jar")))
+          (is (= 1 (count (filter #{"/a/c.jar"} @requests))))))
       (finally
         (server/server-stop! stop)))))
 
