@@ -241,6 +241,10 @@
       (let [both (assoc caller :servers {"nexus" {:username "su" :password "sp"}})]
         (is (= ["su" "sp"] (:auth (repo/remote-repo both ["nexus" {:url "https://nexus.example.com/"}]))))))
 
+    (testing "an entry without a URL gets nothing"
+      (let [no-url {:caller-servers {"nexus" {:username "u" :password "p"}}}]
+        (is (nil? (:auth (repo/remote-repo no-url ["nexus" {:url "https://nexus.example.com/"}]))))))
+
     (testing "a mirror replaces the repository, so its credentials do not apply"
       (let [mirrored (assoc caller :mirrors [{:id "mir" :url "https://mirror.example.com/" :mirror-of "*"}])]
         (is (nil? (:auth (repo/remote-repo mirrored ["nexus" {:url "https://nexus.example.com/"}]))))))))

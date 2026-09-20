@@ -48,8 +48,9 @@
   another URL under the same id."
   [servers repo]
   (when-let [server (get servers (:id repo))]
-    (when (= (with-slash (:url server)) (:url repo))
-      server)))
+    (when-let [url (:url server)]
+      (when (= (with-slash url) (:url repo))
+        server))))
 
 (defn remote-repo
   "One repository map from a :mvn/repos entry, with the mirror, auth and
