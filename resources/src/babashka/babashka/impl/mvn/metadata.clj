@@ -194,7 +194,7 @@
   (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))
         cached #(when (fs/exists? file) (slurp file))]
     (if (update-required? file repo policy local-updated)
-      (let [[text ^Exception error]
+      (let [[text error]
             (try [(http/fetch (str url rel "/maven-metadata.xml")
                               {:auth auth :proxy proxy :headers headers :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
                  (catch Exception e [nil e]))]
