@@ -87,7 +87,7 @@
         (#'metadata/touch! file down nil)
         (is (not (#'metadata/update-required? file down {:update :always} 0))))
       (is (required? file :always)))
-    (testing "one session asks once for metadata the repository does not have"
+    (testing "one session requests missing remote metadata once"
       (fs/delete file)
       (session/with-session
         (#'metadata/touch! file down "")

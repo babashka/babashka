@@ -54,7 +54,7 @@
 
 (defn- auth-digest
   "Returns the Aether authentication digest of credentials, or \"\" if credentials is empty.
-  credentials has :username, :password, :private-key and :passphrase, each optional."
+  credentials is a map with optional :username, :password, :private-key and :passphrase."
   [{:keys [username password private-key passphrase]}]
   (if (or username password private-key)
     (let [md (MessageDigest/getInstance "SHA-1")
@@ -196,9 +196,9 @@
     update))
 
 (defn merge-policy
-  "Returns the policy that applies where policies a and b both do.
-  A disabled policy yields to the other.
-  With both enabled, the more frequent update policy and the more lenient checksum policy apply."
+  "Returns the merged policy of a and b.
+  If one is disabled, the other applies.
+  If both are enabled, the more frequent update policy and the more lenient checksum policy apply."
   [a b]
   (cond
     (not (:enabled b)) a
