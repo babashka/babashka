@@ -114,26 +114,42 @@
         (#{404 410} status) false
         :else (throw (ex-info (str "HTTP " status " for " url) {:url url :status status}))))))
 
+(defn- included-checksums
+  "Returns the checksums in the response headers of a file as [extension algorithm checksum] vectors, sha1 first.
+  The x-checksum-sha1 and x-checksum-md5 headers take precedence over x-goog-meta-checksum-sha1 and x-goog-meta-checksum-md5, which take precedence over SHA1{...} in the ETag."
+  [headers]
+  (let [named (fn [prefix]
+                (not-empty (into []
+                                 (keep (fn [[ext algorithm suffix]]
+                                         (when-let [value (get headers (str prefix suffix))]
+                                           [ext algorithm value])))
+                                 [[".sha1" "SHA-1" "sha1"] [".md5" "MD5" "md5"]])))]
+    (or (named "x-checksum-")
+        (named "x-goog-meta-checksum-")
+        (when-let [etag (get headers "etag")]
+          (let [start (str/index-of etag "SHA1{")
+                end (when start (str/index-of etag "}" (+ start 5)))]
+            (when end
+              [[".sha1" "SHA-1" (subs etag (+ start 5) end)]]))))))
+
 (defn- fetch-to-file
-  "GET url into dest. true when written, false when absent. Says so on
-  stderr once the repository has answered, like Aether's transfer
-  listener."
+  "Writes the contents of url to dest and prints the download on stderr.
+  Returns a map with the :included checksums of the response, or nil if the file is absent."
   [url dest {:keys [repo-id repo-url label] :as opts}]
   (if (file-url? url)
     (let [f (file-url->path url)]
-      (if (fs/exists? f)
-        (do (printerrln "Downloading:" label "from" repo-id)
-            (fs/copy f dest {:replace-existing true})
-            true)
-        false))
-    (let [{:keys [status body]} (request! :get url (assoc (request-opts opts) :repo-id repo-id :repo-url repo-url :label label))]
+      (when (fs/exists? f)
+        (printerrln "Downloading:" label "from" repo-id)
+        (fs/copy f dest {:replace-existing true})
+        {}))
+    (let [{:keys [status body headers]} (request! :get url (assoc (request-opts opts) :repo-id repo-id :repo-url repo-url :label label))]
       ;; Close the response body for every status.
       (try
         (cond
           (= 200 status) (do (printerrln "Downloading:" label "from" repo-id)
                              (io/copy body (io/file dest))
-                             true)
-          (#{404 410} status) false
+                             {:included (included-checksums headers)})
+          (#{404 410} status) nil
           :else (throw (ex-info (str "HTTP " status " for " url) {:url url :status status})))
         (finally
           (when (instance? java.io.Closeable body)
@@ -167,21 +183,23 @@
 
 (defn- remote-checksum
   "Returns [extension algorithm checksum] of the sha1 published next to url, or of the md5 if no sha1 is published.
-  Returns nil if neither is published."
+  Returns nil if neither is published.
+  Treats a failed request as not published."
   [url opts]
   (some (fn [[ext algorithm]]
-          (when-let [text (fetch (str url ext) opts)]
+          (when-let [text (try (fetch (str url ext) opts)
+                               (catch Exception _ nil))]
             [ext algorithm (parse-checksum text)]))
         [[".sha1" "SHA-1"] [".md5" "MD5"]]))
 
 (defn- verify
-  "Checks a downloaded file against the checksum published next to url.
+  "Checks a downloaded file against the first included checksum, or against the checksum published next to url if included is empty.
   Returns nil under the :ignore policy.
   Returns a map with :ext and :checksum of the published checksum, if any.
   The map has :message and :data if the file fails the check, and :retry true for a checksum mismatch."
-  [url file {:keys [checksum label] :or {checksum :warn} :as opts}]
+  [url file included {:keys [checksum label] :or {checksum :warn} :as opts}]
   (when-not (= :ignore checksum)
-    (let [[ext algorithm expected] (remote-checksum url opts)
+    (let [[ext algorithm expected] (or (first included) (remote-checksum url opts))
           actual (when expected (digest algorithm file))]
       (cond
         (nil? expected)
@@ -224,8 +242,8 @@
   Throws under the :fail policy if the last download fails verification."
   [url tmp {:keys [checksum] :as opts}]
   (loop [trial 0]
-    (when (fetch-to-file url tmp opts)
-      (let [{:keys [message data retry] :as result} (verify url tmp opts)]
+    (when-let [{:keys [included]} (fetch-to-file url tmp opts)]
+      (let [{:keys [message data retry] :as result} (verify url tmp included opts)]
         (cond
           (and retry (zero? trial)) (do (printerrln message)
                                         (recur 1))
@@ -247,7 +265,10 @@
       (when-let [{:keys [ext checksum]} (fetch-verified url tmp opts)]
         (move-into-place! tmp dest)
         (when checksum
-          (spit (str dest ext) checksum))
+          (let [sidecar (str dest ext)
+                tmp (temp-file sidecar)]
+            (spit tmp checksum)
+            (move-into-place! tmp sidecar)))
         dest)
       (finally
         (fs/delete-if-exists tmp)))))

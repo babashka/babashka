@@ -142,5 +142,81 @@
       (finally
         (server/server-stop! stop)))))
 
+(defn- with-server
+  "Calls f with the base URL of a server running handler and an atom of the requested URIs."
+  [handler f]
+  (let [requests (atom [])
+        stop (server/run-server (fn [{:keys [uri] :as request}]
+                                  (swap! requests conj uri)
+                                  (handler request))
+                                {:port 0 :legacy-return-value? false})]
+    (try
+      (f (str "http://localhost:" (server/server-port stop) "/") requests)
+      (finally
+        (server/server-stop! stop)))))
+
+(defn- fetch-jar
+  "Downloads b.jar from a server that sends headers with it and publishes sidecars.
+  Returns the requested URIs, the written sidecars by extension, and stderr."
+  [headers sidecars policy]
+  (fs/with-temp-dir [dir {}]
+    (with-server
+      (fn [{:keys [uri]}]
+        (cond
+          (= "/b.jar" uri) {:status 200 :headers headers :body "jar contents"}
+          (contains? sidecars uri) (let [answer (get sidecars uri)]
+                                     (if (number? answer) {:status answer} {:status 200 :body answer}))
+          :else {:status 404}))
+      (fn [base requests]
+        (let [err (java.io.StringWriter.)]
+          (binding [*err* err]
+            (http/download! (str base "b.jar") (fs/file dir "out.jar") {:checksum policy :label "b.jar"}))
+          {:requests @requests
+           :sidecars (into {} (keep (fn [ext]
+                                      (let [file (fs/file dir (str "out.jar" ext))]
+                                        (when (fs/exists? file) [ext (slurp file)]))))
+                           [".sha1" ".md5"])
+           :err (str err)})))))
+
+(deftest included-checksum-test
+  (let [sha1 (hex-digest "SHA-1" "jar contents")
+        md5 (hex-digest "MD5" "jar contents")
+        ones (apply str (repeat 40 "1"))]
+    (testing "x-checksum-sha1 verifies the file without a request for b.jar.sha1"
+      (is (= {:requests ["/b.jar"] :sidecars {".sha1" sha1} :err "Downloading: b.jar from \n"}
+             (fetch-jar {"x-checksum-sha1" sha1} {} :fail))))
+    (testing "x-checksum-sha1 takes precedence over x-checksum-md5"
+      (is (= {".sha1" sha1} (:sidecars (fetch-jar {"x-checksum-md5" md5 "x-checksum-sha1" sha1} {} :fail)))))
+    (testing "x-checksum-md5 alone verifies the file and writes b.jar.md5"
+      (is (= {:requests ["/b.jar"] :sidecars {".md5" md5}}
+             (select-keys (fetch-jar {"x-checksum-md5" md5} {} :fail) [:requests :sidecars]))))
+    (testing "x-goog-meta-checksum-sha1 verifies the file"
+      (is (= {:requests ["/b.jar"] :sidecars {".sha1" sha1}}
+             (select-keys (fetch-jar {"x-goog-meta-checksum-sha1" sha1} {} :fail) [:requests :sidecars]))))
+    (testing "an ETag with SHA1{...} verifies the file"
+      (is (= {:requests ["/b.jar"] :sidecars {".sha1" sha1}}
+             (select-keys (fetch-jar {"ETag" (str "\"{SHA1{" sha1 "}}\"")} {} :fail) [:requests :sidecars]))))
+    (testing "x-checksum-sha1 takes precedence over the ETag"
+      (is (= {".sha1" ones}
+             (:sidecars (fetch-jar {"ETag" (str "\"{SHA1{" sha1 "}}\"") "x-checksum-sha1" ones} {} :warn)))))
+    (testing ":warn downloads twice for a wrong x-checksum-sha1 and never requests b.jar.sha1"
+      (is (= {:requests ["/b.jar" "/b.jar"] :sidecars {".sha1" ones}}
+             (select-keys (fetch-jar {"x-checksum-sha1" ones} {"/b.jar.sha1" sha1} :warn) [:requests :sidecars]))))
+    (testing ":fail throws for a wrong x-checksum-sha1"
+      (is (thrown-with-msg? Exception #"expected 1{40} but is"
+                            (fetch-jar {"x-checksum-sha1" ones} {"/b.jar.sha1" sha1} :fail))))))
+
+(deftest failed-checksum-request-test
+  (let [md5 (hex-digest "MD5" "jar contents")]
+    (testing "HTTP 500 for b.jar.sha1 verifies the file against b.jar.md5"
+      (is (= {".md5" md5} (:sidecars (fetch-jar {} {"/b.jar.sha1" 500 "/b.jar.md5" md5} :fail)))))
+    (testing ":warn keeps the file if both checksum requests answer HTTP 500"
+      (let [{:keys [sidecars err]} (fetch-jar {} {"/b.jar.sha1" 500 "/b.jar.md5" 500} :warn)]
+        (is (= {} sidecars))
+        (is (str/includes? err "Checksum validation failed for b.jar, no checksums available"))))
+    (testing ":fail throws if both checksum requests answer HTTP 500"
+      (is (thrown-with-msg? Exception #"no checksums available"
+                            (fetch-jar {} {"/b.jar.sha1" 500 "/b.jar.md5" 500} :fail))))))
+
 (let [{:keys [fail error]} (t/run-tests 'checksum-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

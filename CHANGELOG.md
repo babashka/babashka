@@ -19,6 +19,8 @@ A preview of the next release can be installed from
 - Merge the policies of repositories behind one mirror
 - Write the published `.sha1` or `.md5` next to a downloaded file in the local repository
 - Download a file once more after a checksum mismatch
+- Verify a download against the `x-checksum-sha1` or `x-checksum-md5` response header if the repository sends one
+- Verify against `.md5` if the request for `.sha1` fails
 
 ## 1.13.223 (2026-09-15)
 
