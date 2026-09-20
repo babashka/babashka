@@ -82,8 +82,7 @@
   range. Throws when no version matches or the range is unbounded."
   [config {:keys [group artifact version]} declared-repos]
   (let [{:keys [versions]} (metadata/versions (local-repo config) (pom-repos config declared-repos)
-                                              {:group group :artifact artifact}
-                                              (metadata/range-nature version))
+                                              {:group group :artifact artifact})
         highest (last (filter #(version/in-range? % version) versions))
         data {:group group :artifact artifact :version version}]
     (cond
@@ -240,7 +239,7 @@
 ;; Versions from metadata
 
 (defn- artifact-versions
-  ([lib config] (artifact-versions lib config :release))
+  ([lib config] (artifact-versions lib config :release-or-snapshot))
   ([lib config nature]
    (let [[group artifact] (coords/lib->names lib)
          local (local-repo config)
@@ -285,7 +284,7 @@
                        (throw (ex-info (str "Failed to resolve version range for "
                                             group ":" artifact ":" extension ":" version ": " (ex-message e))
                                        {:lib lib :coord coord} e)))))
-            {:keys [versions]} (artifact-versions lib config (metadata/range-nature version))
+            {:keys [versions]} (artifact-versions lib config)
             highest (last (filter #(version/in-range? % version) versions))]
         (if highest
           [lib (assoc coord :mvn/version highest)]

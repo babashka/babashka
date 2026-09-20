@@ -152,23 +152,24 @@
          (.toString out "ISO-8859-1"))))))
 
 (defn- cached-text!
-  "Returns metadata from repo for rel, with caching under policy.
+  "Returns metadata from repo for rel, with caching and checksum verification under policy.
   Returns cached metadata on transfer failure.
   If the repository reports missing metadata, deletes the cached copy and returns nil."
   [local-repo {:keys [id url display-url auth proxy headers] :as repo} rel policy local-updated]
   (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))
         cached #(when (fs/exists? file) (slurp file))]
     (if (update-required? file repo policy local-updated)
-      (let [[text error]
-            (try [(http/fetch (str url rel "/maven-metadata.xml")
-                              {:auth auth :proxy proxy :headers headers :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
+      (let [[found error]
+            (try [(http/download! (str url rel "/maven-metadata.xml") file
+                                  {:auth auth :proxy proxy :headers headers :checksum (:checksum policy)
+                                   :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
                  (catch Exception e [nil e]))]
         (cond
           error
           (do (touch! file repo (or (not-empty (ex-message error)) (.getSimpleName (class error))))
               (cached))
 
-          (nil? text)
+          (nil? found)
           (do (try (fs/delete-if-exists file)
                    ;; Aether ignores a failed delete
                    (catch Exception _ nil))
@@ -176,12 +177,8 @@
               nil)
 
           :else
-          (do (fs/create-dirs (fs/parent file))
-              (let [tmp (http/temp-file file)]
-                (spit tmp text)
-                (http/move-into-place! tmp (str file)))
-              (touch! file repo nil)
-              text)))
+          (do (touch! file repo nil)
+              (cached))))
       (cached))))
 
 (defn- parsed
@@ -191,46 +188,42 @@
     (try (parse text)
          (catch Exception _ nil))))
 
-(defn update-minutes
-  "Returns the interval of an update policy in minutes."
-  [update]
+(defn- update-minutes [update]
   (case update
     :always 0
     :daily 1440
     :never Integer/MAX_VALUE
     update))
 
+(defn merge-policy
+  "Returns the policy that applies where policies a and b both do.
+  A disabled policy yields to the other.
+  With both enabled, the more frequent update policy and the more lenient checksum policy apply."
+  [a b]
+  (cond
+    (not (:enabled b)) a
+    (not (:enabled a)) b
+    :else {:enabled true
+           :update (min-key update-minutes (:update a) (:update b))
+           :checksum (min-key {:ignore 0 :warn 1 :fail 2} (:checksum a) (:checksum b))}))
+
 (defn- metadata-policy
   "Returns the policy of repo for metadata of nature, or nil if repo is disabled for nature.
-  nature is :release, :snapshot or :release-or-snapshot.
-  With both policies enabled, the more frequent update policy applies."
+  nature is :release, :snapshot or :release-or-snapshot."
   [{:keys [releases snapshots]} nature]
-  (let [releases (when (and (not= :snapshot nature) (:enabled releases)) releases)
-        snapshots (when (and (not= :release nature) (:enabled snapshots)) snapshots)]
-    (if (and releases snapshots)
-      (if (< (update-minutes (:update snapshots)) (update-minutes (:update releases)))
-        snapshots
-        releases)
-      (or releases snapshots))))
-
-(defn range-nature
-  "Returns :release-or-snapshot if the lowest or highest bound of the version range is a snapshot version, or :release otherwise."
-  [range]
-  (let [restrictions (version/parse-range range)
-        bound (fn [k pick]
-                (let [bounds (map k restrictions)]
-                  (when (every? some? bounds)
-                    (first (pick (sort version/compare-versions bounds))))))]
-    (if (some #(some-> % coords/snapshot?) [(bound :low identity) (bound :high reverse)])
-      :release-or-snapshot
-      :release)))
+  (let [policy (case nature
+                 :release releases
+                 :snapshot snapshots
+                 :release-or-snapshot (merge-policy releases snapshots))]
+    (when (:enabled policy)
+      policy)))
 
 (defn versions
   "All versions of the artifact across the enabled repositories and the
   local repository's maven-metadata-local.xml, in Maven order, with :latest
   and :release from the first repository that names them.
-  nature is :release by default, or :release-or-snapshot."
-  ([local-repo repos artifact] (versions local-repo repos artifact :release))
+  nature is :release-or-snapshot by default, or :release."
+  ([local-repo repos artifact] (versions local-repo repos artifact :release-or-snapshot))
   ([local-repo repos artifact nature]
    (let [rel (coords/artifact-dir artifact)
          installed (let [f (fs/file local-repo rel "maven-metadata-local.xml")]

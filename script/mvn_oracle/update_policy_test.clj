@@ -108,7 +108,7 @@
 (deftest missing-and-unreadable-metadata-test
   (let [local (str (fs/file dir "local"))
         remote (fs/file dir "remote")
-        repo {:id "test" :url (str (.toURI remote)) :snapshots {:enabled true :update :always} :releases {:enabled true :update :always}}
+        repo {:id "test" :url (str (.toURI remote)) :snapshots {:enabled true :update :always :checksum :warn} :releases {:enabled true :update :always :checksum :warn}}
         art {:group "g" :artifact "a" :version "1.0-SNAPSHOT" :extension "jar"}
         cached (fs/file local "g/a/1.0-SNAPSHOT/maven-metadata-test.xml")]
     (fs/create-dirs (fs/parent cached))
@@ -147,19 +147,50 @@
       (is (= :daily (:update (#'metadata/metadata-policy (repo (policy true :daily) (policy true :never)) :release-or-snapshot)))))
     (testing ":snapshot ignores the releases policy"
       (is (= :never (:update (#'metadata/metadata-policy (repo (policy true :always) (policy true :never)) :snapshot)))))
-    (testing "a snapshot bound gives a version range the :release-or-snapshot nature"
-      (is (= :release (metadata/range-nature "[1.0,2.0)")))
-      (is (= :release (metadata/range-nature "[1.0,)")))
-      (is (= :release-or-snapshot (metadata/range-nature "[1.0-SNAPSHOT,2.0)")))
-      (is (= :release-or-snapshot (metadata/range-nature "[1.0,2.0-SNAPSHOT]")))
-      (is (= :release-or-snapshot (metadata/range-nature "[1.0,1.5],[1.7,2.0-20240101.000000-1]")))
-      (is (= :release (metadata/range-nature "[1.0,1.5-SNAPSHOT],[1.7,2.0]"))))))
+    (testing ":release-or-snapshot is the default"
+      (is (= ["1.0"] (:versions (metadata/versions local [(repo (policy false :always) (policy true :always))] art)))))
+    (testing ":release-or-snapshot applies the more lenient checksum policy"
+      (is (= :warn (:checksum (#'metadata/metadata-policy (repo (assoc (policy true :always) :checksum :fail) (policy true :always)) :release-or-snapshot)))))))
+
+(deftest metadata-checksum-test
+  (let [local (str (fs/file dir "local-checksum"))
+        remote (fs/file dir "remote-checksum")
+        policy (fn [checksum] {:enabled true :update :always :checksum checksum})
+        repo (fn [checksum] {:id "test" :url (str (.toURI remote)) :releases (policy checksum) :snapshots (policy checksum)})
+        art {:group "g" :artifact "a"}
+        cached (fs/file local "g/a/maven-metadata-test.xml")
+        versions (fn [checksum]
+                   (let [err (java.io.StringWriter.)]
+                     [(session/with-session
+                        (binding [*err* err]
+                          (:versions (metadata/versions local [(repo checksum)] art))))
+                      (str err)]))]
+    (fs/create-dirs (fs/file remote "g/a"))
+    (spit (fs/file remote "g/a/maven-metadata.xml")
+          "<metadata><versioning><versions><version>1.0</version></versions></versioning></metadata>")
+    (spit (fs/file remote "g/a/maven-metadata.xml.sha1") "0000000000000000000000000000000000000000")
+    (testing ":fail rejects metadata with a wrong checksum and records the failure"
+      (let [[found _] (versions :fail)]
+        (is (= [] found))
+        (is (not (fs/exists? cached)))
+        (is (str/includes? (.getProperty (#'metadata/load-properties (slurp (fs/file local "g/a/resolver-status.properties")))
+                                         "maven-metadata-test.xml.error")
+                           "Checksum validation failed"))))
+    (testing ":warn reports a wrong checksum and uses the metadata"
+      (let [[found err] (versions :warn)]
+        (is (= ["1.0"] found))
+        (is (str/includes? err "Checksum validation failed for g/a/maven-metadata.xml"))
+        (is (fs/exists? cached))))
+    (testing ":ignore uses the metadata without a report"
+      (let [[found err] (versions :ignore)]
+        (is (= ["1.0"] found))
+        (is (not (str/includes? err "Checksum")))))))
 
 (deftest server-error-test
   (let [local (str (fs/file dir "local-500"))
         stop (server/run-server (fn [_] {:status 500 :body "down"}) {:port 0 :legacy-return-value? false})
         url (str "http://localhost:" (server/server-port stop) "/")
-        policy {:enabled true :update :always}
+        policy {:enabled true :update :always :checksum :warn}
         repo {:id "broken" :url url :display-url url :snapshots policy :releases policy}
         art {:group "g" :artifact "a" :version "1.0-SNAPSHOT" :extension "jar"}
         version-dir (fs/file local "g/a/1.0-SNAPSHOT")]

@@ -49,7 +49,7 @@
   (let [repo {:id name :url (with-slash url) :display-url url}
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
-               {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror)}
+               {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror) :mirrored [name]}
                repo)
         {:keys [username password private-key passphrase headers]} (get servers (:id repo))
         decrypt #(cipher/decrypt-password % {:server (:id repo)})
@@ -71,17 +71,6 @@
       (seq headers) (assoc :headers headers)
       (proxy-for settings (:url repo)) (assoc :proxy (proxy-for settings (:url repo))))))
 
-(defn- merge-policy
-  "Returns the policy of two repositories behind one mirror.
-  With both enabled, the more frequent update policy and the more lenient checksum policy apply."
-  [a b]
-  (cond
-    (not (:enabled b)) a
-    (not (:enabled a)) b
-    :else {:enabled true
-           :update (min-key metadata/update-minutes (:update a) (:update b))
-           :checksum (min-key {:ignore 0 :warn 1 :fail 2} (:checksum a) (:checksum b))}))
-
 (defn remote-repos
   "Ordered repositories: central, clojars, then the rest, then the
   repositories from active settings profiles."
@@ -92,9 +81,14 @@
                              (settings/active-profile-repositories settings)))]
     (reduce (fn [repos repo]
               (if-let [i (first (keep-indexed #(when (= (:id %2) (:id repo)) %1) repos))]
-                (-> repos
-                    (update-in [i :releases] merge-policy (:releases repo))
-                    (update-in [i :snapshots] merge-policy (:snapshots repo)))
+                (let [mirrored (:mirrored (nth repos i))
+                      added (remove (set mirrored) (:mirrored repo))]
+                  (if (and (seq mirrored) (seq added))
+                    (-> repos
+                        (update-in [i :releases] metadata/merge-policy (:releases repo))
+                        (update-in [i :snapshots] metadata/merge-policy (:snapshots repo))
+                        (update-in [i :mirrored] into added))
+                    repos))
                 (conj repos repo)))
             []
             (into []

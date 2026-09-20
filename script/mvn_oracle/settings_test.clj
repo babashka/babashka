@@ -222,7 +222,8 @@
                                              "clojars" (assoc b :url "https://b.example.com/")}
                                             s))]
     (testing "two repositories behind one mirror are one repository"
-      (is (= ["mir"] (map :id (merged {} {})))))
+      (is (= ["mir"] (map :id (merged {} {}))))
+      (is (= ["central" "clojars"] (:mirrored (first (merged {} {}))))))
     (testing "the mirror is enabled if one of the repositories is"
       (is (true? (get-in (first (merged {:snapshots {:enabled false}} {})) [:snapshots :enabled])))
       (is (true? (get-in (first (merged {} {:snapshots {:enabled false}})) [:snapshots :enabled])))
@@ -233,7 +234,20 @@
       (is (= {:enabled true :update :always :checksum :warn}
              (:releases (first (merged {:releases {:update :never :checksum :fail}} {:releases {:update :always :checksum :warn}})))))
       (is (= {:enabled true :update 5 :checksum :ignore}
-             (:releases (first (merged {:releases {:update 5 :checksum :ignore}} {:releases {:update :daily :checksum :fail}}))))))))
+             (:releases (first (merged {:releases {:update 5 :checksum :ignore}} {:releases {:update :daily :checksum :fail}}))))))
+    (testing "a settings profile repository with the id of a :mvn/repos entry is dropped, policies unmerged"
+      (let [profile (settings/parse (str "<settings><profiles><profile><id>p</id><repositories>"
+                                         "<repository><id>central</id><url>https://other.example.com/</url></repository>"
+                                         "</repositories></profile></profiles><activeProfiles><activeProfile>p</activeProfile></activeProfiles></settings>"))
+            repos (repo/remote-repos {"central" {:url "https://a.example.com/" :releases {:update :never}}} profile)]
+        (is (= ["central"] (map :id repos)))
+        (is (= :never (get-in (first repos) [:releases :update])))))
+    (testing "a second mirrored repository with the same original id is dropped, policies unmerged"
+      (let [repos (repo/remote-repos {"central" {:url "https://a.example.com/" :releases {:update :never}}}
+                                     (assoc s :profiles {"p" {:repositories [{:id "central" :url "https://other.example.com/"}]}}
+                                            :active-profiles ["p"]))]
+        (is (= ["mir"] (map :id repos)))
+        (is (= :never (get-in (first repos) [:releases :update])))))))
 
 (deftest header-property-test
   (let [parse (fn [props]
