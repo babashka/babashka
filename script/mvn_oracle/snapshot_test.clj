@@ -81,7 +81,7 @@
     (testing "a local copy newer than the repository's build wins"
       (spit (fs/file local-dir "maven-metadata-local.xml") (local-metadata-xml "20120810000000"))
       (is (= {:version "07.20.3-SNAPSHOT" :repo nil} (metadata/resolve-snapshot local [test-repo] art))))
-    (testing "a local copy installed within the update policy keeps the repository from being asked"
+    (testing "fresh installed metadata prevents a remote update"
       (spit (fs/file local-dir "maven-metadata-local.xml") (local-metadata-xml "20120801000000"))
       (is (= {:version "07.20.3-SNAPSHOT" :repo nil} (metadata/resolve-snapshot local [test-repo] art)))
       (is (not (fs/exists? (fs/file local-dir "maven-metadata-test.xml")))))
@@ -116,15 +116,15 @@
   (let [local (str (fs/file dir "local-down"))
         version-dir (fs/file local "org/apache/maven/its/dep-mng5324/07.20.3-SNAPSHOT")
         down (repo/remote-repo {} ["down" {:url "https://127.0.0.1:1/" :snapshots {:update :always}}])]
-    (testing "without cached metadata the base version resolves from no repository"
+    (testing "missing cached metadata returns the base version with :repo :none"
       (is (= {:version "07.20.3-SNAPSHOT" :repo :none}
              (metadata/resolve-snapshot local [down] (artifact "classifierA" "07.20.3-SNAPSHOT")))))
-    (testing "stale cached metadata still names the build"
+    (testing "cached metadata supplies the snapshot build after a transfer failure"
       (fs/create-dirs version-dir)
       (spit (fs/file version-dir "maven-metadata-down.xml") metadata-xml)
       (is (= "dep-mng5324-07.20.3-20120809.112124-88-classifierA.jar"
              (file-name local down (artifact "classifierA" "07.20.3-SNAPSHOT")))))
-    (testing "the versions of an artifact come from the local repository alone"
+    (testing "local metadata supplies versions after a transfer failure"
       (spit (fs/file local "org/apache/maven/its/dep-mng5324/maven-metadata-local.xml")
             "<metadata><versioning><versions><version>07.20.3-SNAPSHOT</version></versions></versioning></metadata>")
       (is (= ["07.20.3-SNAPSHOT"]

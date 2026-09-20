@@ -13,16 +13,12 @@
            [java.nio.file OpenOption StandardOpenOption]
            [java.security MessageDigest]))
 
-;; tools.deps resolves in parallel, and parents and BOMs are shared, so two
-;; threads can want the same file. One monitor per path.
 (def ^:private locks (atom {}))
 
 (defn lock-for [path]
   (let [path (str (fs/normalize (fs/absolutize path)))]
     (or (get @locks path)
         (get (swap! locks update path #(or % (Object.))) path))))
-
-;; Tracking files: a monitor per path for threads, a FileChannel lock for processes.
 
 (defn- read-channel [^FileChannel ch]
   (let [buf (ByteBuffer/allocate (int (.size ch)))]
@@ -33,7 +29,7 @@
     (String. (.array buf) 0 (.position buf) "UTF-8")))
 
 (defn read-tracking-file
-  "Returns the text of a tracking file, nil when it does not exist."
+  "Returns the contents of a tracking file, or nil if the file does not exist."
   [file]
   (let [path (fs/path file)]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
@@ -44,7 +40,7 @@
           (read-channel ch))))))
 
 (defn update-tracking-file!
-  "Replaces the text of a tracking file with (f text). text is \"\" for a new file."
+  "Replaces the contents of a tracking file with (f text). Passes \"\" to f for a new file."
   [file f]
   (let [path (fs/path file)]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
@@ -94,9 +90,8 @@
   (-> (java.time.LocalDate/now) (.atStartOfDay (java.time.ZoneId/systemDefault)) .toInstant .toEpochMilli))
 
 (defn- stale?
-  "Whether a last update at millis calls for a refresh under the policy,
-  after Maven's DefaultUpdatePolicyAnalyzer: daily means before today's
-  local midnight, a number is an interval in minutes."
+  "Returns true if the update at millis has expired under the policy.
+  The :daily policy expires at local midnight. Numeric policies specify minutes."
   [millis {:keys [update]}]
   (cond
     (= :always update) true
@@ -104,12 +99,8 @@
     (= :daily update) (> (local-midnight-millis) millis)
     :else (> (- (System/currentTimeMillis) (* 60000 (long update))) millis)))
 
-;; Update checks, after Aether's DefaultUpdateCheckManager: the outcome of
-;; each transfer goes into resolver-status.properties next to the metadata.
-
 (defn- auth-digest
-  "Aether's AuthenticationDigest of a username and password, \"\" without a
-  username."
+  "Returns the Aether authentication digest of username and password, or \"\" if username is nil."
   [username password]
   (if username
     (let [md (MessageDigest/getInstance "SHA-1")]
@@ -135,14 +126,13 @@
     (.load (java.io.StringReader. (or text "")))))
 
 (defn- last-updated
-  "The time recorded under key, 1 when there is none, as Aether's TS_UNKNOWN."
+  "Returns the timestamp for key, or 1 for an unknown timestamp."
   [^java.util.Properties props key]
   (or (some-> (.getProperty props (str key ".lastUpdated")) parse-long) 1))
 
 (defn- update-required?
-  "Whether the metadata cached in file is fetched again from repo.
-  local-updated is the time of the installed metadata that stands in for
-  the repository while it is fresh, 0 for none."
+  "Returns true if file requires a metadata update from repo.
+  local-updated is the installed metadata's modification time in milliseconds, or 0 if absent."
   [file repo policy local-updated]
   (if (and (pos? local-updated) (not (stale? local-updated policy)))
     false
@@ -157,8 +147,8 @@
       (or (zero? updated) (stale? updated policy) (not exists)))))
 
 (defn- touch!
-  "Records the outcome of a transfer: error is nil for a success, \"\" for
-  metadata the repository does not have, else the failure's message."
+  "Records a transfer result in resolver-status.properties.
+  error is nil for success, \"\" for missing metadata, or an error message."
   [file repo error]
   (let [data-key (str (fs/file-name file))
         transfer-key (transfer-key file repo)
@@ -186,10 +176,9 @@
          (.toString out "ISO-8859-1"))))))
 
 (defn- cached-text!
-  "Returns the metadata text of repo for the directory rel: the cached copy
-  while update-required? says so, else fetched and cached. A repository
-  without the metadata deletes the cached copy. A failed transfer leaves it
-  in use, as Aether does."
+  "Returns metadata from repo for rel, with caching under policy.
+  Returns cached metadata on transfer failure.
+  If the repository reports missing metadata, deletes the cached copy and returns nil."
   [local-repo {:keys [id url display-url auth proxy headers] :as repo} rel policy local-updated]
   (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))
         cached #(when (fs/exists? file) (slurp file))]
@@ -212,7 +201,6 @@
 
           :else
           (do (fs/create-dirs (fs/parent file))
-              ;; a parallel reader never sees a partial file
               (let [tmp (http/temp-file file)]
                 (spit tmp text)
                 (http/move-into-place! tmp (str file)))
@@ -221,8 +209,7 @@
       (cached))))
 
 (defn- parsed
-  "Returns (parse text), nil for text that does not parse, as Maven skips
-  metadata it cannot read."
+  "Returns (parse text), or nil if text is nil or parsing fails."
   [parse text]
   (when text
     (try (parse text)

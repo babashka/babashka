@@ -1,8 +1,5 @@
 #!/usr/bin/env bb
-;; babashka.impl.mvn.metadata's refresh decision against maven-resolver's
-;; DefaultUpdatePolicyAnalyzerTest (1.9.27), on a cached metadata file's
-;; modification time, and its update check against DefaultUpdateCheckManager
-;; on resolver-status.properties.
+;; Metadata update policies and transfer status tests for Maven Resolver 1.9.27 compatibility.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/update_policy_test.clj
 (ns update-policy-test
   (:require [babashka.fs :as fs]
@@ -14,7 +11,6 @@
 (def dir (fs/create-temp-dir))
 
 (defn- stale?
-  "The decision for a last update at `millis`."
   [millis policy]
   (#'metadata/stale? millis {:update policy}))
 
@@ -50,32 +46,32 @@
   (let [file (fs/file dir "g/a/1.0-SNAPSHOT/maven-metadata-central.xml")
         status (fs/file dir "g/a/1.0-SNAPSHOT/resolver-status.properties")]
     (fs/create-dirs (fs/parent file))
-    (testing "metadata that was never fetched is fetched under every policy"
+    (testing "missing metadata requires an update even under :never"
       (is (required? file :never)))
-    (testing "installed metadata that is fresh under the policy stands in for the repository"
+    (testing "fresh installed metadata prevents a remote update"
       (is (not (required? file :daily (now))))
       (is (required? file :daily (- local-midnight 1000)))
       (is (required? file :always (now))))
-    (testing "a cached copy without a recorded update is fetched again, except under never"
+    (testing "an unknown update time requires a daily update but respects :never"
       (spit file "<metadata/>")
       (is (required? file :daily))
       (is (not (required? file :never))))
-    (testing "a success is recorded and holds for the policy"
+    (testing "a successful transfer records the update time and prevents another daily update"
       (#'metadata/touch! file down nil)
       (is (re-find #"(?m)^maven-metadata-central\.xml\.lastUpdated=\d+$" (slurp status)))
       (is (not (required? file :daily)))
       (is (required? file :always)))
-    (testing "a failed transfer is recorded under the repository and, with a cached copy, holds for the policy"
+    (testing "a recorded transfer failure prevents a daily retry only if cached metadata exists"
       (#'metadata/touch! file down "Connection refused")
       (is (= "Connection refused" (.getProperty (#'metadata/load-properties (slurp status)) "maven-metadata-central.xml.error")))
       (is (not (required? file :daily)))
       (fs/delete file)
       (is (required? file :daily)))
-    (testing "metadata a repository does not have is asked for again"
+    (testing "missing remote metadata requires another update"
       (#'metadata/touch! file down "")
       (is (= "" (.getProperty (#'metadata/load-properties (slurp status)) "maven-metadata-central.xml.error")))
       (is (required? file :daily)))
-    (testing "a failure Aether recorded for a repository with credentials is read under the same key"
+    (testing "transfer status keys match Aether's authentication digest"
       (spit file "<metadata/>")
       (spit status (str "maven-metadata-central.xml.error=Connection refused\n"
                         "maven-metadata-central.xml/" (#'metadata/auth-digest "user" "secret") "@default-central-https\\://127.0.0.1\\:1/.lastUpdated=" (now) "\n"))
@@ -91,11 +87,11 @@
         cached (fs/file local "g/a/1.0-SNAPSHOT/maven-metadata-test.xml")]
     (fs/create-dirs (fs/parent cached))
     (fs/create-dirs remote)
-    (testing "a cached copy is deleted once the repository does not have the metadata"
+    (testing "missing remote metadata deletes the cached copy"
       (spit cached "<metadata/>")
       (is (= {:version "1.0-SNAPSHOT" :repo :none} (metadata/resolve-snapshot local [repo] art)))
       (is (not (fs/exists? cached))))
-    (testing "metadata that does not parse is skipped"
+    (testing "invalid XML metadata is ignored"
       (fs/create-dirs (fs/file remote "g/a/1.0-SNAPSHOT"))
       (spit (fs/file remote "g/a/1.0-SNAPSHOT/maven-metadata.xml") "<metadata><versioning>")
       (spit (fs/file remote "g/a/maven-metadata.xml") "<metadata><versioning>")
@@ -113,16 +109,16 @@
         version-dir (fs/file local "g/a/1.0-SNAPSHOT")]
     (try
       (fs/create-dirs version-dir)
-      (testing "a cached copy stays in use when the repository answers 500"
+      (testing "HTTP 500 preserves and uses cached metadata"
         (spit (fs/file version-dir "maven-metadata-broken.xml")
               "<metadata><versioning><snapshot><timestamp>20240101.000000</timestamp><buildNumber>1</buildNumber></snapshot><lastUpdated>20240101000000</lastUpdated></versioning></metadata>")
         (is (= "1.0-20240101.000000-1" (:version (metadata/resolve-snapshot local [repo] art))))
         (is (fs/exists? (fs/file version-dir "maven-metadata-broken.xml"))))
-      (testing "the failure is recorded"
+      (testing "transfer status records HTTP 500"
         (is (str/includes? (.getProperty (#'metadata/load-properties (slurp (fs/file version-dir "resolver-status.properties")))
                                          "maven-metadata-broken.xml.error")
                            "HTTP 500")))
-      (testing "the versions of an artifact come from the other sources"
+      (testing "local metadata supplies versions after HTTP 500"
         (spit (fs/file local "g/a/maven-metadata-local.xml")
               "<metadata><versioning><versions><version>1.0-SNAPSHOT</version></versions></versioning></metadata>")
         (is (= ["1.0-SNAPSHOT"] (:versions (metadata/versions local [repo] art)))))
