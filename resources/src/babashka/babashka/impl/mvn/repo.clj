@@ -8,10 +8,7 @@
             [babashka.impl.mvn.http :as http]
             [babashka.impl.mvn.metadata :as metadata]
             [babashka.impl.mvn.settings :as settings]
-            [clojure.string :as str])
-  (:import [java.nio ByteBuffer]
-           [java.nio.channels FileChannel]
-           [java.nio.file OpenOption StandardOpenOption]))
+            [clojure.string :as str]))
 
 (def standard-repos
   {"central" {:url "https://repo1.maven.org/maven2/"}
@@ -101,62 +98,12 @@
   [{:keys [mvn/local-repo]}]
   (or local-repo (user-local-repo)))
 
-;; tools.deps resolves in parallel, and parents and BOMs are shared, so two
-;; threads can want the same file. One monitor per path.
-(def ^:private locks (atom {}))
-
-(defn- lock-for [path]
-  (let [path (str (fs/normalize (fs/absolutize path)))]
-    (or (get @locks path)
-        (get (swap! locks update path #(or % (Object.))) path))))
-
-;; Tracking files: a monitor per path for threads, a FileChannel lock for processes.
-
-(defn- read-channel [^FileChannel ch]
-  (let [buf (ByteBuffer/allocate (int (.size ch)))]
-    (.position ch 0)
-    (loop []
-      (when (and (.hasRemaining buf) (pos? (.read ch buf)))
-        (recur)))
-    (String. (.array buf) 0 (.position buf) "UTF-8")))
-
-(defn- read-tracking-file
-  "Returns the text of a tracking file, nil when it does not exist."
-  [file]
-  (let [path (fs/path file)]
-    #_{:clj-kondo/ignore [:locking-suspicious-lock]}
-    (locking (lock-for (str path))
-      (when (fs/exists? path)
-        (with-open [ch (FileChannel/open path (into-array OpenOption [StandardOpenOption/READ]))]
-          (.lock ch 0 Long/MAX_VALUE true)
-          (read-channel ch))))))
-
-(defn- update-tracking-file!
-  "Replaces the text of a tracking file with (f text). text is \"\" for a new file."
-  [file f]
-  (let [path (fs/path file)]
-    #_{:clj-kondo/ignore [:locking-suspicious-lock]}
-    (locking (lock-for (str path))
-      (with-open [ch (FileChannel/open path (into-array OpenOption [StandardOpenOption/READ
-                                                                     StandardOpenOption/WRITE
-                                                                     StandardOpenOption/CREATE]))]
-        (.lock ch)
-        (let [old (read-channel ch)
-              new (f old)]
-          (when (not= old new)
-            (.truncate ch 0)
-            (let [buf (ByteBuffer/wrap (.getBytes ^String new "UTF-8"))]
-              (loop []
-                (when (.hasRemaining buf)
-                  (.write ch buf)
-                  (recur))))))))))
-
 (defn- record-remote!
   "Notes in _remote.repositories which repository a file came from, the way
   Aether does, so the JVM tools.deps accepts the file later."
   [dir file-name repo-id]
   (let [line (str file-name ">" repo-id "=")]
-    (update-tracking-file! (fs/file dir "_remote.repositories")
+    (metadata/update-tracking-file! (fs/file dir "_remote.repositories")
                            (fn [existing]
                              (if (str/includes? existing line)
                                existing
@@ -166,7 +113,7 @@
   "The repository ids _remote.repositories lists for file-name, \"\" for a
   locally installed file. nil when the file is not listed."
   [dir file-name]
-  (when-let [text (read-tracking-file (fs/file dir "_remote.repositories"))]
+  (when-let [text (metadata/read-tracking-file (fs/file dir "_remote.repositories"))]
     (let [props (java.util.Properties.)
           prefix (str file-name ">")]
       (.load props (java.io.StringReader. text))
@@ -273,7 +220,7 @@
   [local-repo repos {:keys [version] :as artifact}]
   (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
-    (locking (lock-for dest)
+    (locking (metadata/lock-for dest)
       (cond
         (str/ends-with? version "-SNAPSHOT") (resolve-snapshot! local-repo repos artifact dest)
         (coords/snapshot? version) (resolve-build! repos artifact version dest)

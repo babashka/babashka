@@ -1,7 +1,8 @@
 #!/usr/bin/env bb
 ;; babashka.impl.mvn.metadata's refresh decision against maven-resolver's
 ;; DefaultUpdatePolicyAnalyzerTest (1.9.27), on a cached metadata file's
-;; modification time.
+;; modification time, and its update check against DefaultUpdateCheckManager
+;; on resolver-status.properties.
 ;; Run: ./bb -cp resources/src/babashka script/mvn_oracle/update_policy_test.clj
 (ns update-policy-test
   (:require [babashka.fs :as fs]
@@ -11,19 +12,14 @@
 (def dir (fs/create-temp-dir))
 
 (defn- stale?
-  "The decision for a file last modified at `millis`."
+  "The decision for a last update at `millis`."
   [millis policy]
-  (let [f (fs/file dir (str (random-uuid) ".xml"))]
-    (spit f "")
-    (fs/set-last-modified-time f millis)
-    (#'metadata/stale? f {:update policy})))
+  (#'metadata/stale? millis {:update policy}))
 
 (defn- now [] (System/currentTimeMillis))
 (def local-midnight (#'metadata/local-midnight-millis))
 
 (deftest update-policy-test
-  (testing "a file that is not there"
-    (is (#'metadata/stale? (fs/file dir "missing.xml") {:update :never})))
   (testing "testIsUpdateRequiredPolicyNever"
     (is (not (stale? 0 :never)))
     (is (not (stale? (- (now) 604800000) :never))))
@@ -41,6 +37,69 @@
     (is (not (stale? (now) 5)))
     (is (not (stale? (- (now) 5000) 5)))
     (is (stale? (- (now) (* 1000 60 5) 1000) 5))))
+
+(def down {:id "central" :url "https://127.0.0.1:1/" :display-url "https://127.0.0.1:1/"})
+
+(defn- required?
+  ([file policy] (required? file policy 0))
+  ([file policy local-updated] (#'metadata/update-required? file down {:update policy} local-updated)))
+
+(deftest update-check-test
+  (let [file (fs/file dir "g/a/1.0-SNAPSHOT/maven-metadata-central.xml")
+        status (fs/file dir "g/a/1.0-SNAPSHOT/resolver-status.properties")]
+    (fs/create-dirs (fs/parent file))
+    (testing "metadata that was never fetched is fetched under every policy"
+      (is (required? file :never)))
+    (testing "installed metadata that is fresh under the policy stands in for the repository"
+      (is (not (required? file :daily (now))))
+      (is (required? file :daily (- local-midnight 1000)))
+      (is (required? file :always (now))))
+    (testing "a cached copy without a recorded update is fetched again, except under never"
+      (spit file "<metadata/>")
+      (is (required? file :daily))
+      (is (not (required? file :never))))
+    (testing "a success is recorded and holds for the policy"
+      (#'metadata/touch! file down nil)
+      (is (re-find #"(?m)^maven-metadata-central\.xml\.lastUpdated=\d+$" (slurp status)))
+      (is (not (required? file :daily)))
+      (is (required? file :always)))
+    (testing "a failed transfer is recorded under the repository and, with a cached copy, holds for the policy"
+      (#'metadata/touch! file down "Connection refused")
+      (is (= "Connection refused" (.getProperty (#'metadata/load-properties (slurp status)) "maven-metadata-central.xml.error")))
+      (is (not (required? file :daily)))
+      (fs/delete file)
+      (is (required? file :daily)))
+    (testing "metadata a repository does not have is asked for again"
+      (#'metadata/touch! file down "")
+      (is (= "" (.getProperty (#'metadata/load-properties (slurp status)) "maven-metadata-central.xml.error")))
+      (is (required? file :daily)))
+    (testing "a failure Aether recorded for a repository with credentials is read under the same key"
+      (spit file "<metadata/>")
+      (spit status (str "maven-metadata-central.xml.error=Connection refused\n"
+                        "maven-metadata-central.xml/" (#'metadata/auth-digest "user" "secret") "@default-central-https\\://127.0.0.1\\:1/.lastUpdated=" (now) "\n"))
+      (is (= "1e3667668bcdb79f50512e584a207d92f9be6324" (#'metadata/auth-digest "user" "secret")))
+      (is (not (#'metadata/update-required? file (assoc down :auth ["user" "secret"]) {:update :daily} 0)))
+      (is (required? file :daily)))))
+
+(deftest missing-and-unreadable-metadata-test
+  (let [local (str (fs/file dir "local"))
+        remote (fs/file dir "remote")
+        repo {:id "test" :url (str (.toURI remote)) :snapshots {:enabled true :update :always} :releases {:enabled true :update :always}}
+        art {:group "g" :artifact "a" :version "1.0-SNAPSHOT" :extension "jar"}
+        cached (fs/file local "g/a/1.0-SNAPSHOT/maven-metadata-test.xml")]
+    (fs/create-dirs (fs/parent cached))
+    (fs/create-dirs remote)
+    (testing "a cached copy is deleted once the repository does not have the metadata"
+      (spit cached "<metadata/>")
+      (is (= {:version "1.0-SNAPSHOT" :repo :none} (metadata/resolve-snapshot local [repo] art)))
+      (is (not (fs/exists? cached))))
+    (testing "metadata that does not parse is skipped"
+      (fs/create-dirs (fs/file remote "g/a/1.0-SNAPSHOT"))
+      (spit (fs/file remote "g/a/1.0-SNAPSHOT/maven-metadata.xml") "<metadata><versioning>")
+      (spit (fs/file remote "g/a/maven-metadata.xml") "<metadata><versioning>")
+      (spit (fs/file local "g/a/maven-metadata-local.xml") "not xml")
+      (is (= {:version "1.0-SNAPSHOT" :repo :none} (metadata/resolve-snapshot local [repo] art)))
+      (is (= [] (:versions (metadata/versions local [repo] art)))))))
 
 (let [{:keys [fail error]} (t/run-tests 'update-policy-test)]
   (fs/delete-tree dir)

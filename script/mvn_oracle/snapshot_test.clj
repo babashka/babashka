@@ -81,8 +81,12 @@
     (testing "a local copy newer than the repository's build wins"
       (spit (fs/file local-dir "maven-metadata-local.xml") (local-metadata-xml "20120810000000"))
       (is (= {:version "07.20.3-SNAPSHOT" :repo nil} (metadata/resolve-snapshot local [test-repo] art))))
-    (testing "a repository's build newer than the local copy wins"
+    (testing "a local copy installed within the update policy keeps the repository from being asked"
       (spit (fs/file local-dir "maven-metadata-local.xml") (local-metadata-xml "20120801000000"))
+      (is (= {:version "07.20.3-SNAPSHOT" :repo nil} (metadata/resolve-snapshot local [test-repo] art)))
+      (is (not (fs/exists? (fs/file local-dir "maven-metadata-test.xml")))))
+    (testing "a repository's build newer than the local copy wins"
+      (fs/set-last-modified-time (fs/file local-dir "maven-metadata-local.xml") (fs/millis->file-time 1000000))
       (is (= "07.20.3-20120809.112920-97" (:version (metadata/resolve-snapshot local [test-repo] art)))))
     (testing "a local copy alone resolves to the base version from the local repository"
       (spit (fs/file local-dir "maven-metadata-local.xml") (local-metadata-xml "20120801000000"))
