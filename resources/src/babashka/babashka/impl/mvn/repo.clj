@@ -42,17 +42,30 @@
   (when (and (str/starts-with? url "http:") (nil? (env/getenv "CLOJURE_CLI_ALLOW_HTTP_REPO")))
     (throw (ex-info (str "Invalid repo url (http not supported): " url) (or config {})))))
 
+(defn- caller-server
+  "The entry of servers for repo, or nil if none names both its id and its
+  URL. A caller gives credentials for one host, so an entry is never used for
+  another URL under the same id."
+  [servers repo]
+  (when-let [server (get servers (:id repo))]
+    (when (= (with-slash (:url server)) (:url repo))
+      server)))
+
 (defn remote-repo
   "One repository map from a :mvn/repos entry, with the mirror, auth and
   proxy from settings applied."
-  [{:keys [mirrors servers] :as settings} [name {:keys [url snapshots releases]}]]
+  [{:keys [mirrors servers caller-servers] :as settings} [name {:keys [url snapshots releases]}]]
   (let [repo {:id name :url (with-slash url) :display-url url}
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
                {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror) :mirrored [name]}
                repo)
-        {:keys [username password private-key passphrase headers]} (get servers (:id repo))
-        decrypt #(cipher/decrypt-password % {:server (:id repo)})
+        from-settings (get servers (:id repo))
+        ;; settings.xml is the user's own configuration and wins
+        {:keys [username password private-key passphrase headers]}
+        (or from-settings (caller-server caller-servers repo))
+        ;; only settings.xml holds encrypted passwords
+        decrypt #(if from-settings (cipher/decrypt-password % {:server (:id repo)}) %)
         credentials (cond-> {}
                       username (assoc :username username)
                       password (assoc :password (decrypt password))
