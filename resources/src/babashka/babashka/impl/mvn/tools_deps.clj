@@ -82,7 +82,8 @@
   range. Throws when no version matches or the range is unbounded."
   [config {:keys [group artifact version]} declared-repos]
   (let [{:keys [versions]} (metadata/versions (local-repo config) (pom-repos config declared-repos)
-                                              {:group group :artifact artifact})
+                                              {:group group :artifact artifact}
+                                              (metadata/range-nature version))
         highest (last (filter #(version/in-range? % version) versions))
         data {:group group :artifact artifact :version version}]
     (cond
@@ -238,12 +239,14 @@
 
 ;; Versions from metadata
 
-(defn- artifact-versions [lib config]
-  (let [[group artifact] (coords/lib->names lib)
-        local (local-repo config)
-        remotes (repos config)]
-    (session/retrieve [:babashka.impl.mvn/versions lib]
-                      #(metadata/versions local remotes {:group group :artifact artifact}))))
+(defn- artifact-versions
+  ([lib config] (artifact-versions lib config :release))
+  ([lib config nature]
+   (let [[group artifact] (coords/lib->names lib)
+         local (local-repo config)
+         remotes (repos config)]
+     (session/retrieve [:babashka.impl.mvn/versions lib nature]
+                       #(metadata/versions local remotes {:group group :artifact artifact} nature)))))
 
 (defn- unresolved [lib coord]
   (ex-info (str "Unable to resolve " lib " version: " (:mvn/version coord))
@@ -264,7 +267,7 @@
   (let [specific (second (re-matches #"^\[([^,]*)]$" version))]
     (cond
       (contains? #{"RELEASE" "LATEST"} version)
-      (let [{:keys [latest release]} (artifact-versions lib config)
+      (let [{:keys [latest release]} (artifact-versions lib config (if (= "RELEASE" version) :release :release-or-snapshot))
             ;; Aether falls back to release when the metadata names no latest,
             ;; which is what Clojars serves.
             resolved (if (= "RELEASE" version) release (or latest release))]
@@ -282,7 +285,7 @@
                        (throw (ex-info (str "Failed to resolve version range for "
                                             group ":" artifact ":" extension ":" version ": " (ex-message e))
                                        {:lib lib :coord coord} e)))))
-            {:keys [versions]} (artifact-versions lib config)
+            {:keys [versions]} (artifact-versions lib config (metadata/range-nature version))
             highest (last (filter #(version/in-range? % version) versions))]
         (if highest
           [lib (assoc coord :mvn/version highest)]

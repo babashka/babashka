@@ -81,8 +81,12 @@
     (testing "a local copy newer than the repository's build wins"
       (spit (fs/file local-dir "maven-metadata-local.xml") (local-metadata-xml "20120810000000"))
       (is (= {:version "07.20.3-SNAPSHOT" :repo nil} (metadata/resolve-snapshot local [test-repo] art))))
-    (testing "a repository's build newer than the local copy wins"
+    (testing "fresh installed metadata prevents a remote update"
       (spit (fs/file local-dir "maven-metadata-local.xml") (local-metadata-xml "20120801000000"))
+      (is (= {:version "07.20.3-SNAPSHOT" :repo nil} (metadata/resolve-snapshot local [test-repo] art)))
+      (is (not (fs/exists? (fs/file local-dir "maven-metadata-test.xml")))))
+    (testing "a repository's build newer than the local copy wins"
+      (fs/set-last-modified-time (fs/file local-dir "maven-metadata-local.xml") (fs/millis->file-time 1000000))
       (is (= "07.20.3-20120809.112920-97" (:version (metadata/resolve-snapshot local [test-repo] art)))))
     (testing "a local copy alone resolves to the base version from the local repository"
       (spit (fs/file local-dir "maven-metadata-local.xml") (local-metadata-xml "20120801000000"))
@@ -103,7 +107,28 @@
       (is (= (str (fs/file version-dir "a-1.0-SNAPSHOT.jar")) (repo/resolve-file! local [] art)))
       (testing "and with a repository that does not have it"
         (is (= (str (fs/file version-dir "a-1.0-SNAPSHOT.jar"))
-               (repo/resolve-file! local [(repo/remote-repo {} ["test" {:url (str (.toURI (fs/file remote)))}])] art)))))))
+               (repo/resolve-file! local [(repo/remote-repo {} ["test" {:url (str (.toURI (fs/file remote)))}])] art))))
+      (testing "and with a repository that cannot be reached"
+        (is (= (str (fs/file version-dir "a-1.0-SNAPSHOT.jar"))
+               (repo/resolve-file! local [(repo/remote-repo {} ["down" {:url "https://127.0.0.1:1/"}])] art)))))))
+
+(deftest unreachable-repository-test
+  (let [local (str (fs/file dir "local-down"))
+        version-dir (fs/file local "org/apache/maven/its/dep-mng5324/07.20.3-SNAPSHOT")
+        down (repo/remote-repo {} ["down" {:url "https://127.0.0.1:1/" :snapshots {:update :always}}])]
+    (testing "missing cached metadata returns the base version with :repo :none"
+      (is (= {:version "07.20.3-SNAPSHOT" :repo :none}
+             (metadata/resolve-snapshot local [down] (artifact "classifierA" "07.20.3-SNAPSHOT")))))
+    (testing "cached metadata supplies the snapshot build after a transfer failure"
+      (fs/create-dirs version-dir)
+      (spit (fs/file version-dir "maven-metadata-down.xml") metadata-xml)
+      (is (= "dep-mng5324-07.20.3-20120809.112124-88-classifierA.jar"
+             (file-name local down (artifact "classifierA" "07.20.3-SNAPSHOT")))))
+    (testing "local metadata supplies versions after a transfer failure"
+      (spit (fs/file local "org/apache/maven/its/dep-mng5324/maven-metadata-local.xml")
+            "<metadata><versioning><versions><version>07.20.3-SNAPSHOT</version></versions></versioning></metadata>")
+      (is (= ["07.20.3-SNAPSHOT"]
+             (:versions (metadata/versions local [down] {:group "org.apache.maven.its" :artifact "dep-mng5324"})))))))
 
 (defn- sha1 [^String s]
   (apply str (map #(format "%02x" %) (.digest (java.security.MessageDigest/getInstance "SHA-1") (.getBytes s)))))

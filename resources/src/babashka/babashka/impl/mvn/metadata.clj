@@ -6,8 +6,10 @@
   (:require [babashka.fs :as fs]
             [babashka.impl.mvn.coords :as coords]
             [babashka.impl.mvn.http :as http]
+            [babashka.impl.mvn.tracking :as tracking]
             [babashka.impl.mvn.version :as version]
-            [babashka.impl.mvn.xml :as x]))
+            [babashka.impl.mvn.xml :as x])
+  (:import [java.security MessageDigest]))
 
 (defn- parse-artifact-metadata [s]
   (let [root (x/parse s)
@@ -40,57 +42,186 @@
   (-> (java.time.LocalDate/now) (.atStartOfDay (java.time.ZoneId/systemDefault)) .toInstant .toEpochMilli))
 
 (defn- stale?
-  "Whether a cached metadata file should be refreshed under the policy,
-  after Maven's DefaultUpdatePolicyAnalyzer: daily means before today's
-  local midnight, a number is an interval in minutes."
-  [file {:keys [update]}]
+  "Returns true if the update at millis has expired under the policy.
+  The :daily policy expires at local midnight. Numeric policies specify minutes."
+  [millis {:keys [update]}]
   (cond
-    (not (fs/exists? file)) true
     (= :always update) true
     (= :never update) false
-    :else (let [modified (.toMillis (fs/last-modified-time file))]
-            (if (= :daily update)
-              (> (local-midnight-millis) modified)
-              (> (- (System/currentTimeMillis) (* 60000 (long update))) modified)))))
+    (= :daily update) (> (local-midnight-millis) millis)
+    :else (> (- (System/currentTimeMillis) (* 60000 (long update))) millis)))
+
+(defn- auth-digest
+  "Returns the Aether authentication digest of username and password, or \"\" if username is nil."
+  [username password]
+  (if username
+    (let [md (MessageDigest/getInstance "SHA-1")]
+      (.update md (.getBytes "username" "UTF-8"))
+      (.update md (.getBytes ^String username "UTF-8"))
+      (.update md (.getBytes "password" "UTF-8"))
+      (when password
+        (.update md (.getBytes ^String password "UTF-16BE")))
+      (apply str (map #(format "%02x" (bit-and % 0xff)) (.digest md))))
+    ""))
+
+(defn- transfer-key [file {:keys [id url auth proxy]}]
+  (str (fs/file-name file) "/"
+       (when proxy
+         (str (auth-digest (:username proxy) (:password proxy)) "@" (:host proxy) ":" (:port proxy) ">"))
+       (auth-digest (first auth) (second auth)) "@default-" id "-" url))
+
+(defn- status-file [file]
+  (fs/file (fs/parent file) "resolver-status.properties"))
+
+(defn- load-properties ^java.util.Properties [text]
+  (doto (java.util.Properties.)
+    (.load (java.io.StringReader. (or text "")))))
+
+(defn- last-updated
+  "Returns the timestamp for key, or 1 for an unknown timestamp."
+  [^java.util.Properties props key]
+  (or (some-> (.getProperty props (str key ".lastUpdated")) parse-long) 1))
+
+(defn- update-required?
+  "Returns true if file requires a metadata update from repo.
+  local-updated is the installed metadata's modification time in milliseconds, or 0 if absent."
+  [file repo policy local-updated]
+  (if (and (pos? local-updated) (not (stale? local-updated policy)))
+    false
+    (let [props (load-properties (tracking/read-tracking-file (status-file file)))
+          data-key (str (fs/file-name file))
+          error (.getProperty props (str data-key ".error"))
+          exists (fs/exists? file)
+          updated (cond
+                    (and (nil? error) (not exists)) 0
+                    (seq error) (last-updated props (transfer-key file repo))
+                    :else (last-updated props data-key))]
+      (or (zero? updated) (stale? updated policy) (not exists)))))
+
+(defn- touch!
+  "Records a transfer result in resolver-status.properties.
+  error is nil for success, \"\" for missing metadata, or an error message."
+  [file repo error]
+  (let [data-key (str (fs/file-name file))
+        transfer-key (transfer-key file repo)
+        now (str (System/currentTimeMillis))]
+    (fs/create-dirs (fs/parent file))
+    (tracking/update-tracking-file!
+     (status-file file)
+     (fn [text]
+       (let [props (load-properties text)
+             out (java.io.ByteArrayOutputStream.)]
+         (cond
+           (nil? error) (doto props
+                          (.remove (str data-key ".error"))
+                          (.setProperty (str data-key ".lastUpdated") now)
+                          (.remove (str transfer-key ".lastUpdated")))
+           (= "" error) (doto props
+                          (.setProperty (str data-key ".error") "")
+                          (.setProperty (str data-key ".lastUpdated") now)
+                          (.remove (str transfer-key ".lastUpdated")))
+           :else (doto props
+                   (.setProperty (str data-key ".error") error)
+                   (.remove (str data-key ".lastUpdated"))
+                   (.setProperty (str transfer-key ".lastUpdated") now)))
+         (.store props out "NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.")
+         (.toString out "ISO-8859-1"))))))
 
 (defn- cached-text!
-  "Metadata text from repo for the directory rel, from the cache when fresh,
-  fetched and cached otherwise. nil when the repository has none."
-  [local-repo {:keys [id url display-url auth proxy headers]} rel policy]
-  (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))]
-    (if (stale? file policy)
-      (when-let [text (http/fetch (str url rel "/maven-metadata.xml")
-                                  {:auth auth :proxy proxy :headers headers :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
-        (fs/create-dirs (fs/parent file))
-        ;; a parallel reader never sees a partial file
-        (let [tmp (http/temp-file file)]
-          (spit tmp text)
-          (http/move-into-place! tmp (str file)))
-        text)
-      (slurp file))))
+  "Returns metadata from repo for rel, with caching under policy.
+  Returns cached metadata on transfer failure.
+  If the repository reports missing metadata, deletes the cached copy and returns nil."
+  [local-repo {:keys [id url display-url auth proxy headers] :as repo} rel policy local-updated]
+  (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))
+        cached #(when (fs/exists? file) (slurp file))]
+    (if (update-required? file repo policy local-updated)
+      (let [[text error]
+            (try [(http/fetch (str url rel "/maven-metadata.xml")
+                              {:auth auth :proxy proxy :headers headers :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
+                 (catch Exception e [nil e]))]
+        (cond
+          error
+          (do (touch! file repo (or (not-empty (ex-message error)) (.getSimpleName (class error))))
+              (cached))
+
+          (nil? text)
+          (do (try (fs/delete-if-exists file)
+                   ;; Aether ignores a failed delete
+                   (catch Exception _ nil))
+              (touch! file repo "")
+              nil)
+
+          :else
+          (do (fs/create-dirs (fs/parent file))
+              (let [tmp (http/temp-file file)]
+                (spit tmp text)
+                (http/move-into-place! tmp (str file)))
+              (touch! file repo nil)
+              text)))
+      (cached))))
+
+(defn- parsed
+  "Returns (parse text), or nil if text is nil or parsing fails."
+  [parse text]
+  (when text
+    (try (parse text)
+         (catch Exception _ nil))))
+
+(defn- update-minutes [update]
+  (case update
+    :always 0
+    :daily 1440
+    :never Integer/MAX_VALUE
+    update))
+
+(defn- metadata-policy
+  "Returns the policy of repo for metadata of nature, or nil if repo is disabled for nature.
+  nature is :release, :snapshot or :release-or-snapshot.
+  With both policies enabled, the more frequent update policy applies."
+  [{:keys [releases snapshots]} nature]
+  (let [releases (when (and (not= :snapshot nature) (:enabled releases)) releases)
+        snapshots (when (and (not= :release nature) (:enabled snapshots)) snapshots)]
+    (if (and releases snapshots)
+      (if (< (update-minutes (:update snapshots)) (update-minutes (:update releases)))
+        snapshots
+        releases)
+      (or releases snapshots))))
+
+(defn range-nature
+  "Returns :release-or-snapshot if the lowest or highest bound of the version range is a snapshot version, or :release otherwise."
+  [range]
+  (let [restrictions (version/parse-range range)
+        bound (fn [k pick]
+                (let [bounds (map k restrictions)]
+                  (when (every? some? bounds)
+                    (first (pick (sort version/compare-versions bounds))))))]
+    (if (some #(some-> % coords/snapshot?) [(bound :low identity) (bound :high reverse)])
+      :release-or-snapshot
+      :release)))
 
 (defn versions
   "All versions of the artifact across the enabled repositories and the
   local repository's maven-metadata-local.xml, in Maven order, with :latest
-  and :release from the first repository that names them."
-  [local-repo repos artifact]
-  (let [rel (coords/artifact-dir artifact)
-        installed (let [f (fs/file local-repo rel "maven-metadata-local.xml")]
-                    (when (fs/exists? f)
-                      (parse-artifact-metadata (slurp f))))
-        found (concat (keep (fn [repo]
-                              (when (get-in repo [:releases :enabled])
-                                (some-> (cached-text! local-repo repo rel (:releases repo))
-                                        parse-artifact-metadata)))
-                            repos)
-                      (when installed [installed]))]
-    {:versions (->> found
-                    (mapcat :versions)
-                    distinct
-                    (sort version/compare-versions)
-                    vec)
-     :latest (some :latest found)
-     :release (some :release found)}))
+  and :release from the first repository that names them.
+  nature is :release by default, or :release-or-snapshot."
+  ([local-repo repos artifact] (versions local-repo repos artifact :release))
+  ([local-repo repos artifact nature]
+   (let [rel (coords/artifact-dir artifact)
+         installed (let [f (fs/file local-repo rel "maven-metadata-local.xml")]
+                     (when (fs/exists? f)
+                       (parsed parse-artifact-metadata (slurp f))))
+         found (concat (keep (fn [repo]
+                               (when-let [policy (metadata-policy repo nature)]
+                                 (parsed parse-artifact-metadata (cached-text! local-repo repo rel policy 0))))
+                             repos)
+                       (when installed [installed]))]
+     {:versions (->> found
+                     (mapcat :versions)
+                     distinct
+                     (sort version/compare-versions)
+                     vec)
+      :latest (some :latest found)
+      :release (some :release found)})))
 
 (defn- merge-info
   "Stores version under key when key has no entry or updated is later than
@@ -131,7 +262,7 @@
   [local-repo rel]
   (let [f (fs/file local-repo rel "maven-metadata-local.xml")]
     (when (fs/exists? f)
-      (let [{:keys [snapshot] :as versioning} (parse-snapshot-metadata (slurp f))]
+      (when-let [{:keys [snapshot] :as versioning} (parsed parse-snapshot-metadata (slurp f))]
         (if (some-> snapshot :build-number pos?)
           {:last-updated (:last-updated versioning) :snapshot {} :snapshot-versions []}
           versioning)))))
@@ -145,10 +276,11 @@
   [local-repo repos {:keys [version classifier extension] :as artifact}]
   (let [rel (coords/version-dir artifact)
         key (snapshot-key classifier extension)
+        installed (fs/file local-repo rel "maven-metadata-local.xml")
+        local-updated (if (fs/exists? installed) (.toMillis (fs/last-modified-time installed)) 0)
         infos (reduce (fn [infos repo]
-                        (if-let [versioning (and (get-in repo [:snapshots :enabled])
-                                                 (some-> (cached-text! local-repo repo rel (:snapshots repo))
-                                                         parse-snapshot-metadata))]
+                        (if-let [versioning (when-let [policy (metadata-policy repo :snapshot)]
+                                              (parsed parse-snapshot-metadata (cached-text! local-repo repo rel policy local-updated)))]
                           (merge-versioning infos versioning version repo)
                           infos))
                       (if-let [versioning (local-versioning local-repo rel)]
