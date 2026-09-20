@@ -201,6 +201,54 @@
       (is (= {"Private-Token" "t"} (:headers (repo/remote-repo s ["private" {:url "https://private.example.com/"}]))))
       (is (nil? (:headers (repo/remote-repo s ["other" {:url "https://other.example.com/"}])))))))
 
+(deftest server-credentials-test
+  (let [s (settings/parse (str "<settings><servers>"
+                               "<server><id>key</id><privateKey>/k</privateKey><passphrase>pp</passphrase></server>"
+                               "<server><id>pass</id><password>p</password></server>"
+                               "<server><id>bare</id></server>"
+                               "</servers></settings>"))
+        credentials #(:credentials (repo/remote-repo s [% {:url "https://example.com/"}]))]
+    (testing "a server's private key and passphrase are credentials"
+      (is (= {:private-key "/k" :passphrase "pp"} (credentials "key"))))
+    (testing "a password without a username gives credentials without :auth"
+      (is (= {:password "p"} (credentials "pass")))
+      (is (nil? (:auth (repo/remote-repo s ["pass" {:url "https://example.com/"}])))))
+    (testing "a server with only an id has no credentials"
+      (is (nil? (credentials "bare"))))))
+
+(deftest mirror-policy-test
+  (let [s (settings/parse "<settings><mirrors><mirror><id>mir</id><url>https://mirror.example.com/</url><mirrorOf>*</mirrorOf></mirror></mirrors></settings>")
+        merged (fn [a b] (repo/remote-repos {"central" (assoc a :url "https://a.example.com/")
+                                             "clojars" (assoc b :url "https://b.example.com/")}
+                                            s))]
+    (testing "two repositories behind one mirror are one repository"
+      (is (= ["mir"] (map :id (merged {} {}))))
+      (is (= ["central" "clojars"] (:mirrored (first (merged {} {}))))))
+    (testing "one enabled repository enables the mirror"
+      (is (true? (get-in (first (merged {:snapshots {:enabled false}} {})) [:snapshots :enabled])))
+      (is (true? (get-in (first (merged {} {:snapshots {:enabled false}})) [:snapshots :enabled])))
+      (is (false? (get-in (first (merged {:snapshots {:enabled false}} {:snapshots {:enabled false}})) [:snapshots :enabled]))))
+    (testing "the mirror ignores the update policy of a disabled repository"
+      (is (= :daily (get-in (first (merged {:snapshots {:enabled false :update :always}} {})) [:snapshots :update]))))
+    (testing "two enabled repositories merge into the more frequent update policy and the more lenient checksum policy"
+      (is (= {:enabled true :update :always :checksum :warn}
+             (:releases (first (merged {:releases {:update :never :checksum :fail}} {:releases {:update :always :checksum :warn}})))))
+      (is (= {:enabled true :update 5 :checksum :ignore}
+             (:releases (first (merged {:releases {:update 5 :checksum :ignore}} {:releases {:update :daily :checksum :fail}}))))))
+    (testing "a :mvn/repos entry keeps its policies over a settings profile repository with the same id"
+      (let [profile (settings/parse (str "<settings><profiles><profile><id>p</id><repositories>"
+                                         "<repository><id>central</id><url>https://other.example.com/</url></repository>"
+                                         "</repositories></profile></profiles><activeProfiles><activeProfile>p</activeProfile></activeProfiles></settings>"))
+            repos (repo/remote-repos {"central" {:url "https://a.example.com/" :releases {:update :never}}} profile)]
+        (is (= ["central"] (map :id repos)))
+        (is (= :never (get-in (first repos) [:releases :update])))))
+    (testing "a mirrored repository keeps its policies over a second one with the same original id"
+      (let [repos (repo/remote-repos {"central" {:url "https://a.example.com/" :releases {:update :never}}}
+                                     (assoc s :profiles {"p" {:repositories [{:id "central" :url "https://other.example.com/"}]}}
+                                            :active-profiles ["p"]))]
+        (is (= ["mir"] (map :id repos)))
+        (is (= :never (get-in (first repos) [:releases :update])))))))
+
 (deftest header-property-test
   (let [parse (fn [props]
                 (settings/parse (str "<settings><servers><server><id>s</id><configuration><httpHeaders>"

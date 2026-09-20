@@ -44,6 +44,8 @@
     [id
      (cond-> {:username (interpolate (child-text el "username"))
               :password (interpolate (child-text el "password"))}
+       (child el "privateKey") (assoc :private-key (interpolate (child-text el "privateKey"))
+                                      :passphrase (interpolate (child-text el "passphrase")))
        (seq headers) (assoc :headers headers))]))
 
 (defn- mirror [el]

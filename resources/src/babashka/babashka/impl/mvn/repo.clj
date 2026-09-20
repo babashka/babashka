@@ -49,9 +49,15 @@
   (let [repo {:id name :url (with-slash url) :display-url url}
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
-               {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror)}
+               {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror) :mirrored [name]}
                repo)
-        {:keys [username password headers]} (get servers (:id repo))]
+        {:keys [username password private-key passphrase headers]} (get servers (:id repo))
+        decrypt #(cipher/decrypt-password % {:server (:id repo)})
+        credentials (cond-> {}
+                      username (assoc :username username)
+                      password (assoc :password (decrypt password))
+                      private-key (assoc :private-key private-key)
+                      (and private-key passphrase) (assoc :passphrase (decrypt passphrase)))]
     ;; Check the repository URL after applying mirrors.
     (when (str/starts-with? (:url repo) "s3:")
       (throw (ex-info (str "S3 repository " (:id repo) " (" (:url repo) ") requires the JVM resolver."
@@ -60,7 +66,8 @@
     (cond-> (assoc repo
                    :releases (policy name (or releases {}))
                    :snapshots (policy name (or snapshots {})))
-      username (assoc :auth [username (cipher/decrypt-password password {:server (:id repo)})])
+      username (assoc :auth [username (:password credentials)])
+      (seq credentials) (assoc :credentials credentials)
       (seq headers) (assoc :headers headers)
       (proxy-for settings (:url repo)) (assoc :proxy (proxy-for settings (:url repo))))))
 
@@ -72,11 +79,16 @@
                         (dissoc repos "central" "clojars")
                         (map (fn [{:keys [id url]}] [id {:url url}])
                              (settings/active-profile-repositories settings)))]
-    ;; Two repositories behind one mirror are one repository, as Aether
-    ;; merges them, so the second is dropped.
     (reduce (fn [repos repo]
-              (if (some #(= (:id %) (:id repo)) repos)
-                repos
+              (if-let [i (first (keep-indexed #(when (= (:id %2) (:id repo)) %1) repos))]
+                (let [mirrored (:mirrored (nth repos i))
+                      added (remove (set mirrored) (:mirrored repo))]
+                  (if (and (seq mirrored) (seq added))
+                    (-> repos
+                        (update-in [i :releases] metadata/merge-policy (:releases repo))
+                        (update-in [i :snapshots] metadata/merge-policy (:snapshots repo))
+                        (update-in [i :mirrored] into added))
+                    repos))
                 (conj repos repo)))
             []
             (into []
