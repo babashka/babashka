@@ -51,7 +51,13 @@
         repo (if mirror
                {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror)}
                repo)
-        {:keys [username password headers]} (get servers (:id repo))]
+        {:keys [username password private-key passphrase headers]} (get servers (:id repo))
+        decrypt #(cipher/decrypt-password % {:server (:id repo)})
+        credentials (cond-> {}
+                      username (assoc :username username)
+                      password (assoc :password (decrypt password))
+                      private-key (assoc :private-key private-key)
+                      (and private-key passphrase) (assoc :passphrase (decrypt passphrase)))]
     ;; Check the repository URL after applying mirrors.
     (when (str/starts-with? (:url repo) "s3:")
       (throw (ex-info (str "S3 repository " (:id repo) " (" (:url repo) ") requires the JVM resolver."
@@ -60,9 +66,21 @@
     (cond-> (assoc repo
                    :releases (policy name (or releases {}))
                    :snapshots (policy name (or snapshots {})))
-      username (assoc :auth [username (cipher/decrypt-password password {:server (:id repo)})])
+      username (assoc :auth [username (:password credentials)])
+      (seq credentials) (assoc :credentials credentials)
       (seq headers) (assoc :headers headers)
       (proxy-for settings (:url repo)) (assoc :proxy (proxy-for settings (:url repo))))))
+
+(defn- merge-policy
+  "Returns the policy of two repositories behind one mirror.
+  With both enabled, the more frequent update policy and the more lenient checksum policy apply."
+  [a b]
+  (cond
+    (not (:enabled b)) a
+    (not (:enabled a)) b
+    :else {:enabled true
+           :update (min-key metadata/update-minutes (:update a) (:update b))
+           :checksum (min-key {:ignore 0 :warn 1 :fail 2} (:checksum a) (:checksum b))}))
 
 (defn remote-repos
   "Ordered repositories: central, clojars, then the rest, then the
@@ -72,11 +90,11 @@
                         (dissoc repos "central" "clojars")
                         (map (fn [{:keys [id url]}] [id {:url url}])
                              (settings/active-profile-repositories settings)))]
-    ;; Two repositories behind one mirror are one repository, as Aether
-    ;; merges them, so the second is dropped.
     (reduce (fn [repos repo]
-              (if (some #(= (:id %) (:id repo)) repos)
-                repos
+              (if-let [i (first (keep-indexed #(when (= (:id %2) (:id repo)) %1) repos))]
+                (-> repos
+                    (update-in [i :releases] merge-policy (:releases repo))
+                    (update-in [i :snapshots] merge-policy (:snapshots repo)))
                 (conj repos repo)))
             []
             (into []

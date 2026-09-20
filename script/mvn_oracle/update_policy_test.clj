@@ -6,6 +6,7 @@
             [babashka.impl.mvn.metadata :as metadata]
             [clojure.string :as str]
             [clojure.test :as t :refer [deftest is testing]]
+            [clojure.tools.deps.util.session :as session]
             [org.httpkit.server :as server]))
 
 (def dir (fs/create-temp-dir))
@@ -40,7 +41,9 @@
 
 (defn- required?
   ([file policy] (required? file policy 0))
-  ([file policy local-updated] (#'metadata/update-required? file down {:update policy} local-updated)))
+  ([file policy local-updated]
+   (session/with-session
+     (#'metadata/update-required? file down {:update policy} local-updated))))
 
 (deftest update-check-test
   (let [file (fs/file dir "g/a/1.0-SNAPSHOT/maven-metadata-central.xml")
@@ -74,10 +77,33 @@
     (testing "transfer status keys match Aether's authentication digest"
       (spit file "<metadata/>")
       (spit status (str "maven-metadata-central.xml.error=Connection refused\n"
-                        "maven-metadata-central.xml/" (#'metadata/auth-digest "user" "secret") "@default-central-https\\://127.0.0.1\\:1/.lastUpdated=" (now) "\n"))
-      (is (= "1e3667668bcdb79f50512e584a207d92f9be6324" (#'metadata/auth-digest "user" "secret")))
-      (is (not (#'metadata/update-required? file (assoc down :auth ["user" "secret"]) {:update :daily} 0)))
+                        "maven-metadata-central.xml/1e3667668bcdb79f50512e584a207d92f9be6324@default-central-https\\://127.0.0.1\\:1/.lastUpdated=" (now) "\n"))
+      (is (not (session/with-session
+                 (#'metadata/update-required? file (assoc down :credentials {:username "user" :password "secret"}) {:update :daily} 0))))
+      (is (required? file :daily)))
+    (testing "one session checks metadata once, even under :always"
+      (session/with-session
+        (is (#'metadata/update-required? file down {:update :always} 0))
+        (#'metadata/touch! file down nil)
+        (is (not (#'metadata/update-required? file down {:update :always} 0))))
+      (is (required? file :always)))
+    (testing "one session asks once for metadata the repository does not have"
+      (fs/delete file)
+      (session/with-session
+        (#'metadata/touch! file down "")
+        (is (not (#'metadata/update-required? file down {:update :daily} 0))))
       (is (required? file :daily)))))
+
+(deftest auth-digest-test
+  (testing "the digest covers each credential of a settings.xml server"
+    (is (= "" (#'metadata/auth-digest nil)))
+    (is (= "" (#'metadata/auth-digest {})))
+    (is (= "1e3667668bcdb79f50512e584a207d92f9be6324" (#'metadata/auth-digest {:username "user" :password "secret"})))
+    (is (= "481da08763e03874e52fd77affc26fd4129a106a" (#'metadata/auth-digest {:username "u" :password "p"})))
+    (is (= "e09b6700aaf463bbab142cc3ee04288291bb4495" (#'metadata/auth-digest {:username "u"})))
+    (is (= "c1df73bc231a142ccc4e6fc4828df0a2a2dc9dd3" (#'metadata/auth-digest {:password "p"})))
+    (is (= "b5daacb2a17f8ca7cc9502505108c93c9132556b" (#'metadata/auth-digest {:private-key "/k" :passphrase "pp"})))
+    (is (= "d8179bf776c541ceb385713c6f74d2cae751f256" (#'metadata/auth-digest {:username "u" :password "p" :private-key "/k" :passphrase "pp"})))))
 
 (deftest missing-and-unreadable-metadata-test
   (let [local (str (fs/file dir "local"))

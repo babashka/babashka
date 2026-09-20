@@ -8,7 +8,8 @@
             [babashka.impl.mvn.http :as http]
             [babashka.impl.mvn.tracking :as tracking]
             [babashka.impl.mvn.version :as version]
-            [babashka.impl.mvn.xml :as x])
+            [babashka.impl.mvn.xml :as x]
+            [clojure.tools.deps.util.session :as session])
   (:import [java.security MessageDigest]))
 
 (defn- parse-artifact-metadata [s]
@@ -52,23 +53,42 @@
     :else (> (- (System/currentTimeMillis) (* 60000 (long update))) millis)))
 
 (defn- auth-digest
-  "Returns the Aether authentication digest of username and password, or \"\" if username is nil."
-  [username password]
-  (if username
-    (let [md (MessageDigest/getInstance "SHA-1")]
-      (.update md (.getBytes "username" "UTF-8"))
-      (.update md (.getBytes ^String username "UTF-8"))
-      (.update md (.getBytes "password" "UTF-8"))
-      (when password
-        (.update md (.getBytes ^String password "UTF-16BE")))
+  "Returns the Aether authentication digest of credentials, or \"\" if credentials is empty.
+  credentials has :username, :password, :private-key and :passphrase, each optional."
+  [{:keys [username password private-key passphrase]}]
+  (if (or username password private-key)
+    (let [md (MessageDigest/getInstance "SHA-1")
+          string (fn [^String k ^String v]
+                   (when v
+                     (.update md (.getBytes k "UTF-8"))
+                     (.update md (.getBytes v "UTF-8"))))
+          secret (fn [^String k ^String v]
+                   (when v
+                     (.update md (.getBytes k "UTF-8"))
+                     (.update md (.getBytes v "UTF-16BE"))))]
+      (string "username" username)
+      (secret "password" password)
+      (when private-key
+        (string "privateKey.path" private-key)
+        (secret "privateKey.passphrase" passphrase))
       (apply str (map #(format "%02x" (bit-and % 0xff)) (.digest md))))
     ""))
 
-(defn- transfer-key [file {:keys [id url auth proxy]}]
-  (str (fs/file-name file) "/"
-       (when proxy
-         (str (auth-digest (:username proxy) (:password proxy)) "@" (:host proxy) ":" (:port proxy) ">"))
-       (auth-digest (first auth) (second auth)) "@default-" id "-" url))
+(defn- repo-key [{:keys [id url credentials proxy]}]
+  (str (when proxy
+         (str (auth-digest proxy) "@" (:host proxy) ":" (:port proxy) ">"))
+       (auth-digest credentials) "@default-" id "-" url))
+
+(defn- transfer-key [file repo]
+  (str (fs/file-name file) "/" (repo-key repo)))
+
+(defn- session-checks
+  "Returns the atom with the update checks done in this tools.deps session."
+  []
+  (session/retrieve ::checks #(atom #{})))
+
+(defn- session-key [file repo]
+  (str (fs/absolutize file) "|" (repo-key repo)))
 
 (defn- status-file [file]
   (fs/file (fs/parent file) "resolver-status.properties"))
@@ -96,7 +116,10 @@
                     (and (nil? error) (not exists)) 0
                     (seq error) (last-updated props (transfer-key file repo))
                     :else (last-updated props data-key))]
-      (or (zero? updated) (stale? updated policy) (not exists)))))
+      (cond
+        (zero? updated) true
+        (contains? @(session-checks) (session-key file repo)) false
+        :else (or (stale? updated policy) (not exists))))))
 
 (defn- touch!
   "Records a transfer result in resolver-status.properties.
@@ -105,6 +128,7 @@
   (let [data-key (str (fs/file-name file))
         transfer-key (transfer-key file repo)
         now (str (System/currentTimeMillis))]
+    (swap! (session-checks) conj (session-key file repo))
     (fs/create-dirs (fs/parent file))
     (tracking/update-tracking-file!
      (status-file file)
@@ -167,7 +191,9 @@
     (try (parse text)
          (catch Exception _ nil))))
 
-(defn- update-minutes [update]
+(defn update-minutes
+  "Returns the interval of an update policy in minutes."
+  [update]
   (case update
     :always 0
     :daily 1440
