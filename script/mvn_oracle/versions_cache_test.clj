@@ -32,5 +32,19 @@
           (testing "a repeated lookup returns the versions of its repository"
             (is (= ["1.0.0"] (versions "a")))))))))
 
+(deftest first-lookup-test
+  (fs/with-temp-dir [dir {}]
+    (let [config {:mvn/repos {"a" {:url (str (.toURI (fs/file dir "a")))}}
+                  :mvn/local-repo (str (fs/file dir "local"))}
+          libs (map #(symbol "acme" (str "lib" %)) (range 64))]
+      (testing "find-versions returns for 64 lib names as the first lookup of a session"
+        (binding [*err* (java.io.StringWriter.)]
+          (is (= [] (for [lib libs
+                          :let [message (try (session/with-session (ext/find-versions lib nil :mvn config))
+                                             nil
+                                             (catch Exception e (ex-message e)))]
+                          :when message]
+                      [lib message]))))))))
+
 (let [{:keys [fail error]} (t/run-tests 'versions-cache-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

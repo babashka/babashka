@@ -22,6 +22,7 @@ A preview of the next release can be installed from
 - Verify a download against the `x-checksum-sha1` or `x-checksum-md5` response header if the repository sends one
 - Verify against `.md5` if the request for `.sha1` fails
 - Key the session cache of an artifact's versions by its repositories
+- Fix `IllegalStateException: Recursive update` when listing an artifact's versions
 
 ## 1.13.223 (2026-09-15)
 
