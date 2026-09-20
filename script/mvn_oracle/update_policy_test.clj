@@ -99,6 +99,36 @@
       (is (= {:version "1.0-SNAPSHOT" :repo :none} (metadata/resolve-snapshot local [repo] art)))
       (is (= [] (:versions (metadata/versions local [repo] art)))))))
 
+(deftest metadata-nature-test
+  (let [local (str (fs/file dir "local-nature"))
+        remote (fs/file dir "remote-nature")
+        policy (fn [enabled update] {:enabled enabled :update update :checksum :warn})
+        repo (fn [releases snapshots] {:id "test" :url (str (.toURI remote)) :releases releases :snapshots snapshots})
+        art {:group "g" :artifact "a"}
+        versions #(:versions (metadata/versions local [%1] art %2))]
+    (fs/create-dirs (fs/file remote "g/a"))
+    (spit (fs/file remote "g/a/maven-metadata.xml")
+          "<metadata><versioning><versions><version>1.0</version></versions></versioning></metadata>")
+    (testing ":release skips a repository with releases disabled"
+      (is (= [] (versions (repo (policy false :always) (policy true :always)) :release))))
+    (testing ":release-or-snapshot uses a repository with only snapshots enabled"
+      (is (= ["1.0"] (versions (repo (policy false :always) (policy true :always)) :release-or-snapshot))))
+    (testing ":release-or-snapshot skips a repository with both policies disabled"
+      (is (nil? (#'metadata/metadata-policy (repo (policy false :always) (policy false :always)) :release-or-snapshot))))
+    (testing ":release-or-snapshot applies the more frequent update policy"
+      (is (= :always (:update (#'metadata/metadata-policy (repo (policy true :never) (policy true :always)) :release-or-snapshot))))
+      (is (= 5 (:update (#'metadata/metadata-policy (repo (policy true 5) (policy true :daily)) :release-or-snapshot))))
+      (is (= :daily (:update (#'metadata/metadata-policy (repo (policy true :daily) (policy true :never)) :release-or-snapshot)))))
+    (testing ":snapshot ignores the releases policy"
+      (is (= :never (:update (#'metadata/metadata-policy (repo (policy true :always) (policy true :never)) :snapshot)))))
+    (testing "a snapshot bound gives a version range the :release-or-snapshot nature"
+      (is (= :release (metadata/range-nature "[1.0,2.0)")))
+      (is (= :release (metadata/range-nature "[1.0,)")))
+      (is (= :release-or-snapshot (metadata/range-nature "[1.0-SNAPSHOT,2.0)")))
+      (is (= :release-or-snapshot (metadata/range-nature "[1.0,2.0-SNAPSHOT]")))
+      (is (= :release-or-snapshot (metadata/range-nature "[1.0,1.5],[1.7,2.0-20240101.000000-1]")))
+      (is (= :release (metadata/range-nature "[1.0,1.5-SNAPSHOT],[1.7,2.0]"))))))
+
 (deftest server-error-test
   (let [local (str (fs/file dir "local-500"))
         stop (server/run-server (fn [_] {:status 500 :body "down"}) {:port 0 :legacy-return-value? false})

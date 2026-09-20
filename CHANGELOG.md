@@ -13,6 +13,7 @@ A preview of the next release can be installed from
 - Ignore an empty `<version/>` element in `maven-metadata-local.xml` when listing an artifact's versions
 - Resolve a locally installed `-SNAPSHOT` version when a repository cannot be reached
 - Record metadata update checks in `resolver-status.properties`
+- Read versions from a snapshots-only repository for `LATEST` and for a version range with a snapshot bound
 
 ## 1.13.223 (2026-09-15)
 

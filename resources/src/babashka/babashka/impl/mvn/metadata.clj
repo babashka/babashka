@@ -6,58 +6,10 @@
   (:require [babashka.fs :as fs]
             [babashka.impl.mvn.coords :as coords]
             [babashka.impl.mvn.http :as http]
+            [babashka.impl.mvn.tracking :as tracking]
             [babashka.impl.mvn.version :as version]
             [babashka.impl.mvn.xml :as x])
-  (:import [java.nio ByteBuffer]
-           [java.nio.channels FileChannel]
-           [java.nio.file OpenOption StandardOpenOption]
-           [java.security MessageDigest]))
-
-(def ^:private locks (atom {}))
-
-(defn lock-for [path]
-  (let [path (str (fs/normalize (fs/absolutize path)))]
-    (or (get @locks path)
-        (get (swap! locks update path #(or % (Object.))) path))))
-
-(defn- read-channel [^FileChannel ch]
-  (let [buf (ByteBuffer/allocate (int (.size ch)))]
-    (.position ch 0)
-    (loop []
-      (when (and (.hasRemaining buf) (pos? (.read ch buf)))
-        (recur)))
-    (String. (.array buf) 0 (.position buf) "UTF-8")))
-
-(defn read-tracking-file
-  "Returns the contents of a tracking file, or nil if the file does not exist."
-  [file]
-  (let [path (fs/path file)]
-    #_{:clj-kondo/ignore [:locking-suspicious-lock]}
-    (locking (lock-for (str path))
-      (when (fs/exists? path)
-        (with-open [ch (FileChannel/open path (into-array OpenOption [StandardOpenOption/READ]))]
-          (.lock ch 0 Long/MAX_VALUE true)
-          (read-channel ch))))))
-
-(defn update-tracking-file!
-  "Replaces the contents of a tracking file with (f text). Passes \"\" to f for a new file."
-  [file f]
-  (let [path (fs/path file)]
-    #_{:clj-kondo/ignore [:locking-suspicious-lock]}
-    (locking (lock-for (str path))
-      (with-open [ch (FileChannel/open path (into-array OpenOption [StandardOpenOption/READ
-                                                                     StandardOpenOption/WRITE
-                                                                     StandardOpenOption/CREATE]))]
-        (.lock ch)
-        (let [old (read-channel ch)
-              new (f old)]
-          (when (not= old new)
-            (.truncate ch 0)
-            (let [buf (ByteBuffer/wrap (.getBytes ^String new "UTF-8"))]
-              (loop []
-                (when (.hasRemaining buf)
-                  (.write ch buf)
-                  (recur))))))))))
+  (:import [java.security MessageDigest]))
 
 (defn- parse-artifact-metadata [s]
   (let [root (x/parse s)
@@ -136,7 +88,7 @@
   [file repo policy local-updated]
   (if (and (pos? local-updated) (not (stale? local-updated policy)))
     false
-    (let [props (load-properties (read-tracking-file (status-file file)))
+    (let [props (load-properties (tracking/read-tracking-file (status-file file)))
           data-key (str (fs/file-name file))
           error (.getProperty props (str data-key ".error"))
           exists (fs/exists? file)
@@ -154,7 +106,7 @@
         transfer-key (transfer-key file repo)
         now (str (System/currentTimeMillis))]
     (fs/create-dirs (fs/parent file))
-    (update-tracking-file!
+    (tracking/update-tracking-file!
      (status-file file)
      (fn [text]
        (let [props (load-properties text)
@@ -215,27 +167,61 @@
     (try (parse text)
          (catch Exception _ nil))))
 
+(defn- update-minutes [update]
+  (case update
+    :always 0
+    :daily 1440
+    :never Integer/MAX_VALUE
+    update))
+
+(defn- metadata-policy
+  "Returns the policy of repo for metadata of nature, or nil if repo is disabled for nature.
+  nature is :release, :snapshot or :release-or-snapshot.
+  With both policies enabled, the more frequent update policy applies."
+  [{:keys [releases snapshots]} nature]
+  (let [releases (when (and (not= :snapshot nature) (:enabled releases)) releases)
+        snapshots (when (and (not= :release nature) (:enabled snapshots)) snapshots)]
+    (if (and releases snapshots)
+      (if (< (update-minutes (:update snapshots)) (update-minutes (:update releases)))
+        snapshots
+        releases)
+      (or releases snapshots))))
+
+(defn range-nature
+  "Returns :release-or-snapshot if the lowest or highest bound of the version range is a snapshot version, or :release otherwise."
+  [range]
+  (let [restrictions (version/parse-range range)
+        bound (fn [k pick]
+                (let [bounds (map k restrictions)]
+                  (when (every? some? bounds)
+                    (first (pick (sort version/compare-versions bounds))))))]
+    (if (some #(some-> % coords/snapshot?) [(bound :low identity) (bound :high reverse)])
+      :release-or-snapshot
+      :release)))
+
 (defn versions
   "All versions of the artifact across the enabled repositories and the
   local repository's maven-metadata-local.xml, in Maven order, with :latest
-  and :release from the first repository that names them."
-  [local-repo repos artifact]
-  (let [rel (coords/artifact-dir artifact)
-        installed (let [f (fs/file local-repo rel "maven-metadata-local.xml")]
-                    (when (fs/exists? f)
-                      (parsed parse-artifact-metadata (slurp f))))
-        found (concat (keep (fn [repo]
-                              (when (get-in repo [:releases :enabled])
-                                (parsed parse-artifact-metadata (cached-text! local-repo repo rel (:releases repo) 0))))
-                            repos)
-                      (when installed [installed]))]
-    {:versions (->> found
-                    (mapcat :versions)
-                    distinct
-                    (sort version/compare-versions)
-                    vec)
-     :latest (some :latest found)
-     :release (some :release found)}))
+  and :release from the first repository that names them.
+  nature is :release by default, or :release-or-snapshot."
+  ([local-repo repos artifact] (versions local-repo repos artifact :release))
+  ([local-repo repos artifact nature]
+   (let [rel (coords/artifact-dir artifact)
+         installed (let [f (fs/file local-repo rel "maven-metadata-local.xml")]
+                     (when (fs/exists? f)
+                       (parsed parse-artifact-metadata (slurp f))))
+         found (concat (keep (fn [repo]
+                               (when-let [policy (metadata-policy repo nature)]
+                                 (parsed parse-artifact-metadata (cached-text! local-repo repo rel policy 0))))
+                             repos)
+                       (when installed [installed]))]
+     {:versions (->> found
+                     (mapcat :versions)
+                     distinct
+                     (sort version/compare-versions)
+                     vec)
+      :latest (some :latest found)
+      :release (some :release found)})))
 
 (defn- merge-info
   "Stores version under key when key has no entry or updated is later than
@@ -293,8 +279,8 @@
         installed (fs/file local-repo rel "maven-metadata-local.xml")
         local-updated (if (fs/exists? installed) (.toMillis (fs/last-modified-time installed)) 0)
         infos (reduce (fn [infos repo]
-                        (if-let [versioning (and (get-in repo [:snapshots :enabled])
-                                                 (parsed parse-snapshot-metadata (cached-text! local-repo repo rel (:snapshots repo) local-updated)))]
+                        (if-let [versioning (when-let [policy (metadata-policy repo :snapshot)]
+                                              (parsed parse-snapshot-metadata (cached-text! local-repo repo rel policy local-updated)))]
                           (merge-versioning infos versioning version repo)
                           infos))
                       (if-let [versioning (local-versioning local-repo rel)]

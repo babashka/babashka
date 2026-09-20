@@ -8,6 +8,7 @@
             [babashka.impl.mvn.http :as http]
             [babashka.impl.mvn.metadata :as metadata]
             [babashka.impl.mvn.settings :as settings]
+            [babashka.impl.mvn.tracking :as tracking]
             [clojure.string :as str]))
 
 (def standard-repos
@@ -103,7 +104,7 @@
   Aether does, so the JVM tools.deps accepts the file later."
   [dir file-name repo-id]
   (let [line (str file-name ">" repo-id "=")]
-    (metadata/update-tracking-file! (fs/file dir "_remote.repositories")
+    (tracking/update-tracking-file! (fs/file dir "_remote.repositories")
                            (fn [existing]
                              (if (str/includes? existing line)
                                existing
@@ -113,7 +114,7 @@
   "The repository ids _remote.repositories lists for file-name, \"\" for a
   locally installed file. nil when the file is not listed."
   [dir file-name]
-  (when-let [text (metadata/read-tracking-file (fs/file dir "_remote.repositories"))]
+  (when-let [text (tracking/read-tracking-file (fs/file dir "_remote.repositories"))]
     (let [props (java.util.Properties.)
           prefix (str file-name ">")]
       (.load props (java.io.StringReader. text))
@@ -220,7 +221,7 @@
   [local-repo repos {:keys [version] :as artifact}]
   (let [dest (str (fs/path local-repo (coords/local-relative-path artifact)))]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
-    (locking (metadata/lock-for dest)
+    (locking (tracking/lock-for dest)
       (cond
         (str/ends-with? version "-SNAPSHOT") (resolve-snapshot! local-repo repos artifact dest)
         (coords/snapshot? version) (resolve-build! repos artifact version dest)
