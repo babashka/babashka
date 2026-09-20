@@ -5,7 +5,9 @@
 (ns checksum-test
   (:require [babashka.fs :as fs]
             [babashka.impl.mvn.http :as http]
-            [clojure.test :as t :refer [deftest is testing]]))
+            [clojure.string :as str]
+            [clojure.test :as t :refer [deftest is testing]]
+            [org.httpkit.server :as server]))
 
 (def sums
   {"SHA-512" "3d5ad0e4a2bf0b9c7d6ae3a5e8ea0cc0ab16bba0cd1a8b4b6b5ae3e8f6a8f0b5bd4a2a1a1a66b7a5c0f7ce6e0e7a1f3d2d2c1b7b7f8e3a4f6d7c8a9b0c1d2e3f4"
@@ -35,16 +37,17 @@
   (is (= "" (read-checksum ""))))
 
 (defn- download
-  "Downloads a/b.jar from a file: repository with the given sidecars,
-  failing on a checksum problem."
-  [dir sidecars]
-  (let [repo (fs/file dir "repo")
-        jar (fs/file repo "a" "b.jar")]
-    (fs/create-dirs (fs/parent jar))
-    (spit jar "jar contents")
-    (doseq [[ext text] sidecars]
-      (spit (fs/file repo "a" (str "b.jar" ext)) text))
-    (http/download! (str (.toURI (fs/file repo)) "a/b.jar") (fs/file dir "out.jar") {:checksum :fail :label "b.jar"})))
+  "Downloads a/b.jar from a file: repository with the given sidecars.
+  policy is the checksum policy, :fail by default."
+  ([dir sidecars] (download dir sidecars :fail))
+  ([dir sidecars policy]
+   (let [repo (fs/file dir "repo")
+         jar (fs/file repo "a" "b.jar")]
+     (fs/create-dirs (fs/parent jar))
+     (spit jar "jar contents")
+     (doseq [[ext text] sidecars]
+       (spit (fs/file repo "a" (str "b.jar" ext)) text))
+     (http/download! (str (.toURI (fs/file repo)) "a/b.jar") (fs/file dir "out.jar") {:checksum policy :label "b.jar"}))))
 
 (defn- hex-digest [algorithm ^String text]
   (let [md (java.security.MessageDigest/getInstance algorithm)]
@@ -71,6 +74,70 @@
       (fs/with-temp-dir [dir {}]
         (is (thrown-with-msg? Exception #"no checksums available"
                               (download dir {})))))))
+
+(deftest sidecar-test
+  (let [sha1 (hex-digest "SHA-1" "jar contents")
+        md5 (hex-digest "MD5" "jar contents")
+        zeros (apply str (repeat 40 "0"))
+        sidecar #(let [file (fs/file %1 (str "out.jar" %2))]
+                   (when (fs/exists? file) (slurp file)))]
+    (testing "a verified download writes the published sha1 unchanged"
+      (fs/with-temp-dir [dir {}]
+        (download dir {".sha1" (str (.toUpperCase sha1) "  b.jar") ".md5" md5})
+        (is (= (.toUpperCase sha1) (sidecar dir ".sha1")))
+        (is (nil? (sidecar dir ".md5")))))
+    (testing "a verified download writes the md5 if no sha1 is published"
+      (fs/with-temp-dir [dir {}]
+        (download dir {".md5" md5})
+        (is (= md5 (sidecar dir ".md5")))
+        (is (nil? (sidecar dir ".sha1")))))
+    (testing ":fail writes neither file nor checksum for a wrong sha1"
+      (fs/with-temp-dir [dir {}]
+        (is (thrown? Exception (download dir {".sha1" zeros})))
+        (is (not (fs/exists? (fs/file dir "out.jar"))))
+        (is (nil? (sidecar dir ".sha1")))))
+    (testing ":warn keeps the file and writes the wrong published sha1"
+      (fs/with-temp-dir [dir {}]
+        (binding [*err* (java.io.StringWriter.)]
+          (download dir {".sha1" zeros} :warn))
+        (is (fs/exists? (fs/file dir "out.jar")))
+        (is (= zeros (sidecar dir ".sha1")))))
+    (testing ":ignore writes no checksum"
+      (fs/with-temp-dir [dir {}]
+        (download dir {".sha1" sha1} :ignore)
+        (is (fs/exists? (fs/file dir "out.jar")))
+        (is (nil? (sidecar dir ".sha1")))))))
+
+(deftest retry-test
+  (let [requests (atom [])
+        contents (atom "first")
+        stop (server/run-server (fn [{:keys [uri]}]
+                                  (swap! requests conj uri)
+                                  (case uri
+                                    "/a/b.jar" (let [body @contents]
+                                                 (reset! contents "jar contents")
+                                                 {:status 200 :body body})
+                                    "/a/b.jar.sha1" {:status 200 :body (hex-digest "SHA-1" "jar contents")}
+                                    {:status 404}))
+                                {:port 0 :legacy-return-value? false})
+        url (str "http://localhost:" (server/server-port stop) "/a/b.jar")]
+    (try
+      (testing "a checksum mismatch downloads the file once more"
+        (fs/with-temp-dir [dir {}]
+          (let [err (java.io.StringWriter.)]
+            (binding [*err* err]
+              (http/download! url (fs/file dir "out.jar") {:checksum :fail :label "b.jar"}))
+            (is (= "jar contents" (slurp (fs/file dir "out.jar"))))
+            (is (= 2 (count (filter #{"/a/b.jar"} @requests))))
+            (is (str/includes? (str err) "Checksum validation failed for b.jar")))))
+      (testing "a missing checksum does not download the file again"
+        (fs/with-temp-dir [dir {}]
+          (reset! requests [])
+          (binding [*err* (java.io.StringWriter.)]
+            (http/download! (str url "x") (fs/file dir "out.jar") {:checksum :warn :label "b.jarx"}))
+          (is (= 1 (count @requests)))))
+      (finally
+        (server/server-stop! stop)))))
 
 (let [{:keys [fail error]} (t/run-tests 'checksum-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

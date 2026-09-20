@@ -166,33 +166,35 @@
         line))))
 
 (defn- remote-checksum
-  "[algorithm checksum] from the sha1 published next to url, else its md5.
-  nil when the repository publishes neither."
+  "Returns [extension algorithm checksum] of the sha1 published next to url, or of the md5 if no sha1 is published.
+  Returns nil if neither is published."
   [url opts]
   (some (fn [[ext algorithm]]
           (when-let [text (fetch (str url ext) opts)]
-            [algorithm (str/lower-case (parse-checksum text))]))
+            [ext algorithm (parse-checksum text)]))
         [[".sha1" "SHA-1"] [".md5" "MD5"]]))
 
-(defn- verify!
-  "Applies the checksum policy to a downloaded file."
+(defn- verify
+  "Checks a downloaded file against the checksum published next to url.
+  Returns nil under the :ignore policy.
+  Returns a map with :ext and :checksum of the published checksum, if any.
+  The map has :message and :data if the file fails the check, and :retry true for a checksum mismatch."
   [url file {:keys [checksum label] :or {checksum :warn} :as opts}]
   (when-not (= :ignore checksum)
-    (let [[algorithm expected] (remote-checksum url opts)
+    (let [[ext algorithm expected] (remote-checksum url opts)
           actual (when expected (digest algorithm file))]
       (cond
         (nil? expected)
-        (let [message (str "Checksum validation failed for " label ", no checksums available")]
-          (if (= :fail checksum)
-            (throw (ex-info message {:url url}))
-            (printerrln message)))
+        {:message (str "Checksum validation failed for " label ", no checksums available")
+         :data {:url url}}
 
-        (not= expected actual)
-        (let [message (str "Checksum validation failed for " label
-                           ", expected " expected " but is " actual)]
-          (if (= :fail checksum)
-            (throw (ex-info message {:url url :expected expected :actual actual}))
-            (printerrln message)))))))
+        (not (.equalsIgnoreCase ^String expected actual))
+        {:ext ext :checksum expected :retry true
+         :message (str "Checksum validation failed for " label ", expected " expected " but is " actual)
+         :data {:url url :expected expected :actual actual}}
+
+        :else
+        {:ext ext :checksum expected}))))
 
 (defn temp-file
   "Returns a path next to file named file.<random>.tmp."
@@ -216,8 +218,24 @@
     (finally
       (fs/delete-if-exists tmp))))
 
+(defn- fetch-verified
+  "Downloads url to tmp and verifies it. Downloads once more after a checksum mismatch.
+  Returns the map from verify, {} under the :ignore policy, or nil if the file is absent.
+  Throws under the :fail policy if the last download fails verification."
+  [url tmp {:keys [checksum] :as opts}]
+  (loop [trial 0]
+    (when (fetch-to-file url tmp opts)
+      (let [{:keys [message data retry] :as result} (verify url tmp opts)]
+        (cond
+          (and retry (zero? trial)) (do (printerrln message)
+                                        (recur 1))
+          (and message (= :fail checksum)) (throw (ex-info message data))
+          :else (do (when message (printerrln message))
+                    (or result {})))))))
+
 (defn download!
   "Downloads url to dest atomically and verifies the checksum using opts.
+  Writes the published checksum of an accepted file next to dest, as dest.sha1 or dest.md5.
   Returns dest, or nil when the file is absent.
   opts: :auth [user pass], :proxy, :headers, :checksum :warn/:fail/:ignore, :repo-id,
   :repo-url and :label for messages."
@@ -226,9 +244,10 @@
         tmp (temp-file dest)]
     (fs/create-dirs (fs/parent dest))
     (try
-      (when (fetch-to-file url tmp opts)
-        (verify! url tmp opts)
+      (when-let [{:keys [ext checksum]} (fetch-verified url tmp opts)]
         (move-into-place! tmp dest)
+        (when checksum
+          (spit (str dest ext) checksum))
         dest)
       (finally
         (fs/delete-if-exists tmp)))))
