@@ -21,7 +21,9 @@
 ;; "Recursive update" when its function retrieves too, so look up first.
 (defn- repos [{:keys [mvn/repos]}]
   (let [s (settings)]
-    (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos s))))
+    (if repo/*caller-servers*
+      (repo/remote-repos repos s)
+      (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos s)))))
 
 (defn- local-repo [config]
   (repo/local-repo config))
@@ -162,6 +164,40 @@
   repositories in config."
   [text config]
   (pom/effective-model (pom/parse text) (pom-ctx config)))
+
+(declare read-local-pom)
+
+(defn model-from-file
+  "The effective model of the POM in file, a parent from disk or from the
+  repositories in config."
+  [file config]
+  (let [file (fs/canonicalize file)
+        basedir (str (fs/parent file))
+        raw (pom/parse (slurp (fs/file file)))
+        dep-key (juxt :group :artifact :type :classifier)
+        duplicate (first (keep (fn [[k n]] (when (< 1 n) k)) (frequencies (map dep-key (:dependencies raw)))))]
+    (when duplicate
+      (throw (ex-info (str "'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: "
+                           (str/join ":" (remove nil? duplicate)))
+                      {:type :babashka.impl.mvn.pom/invalid :file (str file)})))
+    ;; the models of two POM files in one directory are not the same model
+    (swap! (model-cache) dissoc [:effective-local basedir])
+    (let [model (pom/effective-model raw {:read-pom (read-local-pom config)
+                                          :resolve-version (partial parent-version config)
+                                          :cache (model-cache)
+                                          :basedir basedir})]
+      (when-let [dep (first (filter #(str/blank? (:version %)) (pom/dependencies model)))]
+        (throw (ex-info (str "'dependencies.dependency.version' for " (:group dep) ":" (:artifact dep) " is missing")
+                        {:type :babashka.impl.mvn.pom/invalid :file (str file)})))
+      model)))
+
+(defn model-repos
+  "The repositories of a model as :mvn/repos data."
+  [model]
+  (let [declared (into {} (map (fn [{:keys [id url]}] [id {:url url}])) (:repositories model))]
+    (cond-> declared
+      (not (contains? declared "central"))
+      (assoc "central" {:url "https://repo.maven.apache.org/maven2" :snapshots {:enabled false}}))))
 
 (defn model-deps
   "The compile and runtime dependencies of a model, as tools.deps data."

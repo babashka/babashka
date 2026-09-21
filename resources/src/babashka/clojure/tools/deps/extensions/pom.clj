@@ -11,6 +11,12 @@
   [text config _settings]
   (mvn/model-from-text text config))
 
+(defn read-model-file
+  "The effective model of the POM in file, a parent from disk or from the
+  repositories in config."
+  [file config]
+  (mvn/model-from-file file config))
+
 (defn model-deps
   "The compile and runtime dependencies of a model, as tools.deps data."
   [model]
