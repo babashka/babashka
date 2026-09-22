@@ -243,9 +243,13 @@
   ([lib config nature]
    (let [[group artifact] (coords/lib->names lib)
          local (local-repo config)
-         remotes (repos config)]
-     (session/retrieve [:babashka.impl.mvn/versions lib nature]
-                       #(metadata/versions local remotes {:group group :artifact artifact} nature)))))
+         remotes (repos config)
+         k [:babashka.impl.mvn/versions lib nature local (:mvn/repos config)]]
+     ;; metadata/versions retrieves from the session, so it runs outside session/retrieve
+     (or (session/retrieve k)
+         (let [versions (metadata/versions local remotes {:group group :artifact artifact} nature)]
+           (or (.putIfAbsent ^java.util.concurrent.ConcurrentMap session/session k versions)
+               versions))))))
 
 (defn- unresolved [lib coord]
   (ex-info (str "Unable to resolve " lib " version: " (:mvn/version coord))
