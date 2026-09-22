@@ -142,8 +142,67 @@ accept what bb wrote.
 - CI runs the scripts on the built binary on Linux, macOS and Windows, and
   the JVM suite runs one resolve under each value of the switch.
 
+## Performance against the JVM resolver
+
+Measured 2026-09-22 on an arm64 Mac, bb 1.13.224-SNAPSHOT with tools.deps
+0.31.1638 bundled, the Clojure CLI 1.12.6.1673 with tools.deps 0.31.1646.
+Both resolvers are run through `bb clojure -Sforce -Spath`, the switch
+being `BABASHKA_DEPS_RESOLVER`. The plain `clojure` script gives the same
+numbers as `jvm`.
+
+Cold, an empty `:mvn/local-repo` per run, gitlibs cached, ductile's
+deps.edn, 470 classpath entries, 429 jars, 223 MB:
+
+| run | bb | jvm |
+| --- | --- | --- |
+| 1 | 19.0 s | 121.2 s |
+| 2 | 12.9 s | 54.9 s |
+
+Warm, the repository populated, `-Sforce` so the `.cpcache` is ignored:
+
+| project | bb | jvm |
+| --- | --- | --- |
+| polylith `projects/poly`, 157 entries | 0.16 s | 0.53 s |
+| ductile, 470 entries | 0.57 s | 0.73 s |
+
+A user's report on another machine for the polylith case: 0.31 s against
+5.8 s, the jvm run using 2.5 s of CPU and waiting the rest.
+
+Where the warm time goes, phases timed inside one process by
+`0002-resolver-phases.clj` next to this file, `create-basis` on the project
+deps.edn, JDK 25.0.4:
+
+| phase | jvm polylith | bb polylith | jvm ductile | bb ductile |
+| --- | --- | --- | --- | --- |
+| process start to first form | 352 ms | 12 ms | 341 ms | 15 ms |
+| require tools.deps | 58 ms | 40 ms | 45 ms | 39 ms |
+| Maven repository system | 57 ms | | 49 ms | |
+| create-basis, first | 173 ms | 113 ms | 428 ms | 482 ms |
+| create-basis, second, same process | 78 ms | 81 ms | 138 ms | 362 ms |
+| CPU for the whole process | 4.1 s | 0.6 s | 7.1 s | 3.1 s |
+
+The warm gap is start-up: 350 ms of JVM and Clojure core before the first
+form, against 12 ms. Requiring tools.deps from source through sci costs the
+same as loading it from AOT classes. The first resolve takes the same time
+in sci as in cold JVM Clojure, on the small tree and on the large one. The
+JVM pulls ahead only on a second resolve in the same process, which a CLI
+never runs. The JVM's 4 to 7 s of CPU is JIT and GC threads, hidden on a
+machine with many cores and paid in wall time on a small one.
+
+The cold gap is transport. bb's HTTP client multiplexes requests over HTTP/2
+and takes checksums from the response headers Central and Clojars send, one
+request per file. Maven Resolver's transport is HTTP/1.1 over a pooled
+Apache HttpClient with its own thread cap per repository. Request and
+connection counts per run are not measured yet.
+
+So interpreting tools.deps and the procurer costs nothing a user can see, and
+the resolve is faster than the JVM's on every path measured. Compiling
+either into the image for speed is not worth doing.
+
 ## Decisions taken along the way
 
+- tools.deps and the procurer stay interpreted. The section above shows
+  compiling them would buy nothing a user sees.
 - No build feature. It cost nothing in the image and an untested "off"
   configuration goes stale.
 - `jvm` stays the default for the first release, `bb` is a dated flip
