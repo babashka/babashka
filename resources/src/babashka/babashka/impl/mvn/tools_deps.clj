@@ -238,23 +238,13 @@
 
 ;; Versions from metadata
 
-(defn- without-secrets
-  "Returns remotes with each secret replaced by its hash, for use in a
-  session key."
-  [remotes]
-  (mapv (fn [remote]
-          (reduce (fn [remote k] (cond-> remote (contains? remote k) (update k hash)))
-                  remote
-                  [:auth :credentials :headers :proxy]))
-        remotes))
-
 (defn- artifact-versions
   ([lib config] (artifact-versions lib config :release-or-snapshot))
   ([lib config nature]
    (let [[group artifact] (coords/lib->names lib)
          local (local-repo config)
          remotes (repos config)
-         k [:babashka.impl.mvn/versions lib nature (str local) (without-secrets remotes)]]
+         k [:babashka.impl.mvn/versions lib nature local (:mvn/repos config)]]
      ;; metadata/versions retrieves from the session, so it runs outside session/retrieve
      (or (session/retrieve k)
          (let [versions (metadata/versions local remotes {:group group :artifact artifact} nature)]
