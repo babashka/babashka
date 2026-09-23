@@ -10,19 +10,28 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Bundle `clojure.data.json`
-- Ignore an empty `<version/>` element in `maven-metadata-local.xml` when listing an artifact's versions
-- Resolve a locally installed `-SNAPSHOT` version when a repository cannot be reached
-- Record metadata update checks in `resolver-status.properties`
-- Read versions from a snapshots-only repository for `LATEST` and for version ranges
-- Verify the checksum of `maven-metadata.xml` under the repository checksum policy
-- Check metadata for updates once per session
-- Merge the policies of repositories behind one mirror
-- Write the published `.sha1` or `.md5` next to a downloaded file in the local repository
-- Download a file once more after a checksum mismatch
-- Verify a download against the `x-checksum-sha1` or `x-checksum-md5` response header if the repository sends one
-- Verify against `.md5` if the request for `.sha1` fails
-- Key the session cache of an artifact's versions by its repositories
-- Fix `IllegalStateException: Recursive update` when listing an artifact's versions
+- [#2162](https://github.com/babashka/babashka/issues/2162): Fix `clojure.datafy/datafy` on a namespace
+- Bump `babashka.ffi` to `0.1.2`
+- Bump jline to `4.4.5`
+- Dep resolution improvements
+  - <details>
+    <summary>Details:</summary>
+
+    - Ignore an empty `<version/>` element in `maven-metadata-local.xml` when listing an artifact's versions
+    - Resolve a locally installed `-SNAPSHOT` version when a repository cannot be reached
+    - Record metadata update checks in `resolver-status.properties`
+    - Read versions from a snapshots-only repository for `LATEST` and for version ranges
+    - Verify the checksum of `maven-metadata.xml` under the repository checksum policy
+    - Check metadata for updates once per session
+    - Merge the policies of repositories behind one mirror
+    - Write the published `.sha1` or `.md5` next to a downloaded file in the local repository
+    - Download a file once more after a checksum mismatch
+    - Verify a download against the `x-checksum-sha1` or `x-checksum-md5` response header if the repository sends one
+    - Verify against `.md5` if the request for `.sha1` fails
+    - Key the session cache of an artifact's versions by its repositories
+    - Fix `IllegalStateException: Recursive update` when listing an artifact's versions
+
+    </details>
 
 ## 1.13.223 (2026-09-15)
 
