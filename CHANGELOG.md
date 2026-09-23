@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.13.224 (2026-09-23)
 
 - Bundle `clojure.data.json`
 - [#2162](https://github.com/babashka/babashka/issues/2162): Fix `clojure.datafy/datafy` on a namespace
