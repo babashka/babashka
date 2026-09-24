@@ -201,10 +201,10 @@
     prog))
 
 (defn- fold-fn-meta
-  "Merges a handler var's `:org.babashka/cli` metadata into its `node`, like
-  `bb -x`: namespace metadata first, then the var's own, with explicit node
-  keys winning over both. The docstring is the `:doc` if none of these sets one.
-  A `:cmd` tree on the fn is dropped, command trees belong in bb.edn.
+  "Returns `node` merged over the `:org.babashka/cli` metadata of a handler's
+  namespace and of the handler itself, in that order.
+  The handler's docstring is the `:doc` if none of these sets one.
+  A `:cmd` in the handler's metadata is ignored.
   Returns `node` unchanged if `var-meta` is nil."
   [var-meta node]
   (if var-meta
@@ -217,14 +217,6 @@
         (assoc node :doc doc)
         node))
     node))
-
-(defn- handler-meta
-  "Returns the metadata of handler `fv`.
-  A symbol `fv` is resolved with `resolve-fn` first."
-  [resolve-fn fv]
-  (if (symbol? fv)
-    (meta (resolve-fn fv))
-    (meta fv)))
 
 (defn- resolve-or-throw
   "Resolves `sym` with `resolve-fn`, reporting `what` when it names a var that
@@ -299,7 +291,7 @@
   [resolve-fn node]
   (let [merge-fn-meta (fn [node k]
                         (let [fv (k node)]
-                          (fold-fn-meta (handler-meta resolve-fn fv) node)))
+                          (fold-fn-meta (meta (if (symbol? fv) (resolve-fn fv) fv)) node)))
         node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
     (cond-> node
       (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
@@ -739,10 +731,8 @@
            (println "No such task:" task-name)) 1]))))
 
 (defn doc-from-task
-  "The task's `:doc`, or the `:doc` in the `:org.babashka/cli` metadata of the fn
-  it points at, or its docstring. A doc is best-effort: deriving it loads the
-  fn's namespace, which can fail on a stale bb.edn, and neither `bb tasks` nor
-  completion may die over a missing docstring."
+  "Returns the task's `:doc`, or the `:doc` of the fn it points at.
+  Returns nil if the fn's namespace fails to load."
   [sci-ctx tasks task]
   (or (:doc task)
       (when-let [fn-sym (some #(when (qualified-symbol? %) %)
@@ -762,14 +752,14 @@
 (try (require '%s)
   ;; on failure, the namespace might have been an alias so we require other namespaces
   (catch Exception _ %s))
-(let [m (meta (resolve '%s))] (or (:doc (:org.babashka/cli m)) (:doc m))))"
+(meta (resolve '%s)))"
                            (add-deps-form (:extra-paths task) (:extra-deps task))
                            (namespace fn-sym)
                            (if (seq requires)
                              (list* 'require requires)
                              "")
                            fn-sym)]
-          (try (sci/eval-string* sci-ctx prog)
+          (try (:doc (fold-fn-meta (sci/eval-string* sci-ctx prog) {}))
                (catch Exception _ nil))))))
 
 (defn key-order [edn]

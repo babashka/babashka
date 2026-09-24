@@ -9,7 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- [#2170](https://github.com/babashka/babashka/issues/2170): A var as `:exec-fn` or `:fn` in a task `:cmd` tree contributes its docstring and `:org.babashka/cli` metadata. A `:doc` in that metadata takes precedence over the docstring
+- [#2170](https://github.com/babashka/babashka/issues/2170): Read the docstring and `:org.babashka/cli` metadata of a var as `:exec-fn` or `:fn` in a task `:cmd` tree
+- [#2170](https://github.com/babashka/babashka/issues/2170): A `:doc` in a task handler's `:org.babashka/cli` metadata takes precedence over its docstring
 
 ## 1.13.224 (2026-09-23)
 
