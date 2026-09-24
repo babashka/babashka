@@ -22,6 +22,14 @@
       :eof nil}
      ret)))
 
+(defn- run-exit [task & args]
+  (bb "-cp" "test-resources" "-e"
+      (format "(require '[babashka.cli :as cli])
+                (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
+                          *command-line-args* %s]
+                  (babashka.tasks/run '%s))"
+              (pr-str (vec args)) task)))
+
 (deftest deps-test
   (test-utils/with-config '{:deps {medley/medley {:mvn/version "1.3.0"}}}
     (is (= '{1 {:id 1}, 2 {:id 2}}
@@ -975,6 +983,37 @@ even more stuff here\"
         (is (str/includes? help "--message"))
         (testing "the fn's docstring shows as the command doc"
           (is (str/includes? help "Lock deployment"))))))
+  (testing "a var as :exec-fn contributes its docstring and :org.babashka/cli metadata"
+    (test-utils/with-config '{:tasks {db {:cmd babashka.tasks-cli/var-tree}}}
+      (is (= {:count 10 :ran :seed}
+             (bb "-cp" "test-resources" "db" "seed")))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "db" "--help")
+                         "Seed the database"))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "db" "seed" "--help")
+                         "--count"))
+      (testing ":require applies"
+        (is (= {:exit 1 :cause :require}
+               (run-exit 'db "deploy")))
+        (testing "in a nested :cmd"
+          (is (= {:exit 1 :cause :require}
+                 (run-exit 'db "helper" "local")))))
+      (testing "help prefers :doc in :org.babashka/cli over the docstring for a var and a symbol"
+        (let [help (test-utils/bb nil "-cp" "test-resources" "db" "--help")]
+          (is (not (str/includes? help "Get credentials")))
+          (is (= 2 (count (re-seq #"Inline doc" help))))))
+      (testing "completion"
+        (let [complete #(apply test-utils/bb nil "-cp" "test-resources"
+                               "org.babashka.cli/completions" "complete"
+                               "--shell" "zsh" "--" "db" %&)]
+          (testing "describes a var and a symbol with the :doc in :org.babashka/cli"
+            (let [out (complete "cre")]
+              (is (str/includes? out "creds\tInline doc"))
+              (is (str/includes? out "creds-sym\tInline doc"))
+              (is (not (str/includes? out "Get credentials")))))
+          (testing "offers the options of a var"
+            (is (str/includes? (complete "seed" "--") "--count")))
+          (testing "offers the options of a var in a nested :cmd"
+            (is (str/includes? (complete "helper" "local" "--") "--env")))))))
   (testing "ns-level :org.babashka/cli metadata merges under fn metadata (like bb -x)"
     (test-utils/with-config '{:tasks {go {:exec-fn babashka.tasks-cli-ns/go}}}
       (testing "ns spec and fn spec both parse"
@@ -982,11 +1021,7 @@ even more stuff here\"
                (bb "-cp" "test-resources" "go" "--port" "1" "--verbose"))))
       (testing "ns-level :restrict applies"
         (is (= {:exit 1 :cause :restrict}
-               (bb "-cp" "test-resources" "-e"
-                   "(require '[babashka.cli :as cli])
-                    (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
-                              *command-line-args* [\"--nope\"]]
-                      (babashka.tasks/run (quote go)))"))))))
+               (run-exit 'go "--nope"))))))
   (testing "a vector of [name command] pairs keeps the order it was written in"
     ;; more than 8 commands: an edn map would already have lost its order
     (test-utils/with-config '{:tasks {big {:cmd [["kilo" {:fn clojure.core/prn}]
@@ -1009,7 +1044,11 @@ even more stuff here\"
   (testing "bb tasks derives a doc from a fn on the task's :extra-paths"
     (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
-      (is (str/includes? (test-utils/bb nil "tasks") "Deploy it"))))
+      (is (str/includes? (test-utils/bb nil "tasks") "Deploy it")))
+    (testing "and prefers :doc in :org.babashka/cli over the docstring"
+      (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
+                                             :exec-fn babashka.tasks-cli/creds}}}
+        (is (str/includes? (test-utils/bb nil "tasks") "Inline doc")))))
   (testing "a task :cli may name a var, like the runner-level one"
     (test-utils/with-config '{:tasks {foo {:cli babashka.tasks-cli/base-opts
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
@@ -1118,18 +1157,10 @@ even more stuff here\"
                (bb "-cp" "test-resources" "foo" "--port" "8080"))))
       (testing "an unknown option errors via the default :restrict"
         (is (= {:exit 1 :cause :restrict}
-               (bb "-cp" "test-resources" "-e"
-                   "(require '[babashka.cli :as cli])
-                    (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
-                              *command-line-args* [\"--nope\"]]
-                      (babashka.tasks/run (quote foo)))"))))
+               (run-exit 'foo "--nope"))))
       (testing "a stray positional errors via the default :restrict-args"
         (is (= {:exit 1 :cause :restrict-args}
-               (bb "-cp" "test-resources" "-e"
-                   "(require '[babashka.cli :as cli])
-                    (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
-                              *command-line-args* [\"prod\" \"extra\"]]
-                      (babashka.tasks/run (quote dep)))"))))))
+               (run-exit 'dep "prod" "extra"))))))
   (testing "a symbol :cli entry resolves to a defaults var, functions included"
     (test-utils/with-config '{:tasks {:cli babashka.tasks-cli/base-opts
                                       deploy {:cmd {"go" {:exec-fn babashka.tasks-cli/deploy-x}}}
@@ -1169,9 +1200,7 @@ even more stuff here\"
   (testing "dispatch errors reach a rebound *exit-fn*"
     (test-utils/with-config '{:tasks {deps {:cmd {"x" {:fn clojure.core/prn}}}}}
       (is (= {:exit 1 :cause :input-exhausted}
-             (bb "-e" "(require '[babashka.cli :as cli])
-                       (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))]
-                         (babashka.tasks/run 'deps))")))))
+             (run-exit 'deps)))))
   (testing "a :cmd subcommand runs :depends, --help does not"
     (test-utils/with-config '{:tasks {dep {:task (println "DEP-RAN")}
                                       deps {:depends [dep]
