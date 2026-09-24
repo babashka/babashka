@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#2170](https://github.com/babashka/babashka/issues/2170): A var as `:exec-fn` or `:fn` in a task `:cmd` tree contributes its docstring and `:org.babashka/cli` metadata. A `:doc` in that metadata takes precedence over the docstring
+
 ## 1.13.224 (2026-09-23)
 
 - Bundle `clojure.data.json`

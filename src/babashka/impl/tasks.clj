@@ -202,18 +202,29 @@
 
 (defn- fold-fn-meta
   "Merges a handler var's `:org.babashka/cli` metadata into its `node`, like
-  `bb -x`: namespace metadata first, then the var's own, then its docstring,
-  with explicit node keys winning over all of it. A `:cmd` tree on the fn is
-  dropped, command trees belong in bb.edn. `var-meta` is nil when the node
-  holds a fn object rather than a symbol, which leaves the node as it is."
+  `bb -x`: namespace metadata first, then the var's own, with explicit node
+  keys winning over both. The docstring is the `:doc` if none of these sets one.
+  A `:cmd` tree on the fn is dropped, command trees belong in bb.edn.
+  Returns `node` unchanged if `var-meta` is nil."
   [var-meta node]
   (if var-meta
-    (babashka.cli/merge-opts
-     (:org.babashka/cli (meta (:ns var-meta)))
-     (dissoc (:org.babashka/cli var-meta) :cmd)
-     (when-let [d (:doc var-meta)] {:doc d})
-     node)
+    (let [node (babashka.cli/merge-opts
+                (:org.babashka/cli (meta (:ns var-meta)))
+                (dissoc (:org.babashka/cli var-meta) :cmd)
+                node)
+          doc (:doc var-meta)]
+      (if (and doc (not (:doc node)))
+        (assoc node :doc doc)
+        node))
     node))
+
+(defn- handler-meta
+  "Returns the metadata of handler `fv`.
+  A symbol `fv` is resolved with `resolve-fn` first."
+  [resolve-fn fv]
+  (if (symbol? fv)
+    (meta (resolve-fn fv))
+    (meta fv)))
 
 (defn- resolve-or-throw
   "Resolves `sym` with `resolve-fn`, reporting `what` when it names a var that
@@ -288,8 +299,7 @@
   [resolve-fn node]
   (let [merge-fn-meta (fn [node k]
                         (let [fv (k node)]
-                          (fold-fn-meta (when (symbol? fv) (meta (resolve-fn fv)))
-                                        node)))
+                          (fold-fn-meta (handler-meta resolve-fn fv) node)))
         node (-> node (merge-fn-meta :fn) (merge-fn-meta :exec-fn))]
     (cond-> node
       (:cmd node) (update :cmd map-cmd #(-resolve-cli-specs resolve-fn %)))))
@@ -427,7 +437,7 @@
                                      (resolve-or-throw resolve-fn fv
                                                        (str "Task " task-name ": cannot resolve " k " " fv))
                                      fv)]
-                       (-> (fold-fn-meta (when (symbol? fv) (meta the-var)) node)
+                       (-> (fold-fn-meta (meta the-var) node)
                            (assoc k (with-deps (with-hooks the-var) (= :fn k)))))
                      node))
         wrap (fn wrap [node]
@@ -729,10 +739,10 @@
            (println "No such task:" task-name)) 1]))))
 
 (defn doc-from-task
-  "The task's `:doc`, or the docstring of the fn it points at. A doc is
-  best-effort: deriving it loads the fn's namespace, which can fail on a stale
-  bb.edn, and neither `bb tasks` nor completion may die over a missing
-  docstring."
+  "The task's `:doc`, or the `:doc` in the `:org.babashka/cli` metadata of the fn
+  it points at, or its docstring. A doc is best-effort: deriving it loads the
+  fn's namespace, which can fail on a stale bb.edn, and neither `bb tasks` nor
+  completion may die over a missing docstring."
   [sci-ctx tasks task]
   (or (:doc task)
       (when-let [fn-sym (some #(when (qualified-symbol? %) %)
@@ -752,7 +762,7 @@
 (try (require '%s)
   ;; on failure, the namespace might have been an alias so we require other namespaces
   (catch Exception _ %s))
-(:doc (meta (resolve '%s))))"
+(let [m (meta (resolve '%s))] (or (:doc (:org.babashka/cli m)) (:doc m))))"
                            (add-deps-form (:extra-paths task) (:extra-deps task))
                            (namespace fn-sym)
                            (if (seq requires)

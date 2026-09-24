@@ -975,6 +975,45 @@ even more stuff here\"
         (is (str/includes? help "--message"))
         (testing "the fn's docstring shows as the command doc"
           (is (str/includes? help "Lock deployment"))))))
+  (testing "a var as :exec-fn contributes its docstring and :org.babashka/cli metadata"
+    (test-utils/with-config '{:tasks {db {:cmd babashka.tasks-cli/var-tree}}}
+      (is (= {:count 10 :ran :seed}
+             (bb "-cp" "test-resources" "db" "seed")))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "db" "--help")
+                         "Seed the database"))
+      (is (str/includes? (test-utils/bb nil "-cp" "test-resources" "db" "seed" "--help")
+                         "--count"))
+      (testing ":require applies"
+        (is (= {:exit 1 :cause :require}
+               (bb "-cp" "test-resources" "-e"
+                   "(require '[babashka.cli :as cli])
+                    (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
+                              *command-line-args* [\"deploy\"]]
+                      (babashka.tasks/run (quote db)))")))
+        (testing "in a nested :cmd"
+          (is (= {:exit 1 :cause :require}
+                 (bb "-cp" "test-resources" "-e"
+                     "(require '[babashka.cli :as cli])
+                      (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))
+                                *command-line-args* [\"helper\" \"local\"]]
+                        (babashka.tasks/run (quote db)))")))))
+      (testing "help prefers :doc in :org.babashka/cli over the docstring for a var and a symbol"
+        (let [help (test-utils/bb nil "-cp" "test-resources" "db" "--help")]
+          (is (not (str/includes? help "Get credentials")))
+          (is (= 2 (count (re-seq #"Inline doc" help))))))
+      (testing "completion"
+        (let [complete #(apply test-utils/bb nil "-cp" "test-resources"
+                               "org.babashka.cli/completions" "complete"
+                               "--shell" "zsh" "--" "db" %&)]
+          (testing "describes a var and a symbol with the :doc in :org.babashka/cli"
+            (let [out (complete "cre")]
+              (is (str/includes? out "creds\tInline doc"))
+              (is (str/includes? out "creds-sym\tInline doc"))
+              (is (not (str/includes? out "Get credentials")))))
+          (testing "offers the options of a var"
+            (is (str/includes? (complete "seed" "--") "--count")))
+          (testing "offers the options of a var in a nested :cmd"
+            (is (str/includes? (complete "helper" "local" "--") "--env")))))))
   (testing "ns-level :org.babashka/cli metadata merges under fn metadata (like bb -x)"
     (test-utils/with-config '{:tasks {go {:exec-fn babashka.tasks-cli-ns/go}}}
       (testing "ns spec and fn spec both parse"
@@ -1009,7 +1048,11 @@ even more stuff here\"
   (testing "bb tasks derives a doc from a fn on the task's :extra-paths"
     (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
                                            :exec-fn babashka.tasks-cli/deploy-x}}}
-      (is (str/includes? (test-utils/bb nil "tasks") "Deploy it"))))
+      (is (str/includes? (test-utils/bb nil "tasks") "Deploy it")))
+    (testing "and prefers :doc in :org.babashka/cli over the docstring"
+      (test-utils/with-config '{:tasks {foo {:extra-paths ["test-resources"]
+                                             :exec-fn babashka.tasks-cli/creds}}}
+        (is (str/includes? (test-utils/bb nil "tasks") "Inline doc")))))
   (testing "a task :cli may name a var, like the runner-level one"
     (test-utils/with-config '{:tasks {foo {:cli babashka.tasks-cli/base-opts
                                            :exec-fn babashka.tasks-cli/deploy-x}}}

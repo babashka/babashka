@@ -129,3 +129,22 @@
 
 (def ordered-tree
   '[["lock" {:fn babashka.tasks-cli/lock}]])
+
+(defn seed
+  "Seed the database"
+  {:org.babashka/cli {:spec {:count {:coerce :int :default 10 :desc "Rows"}}}}
+  [opts]
+  (prn (assoc opts :ran :seed)))
+
+(defn creds
+  "Get credentials"
+  {:org.babashka/cli {:doc "Inline doc"}}
+  [opts]
+  (prn opts))
+
+(def var-tree
+  {"seed" {:exec-fn #'seed}
+   "deploy" {:exec-fn #'deploy-x}
+   "creds" {:exec-fn #'creds}
+   "creds-sym" {:exec-fn 'babashka.tasks-cli/creds}
+   "helper" {:cmd {"local" {:exec-fn #'deploy-x}}}})
