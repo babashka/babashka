@@ -30,10 +30,15 @@ export BABASHKA_PRELOADS_TEST=true
 echo "running tests part 3"
 lein test :only babashka.main-test/preloads-file-location-test
 
+export BABASHKA_PRELOADS='(babashka.fs/create-dirs "target/preload-dep/src") (spit "target/preload-dep/deps.edn" "{}") (spit "target/preload-dep/src/preload_dep.clj" "(ns preload-dep)")'
+export BABASHKA_PRELOADS_TEST=true
+echo "running tests part 4"
+lein test :only babashka.main-test/preloads-before-deps-test
+
 export BABASHKA_PRELOADS="(require '[env-ns])"
 export BABASHKA_CLASSPATH_TEST=true
 export BABASHKA_CLASSPATH="test-resources/babashka/src_for_classpath_test/env"
-echo "running tests part 4"
+echo "running tests part 5"
 lein test :only babashka.classpath-test/classpath-env-test
 
 export BABASHKA_POD_TEST=true

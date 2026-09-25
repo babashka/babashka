@@ -1,0 +1,1 @@
+{:deps {preload/dep {:local/root "target/preload-dep"}}}

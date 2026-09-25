@@ -289,6 +289,15 @@
   (when (System/getenv "BABASHKA_PRELOADS_TEST")
     (is (= "foobar" (bb nil "(str (__bb__foo) (__bb__bar))")))))
 
+(deftest preloads-before-deps-test
+  ;; THIS TEST REQUIRES:
+  ;; export BABASHKA_PRELOADS='(babashka.fs/create-dirs "target/preload-dep/src") (spit "target/preload-dep/deps.edn" "{}") (spit "target/preload-dep/src/preload_dep.clj" "(ns preload-dep)")'
+  (when (System/getenv "BABASHKA_PRELOADS_TEST")
+    (fs/delete-tree "target/preload-dep")
+    (testing "a :local/root dep created by BABASHKA_PRELOADS resolves"
+      (is (= 'preload-dep (bb nil "--config" "test-resources/babashka/preloads_before_deps/bb.edn" "--deps-root" "."
+                               "-Sforce" "-e" "(require 'preload-dep) (ns-name (find-ns 'preload-dep))"))))))
+
 (deftest io-test
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
   (is (true? (bb nil "(.canWrite (io/file \"README.md\"))"))))

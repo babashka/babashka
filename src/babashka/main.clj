@@ -1102,6 +1102,16 @@ Use bb run --help to show this help output.
             opts (addons/future opts)
             sci-ctx (sci/init opts)
             _ (ctx-store/reset-ctx! sci-ctx)
+            preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
+            _ (when preloads
+                (sci/binding [sci/file "<preloads>"]
+                  (try
+                    (sci/eval-string* sci-ctx preloads)
+                    (catch Throwable e
+                      (error-handler e {:debug debug
+                                        :preloads preloads
+                                        :init init
+                                        :loader @cp/the-url-loader})))))
             ;; when classpath isn't set, we calculate it from bb.edn, if
             ;; present. After the context exists: with tools.deps in the
             ;; image the resolver runs interpreted, through the context.
@@ -1119,7 +1129,6 @@ Use bb run --help to show this help output.
                 (when-let [pod-metadata (pods/load-pods-metadata
                                          pods {:download-only (download-only?)})]
                   (vreset! pod-namespaces pod-metadata)))
-            preloads (some-> (System/getenv "BABASHKA_PRELOADS") (str/trim))
             [expressions exit-code]
             (cond expressions [expressions nil]
                   main
@@ -1153,20 +1162,6 @@ Use bb run --help to show this help output.
                                                 :init init
                                                 :loader @cp/the-url-loader}))))
             expression (str/join " " expressions) ;; this might mess with the locations...
-            exit-code
-            ;; handle preloads
-            (if exit-code exit-code
-                (do (when preloads
-                      (sci/binding [sci/file "<preloads>"]
-                        (try
-                          (sci/eval-string* sci-ctx preloads)
-                          (catch Throwable e
-                            (error-handler e {:expression expression
-                                              :debug debug
-                                              :preloads preloads
-                                              :init init
-                                              :loader @cp/the-url-loader})))))
-                    nil))
             exit-code
             ;; handle --init
             (if exit-code exit-code
