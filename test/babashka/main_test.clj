@@ -291,22 +291,12 @@
 
 (deftest preloads-before-deps-test
   ;; THIS TEST REQUIRES:
-  ;; export BABASHKA_PRELOADS_HOME=<empty dir>
-  ;; export BABASHKA_PRELOADS='(System/setProperty "user.home" (System/getenv "BABASHKA_PRELOADS_HOME"))'
-  (when-let [home (System/getenv "BABASHKA_PRELOADS_HOME")]
-    (let [artifact-dir (fs/path home ".m2" "repository" "preloads" "dep" "1.0.0")
-          project-dir (fs/path home "project")]
-      (fs/create-dirs artifact-dir)
-      (fs/create-dirs project-dir)
-      (spit (fs/file artifact-dir "dep-1.0.0.pom")
-            "<project><modelVersion>4.0.0</modelVersion><groupId>preloads</groupId><artifactId>dep</artifactId><version>1.0.0</version></project>")
-      (with-open [zip (java.util.zip.ZipOutputStream. (io/output-stream (fs/file artifact-dir "dep-1.0.0.jar")))]
-        (.putNextEntry zip (java.util.zip.ZipEntry. "preloads_dep.clj"))
-        (.write zip (.getBytes "(ns preloads-dep) (def x :resolved)")))
-      (spit (fs/file project-dir "bb.edn") "{:deps {preloads/dep {:mvn/version \"1.0.0\"}}}")
-      (testing "a user.home set by BABASHKA_PRELOADS locates the local repository"
-        (is (= :resolved (bb nil "--config" (str (fs/path project-dir "bb.edn")) "--deps-root" (str project-dir)
-                             "-Sforce" "-e" "(require 'preloads-dep) preloads-dep/x")))))))
+  ;; export BABASHKA_PRELOADS='(babashka.fs/create-dirs "target/preload-dep/src") (spit "target/preload-dep/deps.edn" "{}") (spit "target/preload-dep/src/preload_dep.clj" "(ns preload-dep)")'
+  (when (System/getenv "BABASHKA_PRELOADS_TEST")
+    (fs/delete-tree "target/preload-dep")
+    (testing "a :local/root dep created by BABASHKA_PRELOADS resolves"
+      (is (= 'preload-dep (bb nil "--config" "test-resources/babashka/preloads_before_deps/bb.edn" "--deps-root" "."
+                               "-Sforce" "-e" "(require 'preload-dep) (ns-name (find-ns 'preload-dep))"))))))
 
 (deftest io-test
   (is (true? (bb nil "(.exists (io/file \"README.md\"))")))
