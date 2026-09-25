@@ -3,6 +3,7 @@
   {:no-doc true}
   (:require [babashka.fs :as fs]
             [babashka.http-client :as http]
+            [babashka.impl.mvn.ssl :as ssl]
             [clojure.java.io :as io]
             [clojure.string :as str])
   (:import [java.security MessageDigest]))
@@ -13,22 +14,24 @@
     (print (str (str/join " " xs) "\n"))
     (flush)))
 
-(def ^:private proxy-clients (atom {}))
+(def ^:private clients (atom {}))
 
 (defn- client-for
-  "An http client that goes through proxy, one per proxy for the process.
+  "An http client that goes through proxy and uses ssl-context, one per pair
+  for the process. Either may be nil.
   Credentials go through an Authenticator, and the JDK's ban on Basic
   authentication for CONNECT tunnels is lifted for them, as Maven's own
   transport allows it."
-  [{:keys [host port username password] :as proxy}]
-  (or (get @proxy-clients proxy)
+  [{:keys [host port username password] :as proxy} ssl-context]
+  (or (get @clients [proxy ssl-context])
       (let [credentials? (and username password)
             _ (when credentials?
                 (System/setProperty "jdk.http.auth.tunneling.disabledSchemes" ""))
-            client (http/client (cond-> {:proxy {:host host :port port}
-                                         :follow-redirects :normal}
-                                  credentials? (assoc :authenticator {:user username :pass password})))]
-        (swap! proxy-clients assoc proxy client)
+            client (http/client (cond-> {:follow-redirects :normal}
+                                  proxy (assoc :proxy {:host host :port port})
+                                  credentials? (assoc :authenticator {:user username :pass password})
+                                  ssl-context (assoc :ssl-context ssl-context)))]
+        (swap! clients assoc [proxy ssl-context] client)
         client)))
 
 ;; The bundled tools.deps; script/vendor_bundled_sources.clj keeps it current.
@@ -45,15 +48,16 @@
 (defn- request-opts
   "Returns request options for a repository's :auth, :proxy and :headers."
   [{:keys [auth proxy headers]}]
-  (cond-> {:as :stream
-           :throw false
-           :follow-redirects :normal
-           :timeout 120000
-           :headers (merge (when-not (some #(.equalsIgnoreCase "User-Agent" ^String %) (keys headers))
-                             {"User-Agent" (user-agent)})
-                           headers)}
-    auth (assoc :basic-auth auth)
-    proxy (assoc :client (client-for proxy))))
+  (let [ssl-context (ssl/ssl-context)]
+    (cond-> {:as :stream
+             :throw false
+             :follow-redirects :normal
+             :timeout 120000
+             :headers (merge (when-not (some #(.equalsIgnoreCase "User-Agent" ^String %) (keys headers))
+                               {"User-Agent" (user-agent)})
+                             headers)}
+      auth (assoc :basic-auth auth)
+      (or proxy ssl-context) (assoc :client (client-for proxy ssl-context)))))
 
 (defn- root-message
   "Returns the message of the innermost cause, or nil."

@@ -11,6 +11,8 @@ A preview of the next release can be installed from
 
 - [#2170](https://github.com/babashka/babashka/issues/2170): Read the docstring and `:org.babashka/cli` metadata of a var as `:exec-fn` or `:fn` in a task `:cmd` tree
 - [#2170](https://github.com/babashka/babashka/issues/2170): A `:doc` in a task handler's `:org.babashka/cli` metadata takes precedence over its docstring
+- Dep resolution reads `javax.net.ssl` trust and key store properties from `CLJ_JVM_OPTS` and `JAVA_TOOL_OPTIONS`
+- Dep resolution honors `-Djavax.net.ssl.trustStoreType=KeychainStore` on macOS
 
 ## 1.13.224 (2026-09-23)
 
