@@ -3,6 +3,7 @@
   {:no-doc true}
   (:require [babashka.fs :as fs]
             [babashka.http-client :as http]
+            [babashka.impl.mvn.env :as env]
             [clojure.java.io :as io]
             [clojure.string :as str])
   (:import [java.security MessageDigest]))
@@ -42,9 +43,19 @@
       (str "babashka/" (or (System/getProperty "babashka.version") "unknown")
            " tools.deps/" tools-deps-version)))
 
+(defn- set-ssl-properties!
+  "Sets the javax.net.ssl system properties given as -D options in CLJ_JVM_OPTS.
+  A property that is already set keeps its value."
+  []
+  (doseq [opt (str/split (str/trim (or (env/getenv "CLJ_JVM_OPTS") "")) #"\s+")
+          :let [[_ k v] (re-matches #"-D(javax\.net\.ssl\.[^=]+)=(.*)" opt)]
+          :when (and k (nil? (System/getProperty k)))]
+    (System/setProperty k v)))
+
 (defn- request-opts
   "Returns request options for a repository's :auth, :proxy and :headers."
   [{:keys [auth proxy headers]}]
+  (set-ssl-properties!)
   (cond-> {:as :stream
            :throw false
            :follow-redirects :normal

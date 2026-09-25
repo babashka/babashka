@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - [#2170](https://github.com/babashka/babashka/issues/2170): Read the docstring and `:org.babashka/cli` metadata of a var as `:exec-fn` or `:fn` in a task `:cmd` tree
 - [#2170](https://github.com/babashka/babashka/issues/2170): A `:doc` in a task handler's `:org.babashka/cli` metadata takes precedence over its docstring
+- Dep resolution reads `javax.net.ssl` system properties from `-D` options in `CLJ_JVM_OPTS`
 
 ## 1.13.224 (2026-09-23)
 
