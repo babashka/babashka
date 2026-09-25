@@ -13,6 +13,7 @@ java -version
 unset BABASHKA_PRELOADS
 unset BABASHKA_CLASSPATH
 unset BABASHKA_PRELOADS_TEST
+unset BABASHKA_PRELOADS_HOME
 
 echo "running tests part 1"
 lein "do" clean, test "$@"
@@ -30,10 +31,17 @@ export BABASHKA_PRELOADS_TEST=true
 echo "running tests part 3"
 lein test :only babashka.main-test/preloads-file-location-test
 
+BABASHKA_PRELOADS_HOME="$(mktemp -d)"
+export BABASHKA_PRELOADS_HOME
+export BABASHKA_PRELOADS='(System/setProperty "user.home" (System/getenv "BABASHKA_PRELOADS_HOME"))'
+echo "running tests part 4"
+lein test :only babashka.main-test/preloads-before-deps-test
+unset BABASHKA_PRELOADS_HOME
+
 export BABASHKA_PRELOADS="(require '[env-ns])"
 export BABASHKA_CLASSPATH_TEST=true
 export BABASHKA_CLASSPATH="test-resources/babashka/src_for_classpath_test/env"
-echo "running tests part 4"
+echo "running tests part 5"
 lein test :only babashka.classpath-test/classpath-env-test
 
 export BABASHKA_POD_TEST=true
