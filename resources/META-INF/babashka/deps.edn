@@ -20,7 +20,7 @@
          "impl-java/src"],
  :deps {org.clojure/clojure {:mvn/version "1.12.6"},
         org.babashka/sci {:local/root "sci"}
-        org.babashka/babashka.impl.java {:mvn/version "0.1.21"}
+        org.babashka/babashka.impl.java {:mvn/version "0.1.22"}
         org.babashka/sci.impl.types {:mvn/version "0.0.3"}
         babashka/babashka.curl {:local/root "babashka.curl"}
         babashka/fs {:local/root "fs"}
@@ -54,11 +54,11 @@
         org.flatland/ordered {:mvn/version "1.15.12"}
         org.jsoup/jsoup {:mvn/version "1.23.2"}
         io.github.nextjournal/markdown {:mvn/version "0.7.225"}
-        org.jline/jline-terminal-ffm {:mvn/version "4.4.0"}
-        org.jline/jline-terminal {:mvn/version "4.4.0"
+        org.jline/jline-terminal-ffm {:mvn/version "4.4.5"}
+        org.jline/jline-terminal {:mvn/version "4.4.5"
                                   :exclusions [;; this saves 1mb of native-image size
                                                org.jline/jline-native]}
-        org.jline/jline-reader {:mvn/version "4.4.0"}}
+        org.jline/jline-reader {:mvn/version "4.4.5"}}
  :aliases {:babashka/dev
            {:extra-deps {babashka/babashka {:local/root "."}}
             :main-opts ["-m" "babashka.main"]

@@ -263,6 +263,21 @@
                            (setErrorIndex [_ _index]))]
                   (str (.highlight hl nil "hello"))))))))
 
+(deftest jline-reify-signal-handler-test
+  (testing "Terminal$SignalHandler receives a raised WINCH"
+    (is (= "WINCH"
+           (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+                                   (.dumb true)
+                                   (.streams (java.io.ByteArrayInputStream. (byte-array 0))
+                                             (java.io.ByteArrayOutputStream.))
+                                   (.build))
+                      received (atom nil)]
+                  (.handle terminal org.jline.terminal.Terminal$Signal/WINCH
+                           (reify org.jline.terminal.Terminal$SignalHandler
+                             (handle [_ signal] (reset! received (str signal)))))
+                  (.raise terminal org.jline.terminal.Terminal$Signal/WINCH)
+                  @received))))))
+
 (deftest jline-linereader-option-test
   (testing "LineReader$Option enum values are accessible"
     (is (true? (bb '(some? (org.jline.reader.LineReader$Option/valueOf "HISTORY_BEEP")))))))
