@@ -695,7 +695,11 @@
                                      "://127.0.0.1:"
                                      (:port *server*)))]
     (transport/send conn {:op "eval" :code "(+ 1 1)"})
-    (is (= [2] (response-values (response-seq conn 100))))))
+    ;; BB-TEST-PATCH stop at the :done message instead of a 100 ms idle
+    ;; timeout, which a slow runner exceeds
+    (is (= [2] (->> (response-seq conn 10000)
+                    (take-while #(not (:status %)))
+                    response-values)))))
 
 (deftest test-ack
   (with-server [s (server/start-server :transport-fn *transport-fn*
