@@ -13,6 +13,7 @@ A preview of the next release can be installed from
 - [#2170](https://github.com/babashka/babashka/issues/2170): A `:doc` in a task handler's `:org.babashka/cli` metadata takes precedence over its docstring
 - Run `BABASHKA_PRELOADS` before resolving `bb.edn` dependencies
 - Add `org.jline.terminal.Terminal$Signal` and allow `reify` of `org.jline.terminal.Terminal$SignalHandler`
+- Bump jline to `4.4.6`
 
 ## 1.13.224 (2026-09-23)
 
