@@ -850,6 +850,7 @@
           org.jline.reader.EOFError
           org.jline.keymap.KeyMap
           org.jline.keymap.BindingReader
+          org.jline.terminal.Terminal$Signal
           org.jline.terminal.Terminal$SignalHandler
           org.jline.terminal.spi.TerminalProvider
           org.jline.terminal.spi.TerminalExt ;; cast Terminal to this and then .getProvider

@@ -1,7 +1,7 @@
 {:deps {org.babashka/sci.impl.types {:mvn/version "0.0.3"}}
  :aliases
  {:neil {:project {:name org.babashka/babashka.impl.java
-                   :version "0.1.21"}}
+                   :version "0.1.22"}}
   ;; the reify classes are generated with insn, which needs ASM on a JVM
   :build
   {:paths ["." "build" "src"]
