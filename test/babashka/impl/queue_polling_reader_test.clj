@@ -22,7 +22,7 @@
         request (fn [] (or (.poll q) (do (swap! asked inc) (.take q))))
         r (LineNumberingPushbackReader. (QueuePollingReader. q request))
         form (future (read r))]
-    (Thread/sleep 20)
+    (while (zero? @asked) (Thread/sleep 1))
     (locking q (.addAll q (slow-chunk ":ohai\n")))
     (is (= :ohai (deref form 3000 :timeout)))
     @asked))
