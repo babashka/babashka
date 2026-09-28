@@ -809,6 +809,7 @@
           org.jsoup.nodes.Comment
           org.jsoup.nodes.DataNode
           org.jsoup.nodes.Document
+          org.jsoup.nodes.Document$OutputSettings
           org.jsoup.nodes.DocumentType
           org.jsoup.nodes.Element
           org.jsoup.nodes.Node

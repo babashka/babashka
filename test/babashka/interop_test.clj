@@ -315,7 +315,15 @@
   (testing "jsoup Element"
     (is (= "form" (bb nil "(.tagName (first (.getElementsByTag (org.jsoup.Jsoup/parseBodyFragment \"<form></form>\") \"form\")))"))))
   (testing "jsoup Elements via select"
-    (is (= "1" (bb nil "(.text (.first (.select (org.jsoup.Jsoup/parse \"<ul><li>1</li><li>2</li></ul>\") \"ul>li\")))")))))
+    (is (= "1" (bb nil "(.text (.first (.select (org.jsoup.Jsoup/parse \"<ul><li>1</li><li>2</li></ul>\") \"ul>li\")))"))))
+  (testing "jsoup OutputSettings sets indentAmount and outline"
+    (is (= "<p>\n  <span>x</span>\n</p>"
+           (bb nil "(let [doc (org.jsoup.Jsoup/parseBodyFragment \"<p><span>x</span></p>\")
+                          s (.outputSettings doc)]
+                      (.prettyPrint s true)
+                      (.indentAmount s 2)
+                      (.outline s true)
+                      (.html (.body doc)))")))))
 
 (deftest cached-thread-pool
   (is (= 3 (bb nil "(import '(java.util.concurrent Executors ExecutorService))
