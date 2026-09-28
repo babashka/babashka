@@ -15,6 +15,7 @@ A preview of the next release can be installed from
 - Add `org.jline.terminal.Terminal$Signal` and allow `reify` of `org.jline.terminal.Terminal$SignalHandler`
 - Add `org.jsoup.nodes.Document$OutputSettings`
 - Bump jline to `4.4.6`
+- Bump rewrite-clj to `1.3.58`
 
 ## 1.13.224 (2026-09-23)
 
