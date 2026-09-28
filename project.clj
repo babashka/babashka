@@ -38,7 +38,7 @@
                  [org.clojure/test.check "1.1.1"]
                  [com.github.clj-easy/graal-build-time "1.0.5"]
                  [org.babashka/impl-graal-features "0.0.1"]
-                 [rewrite-clj/rewrite-clj "1.2.57"]
+                 [rewrite-clj/rewrite-clj "1.3.58"]
                  [insn/insn "0.5.4"]
                  [org.babashka/cli "0.12.91"]
                  [org.babashka/http-client "0.4.25"]
