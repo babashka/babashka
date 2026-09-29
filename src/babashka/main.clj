@@ -853,6 +853,18 @@ Use bb run --help to show this help output.
                (command? opt)
                (recur (cons (str "--" opt) (next options)) opts-map)
 
+               ;; An unknown name runs the `:default` task, as a task of that
+               ;; name: it is added to the task map under the name, so :depends,
+               ;; --help, completion and (current-task) see an ordinary task.
+               ;; A dotted or qualified name, an option or an expression keeps
+               ;; its meaning: those are files, vars and code, not task names.
+               (and (contains? task-map :default)
+                    (re-matches #"[a-zA-Z_][a-zA-Z0-9_:!?*+<>=-]*" opt))
+               (do (vswap! common/bb-edn assoc-in [:tasks (symbol opt)] (:default task-map))
+                   (assoc opts-map
+                          :run opt
+                          :command-line-args (next options)))
+
                :else
                (parse-args options opts-map))))))
 

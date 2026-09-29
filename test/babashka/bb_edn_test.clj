@@ -332,6 +332,27 @@
       (is (thrown-with-msg? Exception #"Cannot run program .* \(in directory \"\.\.[/\\]missingdir\"\)"
                             (bb "run" "foo"))))))
 
+(deftest default-task-test
+  (testing "an unknown name runs :default as a task of that name"
+    (test-utils/with-config '{:tasks {foo 1
+                                      dep (def x 10)
+                                      :default {:depends [dep]
+                                                :task [(:name (current-task)) x *command-line-args*]}}}
+      (is (= 1 (bb "--prn" "foo")))
+      (is (= '[bar 10 ("a" "b")] (bb "--prn" "bar" "a" "b")))
+      (is (not (str/includes? (test-utils/bb nil "tasks") "default")))))
+  (testing "only the name on the command line falls through"
+    (test-utils/with-config '{:tasks {foo (run 'typo)
+                                      :default {:task 1}}}
+      (is (thrown-with-msg? Exception #"No such task: typo" (bb "foo")))
+      (is (thrown-with-msg? Exception #"No such task: bar" (bb "run" "bar")))))
+  (testing "a file name and a qualified symbol keep their meaning"
+    (test-utils/with-config '{:tasks {:default {:task 1}}}
+      (is (thrown-with-msg? Exception #"File does not exist: bar.clj" (bb "bar.clj")))))
+  (testing "without :default an unknown name is still a file"
+    (test-utils/with-config '{:tasks {foo 1}}
+      (is (thrown-with-msg? Exception #"File does not exist: bar" (bb "bar"))))))
+
 (deftest list-tasks-test
   (test-utils/with-config {}
     (let [res (test-utils/bb nil "tasks")]

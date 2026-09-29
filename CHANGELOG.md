@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#1219](https://github.com/babashka/babashka/issues/1219): A `:default` task in `:tasks` runs for a name that is not a task, a file or a built-in command, as a task of that name: `(current-task)` names it, `*command-line-args*` carries the rest, and `:depends`, `:enter`/`:leave`, `--help` and completion treat it like any other task. A dotted or qualified name keeps its meaning, and `bb run <name>` and `(run '<name>)` still require the task to exist
+
 ## 1.13.225 (2026-09-28)
 
 - [#2170](https://github.com/babashka/babashka/issues/2170): Read the docstring and `:org.babashka/cli` metadata of a var as `:exec-fn` or `:fn` in a task `:cmd` tree
