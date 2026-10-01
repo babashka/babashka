@@ -536,3 +536,9 @@
 (let [v (volatile! false)]
   (with-open [_ (reify AutoCloseable (close [_] (vreset! v true)))])
   @v)"))))
+
+(deftest class-for-name-test
+  (testing "Class/forName with a name returns the class"
+    (is (= "java.lang.String" (bb nil "(.getName (Class/forName \"java.lang.String\"))"))))
+  (testing "Class/forName with a name, false and nil returns the class"
+    (is (= "java.lang.String" (bb nil "(.getName (Class/forName \"java.lang.String\" false nil))")))))

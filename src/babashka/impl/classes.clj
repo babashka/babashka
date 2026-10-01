@@ -982,14 +982,6 @@
                  (for [c classes
                        c [(list 'quote c)
                           (cond-> `{:class ~c}
-                            (= 'java.lang.Class c)
-                            (assoc :static-methods
-                                   {(list 'quote 'forName)
-                                    `(fn
-                                       ([_# ^String class-name#]
-                                        (Class/forName class-name#))
-                                       ([_# ^String class-name# initialize# ^java.lang.ClassLoader clazz-loader#]
-                                        (Class/forName class-name#)))})
                             (= 'clojure.lang.Compiler c)
                             (assoc :static-methods
                                    {(list 'quote 'load)
@@ -1181,14 +1173,6 @@
   (gen-class-map))
 
 ;; (prn :class-map* class-map*)
-
-#_(let [class-name (str c)]
-    (cond-> (Class/forName class-name)
-      (= "java.lang.Class" class-name)
-      (->> (hash-map :static-methods {'forName (fn [class-name]
-                                                 (prn :class-for)
-                                                 (Class/forName class-name))}
-                     :class))))
 
 (def class-map
   "A delay to delay initialization of java-net-http classes to run time, since GraalVM 22.1"
