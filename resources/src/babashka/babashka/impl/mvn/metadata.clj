@@ -229,9 +229,13 @@
          installed (let [f (fs/file local-repo rel "maven-metadata-local.xml")]
                      (when (fs/exists? f)
                        (parsed parse-artifact-metadata (slurp f))))
+         ;; a repository lists only the kinds of version its policies enable
+         served? (fn [repo version]
+                   (get-in repo [(if (coords/snapshot? version) :snapshots :releases) :enabled]))
          found (concat (keep (fn [repo]
                                (when-let [policy (metadata-policy repo nature)]
-                                 (parsed parse-artifact-metadata (cached-text! local-repo repo rel policy 0))))
+                                 (some-> (parsed parse-artifact-metadata (cached-text! local-repo repo rel policy 0))
+                                         (update :versions #(filterv (partial served? repo) %)))))
                              repos)
                        (when installed [installed]))]
      {:versions (->> found

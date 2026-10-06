@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - Add `babashka.deps.mvn` with `find-versions`, `with-repository-credentials`, `active-proxy` and `model-repos`
 - Add `read-model-file` to `clojure.tools.deps.extensions.pom`
 - Put the repositories of active POM profiles ahead of the POM's own, the last active profile first
+- List a version from a repository only if its `:releases` or `:snapshots` policy for that kind of version is enabled, for `find-versions` and version ranges
 
 ## 1.13.225 (2026-09-28)
 
