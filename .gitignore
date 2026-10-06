@@ -43,3 +43,4 @@ bb-markdown
 .clj-kondo/metosin/malli-types-clj/config.edn
 .claude/settings.local.json
 .libffi
+!script/mvn_oracle/models/**/pom.xml

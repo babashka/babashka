@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>m</groupId><artifactId>own-central</artifactId><version>1</version>
+  <repositories>
+    <repository><id>central</id><url>https://mirror.example.com/maven2</url></repository>
+  </repositories>
+</project>

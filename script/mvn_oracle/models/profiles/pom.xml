@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>m</groupId><artifactId>profiles</artifactId><version>1</version>
+  <dependencies><dependency><groupId>foo</groupId><artifactId>base</artifactId><version>1</version></dependency></dependencies>
+  <profiles>
+    <profile><id>by-default</id><activation><activeByDefault>true</activeByDefault></activation>
+      <repositories><repository><id>by-default</id><url>https://default.example.com/repo</url></repository></repositories></profile>
+    <profile><id>new-jdk</id><activation><jdk>[1.8,)</jdk></activation>
+      <dependencies><dependency><groupId>foo</groupId><artifactId>jdk</artifactId><version>1</version></dependency></dependencies>
+      <repositories><repository><id>new-jdk</id><url>https://jdk.example.com/repo</url></repository></repositories></profile>
+    <profile><id>old-jdk</id><activation><jdk>[1.5,1.6)</jdk></activation>
+      <repositories><repository><id>old-jdk</id><url>https://oldjdk.example.com/repo</url></repository></repositories></profile>
+    <profile><id>mac</id><activation><os><family>mac</family></os></activation>
+      <dependencies><dependency><groupId>foo</groupId><artifactId>base</artifactId><version>2</version></dependency><dependency><groupId>foo</groupId><artifactId>mac</artifactId><version>1</version></dependency></dependencies>
+      <repositories><repository><id>mac</id><url>https://mac.example.com/repo</url></repository></repositories></profile>
+    <profile><id>windows</id><activation><os><family>windows</family></os></activation>
+      <repositories><repository><id>windows</id><url>https://windows.example.com/repo</url></repository></repositories></profile>
+    <profile><id>no-prop</id><activation><property><name>!antq.nope</name></property></activation>
+      <repositories><repository><id>no-prop</id><url>https://noprop.example.com/repo</url></repository><repository><id>mac</id><url>https://mac2.example.com/repo</url></repository></repositories></profile>
+  </profiles>
+</project>
