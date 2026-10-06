@@ -134,7 +134,8 @@
 ;; have babashka.impl.mvn stand-ins, local.clj is a patched copy, two
 ;; tools.build tasks use what the image lacks, and four nREPL namespaces:
 ;; bencode delegates to the compiled bencode.core, completion to bb's own,
-;; the classloader is nil in an image, and TLS is not supported. Never copied.
+;; the classloader returns the context classloader, and TLS is not
+;; supported. Never copied.
 (def stand-ins
   #{"clojure/tools/deps/extensions/local.clj"
     "clojure/tools/deps/extensions/maven.clj"
