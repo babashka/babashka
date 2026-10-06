@@ -426,7 +426,7 @@
             (is (= ["#'user/down" ":bottom"]
                    (keep :value (send {"op" "eval" "code" "(defn down [n] (if (zero? n) :bottom (down (dec n)))) (down 5000)"}))))))))))
 
-(deftest ^:skip-windows nrepl-context-classloader-test
+(deftest nrepl-context-classloader-test
   (let [dir (fs/create-temp-dir)]
     (spit (str (fs/file dir "nrepl_cl_resource.txt")) "found")
     (with-bb-script 1675
