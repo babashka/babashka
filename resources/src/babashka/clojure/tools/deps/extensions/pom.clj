@@ -15,7 +15,9 @@
 (defn read-model-file
   "Returns the effective model of the POM in file, a parent from disk or from
   the repositories in config.
-  Throws if Maven rejects the model."
+  Throws if the modelVersion is not 4.0.0, if the model lacks a groupId,
+  artifactId or version, if a dependency lacks one of them, or if a
+  dependency of scope system lacks a systemPath."
   [file config]
   (mvn/model-from-file file config))
 

@@ -173,8 +173,9 @@
 (defn model-from-file
   "Returns the effective model of the POM in file, a parent from disk or from
   the repositories in config.
-  Throws if the modelVersion is not 4.0.0, or if the model lacks a groupId,
-  artifactId, version or dependency version."
+  Throws if the modelVersion is not 4.0.0, if the model lacks a groupId,
+  artifactId or version, if a dependency lacks one of them, or if a
+  dependency of scope system lacks a systemPath."
   [file config]
   (let [file (fs/canonicalize file)
         raw (pom/parse (slurp (fs/file file)))
@@ -191,8 +192,13 @@
       (doseq [[k tag] [[:group "groupId"] [:artifact "artifactId"] [:version "version"]]
               :when (str/blank? (get model k))]
         (invalid-model! file (str "'" tag "' is missing.")))
-      (when-let [dep (first (filter #(str/blank? (:version %)) (pom/dependencies model)))]
-        (invalid-model! file (str "'dependencies.dependency.version' for " (:group dep) ":" (:artifact dep) " is missing.")))
+      (doseq [dep (pom/dependencies model)
+              [k tag] [[:group "groupId"] [:artifact "artifactId"] [:version "version"]]
+              :when (str/blank? (get dep k))]
+        (invalid-model! file (str "'dependencies.dependency." tag "' for " (:group dep) ":" (:artifact dep) " is missing.")))
+      (when-let [dep (first (filter #(and (= "system" (:scope %)) (str/blank? (:system-path %)))
+                                    (pom/dependencies model)))]
+        (invalid-model! file (str "'dependencies.dependency.systemPath' for " (:group dep) ":" (:artifact dep) " is missing.")))
       model)))
 
 (defn- repository-policy
@@ -214,7 +220,7 @@
   ["central" {:url "https://repo.maven.apache.org/maven2" :snapshots {:enabled false}}])
 
 (defn model-repos
-  "Returns the repositories of a model as :mvn/repos data, with central last
+  "Returns the repositories of a model as :mvn/repos data, with central
   unless the model names central."
   [model]
   (let [declared (mapv (fn [{:keys [id url releases snapshots]}]
@@ -222,7 +228,7 @@
                                (repository-policy releases) (assoc :releases (repository-policy releases))
                                (repository-policy snapshots) (assoc :snapshots (repository-policy snapshots)))])
                        (:repositories model))]
-    (into (array-map)
+    (into {}
           (if (some #(= "central" (first %)) declared)
             declared
             (conj declared super-pom-central)))))

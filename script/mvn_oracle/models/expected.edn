@@ -5,6 +5,8 @@
    {:url "https://repo.maven.apache.org/maven2",
     :snapshots {:enabled false}}},
   :repo-order ["central"]},
+ "missing-dependency-artifact/pom.xml" :throws,
+ "missing-dependency-group/pom.xml" :throws,
  "missing-group/pom.xml" :throws,
  "missing-version/pom.xml" :throws,
  "model-version-3/pom.xml" :throws,
@@ -64,6 +66,7 @@
    {:url "https://repo.maven.apache.org/maven2",
     :snapshots {:enabled false}}},
   :repo-order ["no-prop" "new-jdk" "own" "central"]},
+ "system-without-path/pom.xml" :throws,
  "two-files/a.xml"
  {:deps [[foo/a {:mvn/version "1", :scope "compile"}]],
   :repos

@@ -27,6 +27,7 @@
    :type (or (x/child-text el "type") "jar")
    :classifier (x/child-text el "classifier")
    :scope (x/child-text el "scope")
+   :system-path (x/child-text el "systemPath")
    :optional (x/child-text el "optional")
    :exclusions (mapv exclusion (some-> (x/child el "exclusions") (x/children "exclusion")))})
 
