@@ -426,6 +426,20 @@
             (is (= ["#'user/down" ":bottom"]
                    (keep :value (send {"op" "eval" "code" "(defn down [n] (if (zero? n) :bottom (down (dec n)))) (down 5000)"}))))))))))
 
+(deftest ^:skip-windows nrepl-context-classloader-test
+  (let [dir (fs/create-temp-dir)]
+    (spit (str (fs/file dir "nrepl_cl_resource.txt")) "found")
+    (with-bb-script 1675
+      (str "(babashka.classpath/add-classpath " (pr-str (str dir)) ")
+            (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1675 :quiet true}))")
+      (fn []
+        (with-session 1675
+          (fn [send]
+            (testing "RT/baseLoader finds a classpath resource in an eval"
+              (is (= "\"found\""
+                     (some :value (send {"op" "eval" "code" "(slurp (.getResource (clojure.lang.RT/baseLoader) \"nrepl_cl_resource.txt\"))"})))))))))
+    (fs/delete-tree dir)))
+
 (defn- connected-repl
   "Runs a connected REPL with `input` and returns its output."
   [target input]

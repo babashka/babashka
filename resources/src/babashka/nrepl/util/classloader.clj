@@ -1,9 +1,9 @@
 (ns nrepl.util.classloader
-  "Stand-in for nREPL's nrepl.util.classloader: a native image has no
-  DynamicClassLoader, so sessions run without a context classloader.")
+  "Stand-in for nREPL's nrepl.util.classloader.
+  Returns the context classloader in place of a DynamicClassLoader.")
 
 (defn find-topmost-dcl [_classloader] nil)
 
 (defn dynamic-classloader
-  ([] nil)
-  ([_classloader] nil))
+  ([] (.getContextClassLoader (Thread/currentThread)))
+  ([classloader] classloader))
