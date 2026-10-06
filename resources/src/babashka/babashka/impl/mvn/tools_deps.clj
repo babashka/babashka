@@ -321,11 +321,17 @@
   (ex-info (str "Unable to resolve " lib " version: " (:mvn/version coord))
            {:lib lib :coord coord}))
 
-(defn all-versions
-  "Returns every version of lib in the repositories in config, snapshots
-  included, oldest first, as [{:mvn/version ...}]."
-  [lib config]
-  (mapv #(hash-map :mvn/version %) (:versions (artifact-versions lib config))))
+(defn find-versions
+  "Returns the versions of lib in the repositories in config and the local
+  repository, oldest first, as [{:mvn/version ...}], or nil if there are none.
+  Snapshot versions are left out unless snapshots? is true."
+  [lib config snapshots?]
+  (let [{:keys [versions]} (artifact-versions lib config)]
+    (when (seq versions)
+      (into []
+            (comp (remove #(and (not snapshots?) (str/ends-with? % "-SNAPSHOT")))
+                  (map #(hash-map :mvn/version %)))
+            versions))))
 
 (defmethod ext/canonicalize :mvn
   [lib {:keys [mvn/version] :as coord} config]

@@ -1,7 +1,7 @@
 #!/usr/bin/env bb
-;; babashka.deps.mvn: credentials bound by the caller, the active proxy and
-;; the repositories of a POM model, the last against the JVM's answers in
-;; models/expected.edn.
+;; babashka.deps.mvn: versions, credentials bound by the caller, the active
+;; proxy and the repositories of a POM model. Expected values come from
+;; tools.deps 0.31.1646 on the JVM, the models from models/expected.edn.
 ;; Run: CLOJURE_CLI_ALLOW_HTTP_REPO=true ./bb -cp resources/src/babashka script/mvn_oracle/deps_mvn_test.clj
 (ns deps-mvn-test
   (:require [babashka.deps.mvn :as mvn]
@@ -137,27 +137,34 @@
 
 (deftest find-versions-test
   (fs/with-temp-dir [dir {}]
-    (let [url #(str (.toURI (fs/file dir %)))
-          local #(str (fs/file dir (str (gensym "local"))))]
-      (publish-versions! (fs/file dir "a") ["1.0.0" "1.1.0-SNAPSHOT"])
-      (publish-versions! (fs/file dir "snapshots") ["2.0.0-SNAPSHOT"])
+    (let [config (fn [policy] {:mvn/repos {"a" (merge {:url (str (.toURI (fs/file dir "a")))} policy)}
+                               :mvn/local-repo (str (fs/file dir (str (gensym "local"))))})
+          versions (fn [policy & opts] (apply mvn/find-versions 'acme/snap (config policy) opts))]
+      (publish-versions! (fs/file dir "a") ["2.0.0" "2.1.0-SNAPSHOT"])
       (binding [*err* (java.io.StringWriter.)]
         (session/with-session
-          (let [config {:mvn/repos {"a" {:url (url "a")}} :mvn/local-repo (local)}]
-            (testing "find-versions returns releases and snapshots"
-              (is (= [{:mvn/version "1.0.0"} {:mvn/version "1.1.0-SNAPSHOT"}]
-                     (mvn/find-versions 'acme/snap config))))
-            (testing "clojure.tools.deps.extensions/find-versions returns releases only"
-              (is (= [{:mvn/version "1.0.0"}] (ext/find-versions 'acme/snap nil :mvn config)))))
+          (testing "find-versions returns the releases clojure.tools.deps.extensions/find-versions returns"
+            (is (= [{:mvn/version "2.0.0"}] (versions {})))
+            (is (= (versions {}) (ext/find-versions 'acme/snap nil :mvn (config {})))))
 
-          (testing "find-versions returns the versions of a snapshots-only repository"
-            (is (= [{:mvn/version "2.0.0-SNAPSHOT"}]
-                   (mvn/find-versions 'acme/snap {:mvn/repos {"snapshots" {:url (url "snapshots")
-                                                                         :releases {:enabled false}}}
-                                                  :mvn/local-repo (local)}))))
+          (testing "find-versions with :snapshots true returns releases and snapshots"
+            (is (= [{:mvn/version "2.0.0"} {:mvn/version "2.1.0-SNAPSHOT"}] (versions {} {:snapshots true}))))
 
-          (testing "find-versions returns [] for an unknown lib"
-            (is (= [] (mvn/find-versions 'acme/none {:mvn/repos {"a" {:url (url "a")}} :mvn/local-repo (local)})))))))))
+          (testing "a repository with :releases disabled lists no release"
+            (is (= [] (versions {:releases {:enabled false}})))
+            (is (= [{:mvn/version "2.1.0-SNAPSHOT"}] (versions {:releases {:enabled false}} {:snapshots true}))))
+
+          (testing "a repository with :snapshots disabled lists no snapshot"
+            (is (= [{:mvn/version "2.0.0"}] (versions {:snapshots {:enabled false}} {:snapshots true}))))
+
+          (testing "find-versions returns nil for an unknown lib"
+            (is (nil? (mvn/find-versions 'acme/none (config {})))))
+
+          (testing "a version range sees only the kinds of version the policies enable"
+            (is (= "2.0.0" (:mvn/version (second (ext/canonicalize 'acme/snap {:mvn/version "[1.0,)"}
+                                                                   (config {:snapshots {:enabled false}}))))))
+            (is (thrown? Exception (ext/canonicalize 'acme/snap {:mvn/version "[1.0,2.0.0]"}
+                                                     (config {:releases {:enabled false}}))))))))))
 
 (deftest invalid-credentials-test
   (testing "an entry with credentials and without :url throws without the password"

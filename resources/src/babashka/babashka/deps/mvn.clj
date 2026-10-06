@@ -46,14 +46,16 @@
       (:password p) (update :password cipher/decrypt-password {:server (str "proxy " (:host p))}))))
 
 (defn find-versions
-  "Returns the versions of lib in the repositories of config, snapshots
-  included, oldest first, as a vector of {:mvn/version version}.
+  "Returns the versions of lib as clojure.tools.deps.extensions/find-versions
+  does, oldest first, as a vector of {:mvn/version version}, or nil if the
+  repositories and the local repository list none.
   config is a tools.deps config with :mvn/repos and an optional
   :mvn/local-repo.
-  clojure.tools.deps.extensions/find-versions returns the same without
-  snapshots."
-  [lib config]
-  (mvn/all-versions lib config))
+  opts is a map, or {} if absent.
+  With :snapshots true, snapshot versions are included."
+  ([lib config] (find-versions lib config {}))
+  ([lib config {:keys [snapshots]}]
+   (mvn/find-versions lib config (boolean snapshots))))
 
 (defn model-repos
   "Returns the repositories of model as :mvn/repos data, a map of repository
