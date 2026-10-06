@@ -21,7 +21,9 @@
 ;; "Recursive update" when its function retrieves too, so look up first.
 (defn- repos [{:keys [mvn/repos]}]
   (let [s (settings)]
-    (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos s))))
+    (if repo/*caller-servers*
+      (repo/remote-repos repos s)
+      (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos s)))))
 
 (defn- local-repo [config]
   (repo/local-repo config))
@@ -163,6 +165,68 @@
   [text config]
   (pom/effective-model (pom/parse text) (pom-ctx config)))
 
+(declare read-local-pom)
+
+(defn- invalid-model! [file message]
+  (throw (ex-info message {:type :babashka.impl.mvn.pom/invalid :file (str file)})))
+
+(defn model-from-file
+  "Returns the effective model of the POM in file, a parent from disk or from
+  the repositories in config.
+  Throws if the modelVersion is not 4.0.0, or if the model lacks a groupId,
+  artifactId, version or dependency version."
+  [file config]
+  (let [file (fs/canonicalize file)
+        raw (pom/parse (slurp (fs/file file)))
+        model-version (:model-version raw)]
+    (cond
+      (nil? model-version) (invalid-model! file "'modelVersion' is missing.")
+      (not= "4.0.0" model-version)
+      (invalid-model! file (str "'modelVersion' of '" model-version "' is not supported, use 4.0.0.")))
+    (let [model (pom/effective-model raw {:read-pom (read-local-pom config)
+                                          :resolve-version (partial parent-version config)
+                                          :cache (model-cache)
+                                          :basedir (str (fs/parent file))
+                                          :pom-file (str file)})]
+      (doseq [[k tag] [[:group "groupId"] [:artifact "artifactId"] [:version "version"]]
+              :when (str/blank? (get model k))]
+        (invalid-model! file (str "'" tag "' is missing.")))
+      (when-let [dep (first (filter #(str/blank? (:version %)) (pom/dependencies model)))]
+        (invalid-model! file (str "'dependencies.dependency.version' for " (:group dep) ":" (:artifact dep) " is missing.")))
+      model)))
+
+(defn- repository-policy
+  "Returns a POM repository policy as :mvn/repos data, or nil if the POM
+  names none."
+  [{:keys [enabled update checksum]}]
+  (let [update (when update
+                 (if-let [[_ minutes] (re-matches #"interval:(\d+)" update)]
+                   (parse-long minutes)
+                   (#{:always :daily :never} (keyword update))))
+        checksum (when checksum (#{:warn :fail :ignore} (keyword checksum)))
+        policy (cond-> {}
+                 enabled (assoc :enabled (Boolean/parseBoolean enabled))
+                 update (assoc :update update)
+                 checksum (assoc :checksum checksum))]
+    (not-empty policy)))
+
+(def ^:private super-pom-central
+  ["central" {:url "https://repo.maven.apache.org/maven2" :snapshots {:enabled false}}])
+
+(defn model-repos
+  "Returns the repositories of a model as :mvn/repos data, with central last
+  unless the model names central."
+  [model]
+  (let [declared (mapv (fn [{:keys [id url releases snapshots]}]
+                         [id (cond-> {:url url}
+                               (repository-policy releases) (assoc :releases (repository-policy releases))
+                               (repository-policy snapshots) (assoc :snapshots (repository-policy snapshots)))])
+                       (:repositories model))]
+    (into (array-map)
+          (if (some #(= "central" (first %)) declared)
+            declared
+            (conj declared super-pom-central)))))
+
 (defn model-deps
   "The compile and runtime dependencies of a model, as tools.deps data."
   [model]
@@ -244,7 +308,9 @@
    (let [[group artifact] (coords/lib->names lib)
          local (local-repo config)
          remotes (repos config)
-         k [:babashka.impl.mvn/versions lib nature local (:mvn/repos config)]]
+         ;; a hash, so no session key holds a password
+         k [:babashka.impl.mvn/versions lib nature local (:mvn/repos config)
+            (some-> repo/*caller-servers* hash)]]
      ;; metadata/versions retrieves from the session, so it runs outside session/retrieve
      (or (session/retrieve k)
          (let [versions (metadata/versions local remotes {:group group :artifact artifact} nature)]

@@ -1,0 +1,81 @@
+{"duplicate-dependency/pom.xml"
+ {:deps [[foo/core {:mvn/version "1.1.0", :scope "compile"}]],
+  :repos
+  {"central"
+   {:url "https://repo.maven.apache.org/maven2",
+    :snapshots {:enabled false}}},
+  :repo-order ["central"]},
+ "missing-group/pom.xml" :throws,
+ "missing-version/pom.xml" :throws,
+ "model-version-3/pom.xml" :throws,
+ "own-central/pom.xml"
+ {:deps [],
+  :repos {"central" {:url "https://mirror.example.com/maven2"}},
+  :repo-order ["central"]},
+ "parent-on-disk/child/pom.xml"
+ {:deps
+  [[foo/from-child {:mvn/version "3.0.0", :scope "compile"}]
+   [foo/from-parent {:mvn/version "2.0.0", :scope "compile"}]],
+  :repos
+  {"shared" {:url "https://child.example.com/shared"},
+   "interpolated" {:url "https://props.example.com/repo"},
+   "nexus" {:url "https://nexus.example.com/repo"},
+   "central"
+   {:url "https://repo.maven.apache.org/maven2",
+    :snapshots {:enabled false}}},
+  :repo-order ["shared" "interpolated" "nexus" "central"]},
+ "parent-on-disk/pom.xml"
+ {:deps [[foo/from-parent {:mvn/version "2.0.0", :scope "compile"}]],
+  :repos
+  {"nexus" {:url "https://nexus.example.com/repo"},
+   "shared" {:url "https://parent.example.com/shared"},
+   "central"
+   {:url "https://repo.maven.apache.org/maven2",
+    :snapshots {:enabled false}}},
+  :repo-order ["nexus" "shared" "central"]},
+ "policies/pom.xml"
+ {:deps [],
+  :repos
+  {"snapshots-only"
+   {:url "https://snapshots.example.com/repo",
+    :releases {:enabled false},
+    :snapshots {:enabled true, :update :always, :checksum :fail}},
+   "hourly"
+   {:url "https://hourly.example.com/repo",
+    :releases {:update 60, :checksum :ignore}},
+   "never"
+   {:url "https://never.example.com/repo",
+    :releases {:enabled true, :update :never},
+    :snapshots {:enabled false}},
+   "central"
+   {:url "https://repo.maven.apache.org/maven2",
+    :snapshots {:enabled false}}},
+  :repo-order ["snapshots-only" "hourly" "never" "central"]},
+ "profiles/pom.xml"
+ {:deps
+  [[foo/base {:mvn/version "2", :scope "compile"}]
+   [foo/jdk {:mvn/version "1", :scope "compile"}]
+   [foo/mac {:mvn/version "1", :scope "compile"}]],
+  :repos
+  {"no-prop" {:url "https://noprop.example.com/repo"},
+   "mac" {:url "https://mac2.example.com/repo"},
+   "new-jdk" {:url "https://jdk.example.com/repo"},
+   "central"
+   {:url "https://repo.maven.apache.org/maven2",
+    :snapshots {:enabled false}}},
+  :repo-order ["no-prop" "mac" "new-jdk" "central"]},
+ "two-files/a.xml"
+ {:deps [[foo/a {:mvn/version "1", :scope "compile"}]],
+  :repos
+  {"central"
+   {:url "https://repo.maven.apache.org/maven2",
+    :snapshots {:enabled false}}},
+  :repo-order ["central"]},
+ "two-files/b.xml"
+ {:deps [[foo/b {:mvn/version "1", :scope "compile"}]],
+  :repos
+  {"central"
+   {:url "https://repo.maven.apache.org/maven2",
+    :snapshots {:enabled false}}},
+  :repo-order ["central"]},
+ "unresolvable-parent/pom.xml" :throws}

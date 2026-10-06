@@ -42,6 +42,20 @@
   (when (and (str/starts-with? url "http:") (nil? (env/getenv "CLOJURE_CLI_ALLOW_HTTP_REPO")))
     (throw (ex-info (str "Invalid repo url (http not supported): " url) (or config {})))))
 
+(def ^:dynamic *caller-servers*
+  "A map of repository id to :url, :username and :password, bound by
+  babashka.deps.mvn/with-repository-credentials."
+  nil)
+
+(defn- caller-server
+  "Returns the entry of servers with the id and URL of repo, or nil if none
+  names both."
+  [servers repo]
+  (when-let [server (get servers (:id repo))]
+    (when-let [url (:url server)]
+      (when (= (with-slash url) (:url repo))
+        server))))
+
 (defn remote-repo
   "One repository map from a :mvn/repos entry, with the mirror, auth and
   proxy from settings applied."
@@ -51,8 +65,12 @@
         repo (if mirror
                {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror) :mirrored [name]}
                repo)
-        {:keys [username password private-key passphrase headers]} (get servers (:id repo))
-        decrypt #(cipher/decrypt-password % {:server (:id repo)})
+        from-settings (get servers (:id repo))
+        ;; settings.xml is the user's own configuration and wins
+        {:keys [username password private-key passphrase headers]}
+        (or from-settings (caller-server *caller-servers* repo))
+        ;; only settings.xml holds encrypted passwords
+        decrypt #(if from-settings (cipher/decrypt-password % {:server (:id repo)}) %)
         credentials (cond-> {}
                       username (assoc :username username)
                       password (assoc :password (decrypt password))

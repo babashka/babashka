@@ -216,6 +216,38 @@
     (testing "a server with only an id has no credentials"
       (is (nil? (credentials "bare"))))))
 
+(deftest caller-servers-test
+  (let [nexus {"nexus" {:url "https://nexus.example.com/" :username "u" :password "p"}}
+        auth (fn [settings servers [id url]]
+               (binding [repo/*caller-servers* servers]
+                 (:auth (repo/remote-repo settings [id {:url url}]))))]
+    (testing "a caller's server applies to the repository it names"
+      (is (= ["u" "p"] (auth {} nexus ["nexus" "https://nexus.example.com/"]))))
+
+    (testing "a URL without a trailing slash is the same repository"
+      (is (= ["u" "p"] (auth {} nexus ["nexus" "https://nexus.example.com"]))))
+
+    (testing "the same id at another URL gets nothing"
+      (is (nil? (auth {} nexus ["nexus" "https://other.example.com/"]))))
+
+    (testing "another id at the same URL gets nothing"
+      (is (nil? (auth {} nexus ["other" "https://nexus.example.com/"]))))
+
+    (testing "a password is used as it is, settings.xml holds the encrypted ones"
+      (is (= ["u" "a{b}c"] (auth {} (assoc-in nexus ["nexus" :password] "a{b}c")
+                                 ["nexus" "https://nexus.example.com/"]))))
+
+    (testing "settings.xml wins for an id both name"
+      (is (= ["su" "sp"] (auth {:servers {"nexus" {:username "su" :password "sp"}}} nexus
+                               ["nexus" "https://nexus.example.com/"]))))
+
+    (testing "an entry without a URL gets nothing"
+      (is (nil? (auth {} (update nexus "nexus" dissoc :url) ["nexus" "https://nexus.example.com/"]))))
+
+    (testing "a mirror replaces the repository, so its credentials do not apply"
+      (is (nil? (auth {:mirrors [{:id "mir" :url "https://mirror.example.com/" :mirror-of "*"}]} nexus
+                      ["nexus" "https://nexus.example.com/"]))))))
+
 (deftest mirror-policy-test
   (let [s (settings/parse "<settings><mirrors><mirror><id>mir</id><url>https://mirror.example.com/</url><mirrorOf>*</mirrorOf></mirror></mirrors></settings>")
         merged (fn [a b] (repo/remote-repos {"central" (assoc a :url "https://a.example.com/")
