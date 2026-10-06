@@ -1,6 +1,6 @@
 (ns babashka.deps.mvn
-  "Maven repository credentials, proxy settings and POM repositories for
-  tools.deps."
+  "Maven versions, repository credentials, proxy settings and POM
+  repositories for tools.deps."
   (:require [babashka.impl.mvn.cipher :as cipher]
             [babashka.impl.mvn.repo :as repo]
             [babashka.impl.mvn.settings :as settings]
@@ -44,6 +44,16 @@
   (when-let [p (first (filter :active (:proxies (settings/read-settings))))]
     (cond-> (into {} (filter val) (select-keys p [:host :port :protocol :username :password :non-proxy-hosts]))
       (:password p) (update :password cipher/decrypt-password {:server (str "proxy " (:host p))}))))
+
+(defn find-versions
+  "Returns the versions of lib in the repositories of config, snapshots
+  included, oldest first, as a vector of {:mvn/version version}.
+  config is a tools.deps config with :mvn/repos and an optional
+  :mvn/local-repo.
+  clojure.tools.deps.extensions/find-versions returns the same without
+  snapshots."
+  [lib config]
+  (mvn/all-versions lib config))
 
 (defn model-repos
   "Returns the repositories of model as :mvn/repos data, a map of repository

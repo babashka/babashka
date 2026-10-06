@@ -76,6 +76,11 @@
             (testing "with-repository-credentials applies the credentials of the repository"
               (is (= ["1.0.0"] (mvn/with-repository-credentials credentials (versions url (new-local))))))
 
+            (testing "babashka.deps.mvn/find-versions applies the bound credentials"
+              (is (= [{:mvn/version "1.0.0"}]
+                     (mvn/with-repository-credentials credentials
+                       (mvn/find-versions 'acme/lib {:mvn/repos {"nexus" {:url url}} :mvn/local-repo (new-local)})))))
+
             (testing "an inner form without credentials replaces the outer one"
               (is (= [] (mvn/with-repository-credentials credentials
                           (mvn/with-repository-credentials {} (versions url (new-local)))))))
@@ -122,6 +127,37 @@
                                               :mvn/local-repo (new-local)}
                                              nil))]
               (is (= "1.0.0" (get-in basis ['acme/lib :mvn/version]))))))))))
+
+(defn- publish-versions! [root versions]
+  (fs/create-dirs (fs/file root "acme" "snap"))
+  (spit (fs/file root "acme" "snap" "maven-metadata.xml")
+        (str "<metadata><groupId>acme</groupId><artifactId>snap</artifactId><versioning><versions>"
+             (apply str (map #(str "<version>" % "</version>") versions))
+             "</versions></versioning></metadata>")))
+
+(deftest find-versions-test
+  (fs/with-temp-dir [dir {}]
+    (let [url #(str (.toURI (fs/file dir %)))
+          local #(str (fs/file dir (str (gensym "local"))))]
+      (publish-versions! (fs/file dir "a") ["1.0.0" "1.1.0-SNAPSHOT"])
+      (publish-versions! (fs/file dir "snapshots") ["2.0.0-SNAPSHOT"])
+      (binding [*err* (java.io.StringWriter.)]
+        (session/with-session
+          (let [config {:mvn/repos {"a" {:url (url "a")}} :mvn/local-repo (local)}]
+            (testing "find-versions returns releases and snapshots"
+              (is (= [{:mvn/version "1.0.0"} {:mvn/version "1.1.0-SNAPSHOT"}]
+                     (mvn/find-versions 'acme/snap config))))
+            (testing "clojure.tools.deps.extensions/find-versions returns releases only"
+              (is (= [{:mvn/version "1.0.0"}] (ext/find-versions 'acme/snap nil :mvn config)))))
+
+          (testing "find-versions returns the versions of a snapshots-only repository"
+            (is (= [{:mvn/version "2.0.0-SNAPSHOT"}]
+                   (mvn/find-versions 'acme/snap {:mvn/repos {"snapshots" {:url (url "snapshots")
+                                                                         :releases {:enabled false}}}
+                                                  :mvn/local-repo (local)}))))
+
+          (testing "find-versions returns [] for an unknown lib"
+            (is (= [] (mvn/find-versions 'acme/none {:mvn/repos {"a" {:url (url "a")}} :mvn/local-repo (local)})))))))))
 
 (deftest invalid-credentials-test
   (testing "an entry with credentials and without :url throws without the password"

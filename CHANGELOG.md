@@ -11,7 +11,7 @@ A preview of the next release can be installed from
 
 - Fix `clojure.lang.RT/baseLoader` and the context classloader returning `nil` in nREPL sessions
 - Bump jline to `4.4.7`
-- Add `babashka.deps.mvn` with `with-repository-credentials`, `active-proxy` and `model-repos`
+- Add `babashka.deps.mvn` with `find-versions`, `with-repository-credentials`, `active-proxy` and `model-repos`
 - Add `read-model-file` to `clojure.tools.deps.extensions.pom`
 - Put the repositories of active POM profiles ahead of the POM's own, the last active profile first
 
