@@ -55,15 +55,15 @@
  {:deps
   [[foo/base {:mvn/version "2", :scope "compile"}]
    [foo/jdk {:mvn/version "1", :scope "compile"}]
-   [foo/mac {:mvn/version "1", :scope "compile"}]],
+   [foo/prop {:mvn/version "1", :scope "compile"}]],
   :repos
   {"no-prop" {:url "https://noprop.example.com/repo"},
-   "mac" {:url "https://mac2.example.com/repo"},
-   "new-jdk" {:url "https://jdk.example.com/repo"},
+   "new-jdk" {:url "https://jdk2.example.com/repo"},
+   "own" {:url "https://own2.example.com/repo"},
    "central"
    {:url "https://repo.maven.apache.org/maven2",
     :snapshots {:enabled false}}},
-  :repo-order ["no-prop" "mac" "new-jdk" "central"]},
+  :repo-order ["no-prop" "new-jdk" "own" "central"]},
  "two-files/a.xml"
  {:deps [[foo/a {:mvn/version "1", :scope "compile"}]],
   :repos
