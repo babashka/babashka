@@ -65,7 +65,9 @@
       (is (false? (:active (first (:proxies parsed)))))
       (is (true? (get-in parsed [:profiles "p" :active-by-default])))))
   (testing "a proxy without active is active"
-    (is (true? (:active (first (:proxies (settings/parse "<settings><proxies><proxy><id>p</id><host>h</host></proxy></proxies></settings>"))))))))
+    (is (true? (:active (first (:proxies (settings/parse "<settings><proxies><proxy><id>p</id><host>h</host></proxy></proxies></settings>")))))))
+  (testing "a proxy without port has port 8080"
+    (is (= 8080 (:port (first (:proxies (settings/parse "<settings><proxies><proxy><id>p</id><host>h</host></proxy></proxies></settings>"))))))))
 
 (deftest active-profile-repositories-test
   (is (= [{:id "always-repo" :url "https://always.example.com/"}

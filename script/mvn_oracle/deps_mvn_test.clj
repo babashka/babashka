@@ -199,6 +199,10 @@
                   :non-proxy-hosts "localhost|*.example.org"}
                  (mvn/active-proxy))))
 
+        (settings "<proxy><id>bare</id><host>bare.example.com</host></proxy>")
+        (testing "active-proxy returns port 8080 and protocol http if settings.xml names neither"
+          (is (= {:host "bare.example.com" :port 8080 :protocol "http"} (mvn/active-proxy))))
+
         (settings "<proxy><id>off</id><active>false</active><host>off.example.com</host><port>1</port></proxy>")
         (testing "active-proxy returns nil without an active proxy"
           (is (nil? (mvn/active-proxy))))
