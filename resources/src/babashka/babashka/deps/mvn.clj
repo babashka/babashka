@@ -22,7 +22,9 @@
 
 (defmacro with-repository-credentials
   "Evaluates body with the credentials of repositories applied to the
-  tools.deps lookups in body, on every thread body starts.
+  tools.deps lookups in body.
+  The credentials hold on the thread of body and on threads that convey
+  bindings, such as future, pmap and bound-fn, as binding does.
   repositories is a map of repository id to :url, :username and :password,
   all strings, the shape of :mvn/repos with Leiningen's credential keys.
   Entries without :username and :password are ignored.
@@ -36,8 +38,10 @@
 
 (defn active-proxy
   "Returns the first active proxy in the user's Maven settings as a map of
-  :host, :port, :protocol, :username, :password and :non-proxy-hosts, each
-  where settings.xml names it, or nil if none is active.
+  :host, :port, :protocol, :username, :password and :non-proxy-hosts, or nil
+  if none is active.
+  :port is 8080 and :protocol is http if settings.xml names neither.
+  :username, :password and :non-proxy-hosts are left out if absent.
   The password is decrypted.
   :non-proxy-hosts is returned as written and not applied."
   []
@@ -51,8 +55,7 @@
   repositories and the local repository list none.
   config is a tools.deps config with :mvn/repos and an optional
   :mvn/local-repo.
-  opts is a map, or {} if absent.
-  With :snapshots true, snapshot versions are included."
+  With :snapshots true in opts, snapshot versions are included."
   ([lib config] (find-versions lib config {}))
   ([lib config {:keys [snapshots]}]
    (mvn/find-versions lib config (boolean snapshots))))
@@ -62,7 +65,7 @@
   id to :url and the :releases and :snapshots policies the POM names.
   model is the result of clojure.tools.deps.extensions.pom/read-model-file
   or read-model.
-  Includes central at https://repo.maven.apache.org/maven2, last, unless the
-  model names central."
+  Includes central at https://repo.maven.apache.org/maven2 unless the model
+  names central."
   [model]
   (mvn/model-repos model))
