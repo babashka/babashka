@@ -145,8 +145,7 @@
                                   malli.transform-test
                                   malli.util-test]
                 :git-url "https://github.com/metosin/malli"
-                :git-sha "6b0862135ea58ef2ac92bda9ae605994a5fb20d6"
-                :git-tag "0.19.1"
+                :git-sha "7b117a015731da04260f5ad1b1dd7b980e31b20b"
                 ;; specify for adding tests to classpath
                 :test-paths ["test"]}
  meander/epsilon {:test-namespaces [meander.epsilon-test
