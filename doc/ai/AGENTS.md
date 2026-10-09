@@ -157,10 +157,10 @@ requests against master, so pushing a branch runs no CI.
 ## Bundled sources
 
 `resources/src/babashka` and `src-java` hold the sources babashka bundles:
-tools.deps, tools.build, gitlibs, nREPL and orchard. They are the source of
-truth, not build output. Babashka's changes live in those files, each marked
-`BB-PATCH` with the upstream form kept under `#_`, so editing one is an
-ordinary edit.
+tools.deps, tools.build, gitlibs, nREPL, orchard and cider-nrepl's debugger.
+They are the source of truth, not build output. Babashka's changes live in
+those files, each marked `BB-PATCH` with the upstream form kept under `#_`,
+so editing one is an ordinary edit.
 
 `script/vendored.edn` records the version each artifact's files came from.
 To take a new upstream version, name the artifact and the version:
@@ -180,6 +180,21 @@ resources the image does not have: the nREPL version in `nrepl/version.clj`
 and the tools.deps version in the procurer's User-Agent. The root `deps.edn`
 embedded in `clojure/tools/deps/edn.clj` is checked instead of regenerated,
 and the run fails when it no longer matches the pinned `tools.deps.edn`.
+
+A cider-nrepl bump touches three places. Besides `script/vendored.edn`,
+`bundled-data-readers` in `src/babashka/main.clj` copies the jar's
+`data_readers.clj`, and the debugger's lib tests run from the git sha pinned
+in `test-resources/lib_tests/bb-tested-libs.edn`, which must be the same
+release. The script fails when either one is out of step and prints the sha
+to set. Re-sync the two test copies under `test-resources/lib_tests/cider/`
+with:
+
+```
+bb --config .build/bb.edn --deps-root . resync --lib cider/cider-nrepl --copies cider --new-sha <sha>
+```
+
+When a `BB-PATCH` region in `debug.clj` conflicts, check whether upstream
+fixed the same problem and drop the patch if so.
 
 Running the script with no arguments refreshes at the current pins and must
 leave the tree byte-identical. That is the regression test for this machinery.

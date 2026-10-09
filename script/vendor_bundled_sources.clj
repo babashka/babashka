@@ -237,6 +237,39 @@
                                   "git" "merge-file" (str ours) (str base) (str theirs))]
         (if (zero? exit) :clean exit)))))
 
+(defn- data-readers-problem
+  "Returns a message if bundled-data-readers in main.clj differs from the
+  data_readers.clj in the cider-nrepl jar extracted to dir, or nil."
+  [dir]
+  (let [jar-readers (dissoc (edn/read-string (slurp (str (fs/file dir "data_readers.clj"))))
+                            ;; enlighten is not bundled
+                            'light)
+        src (slurp "src/babashka/main.clj")
+        form (read-string (subs src (str/index-of src "(def ^:private bundled-data-readers")))
+        ours (second (last form))]
+    (when (not= jar-readers ours)
+      (str "bundled-data-readers in src/babashka/main.clj differs from cider-nrepl's data_readers.clj: "
+           (pr-str jar-readers)))))
+
+(defn- lib-test-pin-problem
+  "Returns a message if the cider-nrepl lib-test checkout in bb-tested-libs.edn
+  is not the commit of the vendored version's tag, or nil."
+  [version]
+  (let [{:keys [git-sha git-url]} (get (edn/read-string (slurp "test-resources/lib_tests/bb-tested-libs.edn"))
+                                       'cider/cider-nrepl)
+        tag (str "refs/tags/v" version)
+        {:keys [exit out]} (shell {:continue true :out :string :err :string}
+                                  "git" "ls-remote" git-url tag (str tag "^{}"))
+        shas (into {} (map (fn [line] (let [[sha ref] (str/split line #"\s+")] [ref sha])))
+                   (str/split-lines (str/trim out)))
+        tag-sha (or (shas (str tag "^{}")) (shas tag))]
+    (cond
+      (or (not (zero? exit)) (nil? tag-sha))
+      (do (println "\nCould not look up" tag "of cider-nrepl, the lib-test pin is unchecked.") nil)
+      (not= tag-sha git-sha)
+      (str "Set :git-sha of cider/cider-nrepl in test-resources/lib_tests/bb-tested-libs.edn to "
+           tag-sha " (" tag ")."))))
+
 (defn- stamp!
   "Replaces the value matched by `re` in `file` with `value`."
   [file re value what]
@@ -264,7 +297,9 @@
         results (concat
                  (for [rel (sort shipped)] [rel (merge-file! target rel old new)])
                  (for [rel (sort java-shipped)] [rel (merge-file! java-target rel old new)]))
-        conflicted (remove (comp #{:clean} second) results)]
+        conflicted (remove (comp #{:clean} second) results)
+        cider-problems (keep identity [(data-readers-problem new)
+                                       (lib-test-pin-problem (bumped 'cider/cider-nrepl))])]
     (doseq [[rel status] results
             :when (not= :clean status)]
       (println (format "%-52s %s" rel (case status
@@ -290,6 +325,8 @@
         (println "Replace the map in its root-deps with the one from tools.deps.edn"
                  (bumped 'org.clojure/tools.deps.edn))
         (System/exit 1)))
+    (doseq [problem cider-problems]
+      (println (str "\n" problem)))
     (when (seq added)
       (println "\nUpstream files not shipped, decide per file:")
       (run! #(println " " %) added))
@@ -305,4 +342,4 @@
     (fs/delete-tree new)
     (when (seq conflicted)
       (println "\nResolve the conflict markers before committing."))
-    (when (seq missing) (System/exit 1))))
+    (when (or (seq missing) (seq cider-problems)) (System/exit 1))))
