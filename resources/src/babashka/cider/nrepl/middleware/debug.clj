@@ -133,7 +133,7 @@
   (if (map? *msg*)
     (do
       (respond-to *msg* :value 'QUIT)
-      #_(when-let [t (:thread (meta (:session *msg*)))] ;; BB-PATCH stop the eval the way Thread.stop does on the JVM
+      #_(when-let [t (:thread (meta (:session *msg*)))] ;; BB-PATCH throw ThreadDeath on the eval thread, which nREPL treats as an interrupt
         ;; n.u.threading namespace appeared in nREPL 1.3, don't fail when on
         ;; earlier nREPL versions.
         ((requiring-resolve 'nrepl.util.threading/interrupt-stop) t))

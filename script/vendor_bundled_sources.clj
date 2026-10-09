@@ -141,8 +141,8 @@
 ;; tools.build tasks use what the image lacks, and four nREPL namespaces:
 ;; bencode delegates to the compiled bencode.core, completion to bb's own,
 ;; the classloader returns the context classloader, and TLS is not
-;; supported. The debugger's inspector and orchard namespaces map to bb's
-;; inspector and stacktraces. Never copied.
+;; supported. The debugger's inspector, orchard.info, orchard.meta and
+;; orchard.stacktrace are bb's own. Never copied.
 (def stand-ins
   #{"clojure/tools/deps/extensions/local.clj"
     "clojure/tools/deps/extensions/maven.clj"

@@ -1,5 +1,5 @@
 (ns orchard.meta
-  "Stand-in for orchard.meta, for the debugger."
+  "Stand-in for orchard.meta, used by the debugger."
   (:require [clojure.java.io :as io]
             [clojure.walk :as walk]))
 

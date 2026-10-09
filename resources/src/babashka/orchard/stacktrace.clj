@@ -1,5 +1,5 @@
 (ns orchard.stacktrace
-  "Stand-in for orchard.stacktrace, for the debugger."
+  "Stand-in for orchard.stacktrace, used by the debugger."
   (:require [babashka.nrepl.impl.cider :as cider]))
 
 (defn analyze

@@ -23,7 +23,8 @@
 
 (defn wrap-debug
   "Loads the CIDER debugger on the first debug op or debug-tagged eval.
-  Passes every later message through the debugger, waiting for the load."
+  Passes every later message through the debugger.
+  Waits for the debugger to load."
   [h]
   (fn [msg]
     (if (or @debugging? (debug-msg? msg))
@@ -35,9 +36,21 @@
                  {:requires #{#'session/session #'print/wrap-print "load-file"}
                   :expects #{"eval"}
                   :handles (into {}
-                                 (for [op debug-ops
+                                 (for [[op desc] {"init-debugger"
+                                                  {:doc "Starts the debugger. Breakpoints reply to this message."
+                                                   :requires {}
+                                                   :optional {}
+                                                   :returns {}}
+                                                  "debug-input"
+                                                  {:doc "The client's answer at a breakpoint."
+                                                   :requires {"key" "The key of the breakpoint's request."
+                                                              "input" "The answer."}
+                                                   :optional {}
+                                                   :returns {"status" "done"}}
+                                                  "debug-instrumented-defs"
+                                                  {:doc "The instrumented vars by namespace."
+                                                   :requires {}
+                                                   :optional {}
+                                                   :returns {"list" "Each namespace followed by its instrumented vars."}}}
                                        op [op (str "cider/" op)]]
-                                   [op {:doc "See cider-nrepl's debug middleware."
-                                        :requires {}
-                                        :optional {}
-                                        :returns {}}]))})
+                                   [op desc]))})

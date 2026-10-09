@@ -242,7 +242,7 @@
 (def cider-nrepl-skipped
   "Upstream tests that assert JVM specifics: the exact reify* expansion, an
   abort! that keeps the eval running, cider-nrepl's fn printing, and stepping
-  into nrepl.server, which babashka bundles as source it cannot read back."
+  into nrepl.server, whose bundled source var-code cannot read."
   '{cider.nrepl.middleware.util.instrument-test [instrument-reify-test]
     cider.nrepl.middleware.debug-test [abort-without-session-thread-test]
     cider.nrepl.middleware.debug-integration-test [debug-expression-test
