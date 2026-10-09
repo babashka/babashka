@@ -576,9 +576,11 @@ this map (identified by a key), and will `dissoc` it afterwards."}
   "Apply var-fn or its instrumented version to args."
   [var-fn args coor STATE__]
   (let [stepin (step-in? var-fn coor STATE__)]
-    (apply (if stepin
-             (::instrumented (meta var-fn))
-             var-fn)
+    (apply #_(if stepin ;; BB-PATCH call the var if its source was not found
+               (::instrumented (meta var-fn))
+               var-fn)
+(or (when stepin (::instrumented (meta var-fn)))
+    var-fn)
            args)))
 
 (defmacro expand-break
