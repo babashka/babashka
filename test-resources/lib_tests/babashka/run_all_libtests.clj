@@ -227,6 +227,39 @@
             (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb :flaky)) not))
             (swap! status (fn [st] (merge-with + st (dissoc (t/run-tests n) :type))))))))))
 
+;;;; cider-nrepl
+;; cider-nrepl's debugger suite against the bundled debugger, from the checkout
+;; pinned in bb-tested-libs.edn. Its src stays off the classpath because a
+;; directory there would shadow the bundled cider.nrepl namespaces. Two test
+;; files need changes. Their copies live under cider/, each deviation marked
+;; BB-TEST-PATCH.
+
+(def cider-nrepl-namespaces
+  '[cider.nrepl.middleware.util.instrument-test
+    cider.nrepl.middleware.debug-test
+    cider.nrepl.middleware.debug-integration-test])
+
+(def cider-nrepl-skipped
+  "Upstream tests that assert JVM specifics: the exact reify* expansion, an
+  abort! that keeps the eval running, cider-nrepl's fn printing, and stepping
+  into nrepl.server, which babashka bundles as source it cannot read back."
+  '{cider.nrepl.middleware.util.instrument-test [instrument-reify-test]
+    cider.nrepl.middleware.debug-test [abort-without-session-thread-test]
+    cider.nrepl.middleware.debug-integration-test [debug-expression-test
+                                                   step-in-to-function-in-jar-test]})
+
+(let [cider-nss (filter #(str/starts-with? (str %) "cider.nrepl.") ns-args)]
+  (when (or (empty? ns-args) (seq cider-nss))
+    (let [nss (if (seq cider-nss) cider-nss cider-nrepl-namespaces)]
+      (binding [*ns* *ns*]
+        (run! require nss)
+        (doseq [[ns vars] cider-nrepl-skipped
+                v vars]
+          (some-> (find-ns ns) (ns-resolve v) (alter-meta! assoc :skip-bb true)))
+        (doseq [n nss]
+          (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb :flaky)) not))
+          (swap! status (fn [st] (merge-with + st (dissoc (t/run-tests n) :type)))))))))
+
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
