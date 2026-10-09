@@ -117,7 +117,13 @@
     "orchard/misc.clj"
     "orchard/pp.clj"
     "orchard/print.clj"
-    "orchard/util/io.clj"})
+    "orchard/util/io.clj"
+    ;; the CIDER debugger
+    "cider/nrepl/middleware/debug.clj"
+    "cider/nrepl/middleware/util.clj"
+    "cider/nrepl/middleware/util/eval.clj"
+    "cider/nrepl/middleware/util/instrument.clj"
+    "cider/nrepl/middleware/util/nrepl.clj"})
 
 ;; nREPL's Java classes, compiled into bb from src-java.
 (def java-shipped
@@ -135,7 +141,8 @@
 ;; tools.build tasks use what the image lacks, and four nREPL namespaces:
 ;; bencode delegates to the compiled bencode.core, completion to bb's own,
 ;; the classloader returns the context classloader, and TLS is not
-;; supported. Never copied.
+;; supported. The debugger's inspector and orchard namespaces map to bb's
+;; inspector and stacktraces. Never copied.
 (def stand-ins
   #{"clojure/tools/deps/extensions/local.clj"
     "clojure/tools/deps/extensions/maven.clj"
@@ -146,7 +153,11 @@
     "nrepl/bencode.clj"
     "nrepl/tls.clj"
     "nrepl/util/classloader.clj"
-    "nrepl/util/completion.clj"})
+    "nrepl/util/completion.clj"
+    "cider/nrepl/middleware/inspect.clj"
+    "orchard/info.clj"
+    "orchard/meta.clj"
+    "orchard/stacktrace.clj"})
 
 ;; Upstream files bb does not ship: specs is a built-in stub, deps.edn is
 ;; embedded into edn.clj below, the rest is not needed by what is shipped.
@@ -174,22 +185,26 @@
     "orchard/clojuredocs.clj"
     "orchard/eldoc.clj"
     "orchard/indent.clj"
-    "orchard/info.clj"
     "orchard/java.clj"
     "orchard/java/classpath.clj"
     "orchard/java/parser_next.clj"
     "orchard/java/resource.clj"
     "orchard/java/source_files.clj"
-    "orchard/meta.clj"
     "orchard/namespace.clj"
     "orchard/profile.clj"
     "orchard/query.clj"
     "orchard/spec.clj"
-    "orchard/stacktrace.clj"
     "orchard/trace.clj"
     "orchard/util/os.clj"
     "orchard/xref.clj"
     "mx/cider/orchard/LruMap.java"})
+
+;; cider-nrepl beyond the debugger is not shipped.
+(defn- dropped? [rel]
+  (or (contains? dropped rel)
+      (and (str/starts-with? rel "cider/")
+           (not (contains? shipped rel))
+           (not (contains? stand-ins rel)))))
 
 (def target "resources/src/babashka")
 (def java-target "src-java")
@@ -238,13 +253,14 @@
   (let [old (extract old-jars)
         new (extract new-jars)
         upstream (->> (concat (fs/glob new "clojure/**") (fs/glob new "nrepl/**")
-                              (fs/glob new "orchard/**") (fs/glob new "mx/**"))
+                              (fs/glob new "orchard/**") (fs/glob new "mx/**")
+                              (fs/glob new "cider/**"))
                       (filter fs/regular-file?)
                       (map #(str (fs/relativize new %)))
                       (remove #(or (str/ends-with? % ".class") (str/ends-with? % ".so")))
                       set)
         missing (remove upstream (concat shipped java-shipped stand-ins dropped))
-        added (sort (remove (set/union shipped java-shipped stand-ins dropped) upstream))
+        added (sort (remove #(or (contains? (set/union shipped java-shipped stand-ins) %) (dropped? %)) upstream))
         results (concat
                  (for [rel (sort shipped)] [rel (merge-file! target rel old new)])
                  (for [rel (sort java-shipped)] [rel (merge-file! java-target rel old new)]))
