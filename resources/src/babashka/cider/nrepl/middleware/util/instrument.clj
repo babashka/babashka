@@ -72,8 +72,7 @@
           (condp #(%1 %2) name
             '#{if do recur throw finally try monitor-exit monitor-enter} (instrument-coll args)
             '#{new} (cons (first args) (instrument-coll (rest args)))
-            #_'#{quote & var clojure.core/import*} ;; BB-PATCH import is a special form in sci
-'#{quote & var clojure.core/import* import} args
+            '#{quote & var clojure.core/import*} args
             '#{.} (list* (first args)
                          ;; To handle the case when second argument to dot call
                          ;; is a list e.g (. class-name (method-name args*))
@@ -209,8 +208,7 @@
     ;; If the car is not a symbol, nothing fancy is going on and we
     ;; can instrument everything.
     (with-break (instrument-coll form))
-    (if #_(special-symbol? name) ;; BB-PATCH import is a special form in sci
-(or (special-symbol? name) (= 'import name))
+    (if (special-symbol? name)
       ;; If special form, thread with care.
       (if (dont-break? form)
         (instrument-special-form form)

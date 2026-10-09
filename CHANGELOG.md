@@ -16,6 +16,8 @@ A preview of the next release can be installed from
 - Allow constructing `ThreadDeath`
 - SCI: a macro var in call position expands, as in `(eval (list #'when true 1))`
 - SCI: fix stack overflow in `clojure.walk/macroexpand-all` on a `reify` form
+- SCI: `import` is a macro that expands to `clojure.core/import*`
+- SCI: `for`, `if-let`, `when-let`, `if-some`, `when-some`, `when-first` and `condp` name their internal locals with `__`
 
 ## 1.13.225 (2026-09-28)
 
