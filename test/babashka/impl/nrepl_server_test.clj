@@ -693,6 +693,19 @@
       (finally
         (fs/delete-tree dir)))))
 
+(deftest nrepl-debugger-first-eval-test
+  (let [dir (fs/create-temp-dir)
+        tagged (str (fs/file dir "dbg_first.clj"))]
+    (spit tagged "(ns dbg-first)\n\n(defn f [a]\n  #dbg (let [b (* 10 a)] (+ a b)))\n")
+    (try
+      (with-bb-script 1677
+        "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1677 :quiet true}))"
+        (fn []
+          (testing "an eval sent right after init-debugger reads #dbg"
+            (is (= "11" (last (keep :value (:replies (debug-eval 1677 (str "(load-file " (pr-str tagged) ") (dbg-first/f 1)") [":continue"])))))))))
+      (finally
+        (fs/delete-tree dir)))))
+
 (deftest ^:skip-windows nrepl-unix-socket-test
   ;; macOS limits a socket path to 104 bytes, its temp dir is longer
   (let [path (str "/tmp/bb-nrepl-" (System/nanoTime) ".sock")

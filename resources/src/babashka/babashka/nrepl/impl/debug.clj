@@ -10,6 +10,8 @@
 (def ^:private handle-debug
   (delay (requiring-resolve 'cider.nrepl.middleware.debug/handle-debug)))
 
+(def ^:private debugging? (atom false))
+
 (def ^:private debug-ops
   #{"init-debugger" "debug-input" "debug-instrumented-defs"})
 
@@ -21,11 +23,12 @@
 
 (defn wrap-debug
   "Loads the CIDER debugger on the first debug op or debug-tagged eval.
-  Passes every message through the debugger once it is loaded."
+  Passes every later message through the debugger, waiting for the load."
   [h]
   (fn [msg]
-    (if (or (realized? handle-debug) (debug-msg? msg))
-      (@handle-debug h msg)
+    (if (or @debugging? (debug-msg? msg))
+      (do (reset! debugging? true)
+          (@handle-debug h msg))
       (h msg))))
 
 (set-descriptor! #'wrap-debug
