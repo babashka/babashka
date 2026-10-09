@@ -12,6 +12,12 @@ A preview of the next release can be installed from
 - Fix `clojure.lang.RT/baseLoader` and the context classloader returning `nil` in nREPL sessions
 - Bump jline to `4.4.7`
 - Support the `[opts stream]` arity of `read+string`
+- Add the CIDER debugger to the nREPL server: `#dbg`, `#break`, `C-u C-M-x` and the step commands
+- Allow constructing `ThreadDeath`
+- SCI: a macro var in call position expands, as in `(eval (list #'when true 1))`
+- SCI: fix stack overflow in `clojure.walk/macroexpand-all` on a `reify` form
+- SCI: `import` expands to `clojure.core/import*`
+- SCI: `for`, `if-let`, `when-let`, `if-some`, `when-some`, `when-first` and `condp` name their internal locals with `__`
 
 ## 1.13.225 (2026-09-28)
 

@@ -861,7 +861,8 @@
     :constructors [clojure.lang.Delay
                    clojure.lang.DynamicClassLoader
                    clojure.lang.LineNumberingPushbackReader
-                   java.io.EOFException]
+                   java.io.EOFException
+                   java.lang.ThreadDeath]
     :methods [borkdude.graal.LockFix] ;; support for locking
 
     :fields [clojure.lang.PersistentQueue
@@ -941,7 +942,6 @@
                       java.lang.AbstractMethodError
                       java.lang.ExceptionInInitializerError
                       java.lang.LinkageError
-                      java.lang.ThreadDeath
                       java.lang.StackOverflowError
                       java.lang.VirtualMachineError
                       java.lang.NoSuchFieldException
