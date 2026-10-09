@@ -10,6 +10,7 @@
             [sci.ctx-store :as store]
             [sci.impl.copy-vars :refer [copy-core-var new-var]]
             [sci.impl.parser :as parser]
+            [sci.impl.read :as read]
             [sci.impl.utils :as utils :refer [clojure-core-ns]]
             [sci.impl.vars :as vars]))
 
@@ -35,6 +36,11 @@
    (read+string sci-ctx @sci/in))
   ([sci-ctx stream]
    (read+string sci-ctx stream true nil))
+  ([_sci-ctx opts ^clojure.lang.LineNumberingPushbackReader stream]
+   (let [_ (.captureString stream)
+         v (read/read opts stream)
+         s (str/trim (.getString stream))]
+     [v s]))
   ([sci-ctx stream eof-error? eof-value]
    (read+string sci-ctx stream eof-error? eof-value false))
   ([sci-ctx ^clojure.lang.LineNumberingPushbackReader stream _eof-error? eof-value _recursive?]
