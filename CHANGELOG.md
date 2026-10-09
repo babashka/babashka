@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - Fix `clojure.lang.RT/baseLoader` and the context classloader returning `nil` in nREPL sessions
 - Bump jline to `4.4.7`
+- Support the `[opts stream]` arity of `read+string`
 
 ## 1.13.225 (2026-09-28)
 
