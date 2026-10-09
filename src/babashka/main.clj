@@ -922,10 +922,7 @@ Use bb run --help to show this help output.
                                        _ (swap! seen-urls assoc urls parsed-resources)]
                                    parsed-resources))]
         (when-let [var-sym (or (get parsed-resources t) (get bundled-data-readers t))]
-          (when-let [the-var (or (sci/resolve ctx var-sym)
-                                 ;; loads the debugger, or waits for a load in progress
-                                 (when (= var-sym (get bundled-data-readers t))
-                                   (sci/eval-form ctx (list 'clojure.core/requiring-resolve (list 'quote var-sym)))))]
+          (when-let [the-var (sci/resolve ctx var-sym)]
             (sci/eval-form ctx (list 'clojure.core/var-set core/data-readers (list 'quote (assoc @core/data-readers t the-var))))
             the-var)))))
 

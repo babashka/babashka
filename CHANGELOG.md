@@ -17,6 +17,7 @@ A preview of the next release can be installed from
 - SCI: a macro var in call position expands, as in `(eval (list #'when true 1))`
 - SCI: fix stack overflow in `clojure.walk/macroexpand-all` on a `reify` form
 - SCI: `import` expands to `clojure.core/import*`
+- SCI: fix the location of a top-level symbol followed by a newline or the end of input
 - SCI: `for`, `if-let`, `when-let`, `if-some`, `when-some`, `when-first` and `condp` name their internal locals with `__`
 
 ## 1.13.225 (2026-09-28)

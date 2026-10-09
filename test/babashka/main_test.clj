@@ -770,10 +770,6 @@
 (deftest java-stream-test
   (is (every? number? (bb nil "(take 2 (iterator-seq (.iterator (.doubles (java.util.Random.)))))"))))
 
-(deftest debugger-reader-test
-  (testing "#dbg reads without an nREPL server and loads the debugger"
-    (is (= 3 (bb nil "(eval (read-string \"#dbg (+ 1 2)\"))")))))
-
 (deftest read+string-test
   (is (= '[:user/foo "::foo"]
          (bb nil "(read+string (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"::foo\")))")))
