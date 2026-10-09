@@ -789,13 +789,7 @@ this map (identified by a key), and will `dissoc` it afterwards."}
   [msg]
   (let [read-fn
         (fn [options reader]
-          (binding [*found-debugger-tag* false
-                    ;; BB-PATCH bb does not read data_readers.clj from bundled sources
-*data-readers* (merge *data-readers*
-                      {'dbg debug-reader
-                       'break breakpoint-reader
-                       'dbg! debug-on-exception-reader
-                       'break! break-on-exception-reader})]
+          (binding [*found-debugger-tag* false]
             ;; Read the form normally and then check if the flag turned on that
             ;; tells us the form contains any debugger reader tags.
             (let [[form code] (ins/comment-trimming-read+string options reader)]

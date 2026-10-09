@@ -894,6 +894,13 @@ Use bb run --help to show this help output.
                          :features #{:bb :clj}
                          :eof nil}))
 
+;; data_readers.clj of the bundled cider-nrepl debugger
+(def ^:private bundled-data-readers
+  '{dbg cider.nrepl.middleware.debug/debug-reader
+    break cider.nrepl.middleware.debug/breakpoint-reader
+    dbg! cider.nrepl.middleware.debug/debug-on-exception-reader
+    break! cider.nrepl.middleware.debug/break-on-exception-reader})
+
 (defn readers-fn
   "Lazy reading of data reader functions"
   [ctx t]
@@ -914,7 +921,7 @@ Use bb run --help to show this help output.
                                        parsed-resources (apply merge (map read-data-readers resources))
                                        _ (swap! seen-urls assoc urls parsed-resources)]
                                    parsed-resources))]
-        (when-let [var-sym (get parsed-resources t)]
+        (when-let [var-sym (or (get parsed-resources t) (get bundled-data-readers t))]
           (when-let [the-var (sci/resolve ctx var-sym)]
             (sci/eval-form ctx (list 'clojure.core/var-set core/data-readers (list 'quote (assoc @core/data-readers t the-var))))
             the-var)))))

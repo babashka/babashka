@@ -663,8 +663,10 @@
 
 (deftest nrepl-debugger-test
   (let [dir (fs/create-temp-dir)
-        file (str (fs/file dir "dbg_demo.clj"))]
+        file (str (fs/file dir "dbg_demo.clj"))
+        tagged (str (fs/file dir "dbg_tagged.clj"))]
     (spit file "(ns dbg-demo)\n\n(defn bar [x]\n  (* 10 x))\n\n(defn foo [a]\n  (inc (bar a)))\n")
+    (spit tagged "(ns dbg-tagged)\n\n(defn f [a]\n  #dbg (let [b (* 10 a)] (+ a b)))\n")
     (try
       (with-bb-script 1676
         "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1676 :quiet true}))"
@@ -685,7 +687,9 @@
               (is (str/starts-with? (:code (nth breaks 2)) "(defn bar"))
               (testing ":quit ends the eval without an error"
                 (is (= "QUIT" (some :value replies)))
-                (is (not-any? :err replies)))))))
+                (is (not-any? :err replies)))))
+          (testing "a file with #dbg loads once the debugger has loaded"
+            (is (= "11" (last (keep :value (:replies (debug-eval 1676 (str "(load-file " (pr-str tagged) ") (dbg-tagged/f 1)") [])))))))))
       (finally
         (fs/delete-tree dir)))))
 
