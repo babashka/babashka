@@ -284,4 +284,4 @@ clojure.lang.ExceptionInfo: clojure.lang.Keyword cannot be cast to clojure.lang.
                     (is false)
                     (catch Exception e (ex-message e)))]
     (is (str/includes? (tu/normalize output)
-                       "clojure.core/reduce1"))))
+                       "clojure.core/into"))))

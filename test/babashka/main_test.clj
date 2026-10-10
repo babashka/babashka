@@ -772,7 +772,13 @@
 
 (deftest read+string-test
   (is (= '[:user/foo "::foo"]
-         (bb nil "(read+string (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"::foo\")))"))))
+         (bb nil "(read+string (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"::foo\")))")))
+  (testing "read+string with opts reads :read-cond :allow"
+    (is (= '[1 "#?(:clj 1 :cljs 2)"]
+           (bb nil "(read+string {:read-cond :allow} (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"#?(:clj 1 :cljs 2)\")))"))))
+  (testing "read+string with opts returns :eof at end of stream"
+    (is (= '[:done ""]
+           (bb nil "(read+string {:eof :done} (clojure.lang.LineNumberingPushbackReader. (java.io.StringReader. \"\")))")))))
 
 (deftest iterable-test
   (is (true? (bb nil "

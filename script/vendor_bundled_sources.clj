@@ -117,7 +117,13 @@
     "orchard/misc.clj"
     "orchard/pp.clj"
     "orchard/print.clj"
-    "orchard/util/io.clj"})
+    "orchard/util/io.clj"
+    ;; the CIDER debugger
+    "cider/nrepl/middleware/debug.clj"
+    "cider/nrepl/middleware/util.clj"
+    "cider/nrepl/middleware/util/eval.clj"
+    "cider/nrepl/middleware/util/instrument.clj"
+    "cider/nrepl/middleware/util/nrepl.clj"})
 
 ;; nREPL's Java classes, compiled into bb from src-java.
 (def java-shipped
@@ -135,7 +141,8 @@
 ;; tools.build tasks use what the image lacks, and four nREPL namespaces:
 ;; bencode delegates to the compiled bencode.core, completion to bb's own,
 ;; the classloader returns the context classloader, and TLS is not
-;; supported. Never copied.
+;; supported. The debugger's inspector, orchard.info, orchard.meta and
+;; orchard.stacktrace are bb's own. Never copied.
 (def stand-ins
   #{"clojure/tools/deps/extensions/local.clj"
     "clojure/tools/deps/extensions/maven.clj"
@@ -146,7 +153,11 @@
     "nrepl/bencode.clj"
     "nrepl/tls.clj"
     "nrepl/util/classloader.clj"
-    "nrepl/util/completion.clj"})
+    "nrepl/util/completion.clj"
+    "cider/nrepl/middleware/inspect.clj"
+    "orchard/info.clj"
+    "orchard/meta.clj"
+    "orchard/stacktrace.clj"})
 
 ;; Upstream files bb does not ship: specs is a built-in stub, deps.edn is
 ;; embedded into edn.clj below, the rest is not needed by what is shipped.
@@ -174,22 +185,26 @@
     "orchard/clojuredocs.clj"
     "orchard/eldoc.clj"
     "orchard/indent.clj"
-    "orchard/info.clj"
     "orchard/java.clj"
     "orchard/java/classpath.clj"
     "orchard/java/parser_next.clj"
     "orchard/java/resource.clj"
     "orchard/java/source_files.clj"
-    "orchard/meta.clj"
     "orchard/namespace.clj"
     "orchard/profile.clj"
     "orchard/query.clj"
     "orchard/spec.clj"
-    "orchard/stacktrace.clj"
     "orchard/trace.clj"
     "orchard/util/os.clj"
     "orchard/xref.clj"
     "mx/cider/orchard/LruMap.java"})
+
+;; cider-nrepl beyond the debugger is not shipped.
+(defn- dropped? [rel]
+  (or (contains? dropped rel)
+      (and (str/starts-with? rel "cider/")
+           (not (contains? shipped rel))
+           (not (contains? stand-ins rel)))))
 
 (def target "resources/src/babashka")
 (def java-target "src-java")
@@ -222,6 +237,39 @@
                                   "git" "merge-file" (str ours) (str base) (str theirs))]
         (if (zero? exit) :clean exit)))))
 
+(defn- data-readers-problem
+  "Returns a message if bundled-data-readers in main.clj differs from the
+  data_readers.clj in the cider-nrepl jar extracted to dir, or nil."
+  [dir]
+  (let [jar-readers (dissoc (edn/read-string (slurp (str (fs/file dir "data_readers.clj"))))
+                            ;; enlighten is not bundled
+                            'light)
+        src (slurp "src/babashka/main.clj")
+        form (read-string (subs src (str/index-of src "(def ^:private bundled-data-readers")))
+        ours (second (last form))]
+    (when (not= jar-readers ours)
+      (str "bundled-data-readers in src/babashka/main.clj differs from cider-nrepl's data_readers.clj: "
+           (pr-str jar-readers)))))
+
+(defn- lib-test-pin-problem
+  "Returns a message if the cider-nrepl lib-test checkout in bb-tested-libs.edn
+  is not the commit of the vendored version's tag, or nil."
+  [version]
+  (let [{:keys [git-sha git-url]} (get (edn/read-string (slurp "test-resources/lib_tests/bb-tested-libs.edn"))
+                                       'cider/cider-nrepl)
+        tag (str "refs/tags/v" version)
+        {:keys [exit out]} (shell {:continue true :out :string :err :string}
+                                  "git" "ls-remote" git-url tag (str tag "^{}"))
+        shas (into {} (map (fn [line] (let [[sha ref] (str/split line #"\s+")] [ref sha])))
+                   (str/split-lines (str/trim out)))
+        tag-sha (or (shas (str tag "^{}")) (shas tag))]
+    (cond
+      (or (not (zero? exit)) (nil? tag-sha))
+      (do (println "\nCould not look up" tag "of cider-nrepl, the lib-test pin is unchecked.") nil)
+      (not= tag-sha git-sha)
+      (str "Set :git-sha of cider/cider-nrepl in test-resources/lib_tests/bb-tested-libs.edn to "
+           tag-sha " (" tag ")."))))
+
 (defn- stamp!
   "Replaces the value matched by `re` in `file` with `value`."
   [file re value what]
@@ -238,17 +286,20 @@
   (let [old (extract old-jars)
         new (extract new-jars)
         upstream (->> (concat (fs/glob new "clojure/**") (fs/glob new "nrepl/**")
-                              (fs/glob new "orchard/**") (fs/glob new "mx/**"))
+                              (fs/glob new "orchard/**") (fs/glob new "mx/**")
+                              (fs/glob new "cider/**"))
                       (filter fs/regular-file?)
                       (map #(str (fs/relativize new %)))
                       (remove #(or (str/ends-with? % ".class") (str/ends-with? % ".so")))
                       set)
         missing (remove upstream (concat shipped java-shipped stand-ins dropped))
-        added (sort (remove (set/union shipped java-shipped stand-ins dropped) upstream))
+        added (sort (remove #(or (contains? (set/union shipped java-shipped stand-ins) %) (dropped? %)) upstream))
         results (concat
                  (for [rel (sort shipped)] [rel (merge-file! target rel old new)])
                  (for [rel (sort java-shipped)] [rel (merge-file! java-target rel old new)]))
-        conflicted (remove (comp #{:clean} second) results)]
+        conflicted (remove (comp #{:clean} second) results)
+        cider-problems (keep identity [(data-readers-problem new)
+                                       (lib-test-pin-problem (bumped 'cider/cider-nrepl))])]
     (doseq [[rel status] results
             :when (not= :clean status)]
       (println (format "%-52s %s" rel (case status
@@ -274,6 +325,8 @@
         (println "Replace the map in its root-deps with the one from tools.deps.edn"
                  (bumped 'org.clojure/tools.deps.edn))
         (System/exit 1)))
+    (doseq [problem cider-problems]
+      (println (str "\n" problem)))
     (when (seq added)
       (println "\nUpstream files not shipped, decide per file:")
       (run! #(println " " %) added))
@@ -289,4 +342,4 @@
     (fs/delete-tree new)
     (when (seq conflicted)
       (println "\nResolve the conflict markers before committing."))
-    (when (seq missing) (System/exit 1))))
+    (when (or (seq missing) (seq cider-problems)) (System/exit 1))))

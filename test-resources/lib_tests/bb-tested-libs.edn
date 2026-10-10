@@ -1,7 +1,9 @@
 ;; These libraries are tested against babashka and have been added by
 ;; script/add-libtest.clj. Each library entry contains enough data to run tests
 ;; and to update tests later
-{nrepl/nrepl
+{cider/cider-nrepl
+ {:git-sha "6c2175c20799a3e79440385fe24e71bd770b14ff", :git-url "https://github.com/clojure-emacs/cider-nrepl", :test-paths ["test/clj" "test/common" "test/src"], :test-namespaces [], :manually-added true}
+ nrepl/nrepl
  {:git-sha "61a42f454160d8a503fa8365fbd847ae3e797e8c", :git-url "https://github.com/nrepl/nrepl", :test-paths ["test/clojure" "test"], :test-namespaces [], :manually-added true, :skip-windows true}
  listora/again
  {:git-sha "b1a6793f0deaa3cc016eee7626097ba8bf36ba10", :git-url "https://github.com/liwp/again", :test-namespaces (again.core-test)}
@@ -145,8 +147,7 @@
                                   malli.transform-test
                                   malli.util-test]
                 :git-url "https://github.com/metosin/malli"
-                :git-sha "6b0862135ea58ef2ac92bda9ae605994a5fb20d6"
-                :git-tag "0.19.1"
+                :git-sha "7b117a015731da04260f5ad1b1dd7b980e31b20b"
                 ;; specify for adding tests to classpath
                 :test-paths ["test"]}
  meander/epsilon {:test-namespaces [meander.epsilon-test

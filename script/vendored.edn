@@ -9,4 +9,5 @@
  org.clojure/tools.namespace "1.5.1"
  org.clojure/java.classpath "1.1.1"
  nrepl/nrepl "1.7.0"
- cider/orchard "0.44.0"}
+ cider/orchard "0.44.0"
+ cider/cider-nrepl "0.63.1"}

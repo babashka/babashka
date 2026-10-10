@@ -536,3 +536,7 @@
 (let [v (volatile! false)]
   (with-open [_ (reify AutoCloseable (close [_] (vreset! v true)))])
   @v)"))))
+
+(deftest thread-death-test
+  (testing "(ThreadDeath.) constructs a ThreadDeath"
+    (is (true? (bb nil "(instance? ThreadDeath (ThreadDeath.))")))))

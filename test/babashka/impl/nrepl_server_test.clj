@@ -9,6 +9,7 @@
    [babashka.test-utils :as tu]
    [babashka.wait :as wait]
    [bencode.core :as bencode]
+   [clojure.set :as set]
    [clojure.string :as str]
    [clojure.test :as t :refer [deftest is testing]]
    [clojure.tools.reader.reader-types :as r]
@@ -194,7 +195,8 @@
         (let [reply (read-reply in session @id)
               sessions (set (:sessions reply))]
           (is (contains? sessions session))
-          (let [new-sessions (loop [i 0
+          (let [before sessions
+                new-sessions (loop [i 0
                                     sessions #{}]
                                (bencode/write-bencode os {"op" "clone" "session" session "id" (new-id!)})
                                (let [new-session (:new-session (read-reply in session @id))
@@ -205,11 +207,11 @@
             (bencode/write-bencode os {"op" "ls-sessions" "session" session "id" (new-id!)})
             (let [reply (read-reply in session @id)
                   sessions (set (:sessions reply))]
-              (is (= 6 (count sessions)))
+              (is (= (+ 5 (count before)) (count sessions)))
               (is (contains? sessions session))
-              (is (= new-sessions (disj sessions session)))
+              (is (= new-sessions (set/difference sessions before)))
               (testing "close"
-                (doseq [close-session (disj sessions session)]
+                (doseq [close-session new-sessions]
                   (bencode/write-bencode os {"op" "close" "session" close-session "id" (new-id!)})
                   (let [reply (read-reply in close-session @id)]
                     (is (contains? (set (:status reply)) "session-closed")))))
@@ -625,6 +627,100 @@
           (testing "inspect-def-current-value defs it"
             (send {"op" "inspect-def-current-value" "ns" "user" "var-name" "inspected"})
             (is (= "{:a 1, :b [1 2 3]}" (:value (first (send {"op" "eval" "code" "inspected"})))))))))))
+
+(defn- sessionless-eval
+  "Evaluates code on the server at port without cloning a session.
+  Returns the value."
+  [port code]
+  (with-open [socket (doto (java.net.Socket. "127.0.0.1" (int port))
+                       (.setSoTimeout 30000))
+              in (java.io.PushbackInputStream. (.getInputStream socket))
+              os (.getOutputStream socket)]
+    (bencode/write-bencode os {"op" "eval" "id" "s" "code" code})
+    (loop []
+      (let [msg (read-msg (bencode/read-bencode in))]
+        (if (and (= "s" (:id msg)) (:value msg))
+          (:value msg)
+          (recur))))))
+
+(defn- debug-eval
+  "Evaluates code in a fresh session and closes it afterwards.
+  Answers each breakpoint with the next of inputs.
+  Initializes the debugger first if inputs is not empty.
+  Returns the breakpoints and the eval replies."
+  [port code inputs]
+  (with-open [socket (doto (java.net.Socket. "127.0.0.1" (int port))
+                       (.setSoTimeout 30000))
+              in (java.io.PushbackInputStream. (.getInputStream socket))
+              os (.getOutputStream socket)]
+    (bencode/write-bencode os {"op" "clone"})
+    (let [session (:new-session (read-msg (bencode/read-bencode in)))]
+      (when (seq inputs)
+        (bencode/write-bencode os {"op" "init-debugger" "session" session "id" "dbg"}))
+      (bencode/write-bencode os {"op" "eval" "session" session "id" "e" "code" code})
+      (loop [inputs inputs breaks [] replies []]
+        (let [msg (read-msg (bencode/read-bencode in))]
+          (cond
+            (contains? (set (:status msg)) "need-debug-input")
+            (do (bencode/write-bencode os {"op" "debug-input" "session" session "id" (str (random-uuid))
+                                           "key" (:key msg) "input" (first inputs)})
+                (recur (rest inputs) (conj breaks (select-keys msg [:coor :debug-value :code])) replies))
+
+            (= "e" (:id msg))
+            (let [replies (conj replies msg)]
+              (if (contains? (set (:status msg)) "done")
+                (do (bencode/write-bencode os {"op" "close" "session" session "id" "close"})
+                    (read-reply in session "close")
+                    {:breaks breaks :replies replies})
+                (recur inputs breaks replies)))
+
+            :else (recur inputs breaks replies)))))))
+
+(deftest nrepl-debugger-test
+  (let [dir (fs/create-temp-dir)
+        file (str (fs/file dir "dbg_demo.clj"))
+        tagged (str (fs/file dir "dbg_tagged.clj"))]
+    (spit file "(ns dbg-demo)\n\n(defn bar [x]\n  (* 10 x))\n\n(defn foo [a]\n  (inc (bar a)))\n")
+    (spit tagged "(ns dbg-tagged)\n\n(defn f [a]\n  #dbg (let [b (* 10 a)] (+ a b)))\n")
+    (try
+      (with-bb-script 1676
+        "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1676 :quiet true}))"
+        (fn []
+          (testing "the debugger loads on the first clone"
+            (is (= "nil" (sessionless-eval 1676 "(find-ns 'cider.nrepl.middleware.debug)")))
+            (is (= "true" (some :value (:replies (debug-eval 1676 "(some? (find-ns 'cider.nrepl.middleware.debug))" []))))))
+          (testing "#dbg stops at each subform with its value"
+            (let [{:keys [breaks replies]} (debug-eval 1676 "#dbg (let [x 1 y (inc x)] (+ x y))"
+                                                       [":next" ":next" ":eval" "(* y 100)" ":continue"])]
+              (is (= [[1 3 1] [1 3] [2 1] [2 1] [2 1]] (map :coor breaks)))
+              (is (= ["1" "2" "1" "1" "200"] (map :debug-value breaks)))
+              (is (= "3" (some :value replies)))))
+          (testing ":in steps into a var loaded from a file"
+            (debug-eval 1676 (str "(load-file " (pr-str file) ")") [])
+            (let [{:keys [breaks replies]} (debug-eval 1676 "#dbg (let [z 2] (dbg-demo/foo z))"
+                                                       [":in" ":in" ":quit"])]
+              (is (str/starts-with? (:code (nth breaks 1)) "(defn foo"))
+              (is (str/starts-with? (:code (nth breaks 2)) "(defn bar"))
+              (testing ":quit ends the eval without an error"
+                (is (= "QUIT" (some :value replies)))
+                (is (not-any? :err replies)))))
+          (testing "a file with #dbg loads once the debugger has loaded"
+            (is (= "11" (last (keep :value (:replies (debug-eval 1676 (str "(load-file " (pr-str tagged) ") (dbg-tagged/f 1)") [])))))))))
+      (finally
+        (fs/delete-tree dir)))))
+
+(deftest nrepl-debugger-first-eval-test
+  (let [dir (fs/create-temp-dir)
+        tagged (str (fs/file dir "dbg_first.clj"))]
+    (spit tagged "(ns dbg-first)\n\n(defn f [a]\n  #dbg (let [b (* 10 a)] (+ a b)))\n")
+    (try
+      (with-bb-script 1677
+        "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1677 :quiet true}))"
+        (fn []
+          (testing "an eval sent right after init-debugger reads #dbg"
+            (is (= "11" (last (keep :value (:replies (debug-eval 1677 (str "(load-file " (pr-str tagged) ") (dbg-first/f 1)") [":continue"])))))))))
+      (finally
+        (fs/delete-tree dir)))))
 
 (deftest ^:skip-windows nrepl-unix-socket-test
   ;; macOS limits a socket path to 104 bytes, its temp dir is longer
