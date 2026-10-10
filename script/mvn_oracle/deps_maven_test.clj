@@ -1,10 +1,10 @@
 #!/usr/bin/env bb
-;; babashka.deps.mvn: versions, credentials bound by the caller, the active
+;; babashka.deps.maven: versions, credentials bound by the caller, the active
 ;; proxy and the repositories of a POM model. Expected values come from
 ;; tools.deps 0.31.1646 on the JVM, the models from models/expected.edn.
-;; Run: CLOJURE_CLI_ALLOW_HTTP_REPO=true ./bb -cp resources/src/babashka script/mvn_oracle/deps_mvn_test.clj
-(ns deps-mvn-test
-  (:require [babashka.deps.mvn :as mvn]
+;; Run: CLOJURE_CLI_ALLOW_HTTP_REPO=true ./bb -cp resources/src/babashka script/mvn_oracle/deps_maven_test.clj
+(ns deps-maven-test
+  (:require [babashka.deps.maven :as mvn]
             [babashka.fs :as fs]
             [clojure.edn :as edn]
             [clojure.string :as str]
@@ -76,7 +76,7 @@
             (testing "with-repository-credentials applies the credentials of the repository"
               (is (= ["1.0.0"] (mvn/with-repository-credentials credentials (versions url (new-local))))))
 
-            (testing "babashka.deps.mvn/find-versions applies the bound credentials"
+            (testing "babashka.deps.maven/find-versions applies the bound credentials"
               (is (= [{:mvn/version "1.0.0"}]
                      (mvn/with-repository-credentials credentials
                        (mvn/find-versions 'acme/lib {:mvn/repos {"nexus" {:url url}} :mvn/local-repo (new-local)})))))
@@ -218,7 +218,7 @@
              repos (mvn/model-repos model)]
          {:deps (vec (pom/model-deps model)) :repos repos :repo-order (vec (keys repos))})
        (catch clojure.lang.ExceptionInfo e
-         (if (= :babashka.deps.mvn/invalid-model (:type (ex-data e)))
+         (if (= :babashka.deps.maven/invalid-model (:type (ex-data e)))
            :throws
            (throw e)))))
 
@@ -227,5 +227,5 @@
     (testing (str "read-model-file and model-repos on " file " match tools.deps on the JVM")
       (is (= expected (model-data file))))))
 
-(let [{:keys [fail error]} (t/run-tests 'deps-mvn-test)]
+(let [{:keys [fail error]} (t/run-tests 'deps-maven-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

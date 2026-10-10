@@ -4,8 +4,8 @@
   implements the :mvn procurer over maven-resolver. clojure.tools.deps loads
   this path, so requiring babashka.impl.mvn.tools-deps here registers the
   Maven-free :mvn and :pom methods in its place. find-versions is here, on
-  the public babashka.deps.mvn."
-  (:require [babashka.deps.mvn :as mvn]
+  the public babashka.deps.maven."
+  (:require [babashka.deps.maven :as mvn]
             [babashka.impl.mvn.tools-deps]
             [clojure.tools.deps.extensions :as ext]))
 

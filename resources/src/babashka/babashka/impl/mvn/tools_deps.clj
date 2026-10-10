@@ -16,7 +16,7 @@
 
 (def ^:dynamic *caller-servers*
   "A map of repository id to :url, :username and :password, bound by
-  babashka.deps.mvn/with-repository-credentials."
+  babashka.deps.maven/with-repository-credentials."
   nil)
 
 (defn- settings []
@@ -173,12 +173,12 @@
 (declare read-local-pom)
 
 (defn- invalid-model! [file message]
-  (throw (ex-info message {:type :babashka.deps.mvn/invalid-model :file (str file)})))
+  (throw (ex-info message {:type :babashka.deps.maven/invalid-model :file (str file)})))
 
 (defn model-from-file
   "Returns the effective model of the POM in file, a parent from disk or from
   the repositories in config.
-  Throws an ex-info with :type :babashka.deps.mvn/invalid-model and :file if
+  Throws an ex-info with :type :babashka.deps.maven/invalid-model and :file if
   the text does not parse, the modelVersion is not 4.0.0, the model lacks a
   groupId, artifactId or version, a dependency lacks one of them, a
   dependency of scope system lacks a systemPath, or a parent or BOM is
@@ -210,7 +210,7 @@
           model))
       (catch clojure.lang.ExceptionInfo e
         (if (or (invalid? e) (= :babashka.impl.mvn.pom/unresolvable (:type (ex-data e))))
-          (throw (ex-info (ex-message e) (assoc (ex-data e) :type :babashka.deps.mvn/invalid-model :file (str file)) e))
+          (throw (ex-info (ex-message e) (assoc (ex-data e) :type :babashka.deps.maven/invalid-model :file (str file)) e))
           (throw e))))))
 
 (defn- repository-policy

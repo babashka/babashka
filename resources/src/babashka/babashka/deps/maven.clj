@@ -1,4 +1,4 @@
-(ns babashka.deps.mvn
+(ns babashka.deps.maven
   "Maven versions, repository credentials, proxy settings and POM
   repositories for tools.deps."
   (:require [babashka.impl.mvn.cipher :as cipher]

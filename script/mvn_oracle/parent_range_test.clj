@@ -94,12 +94,12 @@
 
 (deftest read-model-file-test
   (doseq [range ["[5.0,6.0)" "[1.0,)"]]
-    (testing (str "read-model-file throws :babashka.deps.mvn/invalid-model for the parent range " range)
+    (testing (str "read-model-file throws :babashka.deps.maven/invalid-model for the parent range " range)
       (let [f (fs/file tmp (str "local-" (hash range)) "pom.xml")]
         (fs/create-dirs (fs/parent f))
         (spit f (pom "<parent><groupId>ranged</groupId><artifactId>parent</artifactId><version>" range "</version><relativePath/></parent>"
                      "<artifactId>local</artifactId>"))
-        (is (= :babashka.deps.mvn/invalid-model
+        (is (= :babashka.deps.maven/invalid-model
                (try (ext.pom/read-model-file f {:mvn/repos {"remote" {:url (str (.toURI remote))}}
                                                 :mvn/local-repo (str local)})
                     nil
