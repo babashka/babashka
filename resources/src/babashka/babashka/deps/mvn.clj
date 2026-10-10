@@ -2,7 +2,6 @@
   "Maven versions, repository credentials, proxy settings and POM
   repositories for tools.deps."
   (:require [babashka.impl.mvn.cipher :as cipher]
-            [babashka.impl.mvn.repo :as repo]
             [babashka.impl.mvn.settings :as settings]
             [babashka.impl.mvn.tools-deps :as mvn]))
 
@@ -17,7 +16,7 @@
 (defn ^:no-doc with-repository-credentials*
   [repositories f]
   (check-credentials! repositories)
-  (binding [repo/*caller-servers* (into {} (filter (fn [[_ r]] (:username r))) repositories)]
+  (binding [mvn/*caller-servers* (into {} (filter (fn [[_ r]] (:username r))) repositories)]
     (f)))
 
 (defmacro with-repository-credentials

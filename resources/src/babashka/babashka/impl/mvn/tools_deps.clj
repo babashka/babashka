@@ -14,6 +14,11 @@
             [clojure.tools.deps.extensions :as ext]
             [clojure.tools.deps.util.session :as session]))
 
+(def ^:dynamic *caller-servers*
+  "A map of repository id to :url, :username and :password, bound by
+  babashka.deps.mvn/with-repository-credentials."
+  nil)
+
 (defn- settings []
   (session/retrieve :babashka.impl.mvn/settings settings/read-settings))
 
@@ -21,8 +26,8 @@
 ;; "Recursive update" when its function retrieves too, so look up first.
 (defn- repos [{:keys [mvn/repos]}]
   (let [s (settings)]
-    (if repo/*caller-servers*
-      (repo/remote-repos repos s)
+    (if-let [servers *caller-servers*]
+      (repo/remote-repos repos (assoc s :caller-servers servers))
       (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos s)))))
 
 (defn- local-repo [config]
@@ -316,7 +321,7 @@
          remotes (repos config)
          ;; a hash, so no session key holds a password
          k [:babashka.impl.mvn/versions lib nature local (:mvn/repos config)
-            (some-> repo/*caller-servers* hash)]]
+            (some-> *caller-servers* hash)]]
      ;; metadata/versions retrieves from the session, so it runs outside session/retrieve
      (or (session/retrieve k)
          (let [versions (metadata/versions local remotes {:group group :artifact artifact} nature)]

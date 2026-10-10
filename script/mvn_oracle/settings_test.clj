@@ -221,8 +221,7 @@
 (deftest caller-servers-test
   (let [nexus {"nexus" {:url "https://nexus.example.com/" :username "u" :password "p"}}
         auth (fn [settings servers [id url]]
-               (binding [repo/*caller-servers* servers]
-                 (:auth (repo/remote-repo settings [id {:url url}]))))]
+               (:auth (repo/remote-repo (assoc settings :caller-servers servers) [id {:url url}])))]
     (testing "a caller's server applies to the repository it names"
       (is (= ["u" "p"] (auth {} nexus ["nexus" "https://nexus.example.com/"]))))
 
