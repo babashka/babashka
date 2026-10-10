@@ -91,7 +91,7 @@
   (let [{:keys [versions]} (metadata/versions (local-repo config) (pom-repos config declared-repos)
                                               {:group group :artifact artifact})
         highest (last (filter #(version/in-range? % version) versions))
-        data {:group group :artifact artifact :version version}]
+        data {:type :babashka.impl.mvn.pom/unresolvable :group group :artifact artifact :version version}]
     (cond
       (nil? highest)
       (throw (ex-info (format "No versions matched the requested parent version range '%s'" version) data))
