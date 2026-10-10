@@ -19,6 +19,7 @@ A preview of the next release can be installed from
 - SCI: `import` expands to `clojure.core/import*`
 - SCI: fix the location of a top-level symbol followed by a newline or the end of input
 - SCI: `for`, `if-let`, `when-let`, `if-some`, `when-some`, `when-first` and `condp` name their internal locals with `__`
+- SCI: `instance?` on a protocol is `false` for a type the protocol is only extended to, such as `nil`
 - Add `babashka.deps.maven` with `find-versions`, `with-repository-credentials`, `active-proxy` and `model-repos`
 - Fix version ranges under a disabled `:releases` or `:snapshots` policy, the order of POM profile repositories and `settings.xml` proxies without a port
 
