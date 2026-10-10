@@ -134,11 +134,13 @@
         versions #(:versions (metadata/versions local [%1] art %2))]
     (fs/create-dirs (fs/file remote "g/a"))
     (spit (fs/file remote "g/a/maven-metadata.xml")
-          "<metadata><versioning><versions><version>1.0</version></versions></versioning></metadata>")
+          "<metadata><versioning><versions><version>1.0</version><version>1.1-SNAPSHOT</version></versions></versioning></metadata>")
     (testing ":release skips a repository with releases disabled"
       (is (= [] (versions (repo (policy false :always) (policy true :always)) :release))))
-    (testing ":release-or-snapshot uses a repository with only snapshots enabled"
-      (is (= ["1.0"] (versions (repo (policy false :always) (policy true :always)) :release-or-snapshot))))
+    (testing ":release-or-snapshot lists the snapshots of a repository with only snapshots enabled"
+      (is (= ["1.1-SNAPSHOT"] (versions (repo (policy false :always) (policy true :always)) :release-or-snapshot))))
+    (testing ":release-or-snapshot lists the releases of a repository with only releases enabled"
+      (is (= ["1.0"] (versions (repo (policy true :always) (policy false :always)) :release-or-snapshot))))
     (testing ":release-or-snapshot skips a repository with both policies disabled"
       (is (nil? (#'metadata/metadata-policy (repo (policy false :always) (policy false :always)) :release-or-snapshot))))
     (testing ":release-or-snapshot applies the more frequent update policy"
@@ -148,7 +150,7 @@
     (testing ":snapshot ignores the releases policy"
       (is (= :never (:update (#'metadata/metadata-policy (repo (policy true :always) (policy true :never)) :snapshot)))))
     (testing ":release-or-snapshot is the default"
-      (is (= ["1.0"] (:versions (metadata/versions local [(repo (policy false :always) (policy true :always))] art)))))
+      (is (= ["1.1-SNAPSHOT"] (:versions (metadata/versions local [(repo (policy false :always) (policy true :always))] art)))))
     (testing ":release-or-snapshot applies the more lenient checksum policy"
       (is (= :warn (:checksum (#'metadata/metadata-policy (repo (assoc (policy true :always) :checksum :fail) (policy true :always)) :release-or-snapshot)))))))
 

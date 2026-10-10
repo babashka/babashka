@@ -59,7 +59,7 @@
    :active (if-let [active (child-text el "active")] (true-text? active) true)
    :protocol (or (child-text el "protocol") "http")
    :host (interpolate (child-text el "host"))
-   :port (some-> (child-text el "port") parse-long)
+   :port (or (some-> (child-text el "port") parse-long) 8080)
    :username (interpolate (child-text el "username"))
    :password (interpolate (child-text el "password"))
    :non-proxy-hosts (child-text el "nonProxyHosts")})

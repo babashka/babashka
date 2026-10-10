@@ -14,6 +14,11 @@
             [clojure.tools.deps.extensions :as ext]
             [clojure.tools.deps.util.session :as session]))
 
+(def ^:dynamic *caller-servers*
+  "A map of repository id to :url, :username and :password, bound by
+  babashka.deps.maven/with-repository-credentials."
+  nil)
+
 (defn- settings []
   (session/retrieve :babashka.impl.mvn/settings settings/read-settings))
 
@@ -21,7 +26,9 @@
 ;; "Recursive update" when its function retrieves too, so look up first.
 (defn- repos [{:keys [mvn/repos]}]
   (let [s (settings)]
-    (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos s))))
+    (if-let [servers *caller-servers*]
+      (repo/remote-repos repos (assoc s :caller-servers servers))
+      (session/retrieve [:babashka.impl.mvn/repos repos] #(repo/remote-repos repos s)))))
 
 (defn- local-repo [config]
   (repo/local-repo config))
@@ -84,7 +91,7 @@
   (let [{:keys [versions]} (metadata/versions (local-repo config) (pom-repos config declared-repos)
                                               {:group group :artifact artifact})
         highest (last (filter #(version/in-range? % version) versions))
-        data {:group group :artifact artifact :version version}]
+        data {:type :babashka.impl.mvn.pom/unresolvable :group group :artifact artifact :version version}]
     (cond
       (nil? highest)
       (throw (ex-info (format "No versions matched the requested parent version range '%s'" version) data))
@@ -162,6 +169,81 @@
   repositories in config."
   [text config]
   (pom/effective-model (pom/parse text) (pom-ctx config)))
+
+(declare read-local-pom)
+
+(defn- invalid-model! [file message]
+  (throw (ex-info message {:type :babashka.deps.maven/invalid-model :file (str file)})))
+
+(defn model-from-file
+  "Returns the effective model of the POM in file, a parent from disk or from
+  the repositories in config.
+  Throws an ex-info with :type :babashka.deps.maven/invalid-model and :file if
+  the text does not parse, the modelVersion is not 4.0.0, the model lacks a
+  groupId, artifactId or version, a dependency lacks one of them, a
+  dependency of scope system lacks a systemPath, or a parent or BOM is
+  invalid or not found."
+  [file config]
+  (let [file (fs/canonicalize file)]
+    (try
+      (let [raw (pom/parse (slurp (fs/file file)))
+            model-version (:model-version raw)]
+        (cond
+          (nil? model-version) (invalid-model! file "'modelVersion' is missing.")
+          (not= "4.0.0" model-version)
+          (invalid-model! file (str "'modelVersion' of '" model-version "' is not supported, use 4.0.0.")))
+        (let [model (pom/effective-model raw {:read-pom (read-local-pom config)
+                                              :resolve-version (partial parent-version config)
+                                              :cache (model-cache)
+                                              :basedir (str (fs/parent file))
+                                              :pom-file (str file)})]
+          (doseq [[k tag] [[:group "groupId"] [:artifact "artifactId"] [:version "version"]]
+                  :when (str/blank? (get model k))]
+            (invalid-model! file (str "'" tag "' is missing.")))
+          (doseq [dep (pom/dependencies model)
+                  [k tag] [[:group "groupId"] [:artifact "artifactId"] [:version "version"]]
+                  :when (str/blank? (get dep k))]
+            (invalid-model! file (str "'dependencies.dependency." tag "' for " (:group dep) ":" (:artifact dep) " is missing.")))
+          (when-let [dep (first (filter #(and (= "system" (:scope %)) (str/blank? (:system-path %)))
+                                        (pom/dependencies model)))]
+            (invalid-model! file (str "'dependencies.dependency.systemPath' for " (:group dep) ":" (:artifact dep) " is missing.")))
+          model))
+      (catch clojure.lang.ExceptionInfo e
+        (if (or (invalid? e) (= :babashka.impl.mvn.pom/unresolvable (:type (ex-data e))))
+          (throw (ex-info (ex-message e) (assoc (ex-data e) :type :babashka.deps.maven/invalid-model :file (str file)) e))
+          (throw e))))))
+
+(defn- repository-policy
+  "Returns a POM repository policy as :mvn/repos data, or nil if the POM
+  names none."
+  [{:keys [enabled update checksum]}]
+  (let [update (when update
+                 (if-let [[_ minutes] (re-matches #"interval:(\d+)" update)]
+                   (parse-long minutes)
+                   (#{:always :daily :never} (keyword update))))
+        checksum (when checksum (#{:warn :fail :ignore} (keyword checksum)))
+        policy (cond-> {}
+                 enabled (assoc :enabled (Boolean/parseBoolean enabled))
+                 update (assoc :update update)
+                 checksum (assoc :checksum checksum))]
+    (not-empty policy)))
+
+(def ^:private super-pom-central
+  ["central" {:url "https://repo.maven.apache.org/maven2" :snapshots {:enabled false}}])
+
+(defn model-repos
+  "Returns the repositories of a model as :mvn/repos data, with central
+  unless the model names central."
+  [model]
+  (let [declared (mapv (fn [{:keys [id url releases snapshots]}]
+                         [id (cond-> {:url url}
+                               (repository-policy releases) (assoc :releases (repository-policy releases))
+                               (repository-policy snapshots) (assoc :snapshots (repository-policy snapshots)))])
+                       (:repositories model))]
+    (into {}
+          (if (some #(= "central" (first %)) declared)
+            declared
+            (conj declared super-pom-central)))))
 
 (defn model-deps
   "The compile and runtime dependencies of a model, as tools.deps data."
@@ -244,7 +326,9 @@
    (let [[group artifact] (coords/lib->names lib)
          local (local-repo config)
          remotes (repos config)
-         k [:babashka.impl.mvn/versions lib nature local (:mvn/repos config)]]
+         ;; a hash, so no session key holds a password
+         k [:babashka.impl.mvn/versions lib nature local (:mvn/repos config)
+            (some-> *caller-servers* hash)]]
      ;; metadata/versions retrieves from the session, so it runs outside session/retrieve
      (or (session/retrieve k)
          (let [versions (metadata/versions local remotes {:group group :artifact artifact} nature)]
@@ -255,12 +339,15 @@
   (ex-info (str "Unable to resolve " lib " version: " (:mvn/version coord))
            {:lib lib :coord coord}))
 
-(defmethod ext/find-versions :mvn
-  [lib _coord _coord-type config]
+(defn find-versions
+  "Returns the versions of lib in the repositories in config and the local
+  repository, oldest first, as [{:mvn/version ...}], or nil if there are none.
+  Snapshot versions are left out unless snapshots? is true."
+  [lib config snapshots?]
   (let [{:keys [versions]} (artifact-versions lib config)]
     (when (seq versions)
       (into []
-            (comp (remove #(str/ends-with? % "-SNAPSHOT"))
+            (comp (remove #(and (not snapshots?) (str/ends-with? % "-SNAPSHOT")))
                   (map #(hash-map :mvn/version %)))
             versions))))
 

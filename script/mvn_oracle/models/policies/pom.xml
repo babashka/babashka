@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>m</groupId><artifactId>policies</artifactId><version>1</version>
+  <repositories>
+    <repository>
+      <id>snapshots-only</id><url>https://snapshots.example.com/repo</url>
+      <releases><enabled>false</enabled></releases>
+      <snapshots><enabled>true</enabled><updatePolicy>always</updatePolicy><checksumPolicy>fail</checksumPolicy></snapshots>
+    </repository>
+    <repository>
+      <id>hourly</id><url>https://hourly.example.com/repo</url>
+      <releases><updatePolicy>interval:60</updatePolicy><checksumPolicy>ignore</checksumPolicy></releases>
+    </repository>
+    <repository>
+      <id>never</id><url>https://never.example.com/repo</url>
+      <releases><enabled>true</enabled><updatePolicy>never</updatePolicy></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+  </repositories>
+</project>

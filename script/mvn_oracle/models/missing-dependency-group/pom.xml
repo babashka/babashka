@@ -1,0 +1,7 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>m</groupId><artifactId>nodepgroup</artifactId><version>1</version>
+  <dependencies>
+    <dependency><artifactId>core</artifactId><version>1.0.0</version></dependency>
+  </dependencies>
+</project>

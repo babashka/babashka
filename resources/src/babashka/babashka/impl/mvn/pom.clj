@@ -27,6 +27,7 @@
    :type (or (x/child-text el "type") "jar")
    :classifier (x/child-text el "classifier")
    :scope (x/child-text el "scope")
+   :system-path (x/child-text el "systemPath")
    :optional (x/child-text el "optional")
    :exclusions (mapv exclusion (some-> (x/child el "exclusions") (x/children "exclusion")))})
 
@@ -54,8 +55,16 @@
   (into {} (for [p (x/elements el)]
              [(x/tag-name p) (or (x/text p) "")])))
 
+(defn- repository-policy [el]
+  (when el
+    {:enabled (x/child-text el "enabled")
+     :update (x/child-text el "updatePolicy")
+     :checksum (x/child-text el "checksumPolicy")}))
+
 (defn- repositories [el]
-  (mapv (fn [r] {:id (x/child-text r "id") :url (x/child-text r "url")})
+  (mapv (fn [r] {:id (x/child-text r "id") :url (x/child-text r "url")
+                 :releases (repository-policy (x/child r "releases"))
+                 :snapshots (repository-policy (x/child r "snapshots"))})
         (x/children el "repository")))
 
 (defn- activation [el]
@@ -110,7 +119,8 @@
                     (throw (ex-info (ex-message e) {:type ::unreadable} e))))
         parent (x/child root "parent")]
     (merge (gav root)
-           {:packaging (or (x/child-text root "packaging") "jar")
+           {:model-version (x/child-text root "modelVersion")
+            :packaging (or (x/child-text root "packaging") "jar")
             :name (x/child-text root "name")
             :parent (when parent
                       (assoc (gav parent) :relative-path (x/child-text parent "relativePath")))
@@ -298,7 +308,8 @@
       (update :properties merge properties)
       (update :dependencies merge-by-key dependencies dependency-key true)
       (update :dependency-management merge-by-key dependency-management dependency-key true)
-      (update :repositories merge-by-key repositories :id true)))
+      ;; a profile's repositories go first
+      (update :repositories #(merge-by-key repositories % :id false))))
 
 (defn- inject-profiles [model basedir]
   (reduce inject-profile model (active-profiles model basedir)))
@@ -446,7 +457,7 @@
               parent-dir (:basedir found)]
           (when-not parent-raw
             (throw (ex-info (str "Could not find parent POM " (:group parent) ":" (:artifact parent) ":" (:version parent))
-                            {:parent parent})))
+                            {:type ::unresolvable :parent parent})))
           (when (and (coords/version-range? (:version parent))
                      (or (nil? (:version model)) (version-references-parent? (:version model))))
             (throw (ex-info (str "Version must be a constant @ "
@@ -478,7 +489,7 @@
                     bom (some-> (read-pom dep repositories) parse)]
                 (when-not bom
                   (throw (ex-info (str "Could not find BOM " (:group dep) ":" (:artifact dep) ":" (:version dep))
-                                  {:bom dep})))
+                                  {:type ::unresolvable :bom dep})))
                 (merge-by-key acc
                               (:dependency-management (effective-model bom (assoc ctx :basedir nil :coords dep)))
                               dependency-key false))
@@ -506,11 +517,11 @@
   :resolve-version, a function of a parent gav map with a version range and
   the repositories the POM declares that returns a concrete version,
   :cache, an atom, :basedir for a local POM, and :coords, the gav map the
-  POM was requested with. The cache keys on :coords, or on :basedir for a
-  local POM. Without either the model is not cached."
-  [raw {:keys [cache basedir coords] :as ctx}]
+  POM was requested with. The cache keys on :coords, or on :basedir and
+  :pom-file for a local POM. Without either the model is not cached."
+  [raw {:keys [cache basedir coords pom-file] :as ctx}]
   (let [k (cond coords [:effective (gav-key coords)]
-                basedir [:effective-local basedir])]
+                basedir [:effective-local basedir pom-file])]
     (or (when k (get @cache k))
         (let [models (lineage raw ctx)
               assembled (reduce inherit (first models) (rest models))

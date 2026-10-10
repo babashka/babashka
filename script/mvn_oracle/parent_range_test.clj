@@ -7,7 +7,8 @@
             [babashka.deps :as deps]
             [babashka.fs :as fs]
             [clojure.string :as str]
-            [clojure.test :as t :refer [deftest is testing]]))
+            [clojure.test :as t :refer [deftest is testing]]
+            [clojure.tools.deps.extensions.pom :as ext.pom]))
 
 ;; add-deps resolves earlier libs again, so all tests share one repository
 (def ^:private tmp (fs/create-temp-dir))
@@ -90,6 +91,19 @@
   (testing "an unbounded range fails with Maven's message"
     (child! "unbounded" "[1.0,)")
     (is (= "The requested parent version range '[1.0,)' does not specify an upper bound" (failure "unbounded")))))
+
+(deftest read-model-file-test
+  (doseq [range ["[5.0,6.0)" "[1.0,)"]]
+    (testing (str "read-model-file throws :babashka.deps.maven/invalid-model for the parent range " range)
+      (let [f (fs/file tmp (str "local-" (hash range)) "pom.xml")]
+        (fs/create-dirs (fs/parent f))
+        (spit f (pom "<parent><groupId>ranged</groupId><artifactId>parent</artifactId><version>" range "</version><relativePath/></parent>"
+                     "<artifactId>local</artifactId>"))
+        (is (= :babashka.deps.maven/invalid-model
+               (try (ext.pom/read-model-file f {:mvn/repos {"remote" {:url (str (.toURI remote))}}
+                                                :mvn/local-repo (str local)})
+                    nil
+                    (catch clojure.lang.ExceptionInfo e (:type (ex-data e))))))))))
 
 (deftest constant-version-test
   (testing "a POM without a version under a parent version range resolves without its dependencies"

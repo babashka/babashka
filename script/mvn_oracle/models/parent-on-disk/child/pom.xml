@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <parent><groupId>m</groupId><artifactId>parent</artifactId><version>1</version></parent>
+  <artifactId>child</artifactId>
+  <dependencies>
+    <dependency><groupId>foo</groupId><artifactId>from-child</artifactId><version>3.0.0</version></dependency>
+  </dependencies>
+  <repositories>
+    <repository><id>shared</id><url>https://child.example.com/shared</url></repository>
+    <repository><id>interpolated</id><url>${repo.host}/repo</url></repository>
+  </repositories>
+</project>

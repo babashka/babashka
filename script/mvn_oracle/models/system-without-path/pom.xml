@@ -1,0 +1,7 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>m</groupId><artifactId>systemscope</artifactId><version>1</version>
+  <dependencies>
+    <dependency><groupId>foo</groupId><artifactId>tool</artifactId><version>1.0.0</version><scope>system</scope></dependency>
+  </dependencies>
+</project>
