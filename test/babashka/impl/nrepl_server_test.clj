@@ -628,6 +628,21 @@
             (send {"op" "inspect-def-current-value" "ns" "user" "var-name" "inspected"})
             (is (= "{:a 1, :b [1 2 3]}" (:value (first (send {"op" "eval" "code" "inspected"})))))))))))
 
+(defn- sessionless-eval
+  "Evaluates code on the server at port without cloning a session.
+  Returns the value."
+  [port code]
+  (with-open [socket (doto (java.net.Socket. "127.0.0.1" (int port))
+                       (.setSoTimeout 30000))
+              in (java.io.PushbackInputStream. (.getInputStream socket))
+              os (.getOutputStream socket)]
+    (bencode/write-bencode os {"op" "eval" "id" "s" "code" code})
+    (loop []
+      (let [msg (read-msg (bencode/read-bencode in))]
+        (if (and (= "s" (:id msg)) (:value msg))
+          (:value msg)
+          (recur))))))
+
 (defn- debug-eval
   "Evaluates code in a fresh session and closes it afterwards.
   Answers each breakpoint with the next of inputs.
@@ -671,8 +686,9 @@
       (with-bb-script 1676
         "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1676 :quiet true}))"
         (fn []
-          (testing "the debugger loads on the first init-debugger"
-            (is (= "nil" (some :value (:replies (debug-eval 1676 "(find-ns 'cider.nrepl.middleware.debug)" []))))))
+          (testing "the debugger loads on the first clone"
+            (is (= "nil" (sessionless-eval 1676 "(find-ns 'cider.nrepl.middleware.debug)")))
+            (is (= "true" (some :value (:replies (debug-eval 1676 "(some? (find-ns 'cider.nrepl.middleware.debug))" []))))))
           (testing "#dbg stops at each subform with its value"
             (let [{:keys [breaks replies]} (debug-eval 1676 "#dbg (let [x 1 y (inc x)] (+ x y))"
                                                        [":next" ":next" ":eval" "(* y 100)" ":continue"])]
