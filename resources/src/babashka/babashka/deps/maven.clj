@@ -20,18 +20,18 @@
     (f)))
 
 (defmacro with-repository-credentials
-  "Evaluates body with the credentials of repositories applied to the
-  tools.deps lookups in body.
-  The credentials hold on the thread of body and on threads that convey
-  bindings, such as future, pmap and bound-fn, as binding does.
+  "Evaluates body with the credentials in repositories applied to its
+  tools.deps lookups.
   repositories is a map of repository id to :url, :username and :password,
-  all strings, the shape of :mvn/repos with Leiningen's credential keys.
-  Entries without :username and :password are ignored.
-  An entry applies only to the repository with its id and its :url.
-  A server in settings.xml wins for an id both name.
-  An inner form replaces the repositories of an outer one.
-  A lazy seq realized outside body looks up without the credentials.
-  Throws if an entry has :username or :password and lacks one of the three."
+  each a string.
+  An entry applies only to the repository with its id and :url.
+  A server in settings.xml for the same id wins.
+  An entry without :username and :password is ignored.
+  An inner form replaces the credentials of an outer one.
+  The credentials apply on the thread of body and on threads that convey
+  bindings, such as future and pmap.
+  A lazy seq realized after body returns looks up without them.
+  Throws if an entry with :username or :password lacks one of the three."
   [repositories & body]
   `(with-repository-credentials* ~repositories (fn [] ~@body)))
 
@@ -49,12 +49,13 @@
       (:password p) (update :password cipher/decrypt-password {:server (str "proxy " (:host p))}))))
 
 (defn find-versions
-  "Returns the versions of lib as clojure.tools.deps.extensions/find-versions
-  does, oldest first, as a vector of {:mvn/version version}, or nil if the
-  repositories and the local repository list none.
+  "Returns the release versions of lib in the repositories of config and the
+  local repository, oldest first, as a vector of {:mvn/version version}, or
+  nil if they list none.
   config is a tools.deps config with :mvn/repos and an optional
   :mvn/local-repo.
-  With :snapshots true in opts, snapshot versions are included."
+  Includes snapshot versions if opts has :snapshots true.
+  Returns [] if they list only snapshot versions and opts excludes them."
   ([lib config] (find-versions lib config {}))
   ([lib config {:keys [snapshots]}]
    (mvn/find-versions lib config (boolean snapshots))))

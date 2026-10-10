@@ -63,7 +63,6 @@
                {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror) :mirrored [name]}
                repo)
         from-settings (get servers (:id repo))
-        ;; settings.xml is the user's own configuration and wins
         {:keys [username password private-key passphrase headers]}
         (or from-settings (caller-server caller-servers repo))
         ;; only settings.xml holds encrypted passwords

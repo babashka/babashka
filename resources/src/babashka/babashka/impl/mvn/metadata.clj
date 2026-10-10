@@ -229,7 +229,6 @@
          installed (let [f (fs/file local-repo rel "maven-metadata-local.xml")]
                      (when (fs/exists? f)
                        (parsed parse-artifact-metadata (slurp f))))
-         ;; a repository lists only the kinds of version its policies enable
          served? (fn [repo version]
                    (get-in repo [(if (coords/snapshot? version) :snapshots :releases) :enabled]))
          found (concat (keep (fn [repo]

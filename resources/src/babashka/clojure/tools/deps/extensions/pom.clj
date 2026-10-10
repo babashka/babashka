@@ -13,13 +13,13 @@
   (mvn/model-from-text text config))
 
 (defn read-model-file
-  "Returns the effective model of the POM in file, a parent from disk or from
-  the repositories in config.
-  Throws an ex-info with :type :babashka.deps.maven/invalid-model and :file if
-  the text does not parse, the modelVersion is not 4.0.0, the model lacks a
-  groupId, artifactId or version, a dependency lacks one of them, a
-  dependency of scope system lacks a systemPath, or a parent or BOM is
-  invalid or not found."
+  "Returns the effective model of the POM in file, with its parent from disk
+  or from the repositories in config.
+  Throws an ex-info with :type :babashka.deps.maven/invalid-model and :file
+  if the POM does not parse or its modelVersion is not 4.0.0.
+  Throws the same if the model or a dependency lacks a groupId, artifactId or
+  version, or a dependency of scope system lacks a systemPath.
+  Throws the same if a parent or BOM is missing or invalid."
   [file config]
   (mvn/model-from-file file config))
 

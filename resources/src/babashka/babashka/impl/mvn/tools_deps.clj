@@ -176,13 +176,13 @@
   (throw (ex-info message {:type :babashka.deps.maven/invalid-model :file (str file)})))
 
 (defn model-from-file
-  "Returns the effective model of the POM in file, a parent from disk or from
-  the repositories in config.
-  Throws an ex-info with :type :babashka.deps.maven/invalid-model and :file if
-  the text does not parse, the modelVersion is not 4.0.0, the model lacks a
-  groupId, artifactId or version, a dependency lacks one of them, a
-  dependency of scope system lacks a systemPath, or a parent or BOM is
-  invalid or not found."
+  "Returns the effective model of the POM in file, with its parent from disk
+  or from the repositories in config.
+  Throws an ex-info with :type :babashka.deps.maven/invalid-model and :file
+  if the POM does not parse or its modelVersion is not 4.0.0.
+  Throws the same if the model or a dependency lacks a groupId, artifactId or
+  version, or a dependency of scope system lacks a systemPath.
+  Throws the same if a parent or BOM is missing or invalid."
   [file config]
   (let [file (fs/canonicalize file)]
     (try
@@ -342,7 +342,7 @@
 (defn find-versions
   "Returns the versions of lib in the repositories in config and the local
   repository, oldest first, as [{:mvn/version ...}], or nil if there are none.
-  Snapshot versions are left out unless snapshots? is true."
+  Includes snapshot versions if snapshots? is true."
   [lib config snapshots?]
   (let [{:keys [versions]} (artifact-versions lib config)]
     (when (seq versions)

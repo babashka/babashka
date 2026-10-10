@@ -1,6 +1,4 @@
-;; Writes models/expected.edn: tools.deps' read-model-file and model-deps on
-;; the JVM for each POM under models/, with the repositories of the Maven
-;; model as :mvn/repos data. deps_maven_test.clj compares bb against it.
+;; Writes models/expected.edn from tools.deps on the JVM, for deps_maven_test.clj.
 ;; Run: clojure -Sdeps '{:deps {org.clojure/tools.deps {:mvn/version "0.31.1646"}}}' -M script/mvn_oracle/models_jvm.clj
 (ns models-jvm
   (:require [clojure.java.io :as io]

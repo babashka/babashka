@@ -1,7 +1,5 @@
 #!/usr/bin/env bb
-;; babashka.deps.maven: versions, credentials bound by the caller, the active
-;; proxy and the repositories of a POM model. Expected values come from
-;; tools.deps 0.31.1646 on the JVM, the models from models/expected.edn.
+;; babashka.deps.maven, against tools.deps 0.31.1646 on the JVM.
 ;; Run: CLOJURE_CLI_ALLOW_HTTP_REPO=true ./bb -cp resources/src/babashka script/mvn_oracle/deps_maven_test.clj
 (ns deps-maven-test
   (:require [babashka.deps.maven :as mvn]
@@ -70,7 +68,7 @@
       (let [credentials {"nexus" {:url url :username "user" :password "secret"}}]
         (binding [*err* (java.io.StringWriter.)]
           (session/with-session
-            (testing "find-versions without credentials returns nothing"
+            (testing "find-versions without credentials returns []"
               (is (= [] (versions url (new-local)))))
 
             (testing "with-repository-credentials applies the credentials of the repository"
@@ -143,7 +141,7 @@
       (publish-versions! (fs/file dir "a") ["2.0.0" "2.1.0-SNAPSHOT"])
       (binding [*err* (java.io.StringWriter.)]
         (session/with-session
-          (testing "find-versions returns the releases clojure.tools.deps.extensions/find-versions returns"
+          (testing "find-versions equals clojure.tools.deps.extensions/find-versions by default"
             (is (= [{:mvn/version "2.0.0"}] (versions {})))
             (is (= (versions {}) (ext/find-versions 'acme/snap nil :mvn (config {})))))
 
@@ -160,7 +158,7 @@
           (testing "find-versions returns nil for an unknown lib"
             (is (nil? (mvn/find-versions 'acme/none (config {})))))
 
-          (testing "a version range sees only the kinds of version the policies enable"
+          (testing "a version range skips the versions of a disabled policy"
             (is (= "2.0.0" (:mvn/version (second (ext/canonicalize 'acme/snap {:mvn/version "[1.0,)"}
                                                                    (config {:snapshots {:enabled false}}))))))
             (is (thrown? Exception (ext/canonicalize 'acme/snap {:mvn/version "[1.0,2.0.0]"}

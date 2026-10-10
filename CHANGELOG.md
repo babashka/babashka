@@ -20,10 +20,7 @@ A preview of the next release can be installed from
 - SCI: fix the location of a top-level symbol followed by a newline or the end of input
 - SCI: `for`, `if-let`, `when-let`, `if-some`, `when-some`, `when-first` and `condp` name their internal locals with `__`
 - Add `babashka.deps.maven` with `find-versions`, `with-repository-credentials`, `active-proxy` and `model-repos`
-- Add `read-model-file` to `clojure.tools.deps.extensions.pom`
-- Default the port of a `settings.xml` proxy to `8080`, a proxy without `<port>` failed every download
-- Put the repositories of active POM profiles ahead of the POM's own, the last active profile first
-- List a version from a repository only if its `:releases` or `:snapshots` policy for that kind of version is enabled, for `find-versions` and version ranges
+- Fix version ranges under a disabled `:releases` or `:snapshots` policy, the order of POM profile repositories and `settings.xml` proxies without a port
 
 ## 1.13.225 (2026-09-28)
 
