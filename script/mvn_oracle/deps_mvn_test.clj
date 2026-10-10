@@ -217,7 +217,10 @@
   (try (let [model (pom/read-model-file (fs/file models file) config)
              repos (mvn/model-repos model)]
          {:deps (vec (pom/model-deps model)) :repos repos :repo-order (vec (keys repos))})
-       (catch Exception _ :throws)))
+       (catch clojure.lang.ExceptionInfo e
+         (if (= :babashka.deps.mvn/invalid-model (:type (ex-data e)))
+           :throws
+           (throw e)))))
 
 (deftest model-test
   (doseq [[file expected] (edn/read-string (slurp (fs/file models "expected.edn")))]

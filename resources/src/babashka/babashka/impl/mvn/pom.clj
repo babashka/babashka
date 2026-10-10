@@ -457,7 +457,7 @@
               parent-dir (:basedir found)]
           (when-not parent-raw
             (throw (ex-info (str "Could not find parent POM " (:group parent) ":" (:artifact parent) ":" (:version parent))
-                            {:parent parent})))
+                            {:type ::unresolvable :parent parent})))
           (when (and (coords/version-range? (:version parent))
                      (or (nil? (:version model)) (version-references-parent? (:version model))))
             (throw (ex-info (str "Version must be a constant @ "
@@ -489,7 +489,7 @@
                     bom (some-> (read-pom dep repositories) parse)]
                 (when-not bom
                   (throw (ex-info (str "Could not find BOM " (:group dep) ":" (:artifact dep) ":" (:version dep))
-                                  {:bom dep})))
+                                  {:type ::unresolvable :bom dep})))
                 (merge-by-key acc
                               (:dependency-management (effective-model bom (assoc ctx :basedir nil :coords dep)))
                               dependency-key false))

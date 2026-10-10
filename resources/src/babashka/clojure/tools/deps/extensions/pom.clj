@@ -15,9 +15,11 @@
 (defn read-model-file
   "Returns the effective model of the POM in file, a parent from disk or from
   the repositories in config.
-  Throws if the modelVersion is not 4.0.0, if the model lacks a groupId,
-  artifactId or version, if a dependency lacks one of them, or if a
-  dependency of scope system lacks a systemPath."
+  Throws an ex-info with :type :babashka.deps.mvn/invalid-model and :file if
+  the text does not parse, the modelVersion is not 4.0.0, the model lacks a
+  groupId, artifactId or version, a dependency lacks one of them, a
+  dependency of scope system lacks a systemPath, or a parent or BOM is
+  invalid or not found."
   [file config]
   (mvn/model-from-file file config))
 

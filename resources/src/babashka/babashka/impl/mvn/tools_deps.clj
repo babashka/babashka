@@ -172,28 +172,53 @@
 
 (declare read-local-pom)
 
+(def ^:private invalid-model-type :babashka.deps.mvn/invalid-model)
+
 (defn- invalid-model! [file message]
-  (throw (ex-info message {:type :babashka.impl.mvn.pom/invalid :file (str file)})))
+  (throw (ex-info message {:type invalid-model-type :file (str file)})))
+
+(defn- rejected-model?
+  "Returns true if e is thrown for a POM that does not parse, is invalid or
+  has an unresolvable parent or BOM."
+  [e]
+  (or (invalid? e)
+      (= :babashka.impl.mvn.pom/unresolvable (:type (ex-data e)))))
+
+(defn- building-model
+  "Returns (f).
+  Rethrows an ex-info for a rejected POM with :type
+  :babashka.deps.mvn/invalid-model and :file."
+  [file f]
+  (try (f)
+       (catch clojure.lang.ExceptionInfo e
+         (if (rejected-model? e)
+           (throw (ex-info (ex-message e) (assoc (ex-data e) :type invalid-model-type :file (str file)) e))
+           (throw e)))))
+
+(defn- effective-model-of-file [raw file config]
+  (pom/effective-model raw {:read-pom (read-local-pom config)
+                            :resolve-version (partial parent-version config)
+                            :cache (model-cache)
+                            :basedir (str (fs/parent file))
+                            :pom-file (str file)}))
 
 (defn model-from-file
   "Returns the effective model of the POM in file, a parent from disk or from
   the repositories in config.
-  Throws if the modelVersion is not 4.0.0, if the model lacks a groupId,
-  artifactId or version, if a dependency lacks one of them, or if a
-  dependency of scope system lacks a systemPath."
+  Throws an ex-info with :type :babashka.deps.mvn/invalid-model and :file if
+  the text does not parse, the modelVersion is not 4.0.0, the model lacks a
+  groupId, artifactId or version, a dependency lacks one of them, a
+  dependency of scope system lacks a systemPath, or a parent or BOM is
+  invalid or not found."
   [file config]
   (let [file (fs/canonicalize file)
-        raw (pom/parse (slurp (fs/file file)))
+        raw (building-model file #(pom/parse (slurp (fs/file file))))
         model-version (:model-version raw)]
     (cond
       (nil? model-version) (invalid-model! file "'modelVersion' is missing.")
       (not= "4.0.0" model-version)
       (invalid-model! file (str "'modelVersion' of '" model-version "' is not supported, use 4.0.0.")))
-    (let [model (pom/effective-model raw {:read-pom (read-local-pom config)
-                                          :resolve-version (partial parent-version config)
-                                          :cache (model-cache)
-                                          :basedir (str (fs/parent file))
-                                          :pom-file (str file)})]
+    (let [model (building-model file #(effective-model-of-file raw file config))]
       (doseq [[k tag] [[:group "groupId"] [:artifact "artifactId"] [:version "version"]]
               :when (str/blank? (get model k))]
         (invalid-model! file (str "'" tag "' is missing.")))
