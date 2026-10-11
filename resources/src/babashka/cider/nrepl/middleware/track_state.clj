@@ -208,7 +208,8 @@
   (cond
     ;; Clojure Namespaces
     (instance? Namespace object)
-    {:aliases (misc/update-vals ns-name (ns-aliases object))
+    {:aliases #_(misc/update-vals ns-name (ns-aliases object)) ;; BB-PATCH sci maps the alias of a removed namespace to nil
+(into {} (keep (fn [[alias the-ns]] (when the-ns [alias (ns-name the-ns)]))) (ns-aliases object))
      :interns (compute-var-metas-for-namespace object)}
 
     ;; ClojureScript Namespaces
@@ -361,8 +362,8 @@
           (transport/send transport (calculate-changed-project-state-response msg)))))
 (send [this {:keys [status] :as response}]
   (when (some #{:done "done"} (if (coll? status) status [status]))
-    (try (transport/send transport (calculate-changed-project-state-response msg))
-         (catch Exception _ nil)))
+    (transport/send transport (try (calculate-changed-project-state-response msg)
+                                   (catch Exception _ (response-for msg :status :state :repl-type "clj" :changed-namespaces {})))))
   (transport/send transport response)
   this)))
 

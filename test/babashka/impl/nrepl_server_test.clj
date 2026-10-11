@@ -663,7 +663,13 @@
                 (testing "an instrumented var carries :cider/instrumented"
                   (is (= "\"breakpoint-if-interesting\"" (get-in ns-state ["interns" "g" "cider/instrumented"]))))
                 (testing "a second cider/get-state reports no changed namespaces"
-                  (is (empty? (get (decode (first (send {"op" "cider/get-state"}))) "changed-namespaces"))))))))))))
+                  (is (empty? (get (decode (first (send {"op" "cider/get-state"}))) "changed-namespaces"))))
+                (testing "an alias of a removed namespace is left out of the state"
+                  (send {"op" "eval" "code" "(ns ts-gone) (ns ts-aliasing (:require [ts-gone :as g])) (remove-ns 'ts-gone)"})
+                  (let [replies (send {"op" "eval" "code" "(in-ns 'ts-aliasing) (def after-remove 1)"})
+                        state (decode (first (filter #(some #{"state"} (:status %)) replies)))]
+                    (is (= {} (get-in state ["changed-namespaces" "ts-aliasing" "aliases"])))
+                    (is (contains? (get-in state ["changed-namespaces" "ts-aliasing" "interns"]) "after-remove"))))))))))))
 
 (defn- sessionless-eval
   "Evaluates code on the server at port without cloning a session.
