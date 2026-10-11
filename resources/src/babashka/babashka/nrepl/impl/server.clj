@@ -7,6 +7,7 @@
    [babashka.nrepl.impl.cider :as cider]
    [babashka.nrepl.impl.debug :as debug]
    [babashka.nrepl.impl.sci :as sci-helpers]
+   [babashka.nrepl.impl.track-state :as track-state]
    [clojure.string :as str]
    [clojure.walk :as walk]
    [nrepl.middleware :refer [set-descriptor!]]
@@ -138,7 +139,7 @@
     :or {host "127.0.0.1" port 1667}}
    wrap-handler]
   (reset! versions (walk/keywordize-keys (get describe "versions" (:versions describe))))
-  (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka #'cider/wrap-cider #'debug/wrap-debug
+  (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka #'cider/wrap-cider #'debug/wrap-debug #'track-state/wrap-track-state
                                      (map middleware-var middleware)))
         ;; a session's first eval cannot arrive before the clone reply
         handler (fn [msg]

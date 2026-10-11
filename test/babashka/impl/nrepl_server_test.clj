@@ -628,6 +628,43 @@
             (send {"op" "inspect-def-current-value" "ns" "user" "var-name" "inspected"})
             (is (= "{:a 1, :b [1 2 3]}" (:value (first (send {"op" "eval" "code" "inspected"})))))))))))
 
+(defn- decode [x]
+  (cond
+    (map? x) (into {} (map (fn [[k v]] [(if (keyword? k) (name k) (bytes->str k)) (decode v)])) x)
+    (sequential? x) (mapv decode x)
+    (bytes? x) (bytes->str x)
+    :else x))
+
+(deftest ^:skip-windows nrepl-track-state-test
+  (with-bb-script 1679
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1679 :quiet true}))"
+    (fn []
+      (with-session 1679
+        (fn [send]
+          (let [replies (send {"op" "eval" "code" "(ns ts-demo (:require [clojure.string :as s]))
+                                                   (defn f [] 1) (defmacro m [] 1) (defn ^:deprecated old [] 1)
+                                                   #dbg (defn g [x] (inc x))"})
+                state (decode (first (filter #(some #{"state"} (:status %)) replies)))]
+            (testing "an eval replies with the changed namespaces before done"
+              (is (contains? (get state "changed-namespaces") "ts-demo"))
+              (is (= ["done"] (:status (last replies))))))
+          (with-session 1679
+            (fn [send]
+              (let [state (decode (first (send {"op" "cider/get-state"})))
+                    ns-state (get-in state ["changed-namespaces" "ts-demo"])]
+                (testing "cider/get-state reports the aliases and vars of a namespace"
+                  (is (= "clj" (get state "repl-type")))
+                  (is (= {"s" "clojure.string"} (get ns-state "aliases")))
+                  (is (= {"fn" "true"} (get-in ns-state ["interns" "f"])))
+                  (is (= {"macro" "true"} (get-in ns-state ["interns" "m"])))
+                  (is (= {"fn" "true" "deprecated" "true"} (get-in ns-state ["interns" "old"]))))
+                (testing "cider/get-state reports clojure.core"
+                  (is (= {"macro" "true"} (get-in state ["changed-namespaces" "clojure.core" "interns" "when"]))))
+                (testing "an instrumented var carries :cider/instrumented"
+                  (is (= "\"breakpoint-if-interesting\"" (get-in ns-state ["interns" "g" "cider/instrumented"]))))
+                (testing "a second cider/get-state reports no changed namespaces"
+                  (is (empty? (get (decode (first (send {"op" "cider/get-state"}))) "changed-namespaces"))))))))))))
+
 (defn- sessionless-eval
   "Evaluates code on the server at port without cloning a session.
   Returns the value."

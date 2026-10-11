@@ -13,6 +13,7 @@ A preview of the next release can be installed from
 - Bump jline to `4.4.7`
 - Support the `[opts stream]` arity of `read+string`
 - Add the CIDER debugger to the nREPL server: `#dbg`, `#break`, `C-u C-M-x` and the step commands
+- Add CIDER's track-state to the nREPL server: font-lock of loaded vars and the box around instrumented functions
 - Allow constructing `ThreadDeath`
 - SCI: a macro var in call position expands, as in `(eval (list #'when true 1))`
 - SCI: fix stack overflow in `clojure.walk/macroexpand-all` on a `reify` form
