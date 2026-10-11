@@ -78,11 +78,14 @@
                 (swap! status (fn [status]
                                 (merge-with + status (dissoc m :type))))))))))))
 
+(defn- native? []
+  (= "native" (System/getenv "BABASHKA_TEST_ENV")))
+
 (defn- isolated?
-  "Returns true if lib is marked :isolated and this is a full run outside Windows."
+  "Returns true if lib is marked :isolated and this is a full run, natively or outside Windows."
   [lib]
   (and (empty? ns-args)
-       (not (windows?))
+       (or (native?) (not (windows?)))
        (:isolated (get (edn/read-string (slurp (io/resource "bb-tested-libs.edn"))) lib))))
 
 (defn- run-in-own-process
@@ -90,8 +93,8 @@
   Returns the status of that run."
   [namespaces]
   (let [status-file (str (fs/create-temp-file))
-        bb-cmd (if (= "native" (System/getenv "BABASHKA_TEST_ENV"))
-                 [(str (fs/file (System/getProperty "user.dir") "bb"))]
+        bb-cmd (if (native?)
+                 [(str (fs/file (System/getProperty "user.dir") (if (windows?) "bb.exe" "bb")))]
                  ["clojure" "-M:babashka/dev"])]
     (apply shell {:continue true :extra-env {"BABASHKA_LIBTEST_STATUS_FILE" status-file}}
            (concat bb-cmd ["-cp" (cp/get-classpath) "-f" "test-resources/lib_tests/babashka/run_all_libtests.clj"]
