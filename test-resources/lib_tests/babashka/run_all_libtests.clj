@@ -228,16 +228,17 @@
             (swap! status (fn [st] (merge-with + st (dissoc (t/run-tests n) :type))))))))))
 
 ;;;; cider-nrepl
-;; cider-nrepl's debugger suite against the bundled debugger, from the checkout
-;; pinned in bb-tested-libs.edn. Its src stays off the classpath because a
-;; directory there would shadow the bundled cider.nrepl namespaces. Two test
-;; files need changes. Their copies live under cider/, each deviation marked
-;; BB-TEST-PATCH.
+;; cider-nrepl's debugger and track-state suites against the bundled
+;; middleware, from the checkout pinned in bb-tested-libs.edn. Its src stays off
+;; the classpath because a directory there would shadow the bundled cider.nrepl
+;; namespaces. Three test files need changes. Their copies live under cider/,
+;; each deviation marked BB-TEST-PATCH.
 
 (def cider-nrepl-namespaces
   '[cider.nrepl.middleware.util.instrument-test
     cider.nrepl.middleware.debug-test
-    cider.nrepl.middleware.debug-integration-test])
+    cider.nrepl.middleware.debug-integration-test
+    cider.nrepl.middleware.track-state-test])
 
 (def cider-nrepl-skipped
   "Upstream tests that assert JVM specifics: the exact reify* expansion, an

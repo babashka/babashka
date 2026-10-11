@@ -157,7 +157,8 @@ requests against master, so pushing a branch runs no CI.
 ## Bundled sources
 
 `resources/src/babashka` and `src-java` hold the sources babashka bundles:
-tools.deps, tools.build, gitlibs, nREPL, orchard and cider-nrepl's debugger.
+tools.deps, tools.build, gitlibs, nREPL, orchard and cider-nrepl's debugger
+and track-state.
 They are the source of truth, not build output. Babashka's changes live in
 those files, each marked `BB-PATCH` with the upstream form kept under `#_`,
 so editing one is an ordinary edit.
@@ -183,10 +184,10 @@ and the run fails when it no longer matches the pinned `tools.deps.edn`.
 
 A cider-nrepl bump touches three places. Besides `script/vendored.edn`,
 `bundled-data-readers` in `src/babashka/main.clj` copies the jar's
-`data_readers.clj`, and the debugger's lib tests run from the git sha pinned
+`data_readers.clj`, and the cider-nrepl lib tests run from the git sha pinned
 in `test-resources/lib_tests/bb-tested-libs.edn`, which must be the same
 release. The script fails when either one is out of step and prints the sha
-to set. Re-sync the two test copies under `test-resources/lib_tests/cider/`
+to set. Re-sync the three test copies under `test-resources/lib_tests/cider/`
 with:
 
 ```

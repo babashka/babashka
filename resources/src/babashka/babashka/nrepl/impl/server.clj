@@ -143,7 +143,7 @@
                                      (map middleware-var middleware)))
         ;; a session's first eval cannot arrive before the clone reply
         handler (fn [msg]
-                  (when (= "clone" (:op msg)) (debug/load!))
+                  (when (= "clone" (:op msg)) (debug/load!) (track-state/load!))
                   (handler msg))
         srv (if socket
               (server/start-server :socket socket :handler handler)
