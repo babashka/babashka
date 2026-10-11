@@ -78,9 +78,30 @@
                 (swap! status (fn [status]
                                 (merge-with + status (dissoc m :type))))))))))))
 
+(defn- isolated?
+  "Returns true if lib is marked :isolated and this is a full run outside Windows."
+  [lib]
+  (and (empty? ns-args)
+       (not (windows?))
+       (:isolated (get (edn/read-string (slurp (io/resource "bb-tested-libs.edn"))) lib))))
+
+(defn- run-in-own-process
+  "Runs namespaces through this script in a new bb process.
+  Returns the status of that run."
+  [namespaces]
+  (let [status-file (str (fs/create-temp-file))
+        bb-cmd (if (= "native" (System/getenv "BABASHKA_TEST_ENV"))
+                 [(str (fs/file (System/getProperty "user.dir") "bb"))]
+                 ["clojure" "-M:babashka/dev"])]
+    (apply shell {:continue true :extra-env {"BABASHKA_LIBTEST_STATUS_FILE" status-file}}
+           (concat bb-cmd ["-cp" (cp/get-classpath) "-f" "test-resources/lib_tests/babashka/run_all_libtests.clj"]
+                   (map str namespaces)))
+    (or (edn/read-string (slurp status-file)) {:fail 1})))
+
 ;; Standard test-runner for libtests
 (let [lib-tests (edn/read-string (slurp (io/resource "bb-tested-libs.edn")))
-      test-nss (atom [])]
+      test-nss (atom [])
+      isolated-nss (atom [])]
   (doseq [[libname {tns :test-namespaces skip-windows :skip-windows
                     :keys [test-paths git-url
                            git-sha flaky]}] lib-tests]
@@ -93,13 +114,15 @@
       (doseq [p test-paths]
         (add-classpath (str (fs/file git-dir p)))))
     (when-not (and skip-windows (windows?))
-      (if flaky
-        (println "Skipping" tns "because it's marked flaky")
-        (swap! test-nss into tns))))
+      (cond flaky (println "Skipping" tns "because it's marked flaky")
+            (isolated? libname) (when (seq tns) (swap! isolated-nss conj tns))
+            :else (swap! test-nss into tns))))
   ;; Bind *ns* to prevent libs from mutating it as a side effect (e.g.
   ;; cloverage's instrument evals (ns ...) forms from sample files).
   (binding [*ns* *ns*]
-    (apply test-namespaces @test-nss)))
+    (apply test-namespaces @test-nss))
+  (doseq [nss @isolated-nss]
+    (swap! status #(merge-with + % (run-in-own-process nss)))))
 
 ;; Non-standard tests - These are tests with unusual setup around test-namespaces
 
@@ -232,8 +255,7 @@
 ;; middleware, from the checkout pinned in bb-tested-libs.edn. Its src stays off
 ;; the classpath because a directory there would shadow the bundled cider.nrepl
 ;; namespaces. Three test files need changes. Their copies live under cider/,
-;; each deviation marked BB-TEST-PATCH. A full run starts them in their own bb
-;; process, without the other libraries loaded.
+;; each deviation marked BB-TEST-PATCH.
 
 (def cider-nrepl-namespaces
   '[cider.nrepl.middleware.util.instrument-test
@@ -250,23 +272,10 @@
     cider.nrepl.middleware.debug-integration-test [debug-expression-test
                                                    step-in-to-function-in-jar-test]})
 
-(defn- run-cider-in-own-process
-  "Runs the cider-nrepl namespaces through this script in a new bb process.
-  Returns the status of that run."
-  []
-  (let [status-file (str (fs/create-temp-file))
-        bb-cmd (if (= "native" (System/getenv "BABASHKA_TEST_ENV"))
-                 [(str (fs/file (System/getProperty "user.dir") "bb"))]
-                 ["clojure" "-M:babashka/dev"])]
-    (apply shell {:continue true :extra-env {"BABASHKA_LIBTEST_STATUS_FILE" status-file}}
-           (concat bb-cmd ["-cp" (cp/get-classpath) "-f" "test-resources/lib_tests/babashka/run_all_libtests.clj"]
-                   (map str cider-nrepl-namespaces)))
-    (or (edn/read-string (slurp status-file)) {:fail 1})))
-
 (let [cider-nss (filter #(str/starts-with? (str %) "cider.nrepl.") ns-args)]
   (when (or (empty? ns-args) (seq cider-nss))
-    (if (and (empty? ns-args) (not (windows?)))
-      (swap! status #(merge-with + % (run-cider-in-own-process)))
+    (if (isolated? 'cider/cider-nrepl)
+      (swap! status #(merge-with + % (run-in-own-process cider-nrepl-namespaces)))
       (let [nss (if (seq cider-nss) cider-nss cider-nrepl-namespaces)]
         (binding [*ns* *ns*]
           (run! require nss)

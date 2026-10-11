@@ -83,7 +83,7 @@ Selectors: `:default` (all but Windows-only and flaky), `:windows`,
 `script/run_lib_tests` runs other projects' test suites against bb. The
 registry is `test-resources/lib_tests/bb-tested-libs.edn`, one entry per
 library with `:git-url`, `:git-sha` and `:test-namespaces`, plus optional
-`:test-paths`, `:skip-windows` and `:flaky`. The driver is
+`:test-paths`, `:skip-windows`, `:flaky` and `:isolated`. The driver is
 `test-resources/lib_tests/babashka/run_all_libtests.clj` and the classpath
 comes from the `:lib-tests` alias in `deps.edn`.
 
@@ -98,6 +98,12 @@ edited in place, where every deviation from upstream carries a
 To skip a single upstream test rather than a whole namespace, give its var
 `:skip-bb` metadata in the driver. The driver drops vars marked `:skip-bb`,
 `:integration`, `:test-check-slow` or `:flaky`.
+
+Mark an entry `:isolated` to run its tests in a bb process of their own, so
+they run without every other library's namespaces loaded. A full run starts
+that process after the others, except on Windows. A block at the end of the
+driver gets the same through `isolated?` and `run-in-own-process`, as the
+cider-nrepl block does.
 
 A library whose tests need their own working directory, extra dependencies
 or a spawned process gets a block at the end of the driver, after the
