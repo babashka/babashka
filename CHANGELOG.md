@@ -24,6 +24,7 @@ A preview of the next release can be installed from
 - SCI: `instance?` on a protocol is `false` for a type the protocol is only extended to, such as `nil`
 - SCI: `ns-aliases` keeps the alias of a removed namespace
 - SCI: a var created by `intern` has the unqualified symbol
+- SCI: `ns-map` is 6x faster and `ns-refers` 60x
 - Add `babashka.deps.maven` with `find-versions`, `with-repository-credentials`, `active-proxy` and `model-repos`
 - Fix version ranges under a disabled `:releases` or `:snapshots` policy, the order of POM profile repositories and `settings.xml` proxies without a port
 
