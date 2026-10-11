@@ -49,6 +49,7 @@
 (def tools-deps-version (bumped 'org.clojure/tools.deps))
 (def tools-deps-edn-version (bumped 'org.clojure/tools.deps.edn))
 (def nrepl-version (bumped 'nrepl/nrepl))
+(def cider-nrepl-version (bumped 'cider/cider-nrepl))
 
 ;; Upstream files shipped verbatim, edn.clj with the patch below.
 (def shipped
@@ -318,6 +319,10 @@
             #"(;; BB-PATCH the pom.properties resource is not in the image\n)\"[^\"]+\""
             (str "$1\"" nrepl-version "\"")
             "nrepl version literal")
+    (stamp! "resources/src/babashka/babashka/nrepl/impl/cider.clj"
+            #"\(let \[s \"[^\"]+\""
+            (str "(let [s \"" cider-nrepl-version "\"")
+            "cider-nrepl version literal")
     ;; the root deps.edn is embedded in edn.clj, so it must match the jar we pin
     (let [embedded (let [src (slurp (str (fs/file target "clojure/tools/deps/edn.clj")))
                          i (str/last-index-of src "(defn root-deps")
