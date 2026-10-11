@@ -48,10 +48,18 @@
     (dbg "==>" msg)
     (transport/send *transport* msg)))
 
+#_ ;; BB-TEST-PATCH skip the track-state replies of babashka's server
 (defn nrepl-recv []
   (let [msg (transport/recv *transport* 500)]
     (dbg "<==" msg)
     msg))
+
+(defn nrepl-recv []
+  (let [msg (transport/recv *transport* 500)]
+    (dbg "<==" msg)
+    (if (some #{"state"} (:status msg))
+      (recur)
+      msg)))
 
 (defn with-nrepl-session*
   "Run the given function with *transport* and *session-id* bound."

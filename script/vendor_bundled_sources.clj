@@ -124,7 +124,12 @@
     "cider/nrepl/middleware/util.clj"
     "cider/nrepl/middleware/util/eval.clj"
     "cider/nrepl/middleware/util/instrument.clj"
-    "cider/nrepl/middleware/util/nrepl.clj"})
+    "cider/nrepl/middleware/util/nrepl.clj"
+    ;; CIDER's track-state
+    "cider/nrepl/middleware.clj"
+    "cider/nrepl/middleware/track_state.clj"
+    "cider/nrepl/middleware/util/meta.clj"
+    "orchard/indent.clj"})
 
 ;; nREPL's Java classes, compiled into bb from src-java.
 (def java-shipped
@@ -185,7 +190,6 @@
     "orchard/cljs/meta.cljc"
     "orchard/clojuredocs.clj"
     "orchard/eldoc.clj"
-    "orchard/indent.clj"
     "orchard/java.clj"
     "orchard/java/classpath.clj"
     "orchard/java/parser_next.clj"
@@ -200,7 +204,7 @@
     "orchard/xref.clj"
     "mx/cider/orchard/LruMap.java"})
 
-;; cider-nrepl beyond the debugger is not shipped.
+;; cider-nrepl beyond the debugger and track-state is not shipped.
 (defn- dropped? [rel]
   (or (contains? dropped rel)
       (and (str/starts-with? rel "cider/")
