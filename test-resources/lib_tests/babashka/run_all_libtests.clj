@@ -94,7 +94,7 @@
   [namespaces]
   (let [status-file (str (fs/create-temp-file))
         bb-cmd (if (native?)
-                 [(str (fs/file (System/getProperty "user.dir") (if (windows?) "bb.exe" "bb")))]
+                 [(str (fs/file (System/getProperty "user.dir") "bb"))]
                  ["clojure" "-M:babashka/dev"])]
     (apply shell {:continue true :extra-env {"BABASHKA_LIBTEST_STATUS_FILE" status-file}}
            (concat bb-cmd ["-cp" (cp/get-classpath) "-f" "test-resources/lib_tests/babashka/run_all_libtests.clj"]
