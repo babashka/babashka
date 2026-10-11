@@ -19,7 +19,7 @@
 
 (def version
   "The cider-nrepl version whose protocol these ops speak."
-  (let [s "0.62.2"
+  (let [s "0.63.1"
         [major minor incremental] (map parse-long (str/split s #"\."))]
     {:major major :minor minor :incremental incremental :qualifier "" :version-string s}))
 
