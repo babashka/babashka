@@ -208,8 +208,7 @@
   (cond
     ;; Clojure Namespaces
     (instance? Namespace object)
-    {:aliases #_(misc/update-vals ns-name (ns-aliases object)) ;; BB-PATCH sci maps the alias of a removed namespace to nil
-(into {} (keep (fn [[alias the-ns]] (when the-ns [alias (ns-name the-ns)]))) (ns-aliases object))
+    {:aliases (misc/update-vals ns-name (ns-aliases object))
      :interns (compute-var-metas-for-namespace object)}
 
     ;; ClojureScript Namespaces
