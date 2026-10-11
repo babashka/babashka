@@ -1,0 +1,33 @@
+{:linters {:unresolved-symbol {:exclude [(malli.core/=>)]},
+           :type-mismatch {:namespaces {malli.clj-kondo-test {kikka {:arities {1 {:args [:int], :ret :int},
+                                                                               :varargs {:args [:int
+                                                                                                :int
+                                                                                                {:op :rest, :spec :int}],
+                                                                                         :ret :int,
+                                                                                         :min-arity 2}}},
+                                                              kikka2 {:arities {1 {:args [:int], :ret :int},
+                                                                                :varargs {:args [:int
+                                                                                                 :int
+                                                                                                 {:op :rest, :spec :int}],
+                                                                                          :ret :int,
+                                                                                          :min-arity 2}}},
+                                                              siren {:arities {2 {:args [:ifn :coll], :ret :map}}},
+                                                              clj-kondo-issue-1922-1 {:arities {1 {:args [{:op :keys,
+                                                                                                           :req {:keys :seqable}}],
+                                                                                                   :ret :nil}}},
+                                                              clj-kondo-issue-1922-2 {:arities {1 {:args [{:op :keys,
+                                                                                                           :req {:keys :seqable}}],
+                                                                                                   :ret :nil}}},
+                                                              clj-kondo-issue-1922-3 {:arities {1 {:args [{:op :keys,
+                                                                                                           :req {:keys :seqable}}],
+                                                                                                   :ret :nil}}},
+                                                              clj-kondo-issue-1922-4 {:arities {2 {:args [:int :int],
+                                                                                                   :ret :nil},
+                                                                                                :varargs {:args [:int
+                                                                                                                 :int
+                                                                                                                 {:op :rest,
+                                                                                                                  :spec :int}],
+                                                                                                          :ret :nil,
+                                                                                                          :min-arity 2}}},
+                                                              clj-kondo-issue-836-1 {:arities {3 {:args [:int :any :int],
+                                                                                                  :ret :any}}}}}}}}
