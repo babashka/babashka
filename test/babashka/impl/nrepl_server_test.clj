@@ -333,6 +333,19 @@
       (testing "the port file is removed when the server exits"
         (is (not (fs/exists? port-file)))))))
 
+(defn- await-idle-sessions
+  "Waits up to 5 seconds until no nREPL session or track-state thread is running."
+  []
+  (loop [n 0]
+    (when (and (< n 100)
+               (some (fn [^Thread t]
+                       (or (= "nREPL-track-state" (.getName t))
+                           (and (.startsWith (.getName t) "nREPL-session")
+                                (= Thread$State/RUNNABLE (.getState t)))))
+                     (keys (Thread/getAllStackTraces))))
+      (Thread/sleep 50)
+      (recur (inc n)))))
+
 (defn- with-bb-script
   "Runs `script` through bb, which starts an nREPL server on `port` and
   returns, then calls `f`. In-process on the JVM, a process natively."
@@ -348,26 +361,30 @@
       (f)
       (finally
         (if tu/jvm?
-          (eval-over-the-wire port "(babashka.nrepl.server/stop-server! user/server)")
+          (do (eval-over-the-wire port "(babashka.nrepl.server/stop-server! user/server)")
+              (await-idle-sessions))
           (some-> @proc p/destroy-tree))
         (fs/delete-if-exists file)))))
 
 (defn- session-sender
   "Clones a session over `in` and `os` and returns a function sending an op
-  map to it and returning the replies."
+  map to it and returning the replies up to the one with status `until`,
+  or \"done\" if absent."
   [in os]
   (bencode/write-bencode os {"op" "clone"})
   (let [session (:new-session (read-msg (bencode/read-bencode in)))
         id (atom 0)]
-    (fn [m]
-      (let [id (str (swap! id inc))]
-        (bencode/write-bencode os (assoc m "session" session "id" id))
-        (loop [replies []]
-          (let [reply (read-reply in session id)
-                replies (conj replies reply)]
-            (if (contains? (set (:status reply)) "done")
-              replies
-              (recur replies))))))))
+    (fn send
+      ([m] (send m "done"))
+      ([m until]
+       (let [id (str (swap! id inc))]
+         (bencode/write-bencode os (assoc m "session" session "id" id))
+         (loop [replies []]
+           (let [reply (read-reply in session id)
+                 replies (conj replies reply)]
+             (if (contains? (set (:status reply)) until)
+               replies
+               (recur replies)))))))))
 
 (defn- with-session
   "Calls `f` with a function sending an op map to a fresh session on
@@ -643,11 +660,12 @@
         (fn [send]
           (let [replies (send {"op" "eval" "code" "(ns ts-demo (:require [clojure.string :as s]))
                                                    (defn f [] 1) (defmacro m [] 1) (defn ^:deprecated old [] 1)
-                                                   #dbg (defn g [x] (inc x))"})
-                state (decode (first (filter #(some #{"state"} (:status %)) replies)))]
-            (testing "an eval replies with the changed namespaces before done"
+                                                   #dbg (defn g [x] (inc x))"}
+                              "state")
+                state (decode (last replies))]
+            (testing "an eval replies with the changed namespaces after done"
               (is (contains? (get state "changed-namespaces") "ts-demo"))
-              (is (= ["done"] (:status (last replies))))))
+              (is (= ["done"] (:status (last (butlast replies)))))))
           (with-session 1679
             (fn [send]
               (let [state (decode (first (send {"op" "cider/get-state"})))
@@ -666,8 +684,8 @@
                   (is (empty? (get (decode (first (send {"op" "cider/get-state"}))) "changed-namespaces"))))
                 (testing "an alias of a removed namespace stays in the state"
                   (send {"op" "eval" "code" "(ns ts-gone) (ns ts-aliasing (:require [ts-gone :as g])) (remove-ns 'ts-gone)"})
-                  (let [replies (send {"op" "eval" "code" "(in-ns 'ts-aliasing) (def after-remove 1)"})
-                        state (decode (first (filter #(some #{"state"} (:status %)) replies)))]
+                  (let [replies (send {"op" "eval" "code" "(in-ns 'ts-aliasing) (def after-remove 1)"} "state")
+                        state (decode (last replies))]
                     (is (= {"g" "ts-gone"} (get-in state ["changed-namespaces" "ts-aliasing" "aliases"])))
                     (is (contains? (get-in state ["changed-namespaces" "ts-aliasing" "interns"]) "after-remove"))))))))))))
 

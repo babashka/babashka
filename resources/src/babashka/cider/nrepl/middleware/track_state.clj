@@ -354,16 +354,20 @@
       #_(.recv transport timeout) ;; BB-PATCH
 (transport/recv transport timeout))
 
-    #_(send [_this {:keys [status] :as response}] ;; BB-PATCH send the state synchronously before done, a future fails after shutdown-agents
+    #_(send [_this {:keys [status] :as response}] ;; BB-PATCH a plain thread, a future fails after shutdown-agents
       (.send transport response)
       (when (contains? status :done)
         (future
           (transport/send transport (calculate-changed-project-state-response msg)))))
 (send [this {:keys [status] :as response}]
-  (when (some #{:done "done"} (if (coll? status) status [status]))
-    (transport/send transport (try (calculate-changed-project-state-response msg)
-                                   (catch Exception _ (response-for msg :status :state :repl-type "clj" :changed-namespaces {})))))
   (transport/send transport response)
+  (when (some #{:done "done"} (if (coll? status) status [status]))
+    (doto (Thread. (fn []
+                     (transport/send transport (try (calculate-changed-project-state-response msg)
+                                                    (catch Exception _ (response-for msg :status :state :repl-type "clj" :changed-namespaces {}))))))
+      (.setName "nREPL-track-state")
+      (.setDaemon true)
+      (.start)))
   this)))
 
 (defn handle-tracker [handler {:keys [op session] :as msg}]
