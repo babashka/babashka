@@ -232,7 +232,8 @@
 ;; middleware, from the checkout pinned in bb-tested-libs.edn. Its src stays off
 ;; the classpath because a directory there would shadow the bundled cider.nrepl
 ;; namespaces. Three test files need changes. Their copies live under cider/,
-;; each deviation marked BB-TEST-PATCH.
+;; each deviation marked BB-TEST-PATCH. A full run starts them in their own bb
+;; process, without the other libraries loaded.
 
 (def cider-nrepl-namespaces
   '[cider.nrepl.middleware.util.instrument-test
@@ -249,22 +250,38 @@
     cider.nrepl.middleware.debug-integration-test [debug-expression-test
                                                    step-in-to-function-in-jar-test]})
 
+(defn- run-cider-in-own-process
+  "Runs the cider-nrepl namespaces through this script in a new bb process.
+  Returns the status of that run."
+  []
+  (let [status-file (str (fs/create-temp-file))
+        bb-cmd (if (= "native" (System/getenv "BABASHKA_TEST_ENV"))
+                 [(str (fs/file (System/getProperty "user.dir") "bb"))]
+                 ["clojure" "-M:babashka/dev"])]
+    (apply shell {:continue true :extra-env {"BABASHKA_LIBTEST_STATUS_FILE" status-file}}
+           (concat bb-cmd ["-cp" (cp/get-classpath) "-f" "test-resources/lib_tests/babashka/run_all_libtests.clj"]
+                   (map str cider-nrepl-namespaces)))
+    (or (edn/read-string (slurp status-file)) {:fail 1})))
+
 (let [cider-nss (filter #(str/starts-with? (str %) "cider.nrepl.") ns-args)]
   (when (or (empty? ns-args) (seq cider-nss))
-    (let [nss (if (seq cider-nss) cider-nss cider-nrepl-namespaces)]
-      (binding [*ns* *ns*]
-        (run! require nss)
-        (doseq [[ns vars] cider-nrepl-skipped
-                v vars]
-          (some-> (find-ns ns) (ns-resolve v) (alter-meta! assoc :skip-bb true)))
-        (doseq [n nss]
-          (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb :flaky)) not))
-          (swap! status (fn [st] (merge-with + st (dissoc (t/run-tests n) :type)))))))))
+    (if (and (empty? ns-args) (not (windows?)))
+      (swap! status #(merge-with + % (run-cider-in-own-process)))
+      (let [nss (if (seq cider-nss) cider-nss cider-nrepl-namespaces)]
+        (binding [*ns* *ns*]
+          (run! require nss)
+          (doseq [[ns vars] cider-nrepl-skipped
+                  v vars]
+            (some-> (find-ns ns) (ns-resolve v) (alter-meta! assoc :skip-bb true)))
+          (doseq [n nss]
+            (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb :flaky)) not))
+            (swap! status (fn [st] (merge-with + st (dissoc (t/run-tests n) :type))))))))))
 
 ;;;; final exit code
 
 (let [{:keys [:test :fail :error] :as m} @status]
   (prn m)
+  (some-> (System/getenv "BABASHKA_LIBTEST_STATUS_FILE") (spit (pr-str m)))
   (when-not (pos? (or test 0))
     (System/exit 1))
   (if (pos? (+ (or fail 0) (or error 0)))
