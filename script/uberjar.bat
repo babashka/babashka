@@ -15,26 +15,18 @@ if "%BABASHKA_FEATURE_JDBC%"=="true" (
 
 if "%BABASHKA_FEATURE_SQLITE%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/sqlite
-) else (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/sqlite
 )
 
 if "%BABASHKA_FEATURE_POSTGRESQL%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/postgresql
-) else (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/postgresql
 )
 
 if "%BABASHKA_FEATURE_HSQLDB%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/hsqldb
-) else (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/hsqldb
 )
 
 if "%BABASHKA_FEATURE_ORACLEDB%"=="true" (
   set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,+feature/oracledb
-) else (
-  set BABASHKA_LEIN_PROFILES=%BABASHKA_LEIN_PROFILES%,-feature/oracledb
 )
 
 if not "%BABASHKA_FEATURE_XML%"=="false" (
