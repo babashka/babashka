@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- [#2193](https://github.com/babashka/babashka/issues/2193): `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch`
+
 ## 1.13.226 (2026-10-11)
 
 - Fix `clojure.lang.RT/baseLoader` and the context classloader returning `nil` in nREPL sessions
