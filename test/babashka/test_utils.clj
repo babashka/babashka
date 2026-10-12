@@ -66,23 +66,23 @@
       (when (string? input-or-opts) (sci/alter-var-root sci/in (constantly is)))
       (sci/alter-var-root sci/out (constantly os))
       (sci/alter-var-root sci/err (constantly es))
-      (sci/with-bindings bindings-map
-        (let [res (:exit (binding [*out* os
+      (let [res (sci/with-bindings bindings-map
+                  (:exit (binding [*out* os
                                    *err* es]
                            (if (string? input-or-opts)
                              (with-in-str input-or-opts (apply main/main args))
-                             (apply main/main args))))]
-          (if (zero? res)
-            (do
-              (let [err (str es)]
-                (when-not (str/blank? err)
-                  (println err))) ;; flush stderr
-              (normalize (str os)))
-            (do
-              (println (str os))
-              (throw (ex-info (str es)
-                              {:stdout (str os)
-                               :stderr (str es)}))))))
+                             (apply main/main args)))))]
+        (if (zero? res)
+          (do
+            (let [err (str es)]
+              (when-not (str/blank? err)
+                (println err))) ;; flush stderr
+            (normalize (str os)))
+          (do
+            (println (str os))
+            (throw (ex-info (str es)
+                            {:stdout (str os)
+                             :stderr (str es)})))))
       (finally
         (when (string? input-or-opts) (sci/alter-var-root sci/in (constantly *in*)))
         (sci/alter-var-root sci/out (constantly *out*))

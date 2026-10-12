@@ -15,3 +15,23 @@
                       (binding [cli/*exit-fn* (fn [m] (prn (select-keys m [:exit :cause])))]
                         (cli/dispatch {:cmd {\"add\" {:fn identity}}}
                                       [\"nope\"] {:help true :prog \"t\"}))"))))))
+
+(deftest dispatch-output-test
+  (testing "with-out-str captures dispatch output"
+    (is (= "pom\n"
+           (edn/read-string
+            (bb "-e" "(require '[babashka.cli :as cli])
+                      (pr (with-out-str
+                            (cli/dispatch {:spec {:skip {:enum [\"pom\"]}} :fn prn}
+                                          [\"org.babashka.cli/completions\" \"complete\" \"--shell\" \"zsh\" \"--\" \"--skip\" \"\"]
+                                          {:prog \"antq\"})))")))))
+  (testing "binding *err* captures dispatch errors"
+    (is (re-find #"nope"
+                 (edn/read-string
+                  (bb "-e" "(require '[babashka.cli :as cli])
+                            (pr (let [w (java.io.StringWriter.)]
+                                  (binding [*err* w
+                                            cli/*exit-fn* (fn [_])]
+                                    (cli/dispatch {:cmd {\"add\" {:fn identity}}}
+                                                  [\"nope\"] {:help true :prog \"t\"}))
+                                  (str w)))"))))))
