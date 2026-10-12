@@ -106,9 +106,6 @@
 (sci/alter-var-root sci/in (constantly *in*))
 (sci/alter-var-root sci/out (constantly *out*))
 (sci/alter-var-root sci/err (constantly *err*))
-(sci/mirror-host-var! sci/in #'*in*)
-(sci/mirror-host-var! sci/out #'*out*)
-(sci/mirror-host-var! sci/err #'*err*)
 (sci/alter-var-root sci/read-eval (constantly *read-eval*))
 
 (set! *warn-on-reflection* true)
@@ -1110,6 +1107,7 @@ Use bb run --help to show this help output.
                   :proxy-fn proxy-fn
                   :deftype-fn deftype-fn
                   :unrestricted true
+                  :track-host-vars {sci/in #'*in* sci/out #'*out* sci/err #'*err*}
                   :readers #(readers-fn (common/ctx) %)}
             opts (addons/future opts)
             sci-ctx (sci/init opts)
