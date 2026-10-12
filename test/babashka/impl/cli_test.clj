@@ -19,12 +19,13 @@
 (deftest dispatch-output-test
   (testing "with-out-str captures dispatch output"
     (is (= "pom\n"
-           (edn/read-string
-            (bb "-e" "(require '[babashka.cli :as cli])
+           (u/normalize
+            (edn/read-string
+             (bb "-e" "(require '[babashka.cli :as cli])
                       (pr (with-out-str
                             (cli/dispatch {:spec {:skip {:enum [\"pom\"]}} :fn prn}
                                           [\"org.babashka.cli/completions\" \"complete\" \"--shell\" \"zsh\" \"--\" \"--skip\" \"\"]
-                                          {:prog \"antq\"})))")))))
+                                          {:prog \"antq\"})))"))))))
   (testing "binding *err* captures dispatch errors"
     (is (re-find #"nope"
                  (edn/read-string
