@@ -13,9 +13,20 @@
 (alter-var-root #'babashka.cli/*exit-fn*
                 (constantly (fn [m] (@exit-fn m))))
 
+(def dispatch
+  (sci/new-var 'dispatch
+               (fn [& args]
+                 (binding [*out* @sci/out
+                           *err* @sci/err]
+                   (apply babashka.cli/dispatch args)))
+               (-> (meta #'babashka.cli/dispatch)
+                   (select-keys [:doc :arglists])
+                   (assoc :ns cns))))
+
 (def cli-namespace
   (assoc (sci/copy-ns babashka.cli cns)
-         '*exit-fn* exit-fn))
+         '*exit-fn* exit-fn
+         'dispatch dispatch))
 
 (defn exec-fn-snippet
   ([sym] (exec-fn-snippet sym nil))
