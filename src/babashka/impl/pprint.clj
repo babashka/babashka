@@ -77,9 +77,7 @@
 
 (defn write
   [object & kw-args]
-  ;; bind *out* to sci's *out*, so with-out-str works
-  (binding [*out* @sci/out]
-    (apply pprint/write object kw-args)))
+  (apply pprint/write object kw-args))
 
 (defn print-table
   "Prints a collection of maps in a textual table. Prints table headings
@@ -87,8 +85,7 @@
    in ks. If ks are not specified, use the keys of the first item in rows."
   ([rows] (print-table (keys (first rows)) rows))
   ([ks rows]
-   (binding [*out* @sci/out]
-     (pprint/print-table ks rows))))
+   (pprint/print-table ks rows)))
 
 (defmacro formatter-out
   "Makes a function which can directly run format-in. The function is
@@ -147,9 +144,7 @@
   http://www.lispworks.com/documentation/HyperSpec/Body/22_c.htm
   "
   [& args]
-  ;; bind *out* to sci/out, so with-out-str works
-  (binding [*out* @sci/out]
-    (apply pprint/cl-format args)))
+  (apply pprint/cl-format args))
 
 (defn execute-format
   "We need to bind sci/out to *out* so all calls to clojure.core/print are directed
@@ -202,22 +197,19 @@
   Normal library clients should use the standard \"write\" interface. "
   {:added "1.2"}
   [object]
-  ;; bind *out* to sci's *out*, so this also works when the caller wrapped sci's
-  ;; *out* in a pretty writer itself, e.g. with get-pretty-writer
-  (binding [*out* @sci/out]
-    (let [length-reached (and
-                          @current-length
-                          @sci/print-length
-                          (>= @current-length @sci/print-length))]
-      (if-not pprint/*print-pretty*
-        (pr object)
-        (if length-reached
-          (print "...")
-          (do
-            (when @current-length
-              (.set ^clojure.lang.Var current-length (inc @current-length)))
-            (print-pprint-dispatch object))))
-      length-reached)))
+  (let [length-reached (and
+                        @current-length
+                        @sci/print-length
+                        (>= @current-length @sci/print-length))]
+    (if-not pprint/*print-pretty*
+      (pr object)
+      (if length-reached
+        (print "...")
+        (do
+          (when @current-length
+            (.set ^clojure.lang.Var current-length (inc @current-length)))
+          (print-pprint-dispatch object))))
+    length-reached))
 
 (def pprint-namespace
   {'pp (sci/copy-var pprint/pp pprint-ns)

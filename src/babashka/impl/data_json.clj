@@ -8,13 +8,11 @@
 
 (defn pprint
   [x & opts]
-  (binding [*out* @sci/out]
-    (apply json/pprint x opts)))
+  (apply json/pprint x opts))
 
 (defn pprint-json
   [x & opts]
-  (binding [*out* @sci/out]
-    (apply json/pprint-json x opts)))
+  (apply json/pprint-json x opts))
 
 (def data-json-namespace
   (assoc (sci/copy-ns clojure.data.json dns)
