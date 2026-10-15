@@ -664,6 +664,15 @@
               (is (= "true" (get reply "special-form")))
               (is (= "(do exprs*)" (get reply "forms-str")))
               (is (str/starts-with? (get reply "doc") "Evaluates the expressions"))))
+          (testing "info on . returns the java_interop url"
+            (is (= "https://clojure.org/java_interop#dot"
+                   (get (decode (first (send {"op" "info" "sym" "." "ns" "user"}))) "url"))))
+          (testing "info on catch returns the doc of try under the name catch"
+            (let [reply (decode (first (send {"op" "info" "sym" "catch" "ns" "user"})))]
+              (is (= "catch" (get reply "name")))
+              (is (str/includes? (get reply "forms-str") "(try"))))
+          (testing "info on let* returns no special-form"
+            (is (nil? (get (decode (first (send {"op" "info" "sym" "let*" "ns" "user"}))) "special-form"))))
           (testing "eldoc on do returns the special form's forms"
             (let [reply (decode (first (send {"op" "eldoc" "sym" "do" "ns" "user"})))]
               (is (= "special-form" (get reply "type")))
@@ -680,6 +689,8 @@
               (is (= ["clojure.core/condp"] (get-in reply ["clojuredocs" "see-alsos"])))))
           (testing "cider/clojuredocs-lookup on inc returns no-doc"
             (is (contains? (set (:status (first (send {"op" "cider/clojuredocs-lookup" "sym" "inc" "ns" "user"})))) "no-doc")))
+          (testing "cider/clojuredocs-lookup without ns returns no-doc"
+            (is (contains? (set (:status (first (send {"op" "cider/clojuredocs-lookup" "sym" "cond"})))) "no-doc")))
           (testing "describe lists cider/clojuredocs-lookup"
             (is (contains? (get (decode (first (send {"op" "describe"}))) "ops") "cider/clojuredocs-lookup"))))))))
 

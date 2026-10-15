@@ -71,7 +71,7 @@
        (if (.exists cache-file)
          cache-file
          #_(io/resource "clojuredocs/export.edn") ;; BB-PATCH the image does not bundle the export, download it to the cache file
-(do (write-cache-file! default-edn-file-url) cache-file))))))
+         (do (write-cache-file! default-edn-file-url) cache-file))))))
 
 (defn update-cache!
   "Load exported docs file from ClojureDocs, and store it as a cache.

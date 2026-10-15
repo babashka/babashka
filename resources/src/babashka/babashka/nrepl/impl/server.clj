@@ -70,7 +70,7 @@
                 arglists (assoc :arglists-str (forms-join arglists))
                 special-form (assoc :special-form "true"
                                     :forms-str (forms-join forms)
-                                    :url (str "https://clojure.org/special_forms#" (:name m)))
+                                    :url (str "https://clojure.org/" (or (:url m) (str "special_forms#" (:name m)))))
                 doc (assoc :doc doc)
                 file (assoc :file file)
                 line (assoc :line line)

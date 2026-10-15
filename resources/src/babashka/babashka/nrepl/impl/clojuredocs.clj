@@ -16,13 +16,14 @@
 
 (defn- wire [x]
   (cond
-    (map? x) (into {} (map (fn [[k v]] [(subs (str k) 1) (wire v)])) x)
+    (map? x) (into {} (map (fn [[k v]] [(str (wire k)) (wire v)])) x)
     (sequential? x) (mapv wire x)
     (keyword? x) (subs (str x) 1)
     :else x))
 
 (defn- lookup-reply [{:keys [ns sym]}]
-  (if-let [doc (docs/resolve-and-find-doc (symbol ns) (symbol sym))]
+  (if-let [doc (try (docs/resolve-and-find-doc (symbol ns) (symbol sym))
+                    (catch Exception _ nil))]
     {:status :done :clojuredocs (wire doc)}
     {:status #{:done :no-doc}}))
 

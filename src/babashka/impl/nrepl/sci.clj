@@ -34,12 +34,13 @@
       file-fn (resolve 'clojure.java.io/file)
       as-url-fn (resolve 'clojure.java.io/as-url)]
   (if (special-symbol? full-sym)
-    (let [m ((resolve 'clojure.repl/special-doc) full-sym)]
+    (when-let [m ((resolve 'clojure.repl/special-doc) (get '{& fn* catch try finally try} full-sym full-sym))]
       {:doc (:doc m)
        :forms (:forms m)
-       :name (:name m)
+       :name full-sym
        :ns 'clojure.core
-       :special-form true})
+       :special-form true
+       :url (:url m)})
     (when-let [v (ns-resolve ns full-sym)]
       (let [m (meta v)]
         {:arglists (:arglists m)
