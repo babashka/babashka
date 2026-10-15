@@ -668,7 +668,7 @@
             (let [reply (decode (first (send {"op" "eldoc" "sym" "do" "ns" "user"})))]
               (is (= "special-form" (get reply "type")))
               (is (= [["do" "exprs*"]] (get reply "eldoc")))))
-          (send {"op" "eval" "code" "(reset! @#'babashka.nrepl.impl.clojuredocs/cache
+          (send {"op" "eval" "code" "(reset! orchard.clojuredocs/cache
                                        {:clojure.core/cond {:ns \"clojure.core\" :name \"cond\"
                                                             :examples [\"(cond true 1)\"]
                                                             :see-alsos [:clojure.core/condp]}})"})
