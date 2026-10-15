@@ -119,6 +119,9 @@
     "orchard/pp.clj"
     "orchard/print.clj"
     "orchard/util/io.clj"
+    ;; ClojureDocs examples and see-also
+    "orchard/clojuredocs.clj"
+    "orchard/util/os.clj"
     ;; the CIDER debugger
     "cider/nrepl/middleware/debug.clj"
     "cider/nrepl/middleware/util.clj"
@@ -184,11 +187,10 @@
     "nrepl/util/jvmti.clj" ; only reached with -Djdk.attach.allowAttachSelf
     "nrepl/JvmtiAgent.java"
     "nrepl/main.java"
-    ;; orchard beyond the inspector: JVM introspection bb does not do
+    ;; orchard beyond the inspector and ClojureDocs: JVM introspection bb does not do
     "orchard/apropos.clj"
     "orchard/cljs/analysis.cljc"
     "orchard/cljs/meta.cljc"
-    "orchard/clojuredocs.clj"
     "orchard/eldoc.clj"
     "orchard/java.clj"
     "orchard/java/classpath.clj"
@@ -200,7 +202,6 @@
     "orchard/query.clj"
     "orchard/spec.clj"
     "orchard/trace.clj"
-    "orchard/util/os.clj"
     "orchard/xref.clj"
     "mx/cider/orchard/LruMap.java"})
 

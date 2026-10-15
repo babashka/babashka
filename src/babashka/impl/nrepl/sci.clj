@@ -32,20 +32,29 @@
       full-sym '%s
       resource-fn (resolve 'clojure.java.io/resource)
       file-fn (resolve 'clojure.java.io/file)
-      as-url-fn (resolve 'clojure.java.io/as-url)]
-  (when-let [v (ns-resolve ns full-sym)]
-    (let [m (meta v)]
-      {:arglists (:arglists m)
-       :doc (:doc m)
-       :name (:name m)
-       :ns (some-> m :ns ns-name)
-       :val @v
-       :file (let [file (:file m)]
-               (if resource-fn
-                 (str (or (when resource-fn (some-> file resource-fn))
-                      (when (and file-fn as-url-fn) (some-> file file-fn as-url-fn))
-                      file))
-                 file))})))" ns-str sym-str))))
+      as-url-fn (resolve 'clojure.java.io/as-url)
+      doc-sym (get '{& fn catch try finally try} full-sym full-sym)]
+  (if-let [m (when (special-symbol? full-sym)
+               ((resolve 'clojure.repl/special-doc) doc-sym))]
+    {:doc (:doc m)
+     :forms (:forms m)
+     :name full-sym
+     :ns 'clojure.core
+     :special-form true
+     :url (:url m)}
+    (when-let [v (ns-resolve ns doc-sym)]
+      (let [m (meta v)]
+        {:arglists (:arglists m)
+         :doc (:doc m)
+         :name (:name m)
+         :ns (some-> m :ns ns-name)
+         :val @v
+         :file (let [file (:file m)]
+                 (if resource-fn
+                   (str (or (when resource-fn (some-> file resource-fn))
+                        (when (and file-fn as-url-fn) (some-> file file-fn as-url-fn))
+                        file))
+                   file))}))))" ns-str sym-str))))
     (catch Throwable _ nil)))
 
 ;;;; Completions

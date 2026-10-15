@@ -169,6 +169,11 @@ They are the source of truth, not build output. Babashka's changes live in
 those files, each marked `BB-PATCH` with the upstream form kept under `#_`,
 so editing one is an ordinary edit.
 
+Before writing bb's own version of an upstream namespace, vendor the
+upstream file and patch it. A file listed in `dropped` in
+`script/vendor_bundled_sources.clj` may still run in bb. See
+`doc/adr/ai/0004-vendor-before-reimplementing.md`.
+
 `script/vendored.edn` records the version each artifact's files came from.
 To take a new upstream version, name the artifact and the version:
 
