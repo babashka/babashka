@@ -652,6 +652,37 @@
     (bytes? x) (bytes->str x)
     :else x))
 
+(deftest ^:skip-windows nrepl-doc-test
+  (with-bb-script 1680
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1680 :quiet true}))"
+    (fn []
+      (with-session 1680
+        (fn [send]
+          (testing "info on do returns the special form doc"
+            (let [reply (decode (first (send {"op" "info" "sym" "do" "ns" "user"})))]
+              (is (= "clojure.core" (get reply "ns")))
+              (is (= "true" (get reply "special-form")))
+              (is (= "(do exprs*)" (get reply "forms-str")))
+              (is (str/starts-with? (get reply "doc") "Evaluates the expressions"))))
+          (testing "eldoc on do returns the special form's forms"
+            (let [reply (decode (first (send {"op" "eldoc" "sym" "do" "ns" "user"})))]
+              (is (= "special-form" (get reply "type")))
+              (is (= [["do" "exprs*"]] (get reply "eldoc")))))
+          (send {"op" "eval" "code" "(reset! @#'babashka.nrepl.impl.clojuredocs/cache
+                                       {:clojure.core/cond {:ns \"clojure.core\" :name \"cond\"
+                                                            :examples [\"(cond true 1)\"]
+                                                            :see-alsos [:clojure.core/condp]}})"})
+          (testing "info on cond returns see-also from the ClojureDocs export"
+            (is (= ["clojure.core/condp"] (get (decode (first (send {"op" "info" "sym" "cond" "ns" "user"}))) "see-also"))))
+          (testing "cider/clojuredocs-lookup on cond returns its examples"
+            (let [reply (decode (first (send {"op" "cider/clojuredocs-lookup" "sym" "cond" "ns" "user"})))]
+              (is (= ["(cond true 1)"] (get-in reply ["clojuredocs" "examples"])))
+              (is (= ["clojure.core/condp"] (get-in reply ["clojuredocs" "see-alsos"])))))
+          (testing "cider/clojuredocs-lookup on inc returns no-doc"
+            (is (contains? (set (:status (first (send {"op" "cider/clojuredocs-lookup" "sym" "inc" "ns" "user"})))) "no-doc")))
+          (testing "describe lists cider/clojuredocs-lookup"
+            (is (contains? (get (decode (first (send {"op" "describe"}))) "ops") "cider/clojuredocs-lookup"))))))))
+
 (deftest ^:skip-windows nrepl-track-state-test
   (with-bb-script 1679
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1679 :quiet true}))"

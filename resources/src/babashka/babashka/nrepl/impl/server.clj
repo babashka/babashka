@@ -5,6 +5,7 @@
   (:require
    [babashka.classpath :as cp]
    [babashka.nrepl.impl.cider :as cider]
+   [babashka.nrepl.impl.clojuredocs :as clojuredocs]
    [babashka.nrepl.impl.debug :as debug]
    [babashka.nrepl.impl.sci :as sci-helpers]
    [babashka.nrepl.impl.track-state :as track-state]
@@ -49,22 +50,31 @@
 (defn- lookup-reply [{:keys [op sym symbol ns] :as _msg}]
   (let [sym-str (or sym symbol)
         m (sci-helpers/lookup sym-str ns)
-        {:keys [doc file line arglists]} m]
+        {:keys [doc file line arglists forms special-form]} m]
     (cond
       (nil? m) {:status (if (= "eldoc" op) #{:done :no-eldoc} :done)}
       (= "eldoc" op) (cond-> {:status :done
                               :ns (:ns m)
                               :name (:name m)
-                              :eldoc (mapv #(mapv str %) arglists)
-                              :type (if (ifn? (:val m)) "function" "variable")}
+                              :eldoc (if special-form
+                                       (mapv #(if (coll? %) (mapv str %) [(str %)]) forms)
+                                       (mapv #(mapv str %) arglists))
+                              :type (cond special-form "special-form"
+                                          (ifn? (:val m)) "function"
+                                          :else "variable")}
                        doc (assoc :docstring doc))
-      :else (cond-> {:status :done
-                     :ns (:ns m)
-                     :name (:name m)
-                     :arglists-str (forms-join arglists)}
-              doc (assoc :doc doc)
-              file (assoc :file file)
-              line (assoc :line line)))))
+      :else (let [see-also (clojuredocs/see-also m)]
+              (cond-> {:status :done
+                       :ns (:ns m)
+                       :name (:name m)}
+                arglists (assoc :arglists-str (forms-join arglists))
+                special-form (assoc :special-form "true"
+                                    :forms-str (forms-join forms)
+                                    :url (str "https://clojure.org/special_forms#" (:name m)))
+                doc (assoc :doc doc)
+                file (assoc :file file)
+                line (assoc :line line)
+                see-also (assoc :see-also see-also))))))
 
 (defn- ns-list-reply [{:keys [exclude-patterns]}]
   (let [patterns (map re-pattern exclude-patterns)]
@@ -139,7 +149,7 @@
     :or {host "127.0.0.1" port 1667}}
    wrap-handler]
   (reset! versions (walk/keywordize-keys (get describe "versions" (:versions describe))))
-  (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka #'cider/wrap-cider #'debug/wrap-debug #'track-state/wrap-track-state
+  (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka #'cider/wrap-cider #'clojuredocs/wrap-clojuredocs #'debug/wrap-debug #'track-state/wrap-track-state
                                      (map middleware-var middleware)))
         ;; a session's first eval cannot arrive before the clone reply
         handler (fn [msg]

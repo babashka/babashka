@@ -33,19 +33,26 @@
       resource-fn (resolve 'clojure.java.io/resource)
       file-fn (resolve 'clojure.java.io/file)
       as-url-fn (resolve 'clojure.java.io/as-url)]
-  (when-let [v (ns-resolve ns full-sym)]
-    (let [m (meta v)]
-      {:arglists (:arglists m)
-       :doc (:doc m)
+  (if (special-symbol? full-sym)
+    (let [m ((resolve 'clojure.repl/special-doc) full-sym)]
+      {:doc (:doc m)
+       :forms (:forms m)
        :name (:name m)
-       :ns (some-> m :ns ns-name)
-       :val @v
-       :file (let [file (:file m)]
-               (if resource-fn
-                 (str (or (when resource-fn (some-> file resource-fn))
-                      (when (and file-fn as-url-fn) (some-> file file-fn as-url-fn))
-                      file))
-                 file))})))" ns-str sym-str))))
+       :ns 'clojure.core
+       :special-form true})
+    (when-let [v (ns-resolve ns full-sym)]
+      (let [m (meta v)]
+        {:arglists (:arglists m)
+         :doc (:doc m)
+         :name (:name m)
+         :ns (some-> m :ns ns-name)
+         :val @v
+         :file (let [file (:file m)]
+                 (if resource-fn
+                   (str (or (when resource-fn (some-> file resource-fn))
+                        (when (and file-fn as-url-fn) (some-> file file-fn as-url-fn))
+                        file))
+                   file))}))))" ns-str sym-str))))
     (catch Throwable _ nil)))
 
 ;;;; Completions
