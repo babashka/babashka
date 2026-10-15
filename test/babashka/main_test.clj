@@ -490,6 +490,7 @@
       (is (vector? v))
       (is (.exists (io/file (first v)))))
     (is (= :success (bb nil "(with-open [str (java.nio.file.Files/newDirectoryStream (.toPath (clojure.java.io/file \".\")))] :success)")))
+    (is (= "loop" (bb nil "(try (throw (java.nio.file.FileSystemLoopException. \"loop\")) (catch java.nio.file.FileSystemLoopException e (.getFile e)))")))
     (is (string? (bb nil
                      '(do (import [java.nio.file Files LinkOption])
                           (import [java.nio.file.attribute BasicFileAttributes])
