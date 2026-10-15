@@ -11,6 +11,7 @@ A preview of the next release can be installed from
 
 - Return the docs of special forms such as `do` from the nREPL `info` and `eldoc` ops
 - Add the nREPL ops `cider/clojuredocs-lookup` and `cider/clojuredocs-refresh-cache`, for ClojureDocs examples in CIDER
+- `doc` on `&`, `catch` and `finally` prints the docs of `fn` and `try`
 - Add `java.nio.file.FileSystemLoopException`
 - Bump `nextjournal.markdown` to `0.7.228`
 - [#2194](https://github.com/babashka/babashka/issues/2194): Fix `script/uberjar` dropping the JDBC feature unless `BABASHKA_FEATURE_ORACLEDB=true`

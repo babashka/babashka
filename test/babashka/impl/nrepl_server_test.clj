@@ -671,6 +671,10 @@
             (let [reply (decode (first (send {"op" "info" "sym" "catch" "ns" "user"})))]
               (is (= "catch" (get reply "name")))
               (is (str/includes? (get reply "forms-str") "(try"))))
+          (testing "info on & returns the doc of clojure.core/fn"
+            (let [reply (decode (first (send {"op" "info" "sym" "&" "ns" "user"})))]
+              (is (= ["clojure.core" "fn"] [(get reply "ns") (get reply "name")]))
+              (is (string? (get reply "doc")))))
           (testing "info on let* returns no special-form"
             (is (nil? (get (decode (first (send {"op" "info" "sym" "let*" "ns" "user"}))) "special-form"))))
           (testing "eldoc on do returns the special form's forms"

@@ -32,16 +32,17 @@
       full-sym '%s
       resource-fn (resolve 'clojure.java.io/resource)
       file-fn (resolve 'clojure.java.io/file)
-      as-url-fn (resolve 'clojure.java.io/as-url)]
-  (if (special-symbol? full-sym)
-    (when-let [m ((resolve 'clojure.repl/special-doc) (get '{& fn* catch try finally try} full-sym full-sym))]
-      {:doc (:doc m)
-       :forms (:forms m)
-       :name full-sym
-       :ns 'clojure.core
-       :special-form true
-       :url (:url m)})
-    (when-let [v (ns-resolve ns full-sym)]
+      as-url-fn (resolve 'clojure.java.io/as-url)
+      doc-sym (get '{& fn catch try finally try} full-sym full-sym)]
+  (if-let [m (when (special-symbol? full-sym)
+               ((resolve 'clojure.repl/special-doc) doc-sym))]
+    {:doc (:doc m)
+     :forms (:forms m)
+     :name full-sym
+     :ns 'clojure.core
+     :special-form true
+     :url (:url m)}
+    (when-let [v (ns-resolve ns doc-sym)]
       (let [m (meta v)]
         {:arglists (:arglists m)
          :doc (:doc m)
