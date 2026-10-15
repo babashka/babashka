@@ -43,7 +43,7 @@
                  [org.babashka/cli "0.12.91"]
                  [org.babashka/http-client "0.4.25"]
                  [org.jsoup/jsoup "1.23.2"]
-                 [io.github.nextjournal/markdown "0.7.225"]
+                 [io.github.nextjournal/markdown "0.7.228"]
                  [borkdude/graal.locking "0.0.2"]
                  [org.jline/jline-terminal-ffm "4.4.7"]
                  [org.jline/jline-terminal "4.4.7"
