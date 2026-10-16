@@ -646,11 +646,9 @@
           (is (thrown-with-msg?
                Exception #"non-empty"
                (bb `(do ~ffi-require (ffi/cfn "div" [:int :int] [:struct []]))))))
-        (testing "a variadic signature cannot pass a struct by value"
-          (is (thrown-with-msg?
-               Exception #"variadic signature cannot pass a struct"
-               (bb `(do ~ffi-require
-                        (ffi/cfn "div" [[:struct [[:quot :int] [:rem :int]]] :&] :void))))))))))
+        (testing "a variadic signature binds a struct by value"
+          (is (true? (bb `(do ~ffi-require
+                              (some? (ffi/cfn "div" [[:struct [[:quot :int] [:rem :int]]] :&] :void)))))))))))
 
 (deftest struct-lib-test
   (when (and (not skip?) @libffi?)
@@ -947,10 +945,8 @@
                                               [:bool :bool] :long)]
                         [(apply# cb# 1 0) (apply# cb# 0 1)])))))))
   (when-not skip?
-    (testing "out-of-family callback shapes fail at creation"
-      ;; five integer arguments are in the family since the FSEvents work;
-      ;; a double among more than four is not
-      (is (= (if tu/native? :threw :ok)
+    (testing "a callback outside the registered shapes fails at creation only without libffi"
+      (is (= (if (and tu/native? (not @libffi?)) :threw :ok)
              (bb `(do ~ffi-require
                       (try (ffi/callback (ffi/global-arena) (fn [a# b# c# d# e#] 0)
                                          [:long :long :long :long :double] :long)
