@@ -393,6 +393,7 @@
   (with-open [socket (java.net.Socket. "127.0.0.1" (int port))
               in (java.io.PushbackInputStream. (.getInputStream socket))
               os (.getOutputStream socket)]
+    (.setSoTimeout socket 60000)
     (f (session-sender in os))))
 
 (defn- with-unix-session
@@ -599,12 +600,22 @@
             (send {"op" "eval" "code" "(set! *print-length* 3)"})
             (is (= ["(0 1 2 ...)"] (keep :value (send {"op" "eval" "code" "(range 10)"}))))))))))
 
+(defn- decode [x]
+  (cond
+    (map? x) (into {} (map (fn [[k v]] [(if (keyword? k) (name k) (bytes->str k)) (decode v)])) x)
+    (sequential? x) (mapv decode x)
+    (bytes? x) (bytes->str x)
+    :else x))
+
 (deftest ^:skip-windows nrepl-cider-ops-test
   (with-bb-script 1671
     "(ns ct-demo (:require [clojure.test :refer [deftest is testing]]))
      (deftest passing (is (= 1 1)))
      (deftest failing (testing \"ctx\" (is (= 1 2) \"nope\")))
      (deftest erroring (is (= 1 (throw (ex-info \"boom\" {:a 1})))))
+     (ns ct-fault (:require [clojure.test :refer [deftest is]]))
+     (deftest faulting (throw (ex-info \"boom\" {})))
+     (deftest double-message (is (= 1 2) 1.5))
      (ns user)
      (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1671 :quiet true}))"
     (fn []
@@ -632,6 +643,12 @@
             (let [summary (into {} (map (fn [[k v]] [(keyword (bytes->str k)) v])) (:summary (first (send {"op" "retest"}))))]
               (is (= 2 (:test summary)))
               (is (= 0 (:pass summary)))))
+          (testing "test-var-query reports a throwing test and a double message"
+            (let [results (decode (get (:results (first (send {"op" "test-var-query"
+                                                               "var-query" {"ns-query" {"exactly" ["ct-fault"]}}})))
+                                       "ct-fault"))]
+              (is (= "true" (get-in results ["faulting" 0 "fault"])))
+              (is (= "1.5" (get-in results ["double-message" 0 "message"])))))
           (testing "an eval with :inspect returns the inspector's rendering"
             (let [value (:value (first (send {"op" "eval" "code" "{:a 1 :b [1 2 3]}" "inspect" "true"})))]
               (is (str/starts-with? value "(\"Class: \""))
@@ -644,13 +661,6 @@
           (testing "inspect-def-current-value defs it"
             (send {"op" "inspect-def-current-value" "ns" "user" "var-name" "inspected"})
             (is (= "{:a 1, :b [1 2 3]}" (:value (first (send {"op" "eval" "code" "inspected"})))))))))))
-
-(defn- decode [x]
-  (cond
-    (map? x) (into {} (map (fn [[k v]] [(if (keyword? k) (name k) (bytes->str k)) (decode v)])) x)
-    (sequential? x) (mapv decode x)
-    (bytes? x) (bytes->str x)
-    :else x))
 
 (deftest ^:skip-windows nrepl-doc-test
   (with-bb-script 1680

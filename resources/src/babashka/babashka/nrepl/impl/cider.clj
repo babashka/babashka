@@ -308,15 +308,15 @@
 
 (defn- wire
   "A report as bencode takes it: string keys, names for keywords and
-  symbols, exceptions as their string, no nil entries (bencode would send
-  them as empty lists)."
+  symbols, integers, strings and collections as is, everything else as its
+  string, no nil entries (bencode would send them as empty lists)."
   [report]
   (walk/postwalk (fn [x]
                    (cond (map? x) (into {} (keep (fn [[k v]] (when (some? v) [(if (keyword? k) (str (symbol k)) (str k)) v]))) x)
                          (keyword? x) (str (symbol x))
                          (symbol? x) (str x)
-                         (instance? Throwable x) (str x)
-                         :else x))
+                         (or (nil? x) (string? x) (integer? x) (coll? x)) x
+                         :else (str x)))
                  report))
 
 (defn- run-and-reply [msg corpus-fn]
