@@ -649,11 +649,6 @@
                                        "ct-fault"))]
               (is (= "true" (get-in results ["faulting" 0 "fault"])))
               (is (= "1.5" (get-in results ["double-message" 0 "message"])))))
-          (testing "test-var-query for a var in an unloaded namespace replies namespace-not-found"
-            (is (some #{"namespace-not-found"}
-                      (mapcat :status (send {"op" "test-var-query"
-                                             "var-query" {"exactly" ["not-loaded.ns/t"]}}))))
-            (is (= ["3"] (keep :value (send {"op" "eval" "code" "(+ 1 2)"})))))
           (testing "an eval with :inspect returns the inspector's rendering"
             (let [value (:value (first (send {"op" "eval" "code" "{:a 1 :b [1 2 3]}" "inspect" "true"})))]
               (is (str/starts-with? value "(\"Class: \""))
@@ -666,6 +661,41 @@
           (testing "inspect-def-current-value defs it"
             (send {"op" "inspect-def-current-value" "ns" "user" "var-name" "inspected"})
             (is (= "{:a 1, :b [1 2 3]}" (:value (first (send {"op" "eval" "code" "inspected"})))))))))))
+
+(deftest ^:skip-windows nrepl-test-var-query-session-test
+  (with-bb-script 1682
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1682 :quiet true}))"
+    (fn []
+      (testing "test-var-query for a var in an unloaded namespace replies namespace-not-found"
+        (with-session 1682
+          (fn [send]
+            (is (some #{"namespace-not-found"}
+                      (mapcat :status (send {"op" "test-var-query"
+                                             "var-query" {"exactly" ["not-loaded.ns/t"]}}))))
+            (is (= ["3"] (keep :value (send {"op" "eval" "code" "(+ 1 2)"})))))))
+      (testing "test-var-query with search \"[\" replies error and keeps the session"
+        (with-session 1682
+          (fn [send]
+            (is (some #{"error"}
+                      (mapcat :status (send {"op" "test-var-query"
+                                             "var-query" {"search" "["}}))))
+            (is (= ["3"] (keep :value (send {"op" "eval" "code" "(+ 1 2)"})))))))
+      (testing "test-var-query reports the file of the test after load-file of another file"
+        (with-session 1682
+          (fn [send]
+            (let [dir (fs/create-temp-dir)
+                  a (str (fs/path dir "file_a.clj"))
+                  b (str (fs/path dir "file_b.clj"))]
+              (spit a "(ns file-a\n  (:require [clojure.test :refer [deftest is]]))\n\n(deftest t1 (is (= 1 2)))\n")
+              (spit b "(ns file-b)\n")
+              (doseq [f [a b]]
+                (send {"op" "load-file" "file" (slurp f) "file-name" (str (fs/file-name f)) "file-path" f}))
+              (let [result (get-in (decode (:results (first (send {"op" "test-var-query"
+                                                                   "var-query" {"exactly" ["file-a/t1"]}}))))
+                                   ["file-a" "t1" 0])]
+                (is (= a (get result "file")))
+                (is (= 4 (get result "line"))))
+              (fs/delete-tree dir))))))))
 
 (deftest ^:skip-windows nrepl-test-var-query-project-test
   (with-bb-script 1681
