@@ -682,6 +682,15 @@
                                                           "var-query" {"ns-query" {"project?" "true"
                                                                                    "load-project-ns?" "true"}}}))))]
               (is (= ["mine"] (keys (get results "proj.a-test"))))
+              (is (not (contains? results "scratch.other-test")))))
+          (testing "test-var-query with project? 1 runs the project's tests only"
+            (let [results (decode (:results (first (send {"op" "test-var-query"
+                                                          "var-query" {"ns-query" {"project?" 1}}}))))]
+              (is (contains? results "proj.a-test"))
+              (is (not (contains? results "scratch.other-test")))))
+          (testing "test-all runs the project's tests only"
+            (let [results (decode (:results (first (send {"op" "test-all"}))))]
+              (is (contains? results "proj.a-test"))
               (is (not (contains? results "scratch.other-test"))))))))))
 
 (deftest ^:skip-windows nrepl-doc-test

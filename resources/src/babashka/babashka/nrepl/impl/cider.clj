@@ -209,9 +209,18 @@
            (str/replace "_" "-")
            symbol)))))
 
-(defn- query-namespaces [{:keys [exactly project?]}]
+(defn- coerce-ns-query
+  "Returns ns-query with :project? and :load-project-ns? as booleans, and
+  the project's namespace names if either is true."
+  [{:keys [project? load-project-ns?] :as ns-query}]
+  (let [project? (some? project?)
+        load? (and (some? load-project-ns?) (not= [] load-project-ns?))]
+    (cond-> (assoc ns-query :project? project? :load-project-ns? load?)
+      (or project? load?) (assoc ::project-namespaces (project-namespaces)))))
+
+(defn- query-namespaces [{:keys [exactly project?] names ::project-namespaces}]
   (cond exactly (map find-test-ns exactly)
-        (= "true" project?) (filter has-tests? (keep find-ns (project-namespaces)))
+        project? (filter has-tests? (keep find-ns names))
         :else (filter has-tests? (all-ns))))
 
 (defn- query-vars
@@ -233,10 +242,12 @@
       exclude (remove #((apply some-fn exclude) (meta %))))))
 
 (defn- corpus [var-query]
-  (when (= "true" (get-in var-query [:ns-query :load-project-ns?]))
-    (doseq [n (project-namespaces)]
-      (try (require n) (catch Exception _))))
-  (let [vars (query-vars var-query)
+  (let [var-query (update var-query :ns-query coerce-ns-query)
+        {:keys [load-project-ns?] names ::project-namespaces} (:ns-query var-query)
+        _ (when load-project-ns?
+            (doseq [n names]
+              (try (require n) (catch Exception _))))
+        vars (query-vars var-query)
         by-ns (group-by (comp :ns meta) vars)
         hook-only (for [ns (query-namespaces (:ns-query var-query))
                         :when (and (not (contains? by-ns ns)) (ns-resolve ns 'test-ns-hook))]
@@ -370,8 +381,8 @@
                                :exclude-meta-key exclude
                                :exactly (map (fn [t] (str ns "/" t)) tests)})))
 
-(defn- test-all-reply [{:keys [include exclude] :as msg}]
-  (run-and-reply msg #(corpus {:ns-query {}
+(defn- test-all-reply [{:keys [load? include exclude] :as msg}]
+  (run-and-reply msg #(corpus {:ns-query {:project? true :load-project-ns? load?}
                                :include-meta-key include
                                :exclude-meta-key exclude})))
 
@@ -448,7 +459,7 @@
                                           :optional {"tests" "Test var names." "fail-fast" "\"true\" to stop at the first failure."}
                                           :returns {}}
                                   "test-var-query" {:doc "Runs the tests a var query selects." :requires {"var-query" "The query."} :optional {} :returns {}}
-                                  "test-all" {:doc "Runs the tests of every loaded namespace." :requires {} :optional {} :returns {}}
+                                  "test-all" {:doc "Runs the tests of the project's namespaces." :requires {} :optional {"load?" "Loads the project's namespaces first."} :returns {}}
                                   "retest" {:doc "Reruns the tests that failed or errored last time." :requires {} :optional {} :returns {}}
                                   "test-stacktrace" {:doc "The causes of an erring test's exception." :requires {"ns" "" "var" "" "index" ""} :optional {} :returns {}}
                                   "analyze-last-stacktrace" {:doc "Returns the causes of the session's last exception." :requires {} :optional {} :returns {}}
