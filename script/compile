@@ -71,7 +71,7 @@ fi
 args+=("-EBABASHKA_FEATURE_LIBFFI")
 
 # Pass the macOS deployment target to the image builder.
-if [ -n "$MACOSX_DEPLOYMENT_TARGET" ]; then
+if [ -n "${MACOSX_DEPLOYMENT_TARGET:-}" ]; then
     args+=("-EMACOSX_DEPLOYMENT_TARGET")
 fi
 
