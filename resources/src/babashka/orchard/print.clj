@@ -20,8 +20,86 @@
    (sci.lang Namespace Var)
    (java.io Writer)
    (java.util Iterator List Map Map$Entry)
+   (java.util.concurrent ConcurrentHashMap)
    (mx.cider.orchard TruncatingStringWriter
                      TruncatingStringWriter$TotalLimitExceeded)))
+
+(def ^:private structural-print-interfaces
+  "The generic collection interfaces that orchard prints structurally on its
+  own.  A value whose `print-method` resolves to one of their implementations
+  has no custom representation (see `custom-print-method?`)."
+  #_[clojure.lang.IPersistentMap clojure.lang.IPersistentSet
+   clojure.lang.IPersistentVector clojure.lang.IRecord clojure.lang.ISeq
+   java.util.List java.util.Map java.util.RandomAccess java.util.Set] ;; BB-PATCH no RandomAccess in the image, and clojure has no print-method for it
+  [clojure.lang.IPersistentMap clojure.lang.IPersistentSet
+   clojure.lang.IPersistentVector clojure.lang.IRecord clojure.lang.ISeq
+   java.util.List java.util.Map java.util.Set])
+
+(deftype PrintMethodCache [table prefers structural ^ConcurrentHashMap classes])
+
+(def ^:private print-method-cache
+  "Caches per class whether it has a custom `print-method` (see
+  `custom-print-method?`).  The whole cache is dropped whenever `print-method`
+  gains or loses implementations or preferences, so re-registering a method -
+  e.g. when reloading a namespace - can't leave stale results behind."
+  (atom nil))
+
+(defn- current-print-method-cache
+  "Return the up-to-date cache, rebuilding it if `print-method`'s method or
+  preference tables have changed since it was built."
+  ^PrintMethodCache []
+  (let [table (methods print-method)
+        prefs (prefers print-method)
+        ^PrintMethodCache cache @print-method-cache]
+    (if (and cache
+             (identical? table (.-table cache))
+             (identical? prefs (.-prefers cache)))
+      cache
+      ;; A thread caching into a cache that is being replaced is harmless: it
+      ;; writes into an object that no one will look at again.
+      (reset! print-method-cache
+              (PrintMethodCache. table prefs
+                                 (into #{}
+                                       (keep #(get-method print-method %))
+                                       structural-print-interfaces)
+                                 (ConcurrentHashMap.))))))
+
+(defn- custom-print-method?
+  "True if `x` has a `print-method` more specific than the generic collection
+  implementations - i.e. a deliberate custom textual representation that orchard
+  should use instead of traversing the value's structure.  This keeps records
+  and collections that define their own `print-method` (e.g. `tech.ml.dataset`
+  datasets) rendered as intended, and avoids descending into - and potentially
+  looping on - such objects' internals."
+  [x]
+  (let [c (class x)
+        cache (current-print-method-cache)
+        ^ConcurrentHashMap classes (.-classes cache)
+        cached (.get classes c)]
+    (if (some? cached)
+      cached
+      (let [v (if-let [m (try (get-method print-method c)
+                              ;; get-method throws when several implementations
+                              ;; match `c` and none is preferred.  Print such
+                              ;; values structurally.
+                              (catch Exception _ nil))]
+                (not (contains? (.-structural cache) m))
+                false)]
+        (.put classes c v)
+        v))))
+
+(defn- structural-tag
+  "Return the `print` dispatch value for the collection types that orchard
+  prints structurally, nil for other types.  Clojure maps implement
+  java.util.Map, so the Map clause covers them too.  Don't add an
+  IPersistentMap clause here: the :map printer requires java.util.Map, so
+  IPersistentMap-only types must keep falling through to :default."
+  [x]
+  (cond (instance? IRecord x)           :record
+        (instance? Map x)               :map
+        (instance? IPersistentVector x) :vector
+        (instance? List x)              :list
+        (instance? IPersistentSet x)    :set))
 
 (defmulti print
   (fn [x _]
@@ -34,11 +112,11 @@
       (instance? Number x)            :scalar
       (instance? Symbol x)            :scalar
       (instance? Keyword x)           :keyword
-      (instance? IRecord x)           :record
-      (instance? Map x)               :map
-      (instance? IPersistentVector x) :vector
-      (instance? List x)              :list
-      (instance? IPersistentSet x)    :set
+      ;; Records and collections may define a custom `print-method`; prefer it
+      ;; over structural printing so their intended representation is kept.
+      (structural-tag x)              (if (custom-print-method? x)
+                                        :custom
+                                        (structural-tag x))
       (instance? Eduction x)          :list
       (instance? Var x)               :default
       (.isArray (class x))            :array
@@ -108,7 +186,8 @@
                  (.write w "..."))
                (.write w suffix))
            ;; Special case: collection has zero elements.
-           (print-method x w)))
+           (do (.write w prefix)
+               (.write w suffix))))
        (finally (when-not (nil? level)
                   (set! *print-level* level)))))))
 
@@ -190,6 +269,21 @@
                 (subs full-name (inc (.lastIndexOf full-name ".")))
                 full-name)))
   (print-map x w))
+
+(defn- print-structurally
+  "Print `x` with orchard's own structural printer even if its type has a
+  custom `print-method`."
+  [x, ^Writer w]
+  ((get-method print (structural-tag x)) x w))
+
+(defmethod print :custom [x, ^Writer w]
+  ;; The value's type defines its own representation - honor it. But a custom
+  ;; print-method is arbitrary user code: if it throws, or overflows the stack
+  ;; on a self-referential value (#412), fall back to structural printing.
+  ;; TotalLimitExceeded extends Error, so it propagates through both catches.
+  (try (print-method x w)
+       (catch StackOverflowError _ (print-structurally x w))
+       (catch Exception _ (print-structurally x w))))
 
 (defmethod print :array [x, ^Writer w]
   (let [ct (.getName (or (.getComponentType (class x)) Object))
@@ -311,6 +405,9 @@
   limit is reached."
   [x]
   (let [writer (TruncatingStringWriter. *max-atom-length* *max-total-length*)]
-    (try (print x writer)
-         (catch TruncatingStringWriter$TotalLimitExceeded _))
+    ;; Protect against self-referencing collections by ensuring
+    ;; print-level is always set to at least an unreasonably large value.
+    (binding [*print-level* (or *print-level* 100)]
+      (try (print x writer)
+           (catch TruncatingStringWriter$TotalLimitExceeded _)))
     (.toString writer)))

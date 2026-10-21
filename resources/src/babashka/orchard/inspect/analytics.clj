@@ -170,6 +170,20 @@
                        (let [kcoll (mapv #(get % k) coll)]
                          [k (basic-list-stats kcoll false)])))))))
 
+(defn- string-stats [^String s]
+  (when (string? s)
+    (let [len (.length s)]
+      (loop [i 0, non-ascii 0, non-bmp 0, lines 1]
+        (if (< i len)
+          (let [cp (.codePointAt s i)]
+            (recur (+ i (Character/charCount cp))
+                   (cond-> non-ascii (> cp 127) inc)
+                   (cond-> non-bmp (> cp 0xFFFF) inc)
+                   (cond-> lines (= cp 10) inc)))
+          {:non-ascii non-ascii
+           :non-bmp   non-bmp
+           :lines     lines})))))
+
 (defn analytics
   "Return various analytical data about `object`. Supports the following data
   types with different amount of insights:
@@ -187,6 +201,7 @@
     (or (tuples-stats object)
         (records-stats object)
         (keyvals-stats object)
+        (string-stats object)
         (basic-list-stats object true))))
 
 (defn can-analyze?
@@ -195,4 +210,5 @@
   (or (instance? List object)
       (instance? Map object)
       (instance? Set object)
+      (instance? String object)
       (some-> (class object) (.isArray))))

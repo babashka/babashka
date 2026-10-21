@@ -120,6 +120,16 @@ true")))))
   (is (str/includes? (bb "test-resources/line_number_test_test.clj")
                      "line_number_test_test.clj:4")))
 
+(deftest assertion-file-test
+  (is (str/includes?
+       (bb "(load-file \"test-resources/assertion_file_test.clj\")
+            (def file (atom nil))
+            (binding [*file* \"other.clj\"
+                      clojure.test/report #(when (= :fail (:type %)) (reset! file (:file %)))]
+              (clojure.test/test-var #'assertion-file-test/failing))
+            @file")
+       "assertion_file_test.clj")))
+
 (deftest testing-vars-str-test
   (is (str/includes?
         (bb "(clojure.test/testing-vars-str {:file \"x\" :line 1})")

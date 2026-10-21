@@ -775,6 +775,7 @@
       (render-indent "Value: " (print-string inspector obj))
       (render-ln)
       (render-indent-ln "Length: " (str (.length obj)))
+      (render-analytics)
       (render-section-header "Print")
       (indent)
       (render-indent-str-lines obj)
