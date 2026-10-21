@@ -24,16 +24,19 @@
    (mx.cider.orchard TruncatingStringWriter
                      TruncatingStringWriter$TotalLimitExceeded)))
 
+(defrecord ^:private RecordProbe []) ;; BB-PATCH every sci record is a SciRecord
+
 (def ^:private structural-print-interfaces
   "The generic collection interfaces that orchard prints structurally on its
   own.  A value whose `print-method` resolves to one of their implementations
   has no custom representation (see `custom-print-method?`)."
   #_[clojure.lang.IPersistentMap clojure.lang.IPersistentSet
    clojure.lang.IPersistentVector clojure.lang.IRecord clojure.lang.ISeq
-   java.util.List java.util.Map java.util.RandomAccess java.util.Set] ;; BB-PATCH no RandomAccess in the image, and clojure has no print-method for it
+   java.util.List java.util.Map java.util.RandomAccess java.util.Set] ;; BB-PATCH a sci record prints through SciRecord's print-method, not IRecord's
   [clojure.lang.IPersistentMap clojure.lang.IPersistentSet
    clojure.lang.IPersistentVector clojure.lang.IRecord clojure.lang.ISeq
-   java.util.List java.util.Map java.util.Set])
+   java.util.List java.util.Map java.util.RandomAccess java.util.Set
+   (class (->RecordProbe))])
 
 (deftype PrintMethodCache [table prefers structural ^ConcurrentHashMap classes])
 

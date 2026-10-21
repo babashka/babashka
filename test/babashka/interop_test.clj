@@ -540,3 +540,8 @@
 (deftest thread-death-test
   (testing "(ThreadDeath.) constructs a ThreadDeath"
     (is (true? (bb nil "(instance? ThreadDeath (ThreadDeath.))")))))
+
+(deftest random-access-test
+  (testing "java.util.RandomAccess distinguishes an ArrayList from a LinkedList"
+    (is (= [true false] (bb nil "[(instance? java.util.RandomAccess (java.util.ArrayList.))
+                                  (instance? java.util.RandomAccess (java.util.LinkedList.))]")))))

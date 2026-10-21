@@ -949,6 +949,7 @@
                       java.sql.Timestamp
                       java.util.Collection
                       java.util.Map$Entry
+                      java.util.RandomAccess
                       java.util.AbstractMap
                       java.util.AbstractSet
                       java.util.AbstractList
