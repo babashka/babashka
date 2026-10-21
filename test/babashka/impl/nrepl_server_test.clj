@@ -769,6 +769,20 @@
               (is (string? (get reply "doc")))))
           (testing "info on let* returns no special-form"
             (is (nil? (get (decode (first (send {"op" "info" "sym" "let*" "ns" "user"}))) "special-form"))))
+          (testing "info on a var from load-file returns its file, line and column"
+            (let [dir (fs/create-temp-dir)
+                  f (str (fs/path dir "info_loc.clj"))]
+              (spit f "(ns info-loc)\n\n(defn hello [x]\n  (str \"hi \" x))\n")
+              (send {"op" "load-file" "file" (slurp f) "file-name" "info_loc.clj" "file-path" f})
+              (let [reply (decode (first (send {"op" "info" "sym" "info-loc/hello" "ns" "user"})))]
+                (is (= (str "file:" f) (get reply "file")))
+                (is (= [3 1] [(get reply "line") (get reply "column")])))
+              (fs/delete-tree dir)))
+          (testing "info on clojure.core/map returns clojure/core.clj with a line and column"
+            (let [reply (decode (first (send {"op" "info" "sym" "clojure.core/map" "ns" "user"})))]
+              (is (= "clojure/core.clj" (get reply "file")))
+              (is (pos-int? (get reply "line")))
+              (is (pos-int? (get reply "column")))))
           (testing "eldoc on do returns the special form's forms"
             (let [reply (decode (first (send {"op" "eldoc" "sym" "do" "ns" "user"})))]
               (is (= "special-form" (get reply "type")))
