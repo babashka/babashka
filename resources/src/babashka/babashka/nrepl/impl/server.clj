@@ -50,7 +50,7 @@
 (defn- lookup-reply [{:keys [op sym symbol ns] :as _msg}]
   (let [sym-str (or sym symbol)
         m (sci-helpers/lookup sym-str ns)
-        {:keys [doc file line arglists forms special-form]} m]
+        {:keys [doc file line column arglists forms special-form]} m]
     (cond
       (nil? m) {:status (if (= "eldoc" op) #{:done :no-eldoc} :done)}
       (= "eldoc" op) (cond-> {:status :done
@@ -74,6 +74,7 @@
                 doc (assoc :doc doc)
                 file (assoc :file file)
                 line (assoc :line line)
+                column (assoc :column column)
                 see-also (assoc :see-also see-also))))))
 
 (defn- ns-list-reply [{:keys [exclude-patterns]}]

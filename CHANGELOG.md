@@ -24,6 +24,7 @@ A preview of the next release can be installed from
 - A failing `=` in `is` reports `actual:` as the value instead of `(not (= ...))` while an nREPL server runs
 - Bump `orchard` to `0.45.0`
 - [#2208](https://github.com/babashka/babashka/issues/2208): Fix `is` reporting the current `*file*` instead of the file of the test
+- [#2209](https://github.com/babashka/babashka/issues/2209): nREPL `info` returns `:line` and `:column`, and no longer resolves the `:file` of a built-in var against the working directory
 - [#2210](https://github.com/babashka/babashka/issues/2210): Fix a `SocketException` stack trace from `nREPL-track-state` on stderr after every nREPL client disconnect
 - Fix loading a `clojure.tools.deps.*` or `clojure.tools.gitlibs.*` namespace from a jar if bb does not bundle it, such as `clojure.tools.deps.config`
 - The macOS amd64 binary requires macOS 11.0 or later

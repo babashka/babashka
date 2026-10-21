@@ -4,6 +4,7 @@
   {:author "Michiel Borkent"
    :no-doc true}
   (:require
+   [clojure.java.io :as io]
    [clojure.reflect]
    [clojure.string :as str]
    [sci.core :as sci]))
@@ -17,6 +18,17 @@
 
 ;;;; Lookup
 
+(defn- resolve-file
+  "Returns lookup result m without :resource, and with :file as its classpath
+  resource URL, or its file URL if the file exists."
+  [{:keys [file resource] :as m}]
+  (-> m
+      (dissoc :resource)
+      (cond-> file (assoc :file (or resource
+                                    (let [f (io/file file)]
+                                      (when (.exists f) (str (io/as-url f))))
+                                    file)))))
+
 (defn lookup
   "Returns metadata map for sym-str, or nil.
    When ns-str is provided, resolves in that namespace using ns-resolve.
@@ -25,14 +37,12 @@
   (try
     (let [sci-ns (when ns-str
                    (the-sci-ns ctx (symbol ns-str)))
-          ns-str (or ns-str (str @sci/ns))]
-      (sci/binding [sci/ns (or sci-ns @sci/ns)]
-        (sci/eval-string* ctx (format "
+          ns-str (or ns-str (str @sci/ns))
+          m (sci/binding [sci/ns (or sci-ns @sci/ns)]
+              (sci/eval-string* ctx (format "
 (let [ns '%s
       full-sym '%s
       resource-fn (resolve 'clojure.java.io/resource)
-      file-fn (resolve 'clojure.java.io/file)
-      as-url-fn (resolve 'clojure.java.io/as-url)
       doc-sym (get '{& fn catch try finally try} full-sym full-sym)]
   (if-let [m (when (special-symbol? full-sym)
                ((resolve 'clojure.repl/special-doc) doc-sym))]
@@ -49,12 +59,11 @@
          :name (:name m)
          :ns (some-> m :ns ns-name)
          :val @v
-         :file (let [file (:file m)]
-                 (if resource-fn
-                   (str (or (when resource-fn (some-> file resource-fn))
-                        (when (and file-fn as-url-fn) (some-> file file-fn as-url-fn))
-                        file))
-                   file))}))))" ns-str sym-str))))
+         :line (:line m)
+         :column (:column m)
+         :file (:file m)
+         :resource (when resource-fn (some-> (:file m) resource-fn str))}))))" ns-str sym-str)))]
+      (some-> m resolve-file))
     (catch Throwable _ nil)))
 
 ;;;; Completions
