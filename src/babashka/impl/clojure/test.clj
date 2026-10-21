@@ -453,7 +453,7 @@
          (clojure.test/do-report {:type :pass, :message ~msg,
                                   :expected '~form, :actual (cons ~pred values#)})
          (clojure.test/do-report {:type :fail, :message ~msg,
-                                  :file clojure.core/*file*
+                                  :file ~(deref sci/file)
                                   :line ~(:line (meta form))
                                   :expected '~form, :actual (list '~'not (cons '~pred values#))}))
        result#)))
@@ -468,7 +468,7 @@
        (clojure.test/do-report {:type :pass, :message ~msg,
                                 :expected '~form, :actual value#})
        (clojure.test/do-report {:type :fail, :message ~msg,
-                                :file clojure.core/*file*
+                                :file ~(deref sci/file)
                                 :line ~(:line (meta form))
                                 :expected '~form, :actual value#}))
      value#))
@@ -491,7 +491,7 @@
 (defmethod assert-expr :always-fail [msg form]
   ;; nil test: always fail
   `(clojure.test/do-report {:type :fail, :message ~msg
-                            :file clojure.core/*file*
+                            :file ~(deref sci/file)
                             :line ~(:line (meta form))}))
 
 (defmethod assert-expr :default [msg form]
@@ -508,7 +508,7 @@
          (clojure.test/do-report {:type :pass, :message ~msg,
                                   :expected '~form, :actual (class object#)})
          (clojure.test/do-report {:type :fail, :message ~msg,
-                                  :file clojure.core/*file*
+                                  :file ~(deref sci/file)
                                   :line ~(:line (meta form))
                                   :expected '~form, :actual (class object#)}))
        result#)))
@@ -521,7 +521,7 @@
         body (nthnext form 2)]
     `(try ~@body
           (clojure.test/do-report {:type :fail, :message ~msg,
-                                   :file clojure.core/*file*
+                                   :file ~(deref sci/file)
                                    :line ~(:line (meta form))
                                    :expected '~form, :actual nil})
           (catch ~klass e#
@@ -544,7 +544,7 @@
               (if (re-find ~re m#)
                 (clojure.test/do-report {:type :pass, :message ~msg,
                                          :expected '~form, :actual e#})
-                (clojure.test/do-report {:file clojure.core/*file*
+                (clojure.test/do-report {:file ~(deref sci/file)
                                          :line ~(:line (meta form))
                                          :type :fail, :message ~msg,
                                          :expected '~form, :actual e#})))
@@ -558,7 +558,7 @@
   [msg form]
   `(try ~(assert-expr msg form)
         (catch ~(with-meta 'Throwable {:sci/callstack true}) t#
-          (clojure.test/do-report {:file clojure.core/*file*
+          (clojure.test/do-report {:file ~(deref sci/file)
                                    :line ~(:line (meta form))
                                    :type :error, :message ~msg,
                                    :expected '~form, :actual t#}))))

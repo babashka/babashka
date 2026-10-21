@@ -17,6 +17,9 @@ A preview of the next release can be installed from
 - [#2194](https://github.com/babashka/babashka/issues/2194): Fix `script/uberjar` dropping the JDBC feature unless `BABASHKA_FEATURE_ORACLEDB=true`
 - [#2193](https://github.com/babashka/babashka/issues/2193): `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch`
 - [#2201](https://github.com/babashka/babashka/issues/2201): Fix the nREPL test ops never replying when a test throws outside an assertion
+- [#2206](https://github.com/babashka/babashka/issues/2206): Fix nREPL `test-var-query` for a var in an unloaded namespace killing the session
+- [#2207](https://github.com/babashka/babashka/issues/2207): Support `:project?` and `:load-project-ns?` in nREPL `test-var-query`
+- [#2208](https://github.com/babashka/babashka/issues/2208): Fix `is` reporting the current `*file*` instead of the file of the test
 - Fix loading a `clojure.tools.deps.*` or `clojure.tools.gitlibs.*` namespace from a jar if bb does not bundle it, such as `clojure.tools.deps.config`
 - The macOS amd64 binary requires macOS 11.0 or later
 

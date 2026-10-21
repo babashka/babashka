@@ -649,6 +649,11 @@
                                        "ct-fault"))]
               (is (= "true" (get-in results ["faulting" 0 "fault"])))
               (is (= "1.5" (get-in results ["double-message" 0 "message"])))))
+          (testing "test-var-query for a var in an unloaded namespace replies namespace-not-found"
+            (is (some #{"namespace-not-found"}
+                      (mapcat :status (send {"op" "test-var-query"
+                                             "var-query" {"exactly" ["not-loaded.ns/t"]}}))))
+            (is (= ["3"] (keep :value (send {"op" "eval" "code" "(+ 1 2)"})))))
           (testing "an eval with :inspect returns the inspector's rendering"
             (let [value (:value (first (send {"op" "eval" "code" "{:a 1 :b [1 2 3]}" "inspect" "true"})))]
               (is (str/starts-with? value "(\"Class: \""))
@@ -661,6 +666,23 @@
           (testing "inspect-def-current-value defs it"
             (send {"op" "inspect-def-current-value" "ns" "user" "var-name" "inspected"})
             (is (= "{:a 1, :b [1 2 3]}" (:value (first (send {"op" "eval" "code" "inspected"})))))))))))
+
+(deftest ^:skip-windows nrepl-test-var-query-project-test
+  (with-bb-script 1681
+    "(babashka.classpath/add-classpath \"test-resources/nrepl_project\")
+     (ns scratch.other-test (:require [clojure.test :refer [deftest is]]))
+     (deftest not-mine (is true))
+     (ns user)
+     (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1681 :quiet true}))"
+    (fn []
+      (with-session 1681
+        (fn [send]
+          (testing "test-var-query with project? and load-project-ns? runs the project's tests only"
+            (let [results (decode (:results (first (send {"op" "test-var-query"
+                                                          "var-query" {"ns-query" {"project?" "true"
+                                                                                   "load-project-ns?" "true"}}}))))]
+              (is (= ["mine"] (keys (get results "proj.a-test"))))
+              (is (not (contains? results "scratch.other-test"))))))))))
 
 (deftest ^:skip-windows nrepl-doc-test
   (with-bb-script 1680

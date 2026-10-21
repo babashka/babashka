@@ -4,6 +4,8 @@
   cider-nrepl, so CIDER needs no middleware on the classpath."
   {:no-doc true}
   (:require
+   [babashka.classpath :as cp]
+   [babashka.fs :as fs]
    [clojure.pprint :as pp]
    [clojure.string :as str]
    [clojure.test :as test]
@@ -189,12 +191,28 @@
 
 (defn- has-tests? [ns] (some test-var? (vals (ns-interns ns))))
 
-(defn- query-namespaces [{:keys [exactly]}]
-  (if exactly
-    (map (fn [n] (or (find-ns (symbol n))
-                     (throw (ex-info "Namespace not found" {::status :namespace-not-found :namespace n}))))
-         exactly)
-    (filter has-tests? (all-ns))))
+(defn- find-test-ns [n]
+  (or (find-ns (symbol n))
+      (throw (ex-info "Namespace not found" {::status :namespace-not-found :namespace n}))))
+
+(defn- project-namespaces
+  "Returns the namespace names of the source files in the classpath
+  directories under the working directory."
+  []
+  (let [cwd (fs/cwd)]
+    (distinct
+     (for [dir (cp/split-classpath (cp/get-classpath))
+           :when (and (fs/directory? dir) (fs/starts-with? (fs/absolutize dir) cwd))
+           file (fs/glob dir "**.{clj,cljc,bb}")]
+       (-> (str/join "." (map str (fs/relativize dir file)))
+           (str/replace #"\.(clj|cljc|bb)$" "")
+           (str/replace "_" "-")
+           symbol)))))
+
+(defn- query-namespaces [{:keys [exactly project?]}]
+  (cond exactly (map find-test-ns exactly)
+        (= "true" project?) (filter has-tests? (keep find-ns (project-namespaces)))
+        :else (filter has-tests? (all-ns))))
 
 (defn- query-vars
   [{:keys [ns-query exactly include-meta-key exclude-meta-key search]}]
@@ -202,7 +220,12 @@
         exclude (seq (map keyword exclude-meta-key))
         search (some-> search re-pattern)]
     (cond->> (if (seq exactly)
-               (keep (comp find-var symbol) exactly)
+               (keep (fn [v]
+                       (let [v (symbol v)]
+                         (when-let [n (namespace v)]
+                           (find-test-ns n)
+                           (find-var v))))
+                     exactly)
                (mapcat (comp vals ns-interns) (query-namespaces ns-query)))
       true (filter test-var?)
       search (filter #(re-find search (str (:name (meta %)))))
@@ -210,6 +233,9 @@
       exclude (remove #((apply some-fn exclude) (meta %))))))
 
 (defn- corpus [var-query]
+  (when (= "true" (get-in var-query [:ns-query :load-project-ns?]))
+    (doseq [n (project-namespaces)]
+      (try (require n) (catch Exception _))))
   (let [vars (query-vars var-query)
         by-ns (group-by (comp :ns meta) vars)
         hook-only (for [ns (query-namespaces (:ns-query var-query))
@@ -328,10 +354,10 @@
               (let [report (run-corpus (corpus-fn) fail-fast?)]
                 (reset! results (:results report))
                 (t/respond-to msg (wire report)))
-              (catch clojure.lang.ExceptionInfo e
+              (catch Throwable e
                 (if (= :namespace-not-found (::status (ex-data e)))
                   (t/respond-to msg :status :namespace-not-found)
-                  (throw e)))))
+                  (t/respond-to msg :status :error :err (str e))))))
           (fn [] (t/respond-to msg :status :done))
           msg)))
 
