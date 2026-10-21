@@ -164,7 +164,7 @@ requests against master, so pushing a branch runs no CI.
 
 `resources/src/babashka` and `src-java` hold the sources babashka bundles:
 tools.deps, tools.build, gitlibs, nREPL, orchard and cider-nrepl's debugger,
-track-state and test middleware.
+track-state, test, inspect and stacktrace middleware.
 They are the source of truth, not build output. Babashka's changes live in
 those files, each marked `BB-PATCH` with the upstream form kept under `#_`,
 so editing one is an ordinary edit.

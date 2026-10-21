@@ -133,6 +133,12 @@
     "cider/nrepl/middleware/track_state.clj"
     "cider/nrepl/middleware/util/meta.clj"
     "orchard/indent.clj"
+    ;; the inspector and stacktrace ops
+    "cider/nrepl/middleware/inspect.clj"
+    "cider/nrepl/middleware/stacktrace.clj"
+    "cider/nrepl/middleware/util/cljs.clj"
+    "cider/nrepl/middleware/util/error_handling.clj"
+    "cider/nrepl/pprint.clj"
     ;; the test runner
     "cider/nrepl/middleware/test.clj"
     "cider/nrepl/middleware/test/extensions.clj"
@@ -158,8 +164,8 @@
 ;; tools.build tasks use what the image lacks, and four nREPL namespaces:
 ;; bencode delegates to the compiled bencode.core, completion to bb's own,
 ;; the classloader returns the context classloader, and TLS is not
-;; supported. The debugger's inspector, orchard.info, orchard.meta and
-;; orchard.stacktrace are bb's own. Never copied.
+;; supported. orchard.info, orchard.meta and orchard.stacktrace are bb's
+;; own. Never copied.
 (def stand-ins
   #{"clojure/tools/deps/extensions/local.clj"
     "clojure/tools/deps/extensions/maven.clj"
@@ -171,7 +177,6 @@
     "nrepl/tls.clj"
     "nrepl/util/classloader.clj"
     "nrepl/util/completion.clj"
-    "cider/nrepl/middleware/inspect.clj"
     "orchard/info.clj"
     "orchard/meta.clj"
     "orchard/stacktrace.clj"})
