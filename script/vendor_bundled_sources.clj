@@ -253,6 +253,17 @@
                                   "git" "merge-file" (str ours) (str base) (str theirs))]
         (if (zero? exit) :clean exit)))))
 
+(defn- orchard-pin-problem
+  "Returns a message if the cider/orchard pin is not the orchard version the
+  pom of the cider-nrepl jar extracted to dir depends on, or nil."
+  [dir]
+  (let [pom (slurp (str (fs/file dir "META-INF/maven/cider/cider-nrepl/pom.xml")))
+        wanted (second (re-find #"<artifactId>orchard</artifactId>\s*<version>([^<]+)</version>" pom))
+        pinned (bumped 'cider/orchard)]
+    (when (not= wanted pinned)
+      (str "cider-nrepl " cider-nrepl-version " depends on orchard " wanted ", pinned is " pinned ": "
+           "bb script/vendor_bundled_sources.clj cider/orchard " wanted))))
+
 (defn- data-readers-problem
   "Returns a message if bundled-data-readers in main.clj differs from the
   data_readers.clj in the cider-nrepl jar extracted to dir, or nil."
@@ -301,6 +312,11 @@
     (System/exit 1))
   (let [old (extract old-jars)
         new (extract new-jars)
+        _ (when-let [problem (orchard-pin-problem new)]
+            (println problem)
+            (fs/delete-tree old)
+            (fs/delete-tree new)
+            (System/exit 1))
         upstream (->> (concat (fs/glob new "clojure/**") (fs/glob new "nrepl/**")
                               (fs/glob new "orchard/**") (fs/glob new "mx/**")
                               (fs/glob new "cider/**"))

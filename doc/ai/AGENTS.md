@@ -198,8 +198,9 @@ A cider-nrepl bump touches three places. Besides `script/vendored.edn`,
 `data_readers.clj`, and the cider-nrepl lib tests run from the git sha pinned
 in `test-resources/lib_tests/bb-tested-libs.edn`, which must be the same
 release. The script fails when either one is out of step and prints the sha
-to set. Re-sync the three test copies under `test-resources/lib_tests/cider/`
-with:
+to set. It also stops before merging when the `cider/orchard` pin differs from
+the orchard version cider-nrepl depends on, and prints the bump command.
+Re-sync the test copies under `test-resources/lib_tests/cider/` with:
 
 ```
 bb --config .build/bb.edn --deps-root . resync --lib cider/cider-nrepl --copies cider --new-sha <sha>
