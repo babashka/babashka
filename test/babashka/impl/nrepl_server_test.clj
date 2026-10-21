@@ -790,6 +790,36 @@
           (testing "describe lists cider/clojuredocs-lookup"
             (is (contains? (get (decode (first (send {"op" "describe"}))) "ops") "cider/clojuredocs-lookup"))))))))
 
+(defn- disconnect-after-eval [port]
+  (with-open [socket (java.net.Socket. "127.0.0.1" (int port))
+              in (java.io.PushbackInputStream. (.getInputStream socket))
+              os (.getOutputStream socket)]
+    (.setSoTimeout socket 60000)
+    ((session-sender in os) {"op" "eval" "code" "1"})))
+
+(deftest ^:skip-windows nrepl-track-state-disconnect-test
+  (let [script "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1683 :quiet true}))"]
+    (testing "a client disconnect after done leaves nothing on stderr"
+      (if tu/jvm?
+        (let [uncaught (atom [])
+              previous (Thread/getDefaultUncaughtExceptionHandler)]
+          (Thread/setDefaultUncaughtExceptionHandler
+           (reify Thread$UncaughtExceptionHandler
+             (uncaughtException [_ t _] (swap! uncaught conj (.getName t)))))
+          (try
+            (with-bb-script 1683 script #(disconnect-after-eval 1683))
+            (finally (Thread/setDefaultUncaughtExceptionHandler previous)))
+          (is (not-any? #{"nREPL-track-state"} @uncaught)))
+        (let [file (str (fs/create-temp-file {:suffix ".clj"}))
+              _ (spit file script)
+              proc (p/process ["./bb" file] {:err :string})]
+          (wait/wait-for-port "127.0.0.1" 1683 {:timeout 10000})
+          (disconnect-after-eval 1683)
+          (Thread/sleep 1000)
+          (p/destroy-tree proc)
+          (is (not (str/includes? (:err @proc) "nREPL-track-state")))
+          (fs/delete-if-exists file))))))
+
 (deftest ^:skip-windows nrepl-track-state-test
   (with-bb-script 1679
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1679 :quiet true}))"

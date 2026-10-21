@@ -354,7 +354,7 @@
       #_(.recv transport timeout) ;; BB-PATCH
 (transport/recv transport timeout))
 
-    #_(send [_this {:keys [status] :as response}] ;; BB-PATCH a plain thread, a future fails after shutdown-agents
+    #_(send [_this {:keys [status] :as response}] ;; BB-PATCH a plain thread, a future fails after shutdown-agents, and like the future it drops what the send throws
       (.send transport response)
       (when (contains? status :done)
         (future
@@ -363,8 +363,10 @@
   (transport/send transport response)
   (when (some #{:done "done"} (if (coll? status) status [status]))
     (doto (Thread. (fn []
-                     (transport/send transport (try (calculate-changed-project-state-response msg)
-                                                    (catch Exception _ (response-for msg :status :state :repl-type "clj" :changed-namespaces {}))))))
+                     (try
+                       (transport/send transport (try (calculate-changed-project-state-response msg)
+                                                      (catch Exception _ (response-for msg :status :state :repl-type "clj" :changed-namespaces {}))))
+                       (catch Exception _))))
       (.setName "nREPL-track-state")
       (.setDaemon true)
       (.start)))
