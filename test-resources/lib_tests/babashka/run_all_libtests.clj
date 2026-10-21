@@ -266,7 +266,9 @@
     cider.nrepl.middleware.debug-integration-test
     cider.nrepl.middleware.track-state-test
     cider.nrepl.middleware.test-test
-    cider.nrepl.middleware.test.extensions-test])
+    cider.nrepl.middleware.test.extensions-test
+    cider.nrepl.middleware.inspect-test
+    cider.nrepl.middleware.stacktrace-test])
 
 (def cider-nrepl-skipped
   "Upstream tests that assert JVM specifics: the exact reify* expansion, an

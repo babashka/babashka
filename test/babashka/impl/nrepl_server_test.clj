@@ -664,6 +664,14 @@
                                                                                       "include-meta-key" ["smoke"]
                                                                                       "exclude-meta-key" ["integration"]}}))))
                                          "ct-filter")))))
+          (testing "inspect-last-exception inspects the analyzed exception and its ex-data"
+            (send {"op" "eval" "code" "(throw (ex-info \"boom\" {:a 1}))"})
+            (send {"op" "analyze-last-stacktrace"})
+            (let [cause (:value (first (send {"op" "inspect-last-exception" "index" 0})))
+                  data (:value (first (send {"op" "inspect-last-exception" "index" 0 "ex-data" "true"})))]
+              (is (str/includes? cause "boom"))
+              (is (str/includes? data "\":a\""))
+              (is (not (str/includes? data "sci/error")))))
           (testing "an eval with :inspect returns the inspector's rendering"
             (let [value (:value (first (send {"op" "eval" "code" "{:a 1 :b [1 2 3]}" "inspect" "true"})))]
               (is (str/starts-with? value "(\"Class: \""))

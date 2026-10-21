@@ -25,6 +25,8 @@ A preview of the next release can be installed from
 - Bump `orchard` to `0.45.0`
 - [#2208](https://github.com/babashka/babashka/issues/2208): Fix `is` reporting the current `*file*` instead of the file of the test
 - [#2209](https://github.com/babashka/babashka/issues/2209): nREPL `info` returns `:line` and `:column`, and no longer resolves the `:file` of a built-in var against the working directory
+- [#2211](https://github.com/babashka/babashka/issues/2211): Add the nREPL op `inspect-last-exception`
+- Serve the nREPL inspector and `analyze-last-stacktrace` ops from cider-nrepl's inspect and stacktrace middleware
 - [#2210](https://github.com/babashka/babashka/issues/2210): Fix a `SocketException` stack trace from `nREPL-track-state` on stderr after every nREPL client disconnect
 - Fix loading a `clojure.tools.deps.*` or `clojure.tools.gitlibs.*` namespace from a jar if bb does not bundle it, such as `clojure.tools.deps.config`
 - The macOS amd64 binary requires macOS 11.0 or later
