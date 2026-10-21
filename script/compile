@@ -70,6 +70,11 @@ fi
 # Pass the feature setting to image initialization.
 args+=("-EBABASHKA_FEATURE_LIBFFI")
 
+# Pass the macOS deployment target to the image builder.
+if [ -n "$MACOSX_DEPLOYMENT_TARGET" ]; then
+    args+=("-EMACOSX_DEPLOYMENT_TARGET")
+fi
+
 if [ -n "$libffi_archive" ]; then
     if [ "$(uname -s)" = "Darwin" ]; then
         args+=("-H:NativeLinkerOption=-Wl,-force_load,$libffi_archive")
