@@ -1068,11 +1068,12 @@ Use bb run --help to show this help output.
                                (pods/load-pod (:pod-spec pod) (:opts pod)))))
                          (when loader
                            (when-let [res (cp/source-for-namespace loader namespace nil)]
-                             ;; a bundled-first namespace from a jar on the classpath
-                             ;; loses to the bundled source; from a directory it wins,
-                             ;; a directory is a deliberate override
-                             (when-not (and (bundled-first namespace)
-                                            (= "jar" (.getProtocol ^java.net.URL (cp/source-for-namespace loader namespace true))))
+                             ;; a bundled-first namespace from a jar loses to the bundled source if bb ships one
+                             ;; a directory on the classpath always wins
+                             (if-let [bundled (and (bundled-first namespace)
+                                                   (= "jar" (.getProtocol ^java.net.URL (cp/source-for-namespace loader namespace true)))
+                                                   (bundled-source namespace))]
+                               bundled
                                (if uberscript
                                (do (swap! uberscript-sources conj (:source res))
                                    (uberscript/uberscript {:ctx (common/ctx)

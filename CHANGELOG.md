@@ -17,6 +17,7 @@ A preview of the next release can be installed from
 - [#2194](https://github.com/babashka/babashka/issues/2194): Fix `script/uberjar` dropping the JDBC feature unless `BABASHKA_FEATURE_ORACLEDB=true`
 - [#2193](https://github.com/babashka/babashka/issues/2193): `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch`
 - [#2201](https://github.com/babashka/babashka/issues/2201): Fix the nREPL test ops never replying when a test throws outside an assertion
+- Fix loading a `clojure.tools.deps.*` or `clojure.tools.gitlibs.*` namespace from a jar if bb does not bundle it, such as `clojure.tools.deps.config`
 
 ## 1.13.226 (2026-10-11)
 
