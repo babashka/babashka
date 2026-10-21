@@ -1,6 +1,7 @@
 (ns orchard.meta
-  "Stand-in for orchard.meta, used by the debugger."
+  "Stand-in for orchard.meta, used by the debugger and orchard.query."
   (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.walk :as walk]))
 
 (defn merge-meta
@@ -68,3 +69,29 @@
                    :ns (ns-name (:ns m))
                    :form form
                    :code code)))))))
+
+(defn meta+
+  "Returns the metadata of var v."
+  [v]
+  (meta v))
+
+(defn var-name
+  "Return special form or var's namespace-qualified name as string."
+  [v]
+  (let [mta (meta+ v)]
+    (if-let [ns (:ns mta)]
+      (str (ns-name ns) "/" (:name mta))
+      (name (:name mta)))))
+
+(defn var-doc
+  "Return special form or var's docstring, optionally limiting the number of
+  sentences returned to n."
+  ([v]
+   (or (:doc (meta+ v))
+       "(not documented)"))
+  ([n v]
+   (->> (-> (var-doc v)
+            (str/replace #"\s+" " ") ; normalize whitespace
+            (str/split #"(?<=\.) ")) ; split sentences
+        (take n)
+        (str/join " "))))

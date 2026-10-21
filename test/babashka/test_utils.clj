@@ -2,6 +2,7 @@
   (:require
    [babashka.fs :as fs]
    [babashka.impl.classpath :as cp]
+   [babashka.impl.clojure.test :as test-impl]
    [babashka.impl.common :as common]
    [babashka.impl.deps :as deps]
    [babashka.main :as main]
@@ -43,8 +44,13 @@
         (println "=== Failing fast")
         (System/exit 1)))))
 
+(def ^:private builtin-assert-exprs (set (keys (methods test-impl/assert-expr))))
+
 (defn bb-jvm [input-or-opts & args]
   (alter-var-root #'cp/the-url-loader (constantly (delay (cp/new-loader []))))
+  (doseq [k (keys (methods test-impl/assert-expr))
+          :when (not (contains? builtin-assert-exprs k))]
+    (remove-method test-impl/assert-expr k))
   (reset! main/env {})
   (vreset! common/bb-edn nil)
   (deps/reset-basis!)

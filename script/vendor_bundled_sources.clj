@@ -132,7 +132,15 @@
     "cider/nrepl/middleware.clj"
     "cider/nrepl/middleware/track_state.clj"
     "cider/nrepl/middleware/util/meta.clj"
-    "orchard/indent.clj"})
+    "orchard/indent.clj"
+    ;; the test runner
+    "cider/nrepl/middleware/test.clj"
+    "cider/nrepl/middleware/test/extensions.clj"
+    "cider/nrepl/middleware/util/coerce.clj"
+    "orchard/java/classpath.clj"
+    "orchard/namespace.clj"
+    "orchard/query.clj"
+    "orchard/test.clj"})
 
 ;; nREPL's Java classes, compiled into bb from src-java.
 (def java-shipped
@@ -193,13 +201,10 @@
     "orchard/cljs/meta.cljc"
     "orchard/eldoc.clj"
     "orchard/java.clj"
-    "orchard/java/classpath.clj"
     "orchard/java/parser_next.clj"
     "orchard/java/resource.clj"
     "orchard/java/source_files.clj"
-    "orchard/namespace.clj"
     "orchard/profile.clj"
-    "orchard/query.clj"
     "orchard/spec.clj"
     "orchard/trace.clj"
     "orchard/xref.clj"

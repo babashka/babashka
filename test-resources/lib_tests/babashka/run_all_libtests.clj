@@ -264,16 +264,21 @@
   '[cider.nrepl.middleware.util.instrument-test
     cider.nrepl.middleware.debug-test
     cider.nrepl.middleware.debug-integration-test
-    cider.nrepl.middleware.track-state-test])
+    cider.nrepl.middleware.track-state-test
+    cider.nrepl.middleware.test-test
+    cider.nrepl.middleware.test.extensions-test])
 
 (def cider-nrepl-skipped
   "Upstream tests that assert JVM specifics: the exact reify* expansion, an
   abort! that keeps the eval running, cider-nrepl's fn printing, and stepping
-  into nrepl.server, whose bundled source var-code cannot read."
+  into nrepl.server, whose bundled source var-code cannot read. test-all runs
+  the project's tests, and the checkout is outside the working directory."
   '{cider.nrepl.middleware.util.instrument-test [instrument-reify-test]
     cider.nrepl.middleware.debug-test [abort-without-session-thread-test]
     cider.nrepl.middleware.debug-integration-test [debug-expression-test
-                                                   step-in-to-function-in-jar-test]})
+                                                   step-in-to-function-in-jar-test]
+    cider.nrepl.middleware.test-test [only-smoke-test-run-test-deprecated
+                                      deprecated-ops-test]})
 
 (let [cider-nss (filter #(str/starts-with? (str %) "cider.nrepl.") ns-args)]
   (when (or (empty? ns-args) (seq cider-nss))
