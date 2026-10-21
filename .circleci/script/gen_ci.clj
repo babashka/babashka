@@ -144,7 +144,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                            (assoc env :BABASHKA_MUSL "true")
                            env)
         env              (if (= "mac" platform)
-                           (assoc env :MACOSX_DEPLOYMENT_TARGET 10.13)
+                           (assoc env :MACOSX_DEPLOYMENT_TARGET "11.0")
                            env)
         ;; bullseye is EOL, its security repo is dead; the image stays for glibc
         base-install-cmd (str "sudo sed -i '/bullseye-security/d' /etc/apt/sources.list\n"
@@ -225,7 +225,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
   [shorted?]
   (let [docker-executor-conf  {:docker [{:image "circleci/clojure:openjdk-11-lein-2.9.8-bullseye"}]}
         machine-executor-conf {:machine {:image "ubuntu-2004:2024.05.1"}}
-        mac-executor-conf     {:macos {:xcode "14.3.1"}}
+        mac-executor-conf     {:macos {:xcode "16.4.0"}}
         linux-graalvm-home    (str "/home/circleci/graalvm-" graalvm-version)
         mac-graalvm-home      (format "/Users/distiller/graalvm-%s/Contents/Home" macos-amd64-graalvm-version)]
     (ordered-map

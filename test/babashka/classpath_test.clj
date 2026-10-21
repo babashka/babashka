@@ -23,6 +23,8 @@
     (doseq [path ["clojure/spec/alpha.clj" "clojure/tools/deps.clj" "clojure/tools/deps/extensions/maven.clj"]]
       (fs/create-dirs (fs/parent (fs/file jar-src path)))
       (spit (fs/file jar-src path) "(throw (Exception. \"jar version loaded\"))"))
+    (spit (fs/file jar-src "clojure" "tools" "deps" "unshipped.clj")
+          "(ns clojure.tools.deps.unshipped) (def x :from-jar)")
     ;; :root is matched against entries with forward slashes, so on
     ;; Windows it has to be given that way
     (fs/zip (fs/file dir "shadow.jar") [(str jar-src)] {:root (fs/unixify jar-src)})
@@ -32,9 +34,13 @@
           "(ns clojure.tools.build.tasks.javac) (def javac :from-directory)")
     (spit (fs/file cp-dir "clojure" "tools" "gitlibs" "extra.clj")
           "(ns clojure.tools.gitlibs.extra) (def x 1)")
-    (is (= [true :from-directory 1]
+    (is (= [true :from-directory 1 :from-jar]
            (bb nil "--prn" "--classpath" (str (fs/file dir "shadow.jar") fs/path-separator cp-dir)
-               "(require '[clojure.spec.alpha :as s] 'clojure.tools.deps 'clojure.tools.deps.extensions.maven 'clojure.tools.build.tasks.javac 'clojure.tools.gitlibs.extra) [(s/valid? int? 1) clojure.tools.build.tasks.javac/javac clojure.tools.gitlibs.extra/x]")))))
+               "(require '[clojure.spec.alpha :as s] 'clojure.tools.deps 'clojure.tools.deps.extensions.maven 'clojure.tools.build.tasks.javac 'clojure.tools.gitlibs.extra 'clojure.tools.deps.unshipped) [(s/valid? int? 1) clojure.tools.build.tasks.javac/javac clojure.tools.gitlibs.extra/x clojure.tools.deps.unshipped/x]")))
+    (testing "an unshipped namespace from a jar loads with :reload"
+      (is (= :from-jar
+             (bb nil "--prn" "--classpath" (str (fs/file dir "shadow.jar"))
+                 "(require 'clojure.tools.deps.unshipped) (require 'clojure.tools.deps.unshipped :reload) clojure.tools.deps.unshipped/x"))))))
 
 (deftest bundled-fallback-test
   ;; tools.build and the tools.namespace pieces its compile-clj uses load
