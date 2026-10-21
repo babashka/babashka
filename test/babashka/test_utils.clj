@@ -48,6 +48,7 @@
 
 (defn bb-jvm [input-or-opts & args]
   (alter-var-root #'cp/the-url-loader (constantly (delay (cp/new-loader []))))
+  ;; also removes the methods of an nREPL server still running in this process
   (doseq [k (keys (methods test-impl/assert-expr))
           :when (not (contains? builtin-assert-exprs k))]
     (remove-method test-impl/assert-expr k))

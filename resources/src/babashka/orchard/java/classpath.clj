@@ -93,7 +93,8 @@
                       (.getPath (.relativize (.toURI url) (.toURI f)))))))))))
 
 (defn- clojure-source-file? [^String fname]
-  (and (or (.endsWith fname ".clj") (.endsWith fname ".cljc"))
+  (and #_(or (.endsWith fname ".clj") (.endsWith fname ".cljc")) ;; BB-PATCH a .bb file is a namespace too
+       (or (.endsWith fname ".clj") (.endsWith fname ".cljc") (.endsWith fname ".bb"))
        ;; Exclude non-code files, configs, etc.
        (not
         (or (.startsWith fname "META-INF")

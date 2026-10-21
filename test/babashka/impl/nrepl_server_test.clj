@@ -616,6 +616,10 @@
      (ns ct-fault (:require [clojure.test :refer [deftest is]]))
      (deftest faulting (throw (ex-info \"boom\" {})))
      (deftest double-message (is (= 1 2) 1.5))
+     (ns ct-filter (:require [clojure.test :refer [deftest is]]))
+     (deftest ^:smoke smoke (is true))
+     (deftest ^:smoke ^:integration smoke-integration (is true))
+     (deftest plain (is true))
      (ns user)
      (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1671 :quiet true}))"
     (fn []
@@ -649,6 +653,17 @@
                                        "ct-fault"))]
               (is (= "true" (get-in results ["faulting" 0 "fault"])))
               (is (= "1.5" (get-in results ["double-message" 0 "message"])))))
+          (testing "test with include smoke and exclude integration runs only smoke"
+            (is (= ["smoke"] (keys (get (decode (:results (first (send {"op" "test" "ns" "ct-filter"
+                                                                         "include" ["smoke"]
+                                                                         "exclude" ["integration"]}))))
+                                         "ct-filter")))))
+          (testing "test-var-query with include-meta-key smoke and exclude-meta-key integration runs only smoke"
+            (is (= ["smoke"] (keys (get (decode (:results (first (send {"op" "test-var-query"
+                                                                         "var-query" {"ns-query" {"exactly" ["ct-filter"]}
+                                                                                      "include-meta-key" ["smoke"]
+                                                                                      "exclude-meta-key" ["integration"]}}))))
+                                         "ct-filter")))))
           (testing "an eval with :inspect returns the inspector's rendering"
             (let [value (:value (first (send {"op" "eval" "code" "{:a 1 :b [1 2 3]}" "inspect" "true"})))]
               (is (str/starts-with? value "(\"Class: \""))
@@ -711,13 +726,19 @@
             (let [results (decode (:results (first (send {"op" "test-var-query"
                                                           "var-query" {"ns-query" {"project?" "true"
                                                                                    "load-project-ns?" "true"}}}))))]
-              (is (= ["mine"] (keys (get results "proj.a-test"))))
+              (is (= #{"mine" "smoke" "smoke-integration"} (set (keys (get results "proj.a-test")))))
+              (is (= ["in-bb-file"] (keys (get results "proj.b-test"))))
               (is (not (contains? results "scratch.other-test")))))
           (testing "test-var-query with project? 1 runs the project's tests only"
             (let [results (decode (:results (first (send {"op" "test-var-query"
                                                           "var-query" {"ns-query" {"project?" 1}}}))))]
               (is (contains? results "proj.a-test"))
               (is (not (contains? results "scratch.other-test")))))
+          (testing "test-all with include smoke and exclude integration runs only smoke"
+            (let [results (decode (:results (first (send {"op" "test-all"
+                                                          "include" ["smoke"]
+                                                          "exclude" ["integration"]}))))]
+              (is (= ["smoke"] (keys (get results "proj.a-test"))))))
           (testing "test-all runs the project's tests only"
             (let [results (decode (:results (first (send {"op" "test-all"}))))]
               (is (contains? results "proj.a-test"))
