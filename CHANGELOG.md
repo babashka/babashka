@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - `doc` on `&`, `catch` and `finally` prints the docs of `fn` and `try`
 - Add `java.nio.file.FileSystemLoopException`
 - Add `java.util.RandomAccess`
+- [#2006](https://github.com/babashka/babashka/issues/2006): Add `getAddress` to `java.net.Inet4Address` and `java.net.Inet6Address`
 - [#2218](https://github.com/babashka/babashka/issues/2218): Add `org.jline.utils.Status` and allow `reify` of `org.jline.reader.CompletingParsedLine`
 - [#2219](https://github.com/babashka/babashka/issues/2219): Add `jdk.net.ExtendedSocketOptions`
 - [#2203](https://github.com/babashka/babashka/issues/2203): Allow `proxy` of `clojure.lang.APersistentMap` with `java.lang.AutoCloseable`

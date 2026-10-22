@@ -553,3 +553,9 @@
                                 [(contains? (.supportedOptions s) ExtendedSocketOptions/TCP_KEEPIDLE)
                                  (do (.setOption s ExtendedSocketOptions/TCP_KEEPIDLE (int 30))
                                      (.getOption s ExtendedSocketOptions/TCP_KEEPIDLE))])")))))
+
+(deftest inet-address-get-address-test
+  (testing "getAddress returns the raw bytes of an IPv4 and an IPv6 address"
+    (is (= [[127 0 0 1] 16]
+           (bb nil "[(vec (.getAddress (java.net.InetAddress/getByName \"127.0.0.1\")))
+                     (count (.getAddress (java.net.InetAddress/getByName \"::1\")))]")))))
