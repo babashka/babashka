@@ -88,20 +88,29 @@ itself (not its value) is returned. The reader macro #'x expands to (var x)."}}]
     :doc "Register INT signal handler.  After calling this, Ctrl-C will cause\n  the given function f to be called with a single argument, the signal.\n  Uses thread-stopper if no function given."
     :arglists '([] [f])}))
 
+(def ^:private source-loader (atom nil))
+
+(defn- source-loader! []
+  (or @source-loader
+      (locking source-loader
+        (or @source-loader
+            (try
+              (let [cp (print-deps/deps-classpath)
+                    urls (into-array java.net.URL
+                                     (map #(-> (fs/file %) .toURI .toURL)
+                                          (str/split cp (re-pattern (System/getProperty "path.separator")))))]
+                (reset! source-loader (java.net.URLClassLoader. urls nil)))
+              (catch Exception e
+                (binding [*out* @sci/err]
+                  (println "WARNING: source-fn could not resolve babashka's dependencies:" (ex-message e)))
+                nil))))))
+
 (def source-fn-var
-  (let [source-loader (delay
-                        (try
-                          (let [cp (print-deps/deps-classpath)
-                                urls (into-array java.net.URL
-                                                 (map #(-> (fs/file %) .toURI .toURL)
-                                                      (str/split cp (re-pattern (System/getProperty "path.separator")))))]
-                            (java.net.URLClassLoader. urls nil))
-                          (catch Exception _ nil)))
-        find-source (fn [^String file]
+  (let [find-source (fn [^String file]
                       (or (when (fs/exists? file) (slurp file))
                           (when-let [res (.findResource ^babashka.impl.URLClassLoader @cp/the-url-loader file)]
                             (slurp res))
-                          (when-let [loader @source-loader]
+                          (when-let [loader (source-loader!)]
                             (when-let [res (.getResource ^java.net.URLClassLoader loader file)]
                               (slurp res)))))]
     (sci/new-var
