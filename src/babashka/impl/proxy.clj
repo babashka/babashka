@@ -15,8 +15,10 @@
   (let [interface-names (set (map class-name interfaces))]
     (case [(class-name class) interface-names]
       ;; This combination is used by pathom3
-      ["clojure.lang.APersistentMap" #{"clojure.lang.IMeta" "clojure.lang.IObj"}]
-      (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj sci.impl.types.ICustomType] []
+      (["clojure.lang.APersistentMap" #{"clojure.lang.IMeta" "clojure.lang.IObj"}]
+       ["clojure.lang.APersistentMap" #{"java.lang.AutoCloseable"}]
+       ["clojure.lang.APersistentMap" #{"clojure.lang.IMeta" "clojure.lang.IObj" "java.lang.AutoCloseable"}])
+      (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj java.lang.AutoCloseable sci.impl.types.ICustomType] []
         (getInterfaces []
           interfaces)
         (getMethods []
@@ -53,7 +55,10 @@
         (toString []
           (if-let [m (get methods 'toString)]
             (m this)
-            (proxy-super toString))))
+            (proxy-super toString)))
+        (close []
+          (when-let [m (get methods 'close)]
+            (m this))))
       ["clojure.lang.AMapEntry" #{}]
       (proxy [clojure.lang.AMapEntry] []
         (key [] ((method-or-bust methods 'key) this))
@@ -232,7 +237,7 @@
    {:methods [{:name "equals"}
               {:name "hashCode"}
               {:name "toString"}]}
-   (class-sym (get-proxy-class clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj sci.impl.types.ICustomType))
+   (class-sym (get-proxy-class clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj java.lang.AutoCloseable sci.impl.types.ICustomType))
    {:allPublicMethods true}})
 
 ;;; Scratch

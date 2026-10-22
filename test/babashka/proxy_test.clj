@@ -169,6 +169,28 @@
                           (withMeta [md] nil))]
                   (conj m [:a 1])))))))
 
+(deftest APersistentMap-AutoCloseable-proxy-test
+  (testing "with-open closes an APersistentMap proxy with AutoCloseable"
+    (is (= [42 [:closed]]
+           (bb '(let [closed (atom [])
+                      out (with-open [result (proxy [clojure.lang.APersistentMap java.lang.AutoCloseable] []
+                                               (valAt [key] (get {:out 42} key))
+                                               (close [] (swap! closed conj :closed)))]
+                            (:out result))]
+                  [out @closed])))))
+  (testing "an APersistentMap proxy with IMeta, IObj and AutoCloseable reads meta and closes"
+    (is (= [{:a 1} [:closed]]
+           (bb '(let [closed (atom [])
+                      m (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj java.lang.AutoCloseable] []
+                          (meta [] {:a 1})
+                          (close [] (swap! closed conj :closed)))]
+                  (.close m)
+                  [(meta m) @closed])))))
+  (testing "close on an APersistentMap proxy without a close method returns nil"
+    (is (nil? (bb '(let [m (proxy [clojure.lang.APersistentMap clojure.lang.IMeta clojure.lang.IObj] []
+                             (valAt ([k] nil) ([k d] d)))]
+                     (.close ^java.lang.AutoCloseable m)))))))
+
 (deftest PipedInputStream-PipedOutputStream-proxy-test
   (is (= {:available 1
           :read-result -1
