@@ -175,7 +175,9 @@ upstream file and patch it. A file listed in `dropped` in
 `doc/adr/ai/0004-vendor-before-reimplementing.md`.
 
 `script/vendored.edn` records the version each artifact's files came from.
-To take a new upstream version, name the artifact and the version:
+If a newer upstream release fixes a bug, take that release instead of
+backporting the fix as a `BB-PATCH`. To take a new upstream version, name
+the artifact and the version:
 
 ```
 bb script/vendor_bundled_sources.clj nrepl/nrepl 1.8.0
