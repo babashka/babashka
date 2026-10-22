@@ -247,6 +247,38 @@
                   (.complete completer nil pl candidates)
                   (mapv #(.value ^org.jline.reader.Candidate %) candidates)))))))
 
+(deftest jline-reify-completing-parsed-line-test
+  (testing "CompletingParsedLine can be reified and used as a ParsedLine"
+    (is (= [true "hel" 3 4 "a\\ b"]
+           (bb '(let [pl (reify org.jline.reader.CompletingParsedLine
+                           (word [_] "hel")
+                           (wordCursor [_] 3)
+                           (wordIndex [_] 0)
+                           (words [_] ["hel"])
+                           (line [_] "hel")
+                           (cursor [_] 3)
+                           (escape [_ candidate _complete]
+                             (clojure.string/replace (str candidate) " " "\\ "))
+                           (rawWordCursor [_] 3)
+                           (rawWordLength [_] 4))]
+                  [(instance? org.jline.reader.ParsedLine pl)
+                   (.word ^org.jline.reader.ParsedLine pl)
+                   (.rawWordCursor pl)
+                   (.rawWordLength pl)
+                   (str (.escape pl "a b" false))]))))))
+
+(deftest jline-status-test
+  (testing "Status of a dumb terminal has size 1 after an update with one line"
+    (is (= 1
+           (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
+                                   (.dumb true)
+                                   (.streams (java.io.ByteArrayInputStream. (byte-array 0))
+                                             (java.io.ByteArrayOutputStream.))
+                                   (.build))
+                      status (org.jline.utils.Status/getStatus terminal)]
+                  (.update status [(org.jline.utils.AttributedString. "eldoc")])
+                  (.size status)))))))
+
 (deftest jline-reify-widget-test
   (testing "Widget can be reified"
     (is (true? (bb '(let [w (reify org.jline.reader.Widget
