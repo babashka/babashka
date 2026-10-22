@@ -2,6 +2,8 @@
   {:clj-kondo/config '{:linters {:unresolved-symbol {:exclude [working?]}}}}
   (:require
    [babashka.fs :as fs]
+   [babashka.impl.clojure.repl :as bb-repl]
+   [babashka.impl.print-deps :as print-deps]
    [babashka.main :as main]
    [babashka.test-utils :as test-utils]
    [clojure.edn :as edn]
@@ -248,6 +250,18 @@
     (is (str/includes?
          (test-utils/bb nil "-e" "(with-out-str (clojure.repl/source babashka.fs/exists?))")
          "defn exists?"))))
+
+(deftest repl-source-fn-failed-resolution-test
+  (when test-utils/jvm?
+    (reset! @#'bb-repl/source-loader nil)
+    (let [err (java.io.StringWriter.)]
+      (testing "a failed resolution of bb's deps returns nil and prints a warning"
+        (with-redefs [print-deps/deps-classpath (fn [] (throw (ex-info "resolution failed" {})))]
+          (is (= "nil\n" (test-utils/bb {:err err} "-e" "(prn (clojure.repl/source-fn 'when))"))))
+        (is (str/includes? (str err) "resolution failed")))
+      (testing "the next source-fn call resolves bb's deps again"
+        (is (str/includes? (test-utils/bb nil "-e" "(clojure.repl/source-fn 'when)")
+                           "defmacro when"))))))
 
 (deftest eval-test
   (is (= "120\n" (test-utils/bb nil "(eval '(do (defn foo [x y] (+ x y))
