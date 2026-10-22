@@ -47,5 +47,6 @@
                  org.jline.reader.Highlighter
                  org.jline.reader.Parser
                  org.jline.reader.ParsedLine
+                 org.jline.reader.CompletingParsedLine
                  org.jline.reader.Widget
                  org.jline.terminal.Terminal$SignalHandler])
