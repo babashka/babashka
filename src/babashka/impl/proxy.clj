@@ -49,16 +49,16 @@
             (proxy-super equiv other)))
         (empty [] ((method-or-bust methods 'empty) this))
 
-        (meta [] ((method-or-bust methods 'meta) this))
+        (meta []
+          (when-let [m (get methods 'meta)]
+            (m this)))
         (withMeta [meta] ((method-or-bust methods 'withMeta) this meta))
 
         (toString []
           (if-let [m (get methods 'toString)]
             (m this)
             (proxy-super toString)))
-        (close []
-          (when-let [m (get methods 'close)]
-            (m this))))
+        (close [] ((method-or-bust methods 'close) this)))
       ["clojure.lang.AMapEntry" #{}]
       (proxy [clojure.lang.AMapEntry] []
         (key [] ((method-or-bust methods 'key) this))
