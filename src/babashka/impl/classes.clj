@@ -546,6 +546,7 @@
           java.net.Socket
           java.net.SocketException
           java.net.StandardSocketOptions
+          jdk.net.ExtendedSocketOptions
           ~@(when has-domain-sockets?
               '[java.net.UnixDomainSocketAddress])
           java.net.UnknownHostException

@@ -15,6 +15,7 @@ A preview of the next release can be installed from
 - Add `java.nio.file.FileSystemLoopException`
 - Add `java.util.RandomAccess`
 - [#2218](https://github.com/babashka/babashka/issues/2218): Add `org.jline.utils.Status` and allow `reify` of `org.jline.reader.CompletingParsedLine`
+- [#2219](https://github.com/babashka/babashka/issues/2219): Add `jdk.net.ExtendedSocketOptions`
 - Bump `nextjournal.markdown` to `0.7.228`
 - [#2194](https://github.com/babashka/babashka/issues/2194): Fix `script/uberjar` dropping the JDBC feature unless `BABASHKA_FEATURE_ORACLEDB=true`
 - [#2193](https://github.com/babashka/babashka/issues/2193): `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch`
