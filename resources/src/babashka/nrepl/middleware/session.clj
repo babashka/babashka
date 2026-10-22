@@ -2,7 +2,7 @@
   "Support for persistent, cross-connection REPL sessions."
   {:author "Chas Emerick"}
   (:require
-   clojure.main
+   [clojure.spec.alpha :as s]
    [nrepl.config :refer [config]]
    [nrepl.middleware :refer [set-descriptor!]]
    [nrepl.middleware.interruptible-eval :refer [*msg*]]
@@ -38,32 +38,20 @@
 ;; depending upon the expectations of the client/user.  I'm not sure at the moment
 ;; how best to make it configurable though...
 
-(def ^:dynamic ^:private *skipping-eol* false)
-
 (def ephemeral-executor
   "Executor for running eval requests in ephemeral sessions."
   (delay (Executors/newCachedThreadPool
           (threading/thread-factory "nREPL-ephemeral-session-%d"))))
 
 (defn- session-in
-  "Returns a LineNumberingPushbackReader suitable for binding to *in*.
-   When something attempts to read from it, it will (if empty) send a
-   {:status :need-input} message on the provided transport so the client/user
-   can provide content to be read."
+  "Returns a QueuePollingReader (that is suitable for binding to *in* when
+  wrapped into LineNumberingPushbackReader). When something attempts to read
+  from it, it will (if empty) send a {:status :need-input} message on the
+  provided transport so the client/user can provide content to be read."
   [session-id transport]
-  (let [input-queue (LinkedBlockingQueue.)
-        request-input #(or (.poll input-queue)
-                           ;; Skipping newlines shouldn't trigger need-input
-                           ;; from the client if queue is empty.
-                           (when-not *skipping-eol*
-                             (t/send transport
-                                     (response-for *msg* :session session-id
-                                                   :status :need-input))
-                             (.take input-queue)))
-        reader (LineNumberingPushbackReader.
-                (QueuePollingReader. input-queue request-input))]
-    {:input-queue input-queue
-     :stdin-reader reader}))
+  (QueuePollingReader. #(t/send transport
+                                (response-for *msg* :session session-id
+                                              :status :need-input))))
 
 (let [state (atom {})]
   (defn- dynvar-defaults-from-config []
@@ -97,6 +85,7 @@
           #'*print-meta*             *print-meta*
           #'*print-length*           *print-length*
           #'*print-level*            *print-level*
+          #'*print-namespace-maps*   true
           #'*data-readers*           *data-readers*
           #'*default-data-reader-fn* *default-data-reader-fn*
           #'*compile-path*           (System/getProperty "clojure.compile.path" "classes")
@@ -107,17 +96,14 @@
           #'*2                       nil
           #'*3                       nil
           #'*e                       nil
-          #'*read-eval*              *read-eval*})
+          #'*read-eval*              *read-eval*
+          #'s/*explain-out*          s/*explain-out*})
         m
 
     ;; Conditional bindings for compatibility with older Clojure.
-    (let [print-ns-maps (resolve '*print-namespace-maps*)
-          explain-out (resolve 'clojure.spec.alpha/*explain-out*)
-          repl (resolve '*repl*)]
+    (let [repl (resolve '*repl*)]
       (cond-> m
-        print-ns-maps (assoc! print-ns-maps true)
-        explain-out   (assoc! explain-out (var-get explain-out))
-        repl          (assoc! repl true)))
+        repl (assoc! repl true)))
 
     ;; This may contain other bindings established when
     ;; `nrepl.server/start-server` was called.
@@ -139,10 +125,11 @@
         ;; TODO: new options: out-quota | err-quota
         opts {::print/buffer-size (or out-limit (get (meta session) :out-limit))}
         out (print/replying-PrintWriter :out msg opts)
-        err (print/replying-PrintWriter :err msg opts)]
+        err (print/replying-PrintWriter :err msg opts)
+        ctxcl (.getContextClassLoader (Thread/currentThread))]
     (-> bindings-map
         (assoc #'*msg* msg
-               Compiler/LOADER (classloader/dynamic-classloader)
+               Compiler/LOADER ctxcl
                #'*out* out
                #'*err* err
                ;; clojure.test captures *out* at load-time, so we need to make
@@ -193,16 +180,15 @@
   `register-session` has to be called next."
   ([{:keys [transport session out-limit] :as msg}]
    (let [id (uuid)
-         {:keys [input-queue stdin-reader]} (session-in id transport)
+         qpr (session-in id transport)
          new-session (atom (assoc (if session
                                     @session
                                     (gather-initial-bindings msg))
-                                  #'*in* stdin-reader
+                                  #'*in* (LineNumberingPushbackReader. qpr)
                                   #'*ns* (create-ns 'user))
                            :meta {:id id
                                   :out-limit (or out-limit (:out-limit (meta session)))
-                                  :stdin-reader stdin-reader
-                                  :input-queue input-queue})]
+                                  ::queue-reader qpr})]
      (alter-meta! new-session assoc :exec (make-ephemeral-exec-fn new-session msg))
      new-session)))
 
@@ -220,6 +206,7 @@
   [session]
   (let [id (:id (meta session))
         state (atom nil)
+        reset-state-holder (atom nil)
         session-loop
         #(try
            (loop []
@@ -248,7 +235,11 @@
                                               (assoc state-d :running nil)))
                    (some-> ack .run)
                    (recur)))))
-           (catch InterruptedException _e))
+           (catch InterruptedException _e)
+           (catch Exception _e
+             ;; This should never happen with valid middleware and clients. If
+             ;; it does, at least make sure the session remains healthy.
+             (@reset-state-holder)))
         reset-state
         #(let [thread (SessionThread. session-loop (str "nREPL-session-" id)
                                       (classloader/dynamic-classloader))]
@@ -256,6 +247,7 @@
                           :running nil
                           :thread thread})
            (.start thread))]
+    (reset! reset-state-holder reset-state)
     (reset-state)
     ;; This map is added to the meta of the session object by `register-session`,
     ;; it contains functions that are accessed by `interrupt-session` and `close-session`.
@@ -399,7 +391,7 @@
                             {:doc "Closes the specified session."
                              :requires {"session" "The ID of the session to be closed."}
                              :optional {}
-                             :returns {}}
+                             :returns {"status" "'session-closed' if the session was successfully closed. Sent in addition to the usual 'done' status, so clients should check for it to confirm the session was actually closed (rather than assuming success from 'done' alone)."}}
                             "ls-sessions"
                             {:doc "Lists the IDs of all active sessions."
                              :requires {}
@@ -411,25 +403,11 @@
   a :stdin slot to the session's *in* Reader. Requires the session middleware."
   [h]
   (fn [{:keys [op stdin session] :as msg}]
-    ;; NB: confusing hack. When `(read)` is issued to an input stream, it
-    ;; returns a Lisp form, ending with the last character of the form,
-    ;; naturally (e.g. a closing paren). However, it is expected that any
-    ;; trailing newline after such form is thrown away in order for a
-    ;; subsequent `(read-line)` call to not just return that empty newline but
-    ;; the actual following content. To simulate this behavior, we run
-    ;; newline-skipping function before every `eval` request.
-    (when (= op "eval")
-      (let [in (:stdin-reader (meta session))]
-        (binding [*skipping-eol* true]
-          (clojure.main/skip-if-eol in))))
-
     (if (= op "stdin")
-      (let [^LinkedBlockingQueue q (:input-queue (meta session))]
+      (let [^QueuePollingReader qpr (::queue-reader (meta session))]
         (if (empty? stdin)
-          #_(.put q -1) ;; BB-PATCH the EOF marker: QueuePollingReader compares with an Integer, a Long never equals it; fixed upstream in nrepl#470, after 1.7.0
-(.put q (int -1))
-          #_(.addAll q (seq stdin)) ;; BB-PATCH enqueue a chunk whole, under the monitor QueuePollingReader drains under
-          (locking q (.addAll q (seq stdin))))
+          (.addEof qpr)
+          (.addInput qpr stdin))
         (t/respond-to msg :status :done))
       (h msg))))
 

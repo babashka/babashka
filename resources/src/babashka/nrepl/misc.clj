@@ -2,7 +2,6 @@
   "Misc utilities used in nREPL's implementation (potentially also
   useful for anyone extending it)."
   {:author "Chas Emerick"}
-  (:refer-clojure :exclude [requiring-resolve])
   (:require [clojure.java.io :as io]
             [clojure.string :as str]
             [nrepl.config :refer [config]]))
@@ -89,19 +88,6 @@
   the nREPL server context, not in the user session context."
   [msg dynvar]
   `(get (some-> (:session ~msg) deref) (var ~dynvar) ~dynvar))
-
-(defn requiring-resolve
-  "Resolves namespace-qualified sym per 'resolve'. If initial resolve fails,
-  attempts to require sym's namespace and retries. Returns nil if sym could not
-  be resolved."
-  [sym & [log?]]
-  (or (resolve sym)
-      (try
-        (require (symbol (namespace sym)))
-        (resolve sym)
-        (catch Exception e
-          (when log?
-            (log e))))))
 
 (defmacro with-session-classloader
   "Bind `clojure.lang.Compiler/LOADER` to the context classloader. This is

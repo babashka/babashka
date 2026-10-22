@@ -15,7 +15,7 @@
   [sym]
   ;; clojure.repl/special-doc is private, so we need to work a
   ;; bit to be able to invoke it
-  (let [f (misc/requiring-resolve 'clojure.repl/special-doc)]
+  (let [f (requiring-resolve 'clojure.repl/special-doc)]
     (assoc (f sym)
            :ns "clojure.core"
            :file "clojure/core.clj"

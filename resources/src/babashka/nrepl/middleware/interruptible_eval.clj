@@ -56,6 +56,21 @@
   (try (.getName (io/file source-path))
        (catch Exception _)))
 
+(defn- skip-stdin-newline []
+  ;; NB: confusing hack. When `(read)` is issued to an input stream, it
+  ;; returns a Lisp form, ending with the last character of the form,
+  ;; naturally (e.g. a closing paren). However, it is expected that any
+  ;; trailing newline after such form is thrown away in order for a
+  ;; subsequent `(read-line)` call to not just return that empty newline but
+  ;; the actual following content. To simulate this behavior, we run
+  ;; this newline-skipping function after every `eval` request.
+  ;; Note that we check if stdin is ready in order not to block if it is empty.
+  ;; The evaluated code may have set! *in* to some other Reader; the hack only
+  ;; makes sense for the line-numbering reader a session binds *in* to.
+  (when (and (instance? LineNumberingPushbackReader *in*)
+             (.ready ^LineNumberingPushbackReader *in*))
+    (clojure.main/skip-if-eol *in*)))
+
 (defn evaluator
   "Return a closure that evaluates msg's `:code` (either a string or a seq of
   forms to be evaluated) within the dynamic context of its session. `:ns` can be
@@ -161,7 +176,13 @@
         (catch Throwable e
           (caught e))
         (finally
-          (flush)
+          ;; The evaluated code may have closed *out* or *in* (e.g. `(slurp
+          ;; *in*)`). An exception escaping from here would kill the session
+          ;; thread, and the client would never see `done`.
+          (try
+            (flush)
+            (skip-stdin-newline)
+            (catch Exception _))
           (pop-thread-bindings))))))
 
 (defn interruptible-eval

@@ -842,6 +842,26 @@
           (is (not (str/includes? (:err @proc) "nREPL-track-state")))
           (fs/delete-if-exists file))))))
 
+(deftest ^:skip-windows nrepl-session-after-disconnect-test
+  (with-bb-script 1684
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1684 :quiet true}))"
+    (fn []
+      (let [session (with-open [socket (java.net.Socket. "127.0.0.1" 1684)
+                                in (java.io.PushbackInputStream. (.getInputStream socket))
+                                os (.getOutputStream socket)]
+                      (bencode/write-bencode os {"op" "clone"})
+                      (let [session (:new-session (read-msg (bencode/read-bencode in)))]
+                        (bencode/write-bencode os {"op" "eval" "code" "(Thread/sleep 500)" "session" session "id" "1"})
+                        session))]
+        (Thread/sleep 1000)
+        (with-open [socket (java.net.Socket. "127.0.0.1" 1684)
+                    in (java.io.PushbackInputStream. (.getInputStream socket))
+                    os (.getOutputStream socket)]
+          (.setSoTimeout socket 10000)
+          (bencode/write-bencode os {"op" "eval" "code" "(+ 1 2)" "session" session "id" "2"})
+          (testing "a session evaluates after its client disconnects during an eval"
+            (is (= "3" (:value (read-reply in session "2"))))))))))
+
 (deftest ^:skip-windows nrepl-track-state-test
   (with-bb-script 1679
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1679 :quiet true}))"
