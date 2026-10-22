@@ -834,6 +834,7 @@
           org.jline.utils.NonBlockingReader
           org.jline.utils.Display
           org.jline.utils.Signals
+          org.jline.utils.Status
           org.jline.terminal.Size
           org.jline.reader.LineReader
           org.jline.reader.Highlighter
@@ -850,6 +851,7 @@
           org.jline.reader.Parser
           org.jline.reader.Parser$ParseContext
           org.jline.reader.ParsedLine
+          org.jline.reader.CompletingParsedLine
           org.jline.reader.EOFError
           org.jline.keymap.KeyMap
           org.jline.keymap.BindingReader
@@ -1072,6 +1074,8 @@
                                    java.net.CookieStore
                                    (instance? org.jline.reader.Buffer v)
                                    org.jline.reader.Buffer
+                                   (instance? org.jline.reader.CompletingParsedLine v)
+                                   org.jline.reader.CompletingParsedLine
                                    (instance? org.jline.reader.ParsedLine v)
                                    org.jline.reader.ParsedLine
                                    ;; this makes interop on reified classes work
