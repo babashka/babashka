@@ -545,3 +545,11 @@
   (testing "java.util.RandomAccess distinguishes an ArrayList from a LinkedList"
     (is (= [true false] (bb nil "[(instance? java.util.RandomAccess (java.util.ArrayList.))
                                   (instance? java.util.RandomAccess (java.util.LinkedList.))]")))))
+
+(deftest extended-socket-options-test
+  (testing "a Socket sets and reads back jdk.net.ExtendedSocketOptions/TCP_KEEPIDLE"
+    (is (= [true 30] (bb nil "(import '[jdk.net ExtendedSocketOptions])
+                              (with-open [s (java.net.Socket.)]
+                                [(contains? (.supportedOptions s) ExtendedSocketOptions/TCP_KEEPIDLE)
+                                 (do (.setOption s ExtendedSocketOptions/TCP_KEEPIDLE (int 30))
+                                     (.getOption s ExtendedSocketOptions/TCP_KEEPIDLE))])")))))
