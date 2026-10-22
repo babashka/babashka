@@ -272,6 +272,7 @@
     (is (= 1
            (bb '(let [terminal (-> (org.jline.terminal.TerminalBuilder/builder)
                                    (.dumb true)
+                                   (.type "xterm-256color")
                                    (.streams (java.io.ByteArrayInputStream. (byte-array 0))
                                              (java.io.ByteArrayOutputStream.))
                                    (.build))
