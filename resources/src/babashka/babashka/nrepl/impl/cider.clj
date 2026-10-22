@@ -30,7 +30,7 @@
   "Middleware for the cider-nrepl ops babashka implements."
   [h]
   (fn [{:keys [op] :as msg}]
-    (case (str/replace op #"^cider/" "")
+    (case (some-> op (str/replace #"^cider/" ""))
       ("test" "test-var-query" "test-all" "retest" "test-stacktrace") (test-mw/handle-test h msg)
       ("analyze-last-stacktrace" "stacktrace" "inspect-last-exception") (stacktrace-mw/handle-stacktrace h msg)
       "cider-version" (t/respond-to msg :cider-version version :status :done)

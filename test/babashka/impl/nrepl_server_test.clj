@@ -862,6 +862,18 @@
           (testing "a session evaluates after its client disconnects during an eval"
             (is (= "3" (:value (read-reply in session "2"))))))))))
 
+(deftest ^:skip-windows nrepl-message-without-op-test
+  (with-bb-script 1685
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1685 :quiet true}))"
+    (fn []
+      (with-open [socket (java.net.Socket. "127.0.0.1" 1685)
+                  in (java.io.PushbackInputStream. (.getInputStream socket))
+                  os (.getOutputStream socket)]
+        (.setSoTimeout socket 10000)
+        (bencode/write-bencode os {"id" "1"})
+        (testing "a message without an op gets unknown-op"
+          (is (contains? (set (:status (read-msg (bencode/read-bencode in)))) "unknown-op")))))))
+
 (deftest ^:skip-windows nrepl-track-state-test
   (with-bb-script 1679
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1679 :quiet true}))"
