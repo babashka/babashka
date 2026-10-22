@@ -52,7 +52,8 @@
   (doseq [k (keys (methods test-impl/assert-expr))
           :when (not (contains? builtin-assert-exprs k))]
     (remove-method test-impl/assert-expr k))
-  (reset! main/env {})
+  ;; an nREPL server from an earlier run keeps evaluating in its own env
+  (alter-var-root #'main/env (constantly (atom {})))
   (vreset! common/bb-edn nil)
   (deps/reset-basis!)
   (System/clearProperty "babashka.config")
