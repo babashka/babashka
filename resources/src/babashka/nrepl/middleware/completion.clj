@@ -33,7 +33,10 @@
 (defn completion-reply
   [{:keys [prefix ns complete-fn options] :as msg}]
   (let [the-ns (if ns (symbol ns) (symbol (str (misc/resolve-in-session msg *ns*))))
-        completion-fn (or (some-> complete-fn symbol misc/requiring-resolve)
+        completion-fn (or (try
+                            (some-> complete-fn symbol requiring-resolve)
+                            ;; See the note in nrepl.middleware.lookup.
+                            (catch Exception _ nil))
                           (misc/resolve-in-session msg *complete-fn*))]
     {:status :done
      :completions (completion-fn prefix the-ns (parse-options options))}))

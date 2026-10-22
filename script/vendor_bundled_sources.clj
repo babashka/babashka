@@ -104,7 +104,7 @@
     "nrepl/misc.clj"
     "nrepl/server.clj"
     "nrepl/socket.clj"
-    "nrepl/socket/dynamic.clj"
+    "nrepl/socket/jdk17.clj"
     "nrepl/transport.clj"
     "nrepl/util/lookup.clj"
     "nrepl/util/out.clj"
@@ -195,6 +195,7 @@
     "clojure/tools/namespace/reload.clj"
     "clojure/tools/namespace/repl.clj"
     "nrepl/cmdline.clj" ; bb has its own command line
+    "nrepl/socket/junixsocket.clj" ; the image has java.net.UnixDomainSocketAddress
     "nrepl/spec.clj"
     "nrepl/tls_client_proxy.clj"
     "nrepl/util/jvmti.clj" ; only reached with -Djdk.attach.allowAttachSelf

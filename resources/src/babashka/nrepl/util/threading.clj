@@ -6,6 +6,7 @@
    [nrepl.misc :as misc]
    [nrepl.util.classloader :as classloader])
   (:import
+   (java.lang.reflect Method)
    (java.util.concurrent Executors ExecutorService ScheduledExecutorService
                          TimeUnit)
    (nrepl DaemonThreadFactory)))
@@ -47,12 +48,20 @@
   (delay (Executors/newScheduledThreadPool
           0 (thread-factory "nREPL-thread-reaper-%d"))))
 
+(defn- deprecated-thread-stop [t]
+  (try
+    ;; JDK26+ has removed Thread.stop completely, so to avoid linter warnings,
+    ;; use a roundabout reflection method to invoke it.
+    (when-let [m (.getDeclaredMethod Thread "stop" (into-array Class []))]
+      (.invoke ^Method m t (object-array 0)))
+    (catch NoSuchMethodException _)))
+
 (defn- jvmti-stop-thread [t]
-  ((misc/requiring-resolve 'nrepl.util.jvmti/stop-thread) t))
+  ((requiring-resolve 'nrepl.util.jvmti/stop-thread) t))
 
 (defn- try-stop-thread [^Thread t]
   (cond
-    (<= misc/java-version 19) (.stop t)
+    (<= misc/java-version 19) (deprecated-thread-stop t)
     ;; Since JDK20, Thread.stop() no longer works. We must resort to using
     ;; JVMTI native agent which luckily still supports Stop Thread command.
     ;; Whether this is more dangerous than calling Thread.stop() in earlier

@@ -131,7 +131,11 @@
 (defn- resolve-print
   [{:keys [::print] :as msg}]
   (when-let [var-sym (some-> print (symbol))]
-    (let [print-var (misc/requiring-resolve var-sym)]
+    (let [print-var (try
+                      (requiring-resolve var-sym)
+                      ;; The symbol comes from the client, so a missing
+                      ;; namespace or an unqualified name is a user error.
+                      (catch Exception _ nil))]
       (when-not print-var
         (transport/respond-to msg {::error (str "Couldn't resolve var " var-sym)
                                    :status ::error}))

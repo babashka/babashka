@@ -1,5 +1,4 @@
 (ns nrepl.core-test
-  (:refer-clojure :exclude [requiring-resolve])
   ;; BB-TEST-PATCH type hints naming classes the image does not expose are dropped
   (:require
    [clojure.java.io :as io]
@@ -24,9 +23,10 @@
    [nrepl.middleware.caught :as middleware.caught]
    [nrepl.middleware.print :as middleware.print]
    [nrepl.middleware.session :as session]
-   [nrepl.misc :refer [uuid requiring-resolve]]
+   [nrepl.misc :refer [uuid]]
    [nrepl.server :as server]
-   [nrepl.test-helpers :as th :refer [is+]]
+   [nrepl.test-helpers :as th :refer [is+ win?]]
+   [nrepl.util.classloader]
    [nrepl.util.threading :as threading]
    [nrepl.transport :as transport])
   (:import
@@ -81,10 +81,17 @@
 
 (use-fixtures :each repl-server-fixture)
 
-(defn closeable-session [client]
-  (let [session (client-session client)]
-    (set! *sessions-to-close* (conj *sessions-to-close* session))
-    session))
+(defn closeable-session
+  "Opens a new session via `client` and registers it to be closed after the
+  test. When `msg-client` is given, the session's messages go through that
+  client instead (e.g. one with a short response timeout), while the `clone`
+  that opens the session still goes through `client`, so a slow server can't
+  fail the test before it has even started."
+  ([client] (closeable-session client client))
+  ([client msg-client]
+   (let [session (client-session msg-client :session (new-session client))]
+     (set! *sessions-to-close* (conj *sessions-to-close* session))
+     session)))
 
 (defmacro with-repl-server [& body]
   `(with-open [transport# (connect :port (:port *server*)
@@ -93,7 +100,7 @@
            ~'client (client transport# Long/MAX_VALUE)
            ~'session (closeable-session ~'client)
            ~'timeout-client (client transport# 1000)
-           ~'timeout-session (closeable-session ~'timeout-client)
+           ~'timeout-session (closeable-session ~'client ~'timeout-client)
            ~'repl-eval #(message % {:op "eval" :code %2})
            ~'repl-values (comp response-values ~'repl-eval)]
        ~@body)))
@@ -216,10 +223,11 @@
            combine-responses
            clean-response))
   (let [session-id (new-session timeout-client)
-        session-alive? #(contains? (-> (message timeout-client {:op "ls-sessions"})
-                                       combine-responses
-                                       :sessions
-                                       set)
+        session-alive? #(contains? (->> (message timeout-client {:op "ls-sessions"})
+                                        (map clean-response)
+                                        combine-responses
+                                        :sessions
+                                        set)
                                    session-id)]
     (is session-id)
     (is (session-alive?))
@@ -516,27 +524,28 @@
              {:status #{:done :session-closed}}])
            (mapv clean-response responses)))))
 
-(def-repl-test non-interruptible-stop-thread
-  (testing "non-interruptible code can still be interrupted"
-    (with-redefs [threading/force-stop-delay-ms 500]
-      (let [resp (message session {:op "eval"
-                                   :code (code
-                                          (do (def vol (volatile! 0))
-                                              (def curr-t (Thread/currentThread))
-                                              ;; This never stops on its own.
-                                              (while (vswap! vol inc))))})]
-        (Thread/sleep 1000)
-        (is+ {:status #{:done}}
-             (-> (message session {:op "interrupt"})
-                 first
-                 clean-response))
-        ;; Wait for CIDER forceful interrupt to trigger.
-        (Thread/sleep (+ 500 1000))
-        ;; Verify that volatile is not changed anymore.
-        (let [v (repl-values session "@vol")]
+(when-not win?
+  (def-repl-test non-interruptible-stop-thread
+    (testing "non-interruptible code can still be interrupted"
+      (with-redefs [threading/force-stop-delay-ms 500]
+        (let [resp (message session {:op "eval"
+                                     :code (code
+                                            (do (def vol (volatile! 0))
+                                                (def curr-t (Thread/currentThread))
+                                                ;; This never stops on its own.
+                                                (while (vswap! vol inc))))})]
           (Thread/sleep 1000)
-          (is (= v (repl-values session "@vol")))
-          (is (= ["TERMINATED"] (repl-values session "(str (.getState curr-t))"))))))))
+          (is+ {:status #{:done}}
+               (-> (message session {:op "interrupt"})
+                   first
+                   clean-response))
+          ;; Wait for CIDER forceful interrupt to trigger.
+          (Thread/sleep (+ 500 1000))
+          ;; Verify that volatile is not changed anymore.
+          (let [v (repl-values session "@vol")]
+            (Thread/sleep 1000)
+            (is (= v (repl-values session "@vol")))
+            (is (= ["TERMINATED"] (repl-values session "(str (.getState curr-t))")))))))))
 
 ;; NREPL-66: ensure that bindings of implementation vars aren't captured by user sessions
 ;; (https://github.com/clojure-emacs/cider/issues/785)
@@ -557,17 +566,17 @@
 
 (def-repl-test concurrent-message-handling
   (testing "multiple messages can be handled on the same connection concurrently"
-    (let [sessions (doall (repeatedly 3 #(client-session client)))
+    (let [sessions (vec (repeatedly 3 #(client-session client)))
           start-time (System/currentTimeMillis)
-          elapsed-times (map (fn [session eval-duration]
-                               (let [expr (pr-str `(Thread/sleep ~eval-duration))
-                                     responses (message session {:op "eval" :code expr})]
-                                 (future
-                                   (is (= [nil] (response-values responses)))
-                                   (- (System/currentTimeMillis) start-time))))
-                             sessions
-                             [2000 1000 0])]
-      (is (apply > (map deref (doall elapsed-times)))))))
+          elapsed-times (mapv (fn [session eval-duration]
+                                (let [expr (pr-str `(Thread/sleep ~eval-duration))
+                                      responses (message session {:op "eval" :code expr})]
+                                  (future
+                                    (is (= [nil] (response-values responses)))
+                                    (- (System/currentTimeMillis) start-time))))
+                              sessions
+                              [1000 500 0])]
+      (is (apply > (map deref elapsed-times))))))
 
 (def-repl-test ensure-transport-closeable
   (is (= [5] (repl-values session "5")))
@@ -582,10 +591,12 @@
 
 (defn- disconnection-exception?
   [e]
-  ;; thrown? should check for the root cause!
+  ;; thrown? should check for the root cause! The JDK reports a peer that went
+  ;; away either as a reset or, once the transport notices the EOF, as the
+  ;; transport's own "lost its connection" message.
   (let [^Throwable cause (root-cause e)]
     (and (instance? SocketException cause)
-         (re-matches #".*(lost.*connection|socket closed).*" (.getMessage cause)))))
+         (re-find #"(?i)(lost.*connection|socket closed|connection reset)" (.getMessage cause)))))
 
 (deftest transports-fail-on-disconnects
   (testing "Ensure that transports fail ASAP when the server they're connected to goes down."
@@ -645,48 +656,77 @@
     (is (thrown? SocketException (repl-eval session "(+ 1 1)")))))
 
 (def-repl-test request-*in*
-  (is (= '((1 2 3)) (response-values (for [resp (repl-eval session "(read)")]
-                                       (do
-                                         (when (-> resp clean-response :status (contains? :need-input))
-                                           (session {:op "stdin" :stdin "(1 2 3)"}))
-                                         resp)))))
+  (let [responses (repl-eval session "(read)")]
+    (is+ {:status (mc/via #(map keyword %) [:need-input])} (first responses))
+    (session {:op "stdin" :stdin "(1 2 3)"})
+    (is+ {:value "(1 2 3)"} (second responses)))
 
   (session {:op "stdin" :stdin (th/newline->sys "a\nb\nc\n")})
-  (doseq [x "abc"]
-    (is (= [(str x)] (repl-values session "(read-line)")))))
+  (is+ ["a"] (repl-values session "(read-line)"))
+  (is+ ["b"] (repl-values session "(read-line)"))
+  (is+ ["c"] (repl-values session "(read-line)")))
 
 (def-repl-test request-*in*-eof
-  (is+ nil? (response-values (for [resp (repl-eval session "(read)")]
-                               (do
-                                 (when (-> resp clean-response :status (contains? :need-input))
-                                   (session {:op "stdin" :stdin []}))
-                                 resp)))))
+  (let [responses (repl-eval session "(read)")]
+    (is+ {:status (mc/via #(map keyword %) [:need-input])} (first responses))
+    (session {:op "stdin" :stdin []})
+    (is+ nil? (response-values responses))))
+
+(def-repl-test request-*in*-eof-after-input
+  ;; EOF that arrives behind buffered input must still be reported, and not be
+  ;; swallowed by the read that drains that input.
+  (dorun (message timeout-session {:op "stdin" :stdin "abc"}))
+  (dorun (message timeout-session {:op "stdin" :stdin []}))
+  (is+ ["abc"] (repl-values timeout-session "(read-line)")))
+
+(def-repl-test closing-*in*-keeps-the-session-alive
+  ;; `slurp` closes the reader it is handed. Doing that to *in* must not take
+  ;; the session down: the eval still completes, and later evals on the same
+  ;; session are still answered (though *in* itself stays closed).
+  (dorun (message timeout-session {:op "stdin" :stdin []}))
+  (is+ [""] (repl-values timeout-session "(slurp *in*)"))
+  (is+ [2] (repl-values timeout-session "(+ 1 1)")))
+
+(def-repl-test rebinding-*in*-keeps-the-session-alive
+  ;; *in* may be set! to any Reader, not only a PushbackReader.
+  (dorun (repl-eval timeout-session
+                    (code (set! *in* (java.io.BufferedReader. (java.io.StringReader. "hi\n"))))))
+  (is+ ["hi"] (repl-values timeout-session "(read-line)"))
+  (is+ [2] (repl-values timeout-session "(+ 1 1)")))
+
+(def-repl-test closing-*out*-keeps-the-session-alive
+  ;; Flushing a closed *out* after the eval must not take the session down
+  ;; either. *out* is rebound for every message, so the next eval gets a
+  ;; working one again.
+  (dorun (repl-eval timeout-session
+                    (code (set! *out* (doto (java.io.BufferedWriter. (java.io.StringWriter.)) .close)))))
+  (is+ [2] (repl-values timeout-session "(+ 1 1)")))
 
 (def-repl-test request-multiple-read-newline-*in*
-  (is+ [:ohai] (response-values (for [resp (repl-eval session "(read)")]
-                                  (do
-                                    (when (-> resp clean-response :status (contains? :need-input))
-                                      (session {:op "stdin" :stdin (th/newline->sys ":ohai\n")}))
-                                    resp))))
-
+  ;; Verify that when ":ohai\n" is supplied (with a newline), a `(read)`
+  ;; consumes :ohai but also consumes a newline, so that when we later give "a\n"
+  ;; to stdin, and `(read-line)` is issued, it will return "a" and not the
+  ;; newline before it.
+  (let [responses-seq (repl-eval session "(read)")]
+    (is+ {:status (mc/via #(map keyword %) [:need-input])} (first responses-seq))
+    (session {:op "stdin" :stdin (th/newline->sys ":ohai\n")})
+    (is+ {:value ":ohai"} (second responses-seq)))
   (session {:op "stdin" :stdin (th/newline->sys "a\n")})
   (is+ ["a"] (repl-values session "(read-line)")))
 
 (def-repl-test request-multiple-read-with-buffered-newline-*in*
-  (is+ [:ohai] (response-values (for [resp (repl-eval session "(read)")]
-                                  (do
-                                    (when (-> resp clean-response :status (contains? :need-input))
-                                      (session {:op "stdin" :stdin (th/newline->sys ":ohai\na\n")}))
-                                    resp))))
+  (let [responses (repl-eval session "(read)")]
+    (is+ {:status (mc/via #(map keyword %) [:need-input])} (first responses))
+    (session {:op "stdin" :stdin (th/newline->sys ":ohai\na\n")})
+    (is+ {:value ":ohai"} (second responses)))
 
   (is+ ["a"] (repl-values session "(read-line)")))
 
 (def-repl-test request-multiple-read-objects-*in*
-  (is+ [:ohai] (response-values (for [resp (repl-eval session "(read)")]
-                                  (do
-                                    (when (-> resp clean-response :status (contains? :need-input))
-                                      (session {:op "stdin" :stdin (th/newline->sys ":ohai :kthxbai\n")}))
-                                    resp))))
+  (let [responses (repl-eval session "(read)")]
+    (is+ {:status (mc/via #(map keyword %) [:need-input])} (first responses))
+    (session {:op "stdin" :stdin (th/newline->sys ":ohai :kthxbai\n")})
+    (is+ {:value ":ohai"} (second responses)))
 
   (is+ [" :kthxbai"] (repl-values session "(read-line)")))
 
@@ -694,25 +734,21 @@
   (with-open [conn (url-connect (str (transport-fn->protocol *transport-fn*)
                                      "://127.0.0.1:"
                                      (:port *server*)))]
-    (transport/send conn {:op "eval" :code "(+ 1 1)"})
-    ;; BB-TEST-PATCH stop at the :done message instead of a 100 ms idle
-    ;; timeout, which a slow runner exceeds
-    (is (= [2] (->> (response-seq conn 10000)
-                    (take-while #(not (:status %)))
-                    response-values)))))
+    (let [cli (nrepl/client conn Long/MAX_VALUE)]
+      (is (= 2 (th/eval-value1 cli '(+ 1 1)))))))
 
 (deftest test-ack
   (with-server [s (server/start-server :transport-fn *transport-fn*
-                                             :handler (-> (server/default-handler)
-                                                          ack/handle-ack))]
+                                       :handler (-> (server/default-handler)
+                                                    ack/handle-ack))]
     (ack/reset-ack-port!)
     (with-server [s2 (server/start-server :transport-fn *transport-fn*
-                                                :ack-port (:port s))]
+                                          :ack-port (:port s))]
       (is (= (:port s2) (ack/wait-for-ack 10000))))))
 
 (def-repl-test agent-await
   (is+ [42] (repl-values session (code (let [a (agent nil)]
-                                         (send a (fn [_] (Thread/sleep 1000) 42))
+                                         (send a (fn [_] (Thread/sleep 100) 42))
                                          (await a)
                                          @a)))))
 
@@ -935,28 +971,25 @@
   (testing "Check if RT/baseLoader and ContexClassLoader have a common DCL ancestor"
     (repl-values session (code (nrepl.core-test/capture-value
                                 "base-loader"
-                                (#'nrepl.core-test/classloader-hierarchy (clojure.lang.RT/baseLoader)))))
+                                (nrepl.util.classloader/find-topmost-dcl (clojure.lang.RT/baseLoader)))))
     (repl-values session (code (nrepl.core-test/capture-value
                                 "ccl"
-                                (#'nrepl.core-test/classloader-hierarchy (.. Thread currentThread getContextClassLoader)))))
-    (let [base-loader-dcls (->> (@captured-values-atom "base-loader")
-                                (filter #(instance? clojure.lang.DynamicClassLoader %))
-                                set)
-          ccl-dcls (->> (@captured-values-atom "ccl")
-                        (filter #(instance? clojure.lang.DynamicClassLoader %))
-                        set)]
-      (is (seq (set/intersection base-loader-dcls ccl-dcls))
-          (str "Base loader DCLs: " base-loader-dcls "\nCCL DCLs: " ccl-dcls)))))
+                                (nrepl.util.classloader/find-topmost-dcl (.getContextClassLoader (Thread/currentThread))))))
+    (let [base-loader (@captured-values-atom "base-loader")
+          ccl (@captured-values-atom "ccl")]
+      (is base-loader)
+      (is (= base-loader ccl))))
+  (reset! captured-values-atom {}))
 
 (def-repl-test classloader-chain-doesnt-grow-test
   (testing "after doing regular evals, the classloader chain remains of the same length"
     (let [[chain-length] (repl-values session (code (count
-                                                     (#'nrepl.core-test/classloader-hierarchy))))]
+                                                     (nrepl.core-test/classloader-hierarchy))))]
       ;; Eval some things.
       (dotimes [_ 10] (repl-values session (code (+ 1 2))))
       (is (= chain-length
              (first (repl-values session (code (count
-                                                (#'nrepl.core-test/classloader-hierarchy))))))))))
+                                                (nrepl.core-test/classloader-hierarchy))))))))))
 
 (def-repl-test custom-context-classloader-is-not-overwritten
   (testing "if user eval code has set the custom context classloader, then it persists"
@@ -971,7 +1004,29 @@
                                (code
                                 (contains? (set (#'nrepl.core-test/classloader-hierarchy))
                                            (@nrepl.core-test/captured-values-atom "new-cl"))))]
-      (is good?))))
+      (is good?)))
+  (reset! captured-values-atom {}))
+
+(def-repl-test custom-context-classloader-is-used-for-loading
+  ;; Libraries like lambdaisland.classpath install their own classloader as the
+  ;; session thread's context classloader. Loading during eval has to resolve
+  ;; through it - binding Compiler/LOADER to a DynamicClassLoader ancestor
+  ;; instead silently bypasses it (see #464).
+  (testing "a custom context classloader ends up in the chain used for loading"
+    (repl-values session
+                 (code
+                  (let [t (Thread/currentThread)
+                        new-cl (clojure.lang.DynamicClassLoader.
+                                (.getContextClassLoader t))]
+                    (.setContextClassLoader t new-cl)
+                    (nrepl.core-test/capture-value "custom-cl" new-cl))))
+    (let [[in-chain?] (repl-values session
+                                   (code
+                                    (contains? (set (nrepl.core-test/classloader-hierarchy
+                                                     (clojure.lang.RT/baseLoader)))
+                                               (@nrepl.core-test/captured-values-atom "custom-cl"))))]
+      (is in-chain?)))
+  (reset! captured-values-atom {}))
 
 (def-repl-test sanity-tests
   (testing "eval"
@@ -1009,3 +1064,8 @@
     (is+ [4 65536.0] (repl-values session "(+ 1 3) (Math/pow 2 16)"))
     (is+ [4 20 1 0] (repl-values session "(+ 2 2) (* *1 5) (/ *2 4) (- *3 4)"))
     (is+ [0] (repl-values session "*1"))))
+
+(def-repl-test faulty-eval-request-doesnt-kill-persistent-session-test
+  ;; Send bad request that fails at runtime on the persistent session thread
+  (dorun (message timeout-session {:op "eval" :code "1" :line "abc"}))
+  (is+ [2] (doall (repl-values timeout-session "(+ 1 1)"))))

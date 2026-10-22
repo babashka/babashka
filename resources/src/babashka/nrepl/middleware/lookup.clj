@@ -28,7 +28,11 @@
   [{:keys [session sym ns lookup-fn] :as msg}]
   (let [the-ns (if ns (symbol ns) (symbol (str (@session #'*ns*))))
         sym (symbol sym)
-        lookup-fn (or (some-> lookup-fn symbol misc/requiring-resolve)
+        lookup-fn (or (try
+                        (some-> lookup-fn symbol requiring-resolve)
+                        ;; An unresolvable client-supplied fn falls back to the
+                        ;; session's, rather than failing the request.
+                        (catch Exception _ nil))
                       (misc/resolve-in-session msg *lookup-fn*))]
     {:status :done, :info (lookup-fn the-ns sym)}))
 

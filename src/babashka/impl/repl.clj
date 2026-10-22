@@ -702,10 +702,7 @@
     (when (some #{"need-input"} status)
       (let [line (read-input)]
         (if (identical? ::interrupted line)
-          ;; Ctrl-C while the server waits for input: stop the eval and
-          ;; unblock its read
-          (do ((:interrupt client))
-              ((:stdin client) ""))
+          ((:interrupt client))
           ((:stdin client) (if line (str line "\n") "")))))
     (when (some #{"interrupted"} status)
       (sio/println "Interrupted"))))

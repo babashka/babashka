@@ -11,7 +11,7 @@
    nrepl.middleware.lookup
    nrepl.middleware.print
    nrepl.middleware.session
-   [nrepl.misc :as misc :refer [log log-exceptions response-for]]
+   [nrepl.misc :refer [log log-exceptions response-for]]
    [nrepl.socket :as socket :refer [inet-socket unix-server-socket]]
    [nrepl.tls :as tls]
    [nrepl.transport :as t]
@@ -235,5 +235,5 @@
       (log-exceptions
        (accept-connection-loop server consume-exception)))
     (when ack-port
-      ((misc/requiring-resolve 'nrepl.ack/send-ack) (:port server) ack-port transport-fn))
+      ((requiring-resolve 'nrepl.ack/send-ack) (:port server) ack-port transport-fn))
     server))

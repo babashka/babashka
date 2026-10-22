@@ -37,7 +37,9 @@
                       (reset! latest-head nil))))]
     ^{::transport transport ::timeout response-timeout}
     (fn this
-      ([] (or @latest-head (reset! latest-head (resp-seq))))
+      ;; Concurrent first calls must share one seq: two seqs reading the same
+      ;; transport would each see only some of the responses.
+      ([] (or @latest-head (swap! latest-head #(or % (resp-seq)))))
       ([msg]
        (transport/send transport msg)
        (this)))))

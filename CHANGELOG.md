@@ -19,6 +19,8 @@ A preview of the next release can be installed from
 - [#2219](https://github.com/babashka/babashka/issues/2219): Add `jdk.net.ExtendedSocketOptions`
 - [#2203](https://github.com/babashka/babashka/issues/2203): Allow `proxy` of `clojure.lang.APersistentMap` with `java.lang.AutoCloseable`
 - [#2220](https://github.com/babashka/babashka/issues/2220): `source-fn` prints a warning if resolving bb's dependencies fails, and resolves them again on the next call
+- [#2227](https://github.com/babashka/babashka/issues/2227): An nREPL session keeps answering after its client disconnects during an eval
+- Bump `nrepl` to `1.8.0`
 - Bump `nextjournal.markdown` to `0.7.228`
 - [#2194](https://github.com/babashka/babashka/issues/2194): Fix `script/uberjar` dropping the JDBC feature unless `BABASHKA_FEATURE_ORACLEDB=true`
 - [#2193](https://github.com/babashka/babashka/issues/2193): `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch`

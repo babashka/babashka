@@ -29,7 +29,10 @@
 
 (defn- resolve-caught [msg]
   (when-let [var-sym (some-> (::caught msg) (symbol))]
-    (let [caught-var (misc/requiring-resolve var-sym)]
+    (let [caught-var (try
+                       (requiring-resolve var-sym)
+                       ;; See the note in nrepl.middleware.print/resolve-print.
+                       (catch Exception _ nil))]
       (when-not caught-var
         (transport/respond-to msg {::error (str "Couldn't resolve var " var-sym)
                                    :status ::error}))
