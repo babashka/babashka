@@ -172,9 +172,11 @@
     java.lang.Runnable
     {:methods [{:name "run"}]}
     java.net.Inet4Address
-    {:methods [{:name "getHostAddress"}]}
+    {:methods [{:name "getAddress"}
+               {:name "getHostAddress"}]}
     java.net.Inet6Address
-    {:methods [{:name "getHostAddress"}]}
+    {:methods [{:name "getAddress"}
+               {:name "getHostAddress"}]}
     clojure.lang.IFn
     {:methods [{:name "applyTo"}]}
     clojure.lang.MultiFn
