@@ -198,6 +198,12 @@ jobs:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-static-amd64
 
+      - name: Release
+        env:
+          BABASHKA_RELEASE: true
+        run: |
+          .circleci/script/release
+
       - name: Test binary and libs
         run: |
           script/test
@@ -207,12 +213,6 @@ jobs:
       - name: Test babashka.ffi suite
         if: "matrix.static == false"
         run: script/run_ffi_tests
-
-      - name: Release
-        env:
-          BABASHKA_RELEASE: true
-        run: |
-          .circleci/script/release
 
   docker:
     if: ${{ false }} # Disabled
