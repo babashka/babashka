@@ -200,15 +200,14 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                                 "script/uberjar\nscript/compile # --pgo=default.iprof") "30m")
                                           (when (not= "mac" platform)
                                             (run "Verify linking" "script/verify_link"))
-                                          (run "Release" ".circleci/script/release")
+                                          (run "Release + publish"
+                                            (str/join "\n" ["export BABASHKA_RELEASE=true"
+                                                            ".circleci/script/release"]))
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}
                                           (run "Run tests" (if static?
                                                              "script/test\nscript/run_lib_tests"
                                                              "script/test\nscript/run_lib_tests\nscript/run_ffi_tests"))
-                                          (run "Release + publish"
-                                            (str/join "\n" ["export BABASHKA_RELEASE=true"
-                                                            ".circleci/script/release"]))
                                           {:save_cache
                                            {:paths ["~/.m2" "~/graalvm"
                                                     ;; source tarballs, so a
