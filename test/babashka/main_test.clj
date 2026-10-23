@@ -122,6 +122,9 @@
 (deftest input-test
   (testing "-io behaves as identity"
     (is (= "foo\nbar\n" (test-utils/bb "foo\nbar\n" "-io" "*input*"))))
+  (testing "the repl interns only vars in user"
+    (is (str/includes? (test-utils/bb "(every? var? (vals (ns-interns 'user)))" "repl")
+                       "true")))
   (testing "if and when"
     (is (= 1 (bb 0 '(if (zero? *input*) 1 2))))
     (is (= 2 (bb 1 '(if (zero? *input*) 1 2))))

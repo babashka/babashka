@@ -419,13 +419,18 @@ Use bb run --help to show this help output.
 
 (def main-var (sci/new-var 'main nil {:ns clojure-main-ns}))
 
+(def ^:private input
+  (reify
+    sci-types/Eval
+    (eval [_ _ctx _bindings]
+      (force @input-var))))
+
+(defn- intern-input! [ctx]
+  (swap! (:env ctx) assoc-in [:namespaces 'user '*input*] input))
+
 (def namespaces
   (cond->
-      {'user {'*input* (reify
-                         sci-types/Eval
-                         (eval [_ _ctx _bindings]
-                           (force @input-var)))}
-       'clojure.core core-extras
+      {'clojure.core core-extras
        'clojure.tools.cli tools-cli-namespace
        'clojure.java.shell shell-namespace
        'babashka.core bbcore/core-namespace
@@ -1210,6 +1215,7 @@ Use bb run --help to show this help output.
                        expressions
                        ;; execute code
                        (sci/binding [sci/file abs-path]
+                         (intern-input! sci-ctx)
                          (try
                            ;; when evaluating expression(s), add in repl-requires so things like
                            ;; pprint and dir are available
