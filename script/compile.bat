@@ -49,9 +49,6 @@ Rem Pass the feature setting to image initialization.
 Rem "if defined", not a string compare: the value carries its own quotes
 if defined LIBFFI_ARG (set BABASHKA_FEATURE_LIBFFI=true) else (set BABASHKA_FEATURE_LIBFFI=false)
 
-call "%GRAALVM_HOME%\bin\java.exe" -cp "target/babashka-%BABASHKA_VERSION%-standalone.jar" babashka.impl.TrustStore target/cacerts
-if errorlevel 1 exit /b 1
-
 Rem Windows assigns argument registers by position, so babashka.ffi loads its
 Rem ordered trampolines here. The callback shapes only they need are in a
 Rem metadata file of their own in the ffi submodule, which this option names.
@@ -61,8 +58,6 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "-H:+ReportExceptionStackTraces" ^
   "--verbose" ^
   "--no-fallback" ^
-  "-Djavax.net.ssl.trustStore=target/cacerts" ^
-  "-Djavax.net.ssl.trustStorePassword=changeit" ^
   "--install-exit-handlers" ^
   %LIBFFI_ARG% ^
   -EBABASHKA_FEATURE_LIBFFI ^
