@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Block the certificates of the eMudhra intermediate CA compromise in the binary ([@stathissideris](https://github.com/stathissideris))
 - Return the docs of special forms such as `do` from the nREPL `info` and `eldoc` ops
 - Add the nREPL ops `cider/clojuredocs-lookup` and `cider/clojuredocs-refresh-cache`, for ClojureDocs examples in CIDER
 - `doc` on `&`, `catch` and `finally` prints the docs of `fn` and `try`
