@@ -777,6 +777,15 @@
               (is (string? (get reply "doc")))))
           (testing "info on let* returns no special-form"
             (is (nil? (get (decode (first (send {"op" "info" "sym" "let*" "ns" "user"}))) "special-form"))))
+          (testing "info on nope returns status no-info"
+            (is (some #{"no-info"} (get (decode (first (send {"op" "info" "sym" "nope" "ns" "user"}))) "status"))))
+          (testing "eldoc on when returns type macro"
+            (is (= "macro" (get (decode (first (send {"op" "eldoc" "sym" "when" "ns" "user"}))) "type"))))
+          (testing "info on when returns macro true and added 1.0"
+            (let [reply (decode (first (send {"op" "info" "sym" "when" "ns" "user"})))]
+              (is (= ["true" "1.0"] [(get reply "macro") (get reply "added")]))))
+          (testing "info on replicate returns deprecated 1.3"
+            (is (= "1.3" (get (decode (first (send {"op" "info" "sym" "replicate" "ns" "user"}))) "deprecated"))))
           (testing "info on a var from load-file returns its file, line and column"
             (let [dir (fs/create-temp-dir)
                   f (str (fs/path dir "info_loc.clj"))]
