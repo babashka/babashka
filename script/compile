@@ -138,6 +138,8 @@ if [[ $detected_graalvm_version == native-image\ 25* ]]; then
     args+=("--future-defaults=all")
 fi
 
+script/distrust-compromised-roots
+
 echo "$GRAALVM_HOME/bin/native-image" "${args[@]}" "$@"
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}" "$@"
