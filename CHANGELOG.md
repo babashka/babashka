@@ -7,44 +7,23 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.13.227 (2026-10-23)
 
-- Block the certificates of the eMudhra intermediate CA compromise in the binary ([@stathissideris](https://github.com/stathissideris))
-- Return the docs of special forms such as `do` from the nREPL `info` and `eldoc` ops
-- Add the nREPL ops `cider/clojuredocs-lookup` and `cider/clojuredocs-refresh-cache`, for ClojureDocs examples in CIDER
+- Block the certificates of the eMudhra intermediate CA compromise ([@stathissideris](https://github.com/stathissideris))
+- Bump `nrepl` to `1.8.0` and `orchard` to `0.45.0`
+- nREPL: `info` and `eldoc` cover special forms and Java classes and members, and return `added`, `deprecated`, `macro`, `:line` and `:column` ([#2209](https://github.com/babashka/babashka/issues/2209), [#2236](https://github.com/babashka/babashka/issues/2236), [#2238](https://github.com/babashka/babashka/issues/2238))
+- nREPL: completion matches by prefix and types its candidates ([#2237](https://github.com/babashka/babashka/issues/2237))
+- nREPL: answer the CIDER ops under their `cider/` names, add ClojureDocs examples, `inspect-last-exception` and the cider-nrepl inspector and stacktrace ops ([#2211](https://github.com/babashka/babashka/issues/2211), [#2229](https://github.com/babashka/babashka/issues/2229))
+- nREPL: the test ops report progress and `=` diffs, support `test-all`, `:project?` and `:load-project-ns?`, and no longer hang or kill the session on an error ([#2201](https://github.com/babashka/babashka/issues/2201), [#2206](https://github.com/babashka/babashka/issues/2206), [#2207](https://github.com/babashka/babashka/issues/2207))
+- nREPL: fix a session after its client disconnects, a message without an op, `with-session-classloader` and a `SocketException` on disconnect ([#2210](https://github.com/babashka/babashka/issues/2210), [#2227](https://github.com/babashka/babashka/issues/2227), [#2230](https://github.com/babashka/babashka/issues/2230), [#2234](https://github.com/babashka/babashka/issues/2234))
+- `*input*` exists only while bb runs an expression or a script ([#2235](https://github.com/babashka/babashka/issues/2235))
 - `doc` on `&`, `catch` and `finally` prints the docs of `fn` and `try`
-- Add `java.nio.file.FileSystemLoopException`
-- Add `java.util.RandomAccess`
-- [#2006](https://github.com/babashka/babashka/issues/2006): Add `getAddress` to `java.net.Inet4Address` and `java.net.Inet6Address`
-- [#2218](https://github.com/babashka/babashka/issues/2218): Add `org.jline.utils.Status` and allow `reify` of `org.jline.reader.CompletingParsedLine`
-- [#2219](https://github.com/babashka/babashka/issues/2219): Add `jdk.net.ExtendedSocketOptions`
-- [#2203](https://github.com/babashka/babashka/issues/2203): Allow `proxy` of `clojure.lang.APersistentMap` with `java.lang.AutoCloseable`
-- [#2220](https://github.com/babashka/babashka/issues/2220): `source-fn` prints a warning if resolving bb's dependencies fails, and resolves them again on the next call
-- [#2227](https://github.com/babashka/babashka/issues/2227): An nREPL session keeps answering after its client disconnects during an eval
-- Bump `nrepl` to `1.8.0`
-- [#2230](https://github.com/babashka/babashka/issues/2230): nREPL answers a message without an op with `unknown-op`
-- [#2229](https://github.com/babashka/babashka/issues/2229): nREPL answers `info`, `eldoc`, `complete`, `ns-list` and `classpath` under their `cider/` names
-- [#2234](https://github.com/babashka/babashka/issues/2234): Fix `nrepl.misc/with-session-classloader` throwing
-- [#2237](https://github.com/babashka/babashka/issues/2237): nREPL completion matches by prefix on the dash-separated parts of a var name and the dot-separated parts of a namespace or class, types vars as `function`, `macro` or `var`, and offers special forms
-- [#2238](https://github.com/babashka/babashka/issues/2238): nREPL `info` and `eldoc` describe Java classes and members, with their modifiers, arglists, return type and javadoc URL
-- [#2235](https://github.com/babashka/babashka/issues/2235): `*input*` is only defined while bb runs an expression or a script, so `ns-interns` in a REPL or nREPL returns only vars
-- [#2236](https://github.com/babashka/babashka/issues/2236): nREPL `info` replies `no-info` to an unknown symbol and includes `macro`, `added` and `deprecated`, and `eldoc` types a macro as `macro`
+- `is` reports the file of the test, and a failing `=` reports the actual value ([#2208](https://github.com/babashka/babashka/issues/2208))
+- `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch` ([#2193](https://github.com/babashka/babashka/issues/2193))
+- `source-fn` warns if resolving bb's dependencies fails, and retries on the next call ([#2220](https://github.com/babashka/babashka/issues/2220))
+- Fix loading a `clojure.tools.deps.*` or `clojure.tools.gitlibs.*` namespace that bb does not bundle, such as `clojure.tools.deps.config`
+- Add `java.nio.file.FileSystemLoopException`, `java.util.RandomAccess`, `jdk.net.ExtendedSocketOptions`, `org.jline.utils.Status` and `getAddress` on `Inet4Address` and `Inet6Address`, and allow `reify` of `CompletingParsedLine` and `proxy` of `APersistentMap` with `AutoCloseable` ([#2006](https://github.com/babashka/babashka/issues/2006), [#2203](https://github.com/babashka/babashka/issues/2203), [#2218](https://github.com/babashka/babashka/issues/2218), [#2219](https://github.com/babashka/babashka/issues/2219))
 - Bump `nextjournal.markdown` to `0.7.228`
-- [#2194](https://github.com/babashka/babashka/issues/2194): Fix `script/uberjar` dropping the JDBC feature unless `BABASHKA_FEATURE_ORACLEDB=true`
-- [#2193](https://github.com/babashka/babashka/issues/2193): `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch`
-- [#2201](https://github.com/babashka/babashka/issues/2201): Fix the nREPL test ops never replying when a test throws outside an assertion
-- [#2206](https://github.com/babashka/babashka/issues/2206): Fix nREPL `test-var-query` for a var in an unloaded namespace killing the session
-- [#2207](https://github.com/babashka/babashka/issues/2207): Support `:project?` and `:load-project-ns?` in nREPL `test-var-query`
-- nREPL `test-all` runs the tests of the project's namespaces, and loads them first if `load?` is set
-- Run the nREPL test ops on cider-nrepl's test middleware and `orchard.test`, which adds `stream` progress events, `:diffs` for `=` failures and the remaining `test-var-query` keys
-- A failing `=` in `is` reports `actual:` as the value instead of `(not (= ...))` while an nREPL server runs
-- Bump `orchard` to `0.45.0`
-- [#2208](https://github.com/babashka/babashka/issues/2208): Fix `is` reporting the current `*file*` instead of the file of the test
-- [#2209](https://github.com/babashka/babashka/issues/2209): nREPL `info` returns `:line` and `:column`, and no longer resolves the `:file` of a built-in var against the working directory
-- [#2211](https://github.com/babashka/babashka/issues/2211): Add the nREPL op `inspect-last-exception`
-- Serve the nREPL inspector and `analyze-last-stacktrace` ops from cider-nrepl's inspect and stacktrace middleware
-- [#2210](https://github.com/babashka/babashka/issues/2210): Fix a `SocketException` stack trace from `nREPL-track-state` on stderr after every nREPL client disconnect
-- Fix loading a `clojure.tools.deps.*` or `clojure.tools.gitlibs.*` namespace from a jar if bb does not bundle it, such as `clojure.tools.deps.config`
 - The macOS amd64 binary requires macOS 11.0 or later
 
 ## 1.13.226 (2026-10-11)
