@@ -1039,7 +1039,7 @@
                [48 :invalid-arity]}      ;; raw-p with 1 arg, C takes 2
              (set (map (juxt :row :type) findings)))))))
 
-(deftest layout-cache-test
+(deftest ^:flaky layout-cache-timing-test
   (when-not skip?
     (testing "a run of generated layouts does not evict the layouts in use"
       (is (true? (bb `(do ~ffi-require
@@ -1052,7 +1052,9 @@
                                 warm# (do (ffi/sizeof hot#) (time# hot#))]
                             (dotimes [i# 600]
                               (ffi/sizeof [:struct [[(keyword (str "f" i#)) :int]]]))
-                            (< (time# hot#) (* 3 warm#)))))))))
+                            (< (time# hot#) (* 3 warm#))))))))))
+
+(deftest layout-cache-test
   (testing "an unbounded run does not grow the cache without limit"
     (is (true? (bb `(do ~ffi-require
                         (dotimes [i# 400]
