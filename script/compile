@@ -138,6 +138,9 @@ if [[ $detected_graalvm_version == native-image\ 25* ]]; then
     args+=("--future-defaults=all")
 fi
 
+"$GRAALVM_HOME/bin/java" -cp "$BABASHKA_JAR" babashka.impl.TrustStore target/cacerts
+args+=("-Djavax.net.ssl.trustStore=target/cacerts" "-Djavax.net.ssl.trustStorePassword=changeit")
+
 echo "$GRAALVM_HOME/bin/native-image" "${args[@]}" "$@"
 
 "$GRAALVM_HOME/bin/native-image" "${args[@]}" "$@"

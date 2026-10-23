@@ -23,8 +23,8 @@
 
 (deftest embedded-trust-store-test
   ;; native-image builds GraalVM's trust store into bb. The roots behind the
-  ;; eMudhra intermediate CA compromise (https://we-have-a-problem.com) must not
-  ;; be in it, see script/distrust-compromised-roots.
+  ;; eMudhra intermediate CA compromise must not be in it, see
+  ;; babashka.impl.TrustStore.
   (when test-utils/native?
     (let [fingerprints
           ;; A string rather than a quoted form, so that the KeyStore hint that
