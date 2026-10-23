@@ -7,6 +7,7 @@
    [babashka.nrepl.impl.cider :as cider]
    [babashka.nrepl.impl.clojuredocs :as clojuredocs]
    [babashka.nrepl.impl.debug :as debug]
+   [babashka.nrepl.impl.java :as java]
    [babashka.nrepl.impl.sci :as sci-helpers]
    [babashka.nrepl.impl.track-state :as track-state]
    [clojure.string :as str]
@@ -47,12 +48,16 @@
 (defn- forms-join [forms]
   (str/join \newline (map pr-str forms)))
 
-(defn- lookup-reply [{:keys [op sym symbol ns] :as _msg}]
+(defn- lookup-reply [{:keys [op sym symbol ns class member] :as _msg}]
   (let [eldoc? (contains? #{"eldoc" "cider/eldoc"} op)
         sym-str (or sym symbol)
-        m (sci-helpers/lookup sym-str ns)
+        m (when-not (seq class) (sci-helpers/lookup sym-str ns))
+        java (when (nil? m)
+               (when-let [info (java/info {:ns ns :sym sym-str :class class :member member})]
+                 (if eldoc? (java/eldoc info) (java/info-reply info))))
         {:keys [doc file line column arglists forms special-form macro added deprecated]} m]
     (cond
+      java (assoc java :status :done)
       (nil? m) {:status (if eldoc? #{:done :no-eldoc} #{:done :no-info})}
       eldoc? (cond-> {:status :done
                       :ns (:ns m)

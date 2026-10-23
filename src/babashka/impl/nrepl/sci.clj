@@ -52,8 +52,9 @@
      :ns 'clojure.core
      :special-form true
      :url (:url m)}
-    (when-let [v (ns-resolve ns doc-sym)]
-      (let [m (meta v)]
+    (let [v (ns-resolve ns doc-sym)]
+      (when (var? v)
+       (let [m (meta v)]
         {:arglists (:arglists m)
          :doc (:doc m)
          :name (:name m)
@@ -65,7 +66,7 @@
          :line (:line m)
          :column (:column m)
          :file (:file m)
-         :resource (when resource-fn (some-> (:file m) resource-fn str))}))))" ns-str sym-str)))]
+         :resource (when resource-fn (some-> (:file m) resource-fn str))})))))" ns-str sym-str)))]
       (some-> m resolve-file))
     (catch Throwable _ nil)))
 
