@@ -38,21 +38,20 @@
   (mapv name (sort flags)))
 
 (defn- members-named
-  "Returns the methods and fields named member of c, or of its nearest
-  superclass that has any."
+  "Returns the methods and fields named member of c, or of the nearest of its
+  superclasses and interfaces that has any."
   [c member]
-  (loop [k c]
-    (when k
-      (let [ms (filter (fn [m]
-                         (and (or (contains? m :return-type)
-                                  (contains? m :type))
-                              (= member (str (:name m)))
-                              (not (contains? (:flags m) :synthetic))
-                              (not (contains? (:flags m) :bridge))))
-                       (:members (reflect/reflect k)))]
-        (if (seq ms)
-          ms
-          (recur (.getSuperclass k)))))))
+  (let [chain (take-while some? (iterate #(.getSuperclass %) c))
+        classes (concat chain (remove (set chain) (supers c)))]
+    (some (fn [k]
+            (seq (filter (fn [m]
+                           (and (or (contains? m :return-type)
+                                    (contains? m :type))
+                                (= member (str (:name m)))
+                                (not (contains? (:flags m) :synthetic))
+                                (not (contains? (:flags m) :bridge))))
+                         (:members (reflect/reflect k)))))
+          classes)))
 
 (defn- member-info
   "Returns the info of member of c, or nil if c has no such method or field."

@@ -909,6 +909,8 @@
                      (get (reply {"op" "info" "class" "String" "member" "substring"}) "arglists-str"))))
             (testing "info on Integer/MAX_VALUE returns the field type int"
               (is (= "int" (get (reply {"op" "info" "sym" "Integer/MAX_VALUE"}) "type"))))
+            (testing "info on java.util.ArrayList/.stream returns the default method of Collection"
+              (is (= "stream" (get (reply {"op" "info" "sym" "java.util.ArrayList/.stream"}) "member"))))
             (testing "info on .length returns candidates for String and File"
               (let [candidates (get (reply {"op" "info" "sym" ".length"}) "candidates")]
                 (is (contains? candidates "java.lang.String"))
