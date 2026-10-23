@@ -7,6 +7,7 @@
    [babashka.nrepl.impl.cider :as cider]
    [babashka.nrepl.impl.clojuredocs :as clojuredocs]
    [babashka.nrepl.impl.debug :as debug]
+   [babashka.nrepl.impl.java :as java]
    [babashka.nrepl.impl.sci :as sci-helpers]
    [babashka.nrepl.impl.track-state :as track-state]
    [clojure.string :as str]
@@ -47,22 +48,28 @@
 (defn- forms-join [forms]
   (str/join \newline (map pr-str forms)))
 
-(defn- lookup-reply [{:keys [op sym symbol ns] :as _msg}]
-  (let [sym-str (or sym symbol)
-        m (sci-helpers/lookup sym-str ns)
-        {:keys [doc file line column arglists forms special-form]} m]
+(defn- lookup-reply [{:keys [op sym symbol ns class member] :as _msg}]
+  (let [eldoc? (contains? #{"eldoc" "cider/eldoc"} op)
+        sym-str (or sym symbol)
+        m (when-not (seq class) (sci-helpers/lookup sym-str ns))
+        java (when (nil? m)
+               (when-let [info (java/info {:ns ns :sym sym-str :class class :member member})]
+                 (if eldoc? (java/eldoc info) (java/info-reply info))))
+        {:keys [doc file line column arglists forms special-form macro added deprecated]} m]
     (cond
-      (nil? m) {:status (if (= "eldoc" op) #{:done :no-eldoc} :done)}
-      (= "eldoc" op) (cond-> {:status :done
-                              :ns (:ns m)
-                              :name (:name m)
-                              :eldoc (if special-form
-                                       (mapv #(if (coll? %) (mapv str %) [(str %)]) forms)
-                                       (mapv #(mapv str %) arglists))
-                              :type (cond special-form "special-form"
-                                          (ifn? (:val m)) "function"
-                                          :else "variable")}
-                       doc (assoc :docstring doc))
+      java (assoc java :status :done)
+      (nil? m) {:status (if eldoc? #{:done :no-eldoc} #{:done :no-info})}
+      eldoc? (cond-> {:status :done
+                      :ns (:ns m)
+                      :name (:name m)
+                      :eldoc (if special-form
+                               (mapv #(if (coll? %) (mapv str %) [(str %)]) forms)
+                               (mapv #(mapv str %) arglists))
+                      :type (cond special-form "special-form"
+                                  macro "macro"
+                                  (ifn? (:val m)) "function"
+                                  :else "variable")}
+               doc (assoc :docstring doc))
       :else (let [see-also (clojuredocs/see-also m)]
               (cond-> {:status :done
                        :ns (:ns m)
@@ -72,13 +79,16 @@
                                     :forms-str (forms-join forms)
                                     :url (str "https://clojure.org/" (or (:url m) (str "special_forms#" (:name m)))))
                 doc (assoc :doc doc)
+                macro (assoc :macro "true")
+                added (assoc :added (str added))
+                deprecated (assoc :deprecated (str deprecated))
                 file (assoc :file file)
                 line (assoc :line line)
                 column (assoc :column column)
                 see-also (assoc :see-also see-also))))))
 
-(defn- ns-list-reply [{:keys [exclude-patterns]}]
-  (let [patterns (map re-pattern exclude-patterns)]
+(defn- ns-list-reply [{:keys [filter-regexps exclude-patterns]}]
+  (let [patterns (map re-pattern (concat filter-regexps exclude-patterns))]
     {:status :done
      :ns-list (->> (all-ns)
                    (map (comp name ns-name))
@@ -90,49 +100,54 @@
    :classpath (cp/split-classpath (cp/get-classpath))})
 
 (defn wrap-babashka
-  "Middleware for the ops babashka adds to nREPL's: `complete` (the old name
-  of `completions`), `eldoc`, `info`, `ns-list` and `classpath`, and
-  babashka's versions in `describe`."
+  "Returns a handler that answers the cider-nrepl ops `complete`, `eldoc`,
+  `info`, `ns-list` and `classpath` under their `cider/` and bare names."
   [h]
   (fn [{:keys [op] :as msg}]
     (if (= "describe" op)
       (h (assoc msg :transport (versions-transport (:transport msg))))
       (safe-handle msg
+        "cider/complete" complete-reply
         "complete" complete-reply
+        "cider/eldoc" lookup-reply
         "eldoc" lookup-reply
+        "cider/info" lookup-reply
         "info" lookup-reply
+        "cider/ns-list" ns-list-reply
         "ns-list" ns-list-reply
+        "cider/classpath" classpath-reply
         "classpath" classpath-reply
         :else h))))
 
 (set-descriptor! #'wrap-babashka
                  {:requires #{"clone"}
                   :expects #{}
-                  :handles {"complete"
-                            {:doc "Completions, as `completions` but keyed `symbol`."
-                             :requires {"symbol" "The prefix to complete."}
-                             :optional {"ns" "The namespace to complete in. Defaults to the session's."}
-                             :returns {"completions" "Maps with `candidate`, `type` and `ns`."}}
-                            "eldoc"
-                            {:doc "Arglists and docstring of a symbol."
-                             :requires {"sym" "The symbol to look up."}
-                             :optional {"ns" "The namespace to resolve in."}
-                             :returns {"eldoc" "The arglists, each a list of strings."}}
-                            "info"
-                            {:doc "Metadata of a symbol."
-                             :requires {"sym" "The symbol to look up."}
-                             :optional {"ns" "The namespace to resolve in."}
-                             :returns {}}
-                            "ns-list"
-                            {:doc "The names of all namespaces."
-                             :requires {}
-                             :optional {"exclude-patterns" "Regexes of namespaces to leave out."}
-                             :returns {"ns-list" "The sorted names."}}
-                            "classpath"
-                            {:doc "The classpath entries."
-                             :requires {}
-                             :optional {}
-                             :returns {"classpath" "A list of paths."}}}})
+                  :handles (cider/with-cider-names
+                            {"complete"
+                             {:doc "Completions of a prefix."
+                              :requires {"prefix" "The prefix to complete."}
+                              :optional {"ns" "The namespace to complete in. Defaults to the session's."}
+                              :returns {"completions" "Maps with `candidate`, `type` and `ns`."}}
+                             "eldoc"
+                             {:doc "Arglists and docstring of a symbol."
+                              :requires {"sym" "The symbol to look up."}
+                              :optional {"ns" "The namespace to resolve in."}
+                              :returns {"eldoc" "The arglists, each a list of strings."}}
+                             "info"
+                             {:doc "Metadata of a symbol."
+                              :requires {"sym" "The symbol to look up."}
+                              :optional {"ns" "The namespace to resolve in."}
+                              :returns {}}
+                             "ns-list"
+                             {:doc "The names of all namespaces."
+                              :requires {}
+                              :optional {"filter-regexps" "Regexes of namespaces to leave out."}
+                              :returns {"ns-list" "The sorted names."}}
+                             "classpath"
+                             {:doc "The classpath entries."
+                              :requires {}
+                              :optional {}
+                              :returns {"classpath" "A list of paths."}}})})
 
 (defn- middleware-var [m]
   (if (symbol? m) (requiring-resolve m) m))

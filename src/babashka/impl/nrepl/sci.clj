@@ -52,34 +52,25 @@
      :ns 'clojure.core
      :special-form true
      :url (:url m)}
-    (when-let [v (ns-resolve ns doc-sym)]
-      (let [m (meta v)]
+    (let [v (ns-resolve ns doc-sym)]
+      (when (var? v)
+       (let [m (meta v)]
         {:arglists (:arglists m)
          :doc (:doc m)
          :name (:name m)
          :ns (some-> m :ns ns-name)
+         :macro (:macro m)
+         :added (:added m)
+         :deprecated (:deprecated m)
          :val @v
          :line (:line m)
          :column (:column m)
          :file (:file m)
-         :resource (when resource-fn (some-> (:file m) resource-fn str))}))))" ns-str sym-str)))]
+         :resource (when resource-fn (some-> (:file m) resource-fn str))})))))" ns-str sym-str)))]
       (some-> m resolve-file))
     (catch Throwable _ nil)))
 
 ;;;; Completions
-
-(defn fully-qualified-syms [ctx ns-sym]
-  (let [syms (sci/eval-string* ctx (format "(keys (ns-map '%s))" ns-sym))
-        sym-strs (map #(str "`" %) syms)
-        sym-expr (str "[" (str/join " " sym-strs) "]")
-        syms (sci/eval-string* ctx sym-expr)]
-    syms))
-
-(defn- class-sym?
-  "Returns true if sym is a class import (e.g. clojure.lang.RT - has dots but no namespace)."
-  [sym]
-  (and (nil? (namespace sym))
-       (str/includes? (name sym) ".")))
 
 (defn- class-sym->completion
   "Converts a class symbol like clojure.lang.RT to [full-class-name simple-name type]."
@@ -90,15 +81,66 @@
      (subs n (inc idx))
      "class"]))
 
-(defn match [_alias->ns ns->alias query [sym-ns sym-name qualifier]]
-  (let [pat (re-pattern (java.util.regex.Pattern/quote query))
-        has-slash? (str/includes? query "/")]
-    (or (when (and (= "class" qualifier) (re-find pat sym-name))
+(defn fuzzy-matches?
+  "Returns true if prefix is made of leading pieces of the parts of s, split
+  on separator, in order.
+  The first piece starts s, and later parts may be skipped."
+  [^String prefix ^String s separator]
+  (let [pn (.length prefix)
+        sn (.length s)
+        separator (char separator)]
+    (cond (zero? pn) true
+          (zero? sn) false
+          (not= (.charAt prefix 0) (.charAt s 0)) false
+          :else (loop [pi 1
+                       si 1
+                       skipping false]
+                  (cond (>= pi pn) true
+                        (>= si sn) false
+                        :else (let [pc (.charAt prefix pi)
+                                    sc (.charAt s si)
+                                    match (= pc sc)]
+                                (cond (= sc separator)
+                                      (recur (if match (inc pi) pi) (inc si) false)
+                                      (or skipping (not match)) (recur pi (inc si) true)
+                                      :else (recur (inc pi) (inc si) false))))))))
+
+(def ^:private special-forms
+  ["def" "if" "do" "quote" "var" "recur" "throw" "try" "catch" "monitor-enter" "monitor-exit"
+   "new" "set!" "true" "false" "nil"])
+
+(defn- special-form-completions [query]
+  (when-not (str/includes? query "/")
+    (keep (fn [form]
+            (when (fuzzy-matches? query form \-)
+              [nil form "special-form"]))
+          special-forms)))
+
+(defn- ns-entries
+  "Returns an entry for each mapping in (ns-fn ns-sym), named by its key.
+  A var gives [:var ns name type], with type \"macro\", \"function\" or \"var\".
+  A class gives [:class class name].
+  Any other value gives [:var ns-sym name nil].
+  ns-fn is \"ns-map\" or \"ns-publics\"."
+  [ctx ns-fn ns-sym]
+  (sci/eval-string* ctx (format "
+(mapv (fn [[k v]]
+        (cond (var? v)
+              (let [m (meta v)]
+                [:var (str (or (some-> (:ns m) ns-name) '%2$s)) (str k)
+                 (cond (:macro m) \"macro\" (:arglists m) \"function\" :else \"var\")])
+              (class? v) [:class v (str k)]
+              :else [:var (str '%2$s) (str k) nil]))
+      (%1$s '%2$s))" ns-fn ns-sym)))
+
+(defn match [_alias->ns ns->alias query [sym-ns sym-name qualifier type]]
+  (let [has-slash? (str/includes? query "/")]
+    (or (when (and (= "class" qualifier) (fuzzy-matches? query sym-name \.))
           [sym-ns sym-name "class"])
-        (when (and (identical? :unqualified qualifier) (re-find pat sym-name))
-          [sym-ns sym-name])
+        (when (and (identical? :unqualified qualifier) (fuzzy-matches? query sym-name \-))
+          [sym-ns sym-name type])
         ;; Namespace-only entries (sym-name is nil) - match on namespace name
-        (when (and (nil? sym-name) sym-ns (re-find pat sym-ns))
+        (when (and (nil? sym-name) sym-ns (fuzzy-matches? query sym-ns \.))
           [nil sym-ns "namespace"])
         ;; Qualified symbol matching
         (when (and sym-ns sym-name)
@@ -106,11 +148,11 @@
                 alias-qualified (when alias (str alias "/" sym-name))
                 ns-qualified (str sym-ns "/" sym-name)]
             (or ;; Always try alias-qualified matching (for `quux<TAB>` -> `quux/foo`)
-             (when (and alias-qualified (re-find pat alias-qualified))
-               [sym-ns alias-qualified])
+             (when (and alias-qualified (fuzzy-matches? query alias-qualified \-))
+               [sym-ns alias-qualified type])
                 ;; Full namespace-qualified matching only when query has a slash
-             (when (and has-slash? (re-find pat ns-qualified))
-               [sym-ns ns-qualified])))))))
+             (when (and has-slash? (fuzzy-matches? query ns-qualified \-))
+               [sym-ns ns-qualified type])))))))
 
 (defn- member-simple-name
   "Extracts simple name from a possibly qualified name (e.g., java.lang.String -> String)"
@@ -124,7 +166,6 @@
                                    (pr-str `(let [resolved# (resolve '~query-ns)]
                                               (when-not (var? resolved#)
                                                 resolved#))))
-        pat (when name-part (re-pattern (java.util.regex.Pattern/quote name-part)))
         class-simple-name (when resolved (member-simple-name (str resolved)))]
     (when
      resolved
@@ -143,7 +184,7 @@
                                       constructor? "new"
                                       static? (str member-sym)
                                       :else (str "." member-sym))]
-                     (or (not pat) (re-find pat member-str)))))
+                     (or (not name-part) (str/starts-with? member-str name-part)))))
          (map
           (fn [{:keys [name parameter-types flags]}]
             (let [static? (:static flags)
@@ -162,17 +203,16 @@
                  :else "field")])))))))))
 
 (defn import-symbols->completions [imports query]
-  (let [pat (re-pattern (java.util.regex.Pattern/quote query))]
-    (doall
-     (sequence
-      (comp
-       (map key)
-       (filter
-        (fn [sym-name]
-          (re-find pat (str sym-name))))
-       (map (fn [class-name]
-              [nil (str class-name) "class"])))
-      imports))))
+  (doall
+   (sequence
+    (comp
+     (map key)
+     (filter
+      (fn [sym-name]
+        (fuzzy-matches? query (str sym-name) \.)))
+     (map (fn [class-name]
+            [nil (str class-name) "class"])))
+    imports)))
 
 (def ^:private keyword-table
   (delay
@@ -228,16 +268,15 @@
 (defn fq-class->completions
   "Completions for fully qualified class names like java.lang.String"
   [classes query]
-  (let [pat (re-pattern (java.util.regex.Pattern/quote query))]
-    (doall
-     (sequence
-      (comp
-       (map key)
-       (remove keyword?)
-       (map str)
-       (filter (fn [fq-class] (re-find pat fq-class)))
-       (map (fn [fq-class] [fq-class fq-class "class"])))
-      classes))))
+  (doall
+   (sequence
+    (comp
+     (map key)
+     (remove keyword?)
+     (map str)
+     (filter (fn [fq-class] (fuzzy-matches? query fq-class \.)))
+     (map (fn [fq-class] [fq-class fq-class "class"])))
+    classes)))
 
 (defn- format-completions
   "Formats raw completion tuples into sorted maps with :candidate, :ns, :type."
@@ -268,25 +307,22 @@
         (let [has-namespace? (str/includes? query "/")
               query-ns (when has-namespace? (symbol (first (str/split query #"/"))))
               current-ns-sym (sci/eval-string* ctx "(ns-name *ns*)")
-              from-current-ns (fully-qualified-syms ctx current-ns-sym)
-              from-current-ns (map (fn [sym]
-                                     (if (class-sym? sym)
-                                       (class-sym->completion sym)
-                                       [(namespace sym) (name sym) :unqualified]))
-                                   from-current-ns)
+              from-current-ns (map (fn [[kind a b type]]
+                                     (cond (not= :class kind) [a b :unqualified type]
+                                           (instance? Class a) (class-sym->completion (symbol (.getName ^Class a)))
+                                           :else [nil b :unqualified nil]))
+                                   (ns-entries ctx "ns-map" current-ns-sym))
               ;; Types from current namespace (deftype/defrecord names)
               from-types (let [types (get-in @(:env ctx) [:namespaces current-ns-sym :types])]
                            (map (fn [[k _]] [nil (str k) :unqualified]) types))
               alias->ns (sci/eval-string* ctx "(let [m (ns-aliases *ns*)] (zipmap (keys m) (map ns-name (vals m))))")
               ns->alias (zipmap (vals alias->ns) (keys alias->ns))
               from-aliased-nss (doall (mapcat
-                                       (fn [alias]
-                                         (let [ns (get alias->ns alias)
-                                               syms (sci/eval-string* ctx (format "(keys (ns-publics '%s))" ns))]
-                                           (map (fn [sym]
-                                                  [(str ns) (str sym) :qualified])
-                                                syms)))
-                                       (keys alias->ns)))
+                                       (fn [ns]
+                                         (map (fn [[_ _ sym type]]
+                                                [(str ns) sym :qualified type])
+                                              (ns-entries ctx "ns-publics" ns)))
+                                       (distinct (vals alias->ns))))
               all-namespaces (->> (sci/eval-string* ctx "(all-ns)")
                                   (map (fn [ns]
                                          [(str ns) nil :qualified])))
@@ -294,11 +330,10 @@
               ns-found? (sci/eval-string* ctx (format "(find-ns '%s)" query-ns))
               fully-qualified-names (when-not from-imports
                                       (when (and has-namespace? ns-found?)
-                                        (let [ns (get alias->ns query-ns query-ns)
-                                              syms (sci/eval-string* ctx (format "(keys (ns-publics '%s))" ns))]
-                                          (map (fn [sym]
-                                                 [(str ns) (str sym) :qualified])
-                                               syms))))
+                                        (let [ns (get alias->ns query-ns query-ns)]
+                                          (map (fn [[_ _ sym type]]
+                                                 [(str ns) sym :qualified type])
+                                               (ns-entries ctx "ns-publics" ns)))))
               svs (concat from-current-ns from-types from-aliased-nss all-namespaces fully-qualified-names)
               completions (keep (fn [entry]
                                   (match alias->ns ns->alias query entry))
@@ -307,7 +342,7 @@
               import-symbols (import-symbols->completions (:imports @(:env ctx)) query)
               completions (concat completions import-symbols)
               fq-classes (fq-class->completions (:raw-classes @(:env ctx)) query)
-              completions (concat completions fq-classes)]
+              completions (concat completions fq-classes (special-form-completions query))]
           (format-completions query completions)))
       (catch Throwable e
         {:error e :completions []}))))

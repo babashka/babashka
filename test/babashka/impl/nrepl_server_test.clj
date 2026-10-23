@@ -460,6 +460,10 @@
                      (some :value (send {"op" "eval" "code" "(slurp (.getResource (clojure.lang.RT/baseLoader) \"nrepl_cl_resource.txt\"))"})))))))))
     (fs/delete-tree dir)))
 
+(deftest nrepl-with-session-classloader-test
+  (testing "with-session-classloader returns the value of its body"
+    (is (= ":ok" (str/trim (tu/bb nil "-e" "(require 'nrepl.misc) (prn (nrepl.misc/with-session-classloader :ok))"))))))
+
 (defn- connected-repl
   "Runs a connected REPL with `input` and returns its output."
   [target input]
@@ -777,6 +781,15 @@
               (is (string? (get reply "doc")))))
           (testing "info on let* returns no special-form"
             (is (nil? (get (decode (first (send {"op" "info" "sym" "let*" "ns" "user"}))) "special-form"))))
+          (testing "info on nope returns status no-info"
+            (is (some #{"no-info"} (get (decode (first (send {"op" "info" "sym" "nope" "ns" "user"}))) "status"))))
+          (testing "eldoc on when returns type macro"
+            (is (= "macro" (get (decode (first (send {"op" "eldoc" "sym" "when" "ns" "user"}))) "type"))))
+          (testing "info on when returns macro true and added 1.0"
+            (let [reply (decode (first (send {"op" "info" "sym" "when" "ns" "user"})))]
+              (is (= ["true" "1.0"] [(get reply "macro") (get reply "added")]))))
+          (testing "info on replicate returns deprecated 1.3"
+            (is (= "1.3" (get (decode (first (send {"op" "info" "sym" "replicate" "ns" "user"}))) "deprecated"))))
           (testing "info on a var from load-file returns its file, line and column"
             (let [dir (fs/create-temp-dir)
                   f (str (fs/path dir "info_loc.clj"))]
@@ -873,6 +886,65 @@
         (bencode/write-bencode os {"id" "1"})
         (testing "a message without an op gets unknown-op"
           (is (contains? (set (:status (read-msg (bencode/read-bencode in)))) "unknown-op")))))))
+
+(deftest nrepl-java-info-test
+  (with-bb-script 1687
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1687 :quiet true}))"
+    (fn []
+      (with-session 1687
+        (fn [send]
+          (let [reply (fn [m] (decode (first (send (assoc m "ns" "user")))))]
+            (testing "info on String returns the class, its superclass and its javadoc"
+              (let [r (reply {"op" "info" "sym" "String"})]
+                (is (= ["java.lang.String" "java.lang.Object"] [(get r "class") (get r "super")]))
+                (is (str/ends-with? (get r "javadoc") "java.base/java/lang/String.html"))))
+            (testing "info on String/valueOf returns static arglists and the return type"
+              (let [r (reply {"op" "info" "sym" "String/valueOf"})]
+                (is (= "valueOf" (get r "member")))
+                (is (some #{"static"} (get r "modifiers")))
+                (is (str/includes? (get r "arglists-str") "[int]"))
+                (is (= "java.lang.String" (get r "returns")))))
+            (testing "info with class String and member substring returns arglists with this"
+              (is (= "[this int]\n[this int int]"
+                     (get (reply {"op" "info" "class" "String" "member" "substring"}) "arglists-str"))))
+            (testing "info on Integer/MAX_VALUE returns the field type int"
+              (is (= "int" (get (reply {"op" "info" "sym" "Integer/MAX_VALUE"}) "type"))))
+            (testing "info on java.util.ArrayList/.stream returns the default method of Collection"
+              (is (= "stream" (get (reply {"op" "info" "sym" "java.util.ArrayList/.stream"}) "member"))))
+            (testing "info on .length returns candidates for String and File"
+              (let [candidates (get (reply {"op" "info" "sym" ".length"}) "candidates")]
+                (is (contains? candidates "java.lang.String"))
+                (is (contains? candidates "java.io.File"))))
+            (testing "eldoc on String/.length returns type function and arglist [this]"
+              (let [r (reply {"op" "eldoc" "sym" "String/.length"})]
+                (is (= ["function" [["this"]]] [(get r "type") (get r "eldoc")]))))))))))
+
+(deftest nrepl-cider-op-names-test
+  (with-bb-script 1686
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1686 :quiet true}))"
+    (fn []
+      (with-session 1686
+        (fn [send]
+          (let [reply #(decode (first (send %)))]
+            (testing "cider/info returns the name of map"
+              (is (= "map" (get (reply {"op" "cider/info" "sym" "map" "ns" "user"}) "name"))))
+            (testing "cider/eldoc returns the arglists of inc"
+              (is (= [["x"]] (get (reply {"op" "cider/eldoc" "sym" "inc" "ns" "user"}) "eldoc"))))
+            (testing "cider/complete with prefix mapv completes mapv"
+              (is (some #{"mapv"} (map #(get % "candidate")
+                                       (get (reply {"op" "cider/complete" "prefix" "mapv" "ns" "user"}) "completions")))))
+            (testing "cider/ns-list with filter-regexps leaves out clojure namespaces"
+              (let [nss (get (reply {"op" "cider/ns-list" "filter-regexps" ["^clojure"]}) "ns-list")]
+                (is (some #{"user"} nss))
+                (is (not-any? #(str/starts-with? % "clojure") nss))))
+            (testing "cider/classpath returns a list"
+              (is (sequential? (get (reply {"op" "cider/classpath"}) "classpath"))))
+            (testing "describe lists the cider/ and the bare names"
+              (let [ops (set (keys (get (reply {"op" "describe"}) "ops")))]
+                (doseq [op ["info" "eldoc" "complete" "ns-list" "classpath"
+                            "test-var-query" "analyze-last-stacktrace" "inspect-push"]]
+                  (is (contains? ops op))
+                  (is (contains? ops (str "cider/" op))))))))))))
 
 (deftest ^:skip-windows nrepl-track-state-test
   (with-bb-script 1679
