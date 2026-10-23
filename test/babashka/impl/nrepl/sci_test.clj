@@ -70,3 +70,23 @@
     (testing "deftype constructor completes"
       (let [results (:completions (sci-helpers/completions ctx "->My"))]
         (is (some #(= "->MyType" (:candidate %)) results))))))
+
+(defn- candidates [ctx query]
+  (map (juxt :candidate :type) (:completions (sci-helpers/completions ctx query))))
+
+(deftest var-completions-test
+  (let [ctx (opts/init {})]
+    (sci/eval-string* ctx "(require '[clojure.set :as set])")
+    (testing "map-i completes map-indexed and leaves out set/map-invert"
+      (is (= [["map-indexed" "function"]] (candidates ctx "map-i"))))
+    (testing "whe completes the when macros and leaves out halt-when"
+      (is (= #{"when" "when-first" "when-let" "when-not" "when-some"}
+             (set (map first (candidates ctx "whe")))))
+      (is (every? #(= "macro" (second %)) (candidates ctx "whe"))))
+    (testing "set/map-i completes set/map-invert"
+      (is (= [["set/map-invert" "function"]] (candidates ctx "set/map-i"))))
+    (testing "a var without arglists has type var"
+      (sci/eval-string* ctx "(def a-plain-value 1)")
+      (is (= [["a-plain-value" "var"]] (candidates ctx "a-plain"))))
+    (testing "recu completes the special form recur"
+      (is (= [["recur" "special-form"]] (candidates ctx "recu"))))))
