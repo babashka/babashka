@@ -93,9 +93,10 @@
   "Bind `clojure.lang.Compiler/LOADER` to the context classloader. This is
   required to get hotloading with pomegranate working under certain conditions."
   [& body]
-  `(let [cl# (.getContextClassLoader (Thread/currentThread))]
+  #_`(let [cl# (.getContextClassLoader (Thread/currentThread))]
      (with-bindings {clojure.lang.Compiler/LOADER cl#}
-       ~@body)))
+       ~@body)) ;; BB-PATCH bb binds Compiler/LOADER once for the whole run
+  `(do ~@body))
 
 (defn parse-java-version
   "Parse Java version string according to JEP 223 and return version as a number."
