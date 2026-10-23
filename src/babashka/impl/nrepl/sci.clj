@@ -58,6 +58,9 @@
          :doc (:doc m)
          :name (:name m)
          :ns (some-> m :ns ns-name)
+         :macro (:macro m)
+         :added (:added m)
+         :deprecated (:deprecated m)
          :val @v
          :line (:line m)
          :column (:column m)

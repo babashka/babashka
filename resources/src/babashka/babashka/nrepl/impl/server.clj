@@ -51,9 +51,9 @@
   (let [eldoc? (contains? #{"eldoc" "cider/eldoc"} op)
         sym-str (or sym symbol)
         m (sci-helpers/lookup sym-str ns)
-        {:keys [doc file line column arglists forms special-form]} m]
+        {:keys [doc file line column arglists forms special-form macro added deprecated]} m]
     (cond
-      (nil? m) {:status (if eldoc? #{:done :no-eldoc} :done)}
+      (nil? m) {:status (if eldoc? #{:done :no-eldoc} #{:done :no-info})}
       eldoc? (cond-> {:status :done
                       :ns (:ns m)
                       :name (:name m)
@@ -61,6 +61,7 @@
                                (mapv #(if (coll? %) (mapv str %) [(str %)]) forms)
                                (mapv #(mapv str %) arglists))
                       :type (cond special-form "special-form"
+                                  macro "macro"
                                   (ifn? (:val m)) "function"
                                   :else "variable")}
                doc (assoc :docstring doc))
@@ -73,6 +74,9 @@
                                     :forms-str (forms-join forms)
                                     :url (str "https://clojure.org/" (or (:url m) (str "special_forms#" (:name m)))))
                 doc (assoc :doc doc)
+                macro (assoc :macro "true")
+                added (assoc :added (str added))
+                deprecated (assoc :deprecated (str deprecated))
                 file (assoc :file file)
                 line (assoc :line line)
                 column (assoc :column column)

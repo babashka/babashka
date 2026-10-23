@@ -26,6 +26,7 @@ A preview of the next release can be installed from
 - [#2234](https://github.com/babashka/babashka/issues/2234): Fix `nrepl.misc/with-session-classloader` throwing
 - [#2237](https://github.com/babashka/babashka/issues/2237): nREPL completion matches by prefix on the dash-separated parts of a var name and the dot-separated parts of a namespace or class, types vars as `function`, `macro` or `var`, and offers special forms
 - [#2235](https://github.com/babashka/babashka/issues/2235): `*input*` is only defined while bb runs an expression or a script, so `ns-interns` in a REPL or nREPL returns only vars
+- [#2236](https://github.com/babashka/babashka/issues/2236): nREPL `info` replies `no-info` to an unknown symbol and includes `macro`, `added` and `deprecated`, and `eldoc` types a macro as `macro`
 - Bump `nextjournal.markdown` to `0.7.228`
 - [#2194](https://github.com/babashka/babashka/issues/2194): Fix `script/uberjar` dropping the JDBC feature unless `BABASHKA_FEATURE_ORACLEDB=true`
 - [#2193](https://github.com/babashka/babashka/issues/2193): `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch`
