@@ -26,6 +26,11 @@
    "inspect-set-max-atom-length" "inspect-set-max-coll-size" "inspect-set-max-nested-depth"
    "inspect-clear" "inspect-def-current-value" "inspect-tap-current-value" "inspect-tap-indexed"])
 
+(defn with-cider-names
+  "Returns the op descriptors in handles, each also under its `cider/` name."
+  [handles]
+  (into handles (map (fn [[op descriptor]] [(str "cider/" op) descriptor])) handles))
+
 (defn wrap-cider
   "Middleware for the cider-nrepl ops babashka implements."
   [h]
@@ -40,23 +45,24 @@
                  {:requires #{#'session/session #'caught/wrap-caught #'print/wrap-print}
                   :expects #{"eval"}
                   :describe-fn (fn [_] {:cider-version version})
-                  :handles (into {"test" {:doc "Runs the tests of a namespace, or the named ones."
-                                          :requires {"ns" "The namespace."}
-                                          :optional {"tests" "Test var names." "fail-fast" "\"true\" to stop at the first failure."}
-                                          :returns {}}
-                                  "test-var-query" {:doc "Runs the tests a var query selects." :requires {"var-query" "The query."} :optional {} :returns {}}
-                                  "test-all" {:doc "Runs the tests of the project's namespaces." :requires {} :optional {"load?" "Loads the project's namespaces first."} :returns {}}
-                                  "retest" {:doc "Reruns the tests that failed or errored last time." :requires {} :optional {} :returns {}}
-                                  "test-stacktrace" {:doc "The causes of an erring test's exception." :requires {"ns" "" "var" "" "index" ""} :optional {} :returns {}}
-                                  "analyze-last-stacktrace" {:doc "Returns the causes of the session's last exception." :requires {} :optional {} :returns {}}
-                                  "stacktrace" {:doc "Alias for analyze-last-stacktrace." :requires {} :optional {} :returns {}}
-                                  "inspect-last-exception" {:doc "Inspects a cause of the last analyzed exception, or its ex-data."
-                                                            :requires {"index" "The index of the cause."}
-                                                            :optional {"ex-data" "\"true\" to inspect the cause's ex-data."}
-                                                            :returns {"value" "The rendered inspector." "path" "The path to the inspected value."}}
-                                  "cider-version" {:doc "The cider-nrepl version these ops speak." :requires {} :optional {} :returns {"cider-version" ""}}
-                                  "inspect-print-current-value" {:doc "Prints the inspected value." :requires {} :optional {} :returns {}}}
-                                 (map (fn [op] [op {:doc "Inspector operation, see cider-nrepl."
-                                                    :requires {} :optional {}
-                                                    :returns {"value" "The rendered inspector." "path" "The path to the inspected value."}}]))
-                                 inspect-ops)})
+                  :handles (with-cider-names
+                            (into {"test" {:doc "Runs the tests of a namespace, or the named ones."
+                                           :requires {"ns" "The namespace."}
+                                           :optional {"tests" "Test var names." "fail-fast" "\"true\" to stop at the first failure."}
+                                           :returns {}}
+                                   "test-var-query" {:doc "Runs the tests a var query selects." :requires {"var-query" "The query."} :optional {} :returns {}}
+                                   "test-all" {:doc "Runs the tests of the project's namespaces." :requires {} :optional {"load?" "Loads the project's namespaces first."} :returns {}}
+                                   "retest" {:doc "Reruns the tests that failed or errored last time." :requires {} :optional {} :returns {}}
+                                   "test-stacktrace" {:doc "The causes of an erring test's exception." :requires {"ns" "" "var" "" "index" ""} :optional {} :returns {}}
+                                   "analyze-last-stacktrace" {:doc "Returns the causes of the session's last exception." :requires {} :optional {} :returns {}}
+                                   "stacktrace" {:doc "Alias for analyze-last-stacktrace." :requires {} :optional {} :returns {}}
+                                   "inspect-last-exception" {:doc "Inspects a cause of the last analyzed exception, or its ex-data."
+                                                             :requires {"index" "The index of the cause."}
+                                                             :optional {"ex-data" "\"true\" to inspect the cause's ex-data."}
+                                                             :returns {"value" "The rendered inspector." "path" "The path to the inspected value."}}
+                                   "cider-version" {:doc "The cider-nrepl version these ops speak." :requires {} :optional {} :returns {"cider-version" ""}}
+                                   "inspect-print-current-value" {:doc "Prints the inspected value." :requires {} :optional {} :returns {}}}
+                                  (map (fn [op] [op {:doc "Inspector operation, see cider-nrepl."
+                                                     :requires {} :optional {}
+                                                     :returns {"value" "The rendered inspector." "path" "The path to the inspected value."}}]))
+                                  inspect-ops))})
