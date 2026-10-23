@@ -72,7 +72,9 @@
         (is (some #(= "->MyType" (:candidate %)) results))))))
 
 (defn- candidates [ctx query]
-  (map (juxt :candidate :type) (:completions (sci-helpers/completions ctx query))))
+  (let [{:keys [error completions]} (sci-helpers/completions ctx query)]
+    (when error (throw error))
+    (map (juxt :candidate :type) completions)))
 
 (deftest var-completions-test
   (let [ctx (opts/init {})]
@@ -90,3 +92,21 @@
       (is (= [["a-plain-value" "var"]] (candidates ctx "a-plain"))))
     (testing "recu completes the special form recur"
       (is (= [["recur" "special-form"]] (candidates ctx "recu"))))))
+
+(deftest var-completions-key-test
+  (let [lib-ns (sci/create-ns 'my.lib nil)
+        ctx (opts/init {:namespaces {'my.lib {'enc (sci/new-var 'generate (fn [_]) {:ns lib-ns :arglists '([x])})}}})]
+    (sci/eval-string* ctx "(require '[my.lib :as ml :refer [enc]])")
+    (testing "ml/en completes ml/enc with type function"
+      (is (= [["ml/enc" "function"]] (candidates ctx "ml/en"))))
+    (testing "en completes the referred enc with type function"
+      (is (some #{["enc" "function"]} (candidates ctx "en"))))))
+
+(deftest namespace-and-class-completions-test
+  (let [ctx (opts/init {:classes {'java.lang.String String}})]
+    (testing "clojure.str completes clojure.string"
+      (is (some #{["clojure.string" "namespace"]} (candidates ctx "clojure.str"))))
+    (testing "str leaves out clojure.string"
+      (is (not (some #{["clojure.string" "namespace"]} (candidates ctx "str")))))
+    (testing "j.l.S completes java.lang.String"
+      (is (some #{["java.lang.String" "class"]} (candidates ctx "j.l.S"))))))

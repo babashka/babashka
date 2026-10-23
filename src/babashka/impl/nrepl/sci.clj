@@ -68,19 +68,6 @@
 
 ;;;; Completions
 
-(defn fully-qualified-syms [ctx ns-sym]
-  (let [syms (sci/eval-string* ctx (format "(keys (ns-map '%s))" ns-sym))
-        sym-strs (map #(str "`" %) syms)
-        sym-expr (str "[" (str/join " " sym-strs) "]")
-        syms (sci/eval-string* ctx sym-expr)]
-    syms))
-
-(defn- class-sym?
-  "Returns true if sym is a class import (e.g. clojure.lang.RT - has dots but no namespace)."
-  [sym]
-  (and (nil? (namespace sym))
-       (str/includes? (name sym) ".")))
-
 (defn- class-sym->completion
   "Converts a class symbol like clojure.lang.RT to [full-class-name simple-name type]."
   [sym]
@@ -91,8 +78,9 @@
      "class"]))
 
 (defn fuzzy-matches?
-  "Returns true if s starts with the first character of prefix and the rest
-  of prefix matches the start of the parts of s split on separator, in order."
+  "Returns true if prefix is made of leading pieces of the parts of s, split
+  on separator, in order.
+  The first piece starts s, and later parts may be skipped."
   [^String prefix ^String s separator]
   (let [pn (.length prefix)
         sn (.length s)
@@ -124,18 +112,22 @@
               [nil form "special-form"]))
           special-forms)))
 
-(defn- var-types
-  "Returns a map from the fully qualified symbol of each var in ns-sym to
-  \"macro\", \"function\" or \"var\".
+(defn- ns-entries
+  "Returns an entry for each mapping in (ns-fn ns-sym), named by its key.
+  A var gives [:var ns name type], with type \"macro\", \"function\" or \"var\".
+  A class gives [:class class name].
+  Any other value gives [:var ns-sym name nil].
   ns-fn is \"ns-map\" or \"ns-publics\"."
   [ctx ns-fn ns-sym]
   (sci/eval-string* ctx (format "
-(into {} (keep (fn [[_ v]]
-                 (when (var? v)
-                   (let [m (meta v)]
-                     [(symbol (str (ns-name (:ns m))) (str (:name m)))
-                      (cond (:macro m) \"macro\" (:arglists m) \"function\" :else \"var\")]))))
-      (%s '%s))" ns-fn ns-sym)))
+(mapv (fn [[k v]]
+        (cond (var? v)
+              (let [m (meta v)]
+                [:var (str (or (some-> (:ns m) ns-name) '%2$s)) (str k)
+                 (cond (:macro m) \"macro\" (:arglists m) \"function\" :else \"var\")])
+              (class? v) [:class v (str k)]
+              :else [:var (str '%2$s) (str k) nil]))
+      (%1$s '%2$s))" ns-fn ns-sym)))
 
 (defn match [_alias->ns ns->alias query [sym-ns sym-name qualifier type]]
   (let [has-slash? (str/includes? query "/")]
@@ -311,27 +303,22 @@
         (let [has-namespace? (str/includes? query "/")
               query-ns (when has-namespace? (symbol (first (str/split query #"/"))))
               current-ns-sym (sci/eval-string* ctx "(ns-name *ns*)")
-              from-current-ns (fully-qualified-syms ctx current-ns-sym)
-              current-ns-types (var-types ctx "ns-map" current-ns-sym)
-              from-current-ns (map (fn [sym]
-                                     (if (class-sym? sym)
-                                       (class-sym->completion sym)
-                                       [(namespace sym) (name sym) :unqualified (get current-ns-types sym)]))
-                                   from-current-ns)
+              from-current-ns (map (fn [[kind a b type]]
+                                     (cond (not= :class kind) [a b :unqualified type]
+                                           (instance? Class a) (class-sym->completion (symbol (.getName ^Class a)))
+                                           :else [nil b :unqualified nil]))
+                                   (ns-entries ctx "ns-map" current-ns-sym))
               ;; Types from current namespace (deftype/defrecord names)
               from-types (let [types (get-in @(:env ctx) [:namespaces current-ns-sym :types])]
                            (map (fn [[k _]] [nil (str k) :unqualified]) types))
               alias->ns (sci/eval-string* ctx "(let [m (ns-aliases *ns*)] (zipmap (keys m) (map ns-name (vals m))))")
               ns->alias (zipmap (vals alias->ns) (keys alias->ns))
               from-aliased-nss (doall (mapcat
-                                       (fn [alias]
-                                         (let [ns (get alias->ns alias)
-                                               syms (sci/eval-string* ctx (format "(keys (ns-publics '%s))" ns))
-                                               types (var-types ctx "ns-publics" ns)]
-                                           (map (fn [sym]
-                                                  [(str ns) (str sym) :qualified (get types (symbol (str ns) (str sym)))])
-                                                syms)))
-                                       (keys alias->ns)))
+                                       (fn [ns]
+                                         (map (fn [[_ _ sym type]]
+                                                [(str ns) sym :qualified type])
+                                              (ns-entries ctx "ns-publics" ns)))
+                                       (distinct (vals alias->ns))))
               all-namespaces (->> (sci/eval-string* ctx "(all-ns)")
                                   (map (fn [ns]
                                          [(str ns) nil :qualified])))
@@ -339,12 +326,10 @@
               ns-found? (sci/eval-string* ctx (format "(find-ns '%s)" query-ns))
               fully-qualified-names (when-not from-imports
                                       (when (and has-namespace? ns-found?)
-                                        (let [ns (get alias->ns query-ns query-ns)
-                                              syms (sci/eval-string* ctx (format "(keys (ns-publics '%s))" ns))
-                                              types (var-types ctx "ns-publics" ns)]
-                                          (map (fn [sym]
-                                                 [(str ns) (str sym) :qualified (get types (symbol (str ns) (str sym)))])
-                                               syms))))
+                                        (let [ns (get alias->ns query-ns query-ns)]
+                                          (map (fn [[_ _ sym type]]
+                                                 [(str ns) sym :qualified type])
+                                               (ns-entries ctx "ns-publics" ns)))))
               svs (concat from-current-ns from-types from-aliased-nss all-namespaces fully-qualified-names)
               completions (keep (fn [entry]
                                   (match alias->ns ns->alias query entry))
