@@ -24,6 +24,7 @@ A preview of the next release can be installed from
 - [#2230](https://github.com/babashka/babashka/issues/2230): nREPL answers a message without an op with `unknown-op`
 - [#2229](https://github.com/babashka/babashka/issues/2229): nREPL answers `info`, `eldoc`, `complete`, `ns-list` and `classpath` under their `cider/` names
 - [#2234](https://github.com/babashka/babashka/issues/2234): Fix `nrepl.misc/with-session-classloader` throwing
+- [#2235](https://github.com/babashka/babashka/issues/2235): `*input*` is only defined while bb runs an expression or a script, so `ns-interns` in a REPL or nREPL returns only vars
 - Bump `nextjournal.markdown` to `0.7.228`
 - [#2194](https://github.com/babashka/babashka/issues/2194): Fix `script/uberjar` dropping the JDBC feature unless `BABASHKA_FEATURE_ORACLEDB=true`
 - [#2193](https://github.com/babashka/babashka/issues/2193): `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch`
