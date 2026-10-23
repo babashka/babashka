@@ -460,6 +460,10 @@
                      (some :value (send {"op" "eval" "code" "(slurp (.getResource (clojure.lang.RT/baseLoader) \"nrepl_cl_resource.txt\"))"})))))))))
     (fs/delete-tree dir)))
 
+(deftest nrepl-with-session-classloader-test
+  (testing "with-session-classloader returns the value of its body"
+    (is (= ":ok" (str/trim (tu/bb nil "-e" "(require 'nrepl.misc) (prn (nrepl.misc/with-session-classloader :ok))"))))))
+
 (defn- connected-repl
   "Runs a connected REPL with `input` and returns its output."
   [target input]
