@@ -887,6 +887,36 @@
         (testing "a message without an op gets unknown-op"
           (is (contains? (set (:status (read-msg (bencode/read-bencode in)))) "unknown-op")))))))
 
+(deftest nrepl-java-info-test
+  (with-bb-script 1687
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1687 :quiet true}))"
+    (fn []
+      (with-session 1687
+        (fn [send]
+          (let [reply (fn [m] (decode (first (send (assoc m "ns" "user")))))]
+            (testing "info on String returns the class, its superclass and its javadoc"
+              (let [r (reply {"op" "info" "sym" "String"})]
+                (is (= ["java.lang.String" "java.lang.Object"] [(get r "class") (get r "super")]))
+                (is (str/ends-with? (get r "javadoc") "java.base/java/lang/String.html"))))
+            (testing "info on String/valueOf returns static arglists and the return type"
+              (let [r (reply {"op" "info" "sym" "String/valueOf"})]
+                (is (= "valueOf" (get r "member")))
+                (is (some #{"static"} (get r "modifiers")))
+                (is (str/includes? (get r "arglists-str") "[int]"))
+                (is (= "java.lang.String" (get r "returns")))))
+            (testing "info with class String and member substring returns arglists with this"
+              (is (= "[this int]\n[this int int]"
+                     (get (reply {"op" "info" "class" "String" "member" "substring"}) "arglists-str"))))
+            (testing "info on Integer/MAX_VALUE returns the field type int"
+              (is (= "int" (get (reply {"op" "info" "sym" "Integer/MAX_VALUE"}) "type"))))
+            (testing "info on .length returns candidates for String and File"
+              (let [candidates (get (reply {"op" "info" "sym" ".length"}) "candidates")]
+                (is (contains? candidates "java.lang.String"))
+                (is (contains? candidates "java.io.File"))))
+            (testing "eldoc on String/.length returns type function and arglist [this]"
+              (let [r (reply {"op" "eldoc" "sym" "String/.length"})]
+                (is (= ["function" [["this"]]] [(get r "type") (get r "eldoc")]))))))))))
+
 (deftest nrepl-cider-op-names-test
   (with-bb-script 1686
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1686 :quiet true}))"
