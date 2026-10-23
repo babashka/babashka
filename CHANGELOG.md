@@ -22,6 +22,7 @@ A preview of the next release can be installed from
 - [#2227](https://github.com/babashka/babashka/issues/2227): An nREPL session keeps answering after its client disconnects during an eval
 - Bump `nrepl` to `1.8.0`
 - [#2230](https://github.com/babashka/babashka/issues/2230): nREPL answers a message without an op with `unknown-op`
+- [#2229](https://github.com/babashka/babashka/issues/2229): nREPL answers `info`, `eldoc`, `complete`, `ns-list` and `classpath` under their `cider/` names
 - Bump `nextjournal.markdown` to `0.7.228`
 - [#2194](https://github.com/babashka/babashka/issues/2194): Fix `script/uberjar` dropping the JDBC feature unless `BABASHKA_FEATURE_ORACLEDB=true`
 - [#2193](https://github.com/babashka/babashka/issues/2193): `with-out-str` and `binding` of `*err*` capture the output of `babashka.cli/dispatch`

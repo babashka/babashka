@@ -874,6 +874,33 @@
         (testing "a message without an op gets unknown-op"
           (is (contains? (set (:status (read-msg (bencode/read-bencode in)))) "unknown-op")))))))
 
+(deftest nrepl-cider-op-names-test
+  (with-bb-script 1686
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1686 :quiet true}))"
+    (fn []
+      (with-session 1686
+        (fn [send]
+          (let [reply #(decode (first (send %)))]
+            (testing "cider/info returns the name of map"
+              (is (= "map" (get (reply {"op" "cider/info" "sym" "map" "ns" "user"}) "name"))))
+            (testing "cider/eldoc returns the arglists of inc"
+              (is (= [["x"]] (get (reply {"op" "cider/eldoc" "sym" "inc" "ns" "user"}) "eldoc"))))
+            (testing "cider/complete with prefix mapv completes mapv"
+              (is (some #{"mapv"} (map #(get % "candidate")
+                                       (get (reply {"op" "cider/complete" "prefix" "mapv" "ns" "user"}) "completions")))))
+            (testing "cider/ns-list with filter-regexps leaves out clojure namespaces"
+              (let [nss (get (reply {"op" "cider/ns-list" "filter-regexps" ["^clojure"]}) "ns-list")]
+                (is (some #{"user"} nss))
+                (is (not-any? #(str/starts-with? % "clojure") nss))))
+            (testing "cider/classpath returns a list"
+              (is (sequential? (get (reply {"op" "cider/classpath"}) "classpath"))))
+            (testing "describe lists the cider/ and the bare names"
+              (let [ops (set (keys (get (reply {"op" "describe"}) "ops")))]
+                (doseq [op ["info" "eldoc" "complete" "ns-list" "classpath"
+                            "test-var-query" "analyze-last-stacktrace" "inspect-push"]]
+                  (is (contains? ops op))
+                  (is (contains? ops (str "cider/" op))))))))))))
+
 (deftest ^:skip-windows nrepl-track-state-test
   (with-bb-script 1679
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1679 :quiet true}))"
