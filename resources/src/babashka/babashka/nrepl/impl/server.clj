@@ -7,6 +7,7 @@
    [babashka.nrepl.impl.cider :as cider]
    [babashka.nrepl.impl.clojuredocs :as clojuredocs]
    [babashka.nrepl.impl.debug :as debug]
+   [babashka.nrepl.impl.java :as java]
    [babashka.nrepl.impl.sci :as sci-helpers]
    [babashka.nrepl.impl.track-state :as track-state]
    [clojure.string :as str]
@@ -52,7 +53,8 @@
         sym-str (or sym symbol)
         m (when-not (seq class) (sci-helpers/lookup sym-str ns))
         java (when (nil? m)
-               (sci-helpers/java-lookup {:ns ns :sym sym-str :class class :member member} eldoc?))
+               (when-let [info (java/info {:ns ns :sym sym-str :class class :member member})]
+                 (if eldoc? (java/eldoc info) (java/info-reply info))))
         {:keys [doc file line column arglists forms special-form macro added deprecated]} m]
     (cond
       java (assoc java :status :done)

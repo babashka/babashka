@@ -2,7 +2,6 @@
   {:no-doc true}
   (:require
    [babashka.impl.common :as common]
-   [babashka.impl.nrepl.java :as java]
    [babashka.impl.nrepl.sci :as sci-helpers]
    [babashka.nrepl.server :as server]
    [sci.core :as sci]))
@@ -30,15 +29,7 @@
   [sym-str ns-str]
   (sci-helpers/lookup (common/ctx) sym-str :ns-str ns-str))
 
-(defn java-lookup
-  "Returns the info reply, or the eldoc reply if eldoc?, for the Java class
-  or member that msg names, or nil if it names none."
-  [msg eldoc?]
-  (when-let [info (java/info (common/ctx) msg)]
-    (if eldoc? (java/eldoc info) (java/info-reply info))))
-
 (def sci-helpers-namespace
   (let [ns-sci (sci/create-ns 'babashka.nrepl.impl.sci)]
     {'completions (sci/copy-var completions ns-sci)
-     'lookup (sci/copy-var lookup ns-sci)
-     'java-lookup (sci/copy-var java-lookup ns-sci)}))
+     'lookup (sci/copy-var lookup ns-sci)}))
