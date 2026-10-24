@@ -3,7 +3,6 @@ package babashka.impl;
 import java.security.MessageDigest;
 import java.security.cert.X509Certificate;
 import java.util.HexFormat;
-import java.util.Properties;
 import java.util.Set;
 
 /** Rejects certificates with the public key of a compromised eMudhra intermediate. */
@@ -20,14 +19,14 @@ public final class BlockedKeys {
         "EC4FFA1AD0AC88081314B7AAFFEF6A91F97CD57291BB5BA686C5415F5EB4F6B6",
         "92C063D67E8F14DB71D288E11266FFDAF69CBF115F7BAB14F3BC2F68D25E0E30");
 
+    private static final HexFormat HEX = HexFormat.of().withUpperCase();
+
     private BlockedKeys() {}
 
-    public static boolean isUntrusted(X509Certificate cert, Properties blockedCerts) {
+    public static boolean isBlocked(X509Certificate cert) {
         try {
-            HexFormat hex = HexFormat.of().withUpperCase();
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            return blockedCerts.containsKey(hex.formatHex(md.digest(cert.getEncoded())))
-                || BLOCKED.contains(hex.formatHex(md.digest(cert.getPublicKey().getEncoded())));
+            return BLOCKED.contains(HEX.formatHex(md.digest(cert.getPublicKey().getEncoded())));
         } catch (Exception e) {
             return true;
         }
