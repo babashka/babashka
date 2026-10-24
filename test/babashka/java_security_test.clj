@@ -40,26 +40,37 @@
         (is (contains? fingerprints "d7a7a0fb5d7e2731d771e9484ebcdef71d5f0c3e0a2948782bc83ee0ea699ef4"))
         (is (contains? fingerprints "86a1ecba089c4a8d3bbe2734c612ba341d813e043cf9e8a862cd5c57a36bbe6b"))))))
 
+(defn check-server-trusted [pem]
+  (bb (format "(let [tmf (javax.net.ssl.TrustManagerFactory/getInstance
+                          (javax.net.ssl.TrustManagerFactory/getDefaultAlgorithm))
+                     _   (.init tmf ^java.security.KeyStore (identity nil))
+                     tm  ^javax.net.ssl.X509TrustManager (first (.getTrustManagers tmf))
+                     cf  (java.security.cert.CertificateFactory/getInstance \"X.509\")]
+                 (for [cert (with-open [in (clojure.java.io/input-stream %s)]
+                              (doall (.generateCertificates cf in)))]
+                   (try (.checkServerTrusted tm (into-array java.security.cert.X509Certificate [cert]) \"ECDHE_RSA\")
+                        :accepted
+                        (catch Exception e
+                          (if (re-find #\"Untrusted\" (str (ex-message e) (some-> e ex-cause ex-message)))
+                            :untrusted
+                            (ex-message e))))))"
+              (pr-str (str (fs/absolutize pem))))))
+
 (deftest reencoded-emudhra-cross-signs-test
   (when test-utils/native?
-    (let [results
-          (bb (format "(let [tmf (javax.net.ssl.TrustManagerFactory/getInstance
-                                  (javax.net.ssl.TrustManagerFactory/getDefaultAlgorithm))
-                             _   (.init tmf ^java.security.KeyStore (identity nil))
-                             tm  ^javax.net.ssl.X509TrustManager (first (.getTrustManagers tmf))
-                             cf  (java.security.cert.CertificateFactory/getInstance \"X.509\")]
-                         (for [cert (with-open [in (clojure.java.io/input-stream %s)]
-                                      (doall (.generateCertificates cf in)))]
-                           (try (.checkServerTrusted tm (into-array java.security.cert.X509Certificate [cert]) \"ECDHE_RSA\")
-                                :accepted
-                                (catch Exception e
-                                  (if (re-find #\"Untrusted\" (str (ex-message e) (some-> e ex-cause ex-message)))
-                                    :untrusted
-                                    (ex-message e))))))"
-                      (pr-str (str (fs/absolutize "test-resources/emudhra-reencoded-cross-signs.pem")))))]
+    (let [results (check-server-trusted "test-resources/emudhra-reencoded-cross-signs.pem")]
       (test/testing "re-encoded eMudhra cross-signs are untrusted"
         (is (= 8 (count results)))
         (is (every? #{:untrusted} results))))))
+
+(deftest jdk-blocked-certs-test
+  (when test-utils/native?
+    (test/testing "a certificate in the JDK blocked.certs is untrusted"
+      (is (= [:untrusted] (check-server-trusted "test-resources/jdk-blocked-digisign.pem"))))
+    (test/testing "the USERTrust ECC cross-sign from AAA Certificate Services is not untrusted"
+      (let [results (check-server-trusted "test-resources/usertrust-ecc-aaa-cross-sign.pem")]
+        (is (= 1 (count results)))
+        (is (not-any? #{:untrusted} results))))))
 
 (deftest compromised-emudhra-chains-test
   (when test-utils/native?
