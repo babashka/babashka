@@ -8,7 +8,7 @@
 (def debug? true)
 (def user "admin")
 (def password "admin")
-(def base64 (-> (.getEncoder java.util.Base64)
+(def base64 (-> (java.util.Base64/getEncoder)
                 (.encodeToString (.getBytes (str user ":" password)))))
 
 (def notes-file (io/file (System/getProperty "user.home") ".notes" "notes.txt"))
