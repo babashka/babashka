@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- Block the keys of the compromised eMudhra intermediates, so re-encoded certificates are rejected too
+
 ## 1.13.227 (2026-10-23)
 
 - Block the certificates of the eMudhra intermediate CA compromise ([@stathissideris](https://github.com/stathissideris))
