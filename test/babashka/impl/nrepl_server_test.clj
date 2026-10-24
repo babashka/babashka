@@ -1002,6 +1002,7 @@
   "Evaluates code in a fresh session and closes it afterwards.
   Answers each breakpoint with the next of inputs.
   Initializes the debugger first if inputs is not empty.
+  Sends the eval once the debugger replies to this session.
   Returns the breakpoints and the eval replies."
   [port code inputs]
   (with-open [socket (doto (java.net.Socket. "127.0.0.1" (int port))
@@ -1011,7 +1012,12 @@
     (bencode/write-bencode os {"op" "clone"})
     (let [session (:new-session (read-msg (bencode/read-bencode in)))]
       (when (seq inputs)
-        (bencode/write-bencode os {"op" "init-debugger" "session" session "id" "dbg"}))
+        (let [id (str "dbg-" (random-uuid))
+              deadline (+ (System/currentTimeMillis) 30000)]
+          (bencode/write-bencode os {"op" "init-debugger" "session" session "id" id})
+          (while (and (not= "true" (sessionless-eval port (format "(= %s (:id @cider.nrepl.middleware.debug/debugger-message))" (pr-str id))))
+                      (< (System/currentTimeMillis) deadline))
+            (Thread/sleep 10))))
       (bencode/write-bencode os {"op" "eval" "session" session "id" "e" "code" code})
       (loop [inputs inputs breaks [] replies []]
         (let [msg (read-msg (bencode/read-bencode in))]
