@@ -11,7 +11,8 @@
             [clojure.string :as str]
             [clojure.test :as t :refer [deftest is testing]]
             [org.httpkit.server :as server])
-  (:import [java.util Base64]
+  (:import [java.net InetAddress ServerSocket]
+           [java.util Base64]
            [java.util.zip ZipEntry ZipOutputStream]))
 
 (def vectors (edn/read-string (slurp "script/mvn_oracle/cipher-vectors.edn")))
@@ -126,6 +127,54 @@
           (is (some nil? @seen))
           (is (some #{(expected-auth (:plain case-1))} @seen)))
         (finally (server/server-stop! stop))))))
+
+(defn- connect-proxy
+  "Starts a loopback proxy and returns its server socket.
+  The proxy answers CONNECT with 502 if Proxy-Authorization matches password, or 407 otherwise."
+  [seen password]
+  (let [ss (ServerSocket. 0 50 (InetAddress/getLoopbackAddress))]
+    (future
+      (try
+        (loop []
+          (with-open [s (.accept ss)]
+            (let [r (io/reader (.getInputStream s))
+                  lines (doall (take-while seq (repeatedly #(.readLine r))))
+                  auth (some #(second (re-find #"(?i)^proxy-authorization:\s*(.*)" %)) lines)
+                  w (io/writer (.getOutputStream s))]
+              (swap! seen conj [(first (str/split (first lines) #" ")) auth])
+              (.write w (if (= auth (expected-auth password))
+                          "HTTP/1.1 502 Bad Gateway\r\nContent-Length: 0\r\n\r\n"
+                          "HTTP/1.1 407 Proxy Authentication Required\r\nProxy-Authenticate: Basic realm=\"proxy\"\r\nContent-Length: 0\r\n\r\n"))
+              (.flush w)))
+          (recur))
+        (catch java.net.SocketException _)))
+    ss))
+
+(deftest https-through-authenticated-proxy-test
+  (fs/with-temp-dir [dir {}]
+    (let [m2 (fs/file dir ".m2")
+          seen (atom [])
+          ss (connect-proxy seen "tunnelpw")]
+      (try
+        (fs/create-dirs m2)
+        (spit (fs/file m2 "settings.xml")
+              (str "<settings><proxies><proxy><id>tunnel</id><active>true</active><protocol>https</protocol>"
+                   "<host>127.0.0.1</host><port>" (.getLocalPort ss) "</port>"
+                   "<username>" user "</username><password>tunnelpw</password>"
+                   "</proxy></proxies></settings>"))
+        (System/setProperty "user.home" (str dir))
+        (require 'babashka.deps)
+        (is (thrown? Exception
+                     ((resolve 'babashka.deps/add-deps)
+                      {:deps {'tunneled/lib {:mvn/version "1.0.0"}}
+                       :mvn/repos {"central" nil "clojars" nil
+                                   "tunneled" {:url "https://repo.invalid/"}}
+                       :mvn/local-repo (str (fs/file dir "local-repo"))}
+                      {:force true :extra-env {"BABASHKA_DEPS_RESOLVER" "bb"}})))
+        (testing "a 407 to CONNECT gets a retry with Basic credentials"
+          (is (= ["CONNECT" nil] (first @seen)))
+          (is (some #{["CONNECT" (expected-auth "tunnelpw")]} @seen)))
+        (finally (.close ss))))))
 
 (defn- non-proxy-host? [host non-proxy-hosts]
   (#'settings/non-proxy-host? (#'settings/split-patterns non-proxy-hosts #"\|") host))

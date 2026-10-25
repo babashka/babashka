@@ -1202,7 +1202,7 @@
 (def class-map
   "A delay to delay initialization of java-net-http classes to run time, since GraalVM 22.1"
   (delay (persistent! (reduce (fn [acc c]
-                                (assoc! acc c (Class/forName (str c))))
+                                (assoc! acc c (Class/forName (str c) false (ClassLoader/getSystemClassLoader))))
                               (transient class-map*) (when features/java-net-http?
                                                        java-net-http-classes)))))
 

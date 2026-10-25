@@ -10,6 +10,7 @@ A preview of the next release can be installed from
 ## Unreleased
 
 - Block the keys of the compromised eMudhra intermediates, so re-encoded certificates are rejected too
+- The bb resolver sends proxy credentials on HTTPS `CONNECT` tunnels ([#2253](https://github.com/babashka/babashka/issues/2253))
 
 ## 1.13.227 (2026-10-23)
 
