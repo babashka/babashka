@@ -1104,7 +1104,7 @@ Use bb run --help to show this help output.
                   :namespaces (assoc-in namespaces ['clojure.core 'load-file] (sci-copy-vars/new-var 'load-file load-file*))
                   :env env
                   :features #{:bb :clj}
-                  :classes @classes/class-map
+                  :classes classes/class-map
                   :imports classes/imports
                   :load-fn load-fn
                   :uberscript uberscript
