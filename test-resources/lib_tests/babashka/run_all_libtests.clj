@@ -218,8 +218,10 @@
   DynamicClassLoader, a JVMTI agent to stop a thread, GregorianCalendar, JVM
   frame names, and a var for every public (babashka's user/*input* is a value).
   read-timeout leaves 100ms between the client's poll and a 1100ms eval, which
-  a slow CI machine overruns."
-  '{nrepl.core-test [hotloading-common-classloader-test
+  a slow CI machine overruns. concurrent-message-handling leaves 500ms between
+  two evals, which a stall on the macOS Intel runner overruns."
+  '{nrepl.core-test [concurrent-message-handling
+                     hotloading-common-classloader-test
                      non-interruptible-stop-thread
                      read-timeout
                      session-*out*-writer-length-translation]
