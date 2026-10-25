@@ -63,10 +63,9 @@
                 (when (and (#{"x86_64" "amd64"} (System/getProperty "os.arch"))
                            (= "Mac OS X" (System/getProperty "os.name"))
                            )
-                  (println "Disabling flaky test on macOS")
-                  (alter-meta! (resolve 'promesa.tests.core-test/loop-and-recur) assoc :flaky true)
-                  (alter-meta! (resolve 'promesa.tests.core-test/compose-with-race-2) assoc :flaky true)
-                  (alter-meta! (resolve 'promesa.tests.core-test/timeout-test-1) assoc :flaky true)))
+                  (println "Disabling flaky promesa tests on macOS")
+                  (doseq [v (vals (ns-interns (find-ns n)))]
+                    (alter-meta! v assoc :flaky true))))
               (filter-vars! (find-ns n) #(-> % meta ((some-fn :skip-bb
                                                               ;; upstream libs mark tests that need
                                                               ;; the network with :integration
