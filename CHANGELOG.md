@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.13.228 (2026-10-25)
 
 - Block the keys of the compromised eMudhra intermediates, so re-encoded certificates are rejected too
 - The bb resolver sends proxy credentials on HTTPS `CONNECT` tunnels ([#2253](https://github.com/babashka/babashka/issues/2253))
