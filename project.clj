@@ -41,7 +41,7 @@
                  [rewrite-clj/rewrite-clj "1.3.58"]
                  [insn/insn "0.5.4"]
                  [org.babashka/cli "0.12.91"]
-                 [org.babashka/http-client "0.4.25"]
+                 [org.babashka/http-client "0.4.26"]
                  [org.jsoup/jsoup "1.23.2"]
                  [io.github.nextjournal/markdown "0.7.228"]
                  [borkdude/graal.locking "0.0.2"]
