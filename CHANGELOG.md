@@ -7,6 +7,10 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+- The bb resolver retries HTTP 429, HTTP 503 and dropped connections, configured by the `aether.connector.http.retryHandler.*` system properties
+
 ## 1.13.228 (2026-10-25)
 
 - Block the keys of the compromised eMudhra intermediates, so re-encoded certificates are rejected too
