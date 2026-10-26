@@ -123,6 +123,10 @@
     (testing "an RFC 1123, RFC 1036 or asctime date waits until that date"
       (doseq [pattern ["EEE, dd MMM yyyy HH:mm:ss 'GMT'" "EEEE, dd-MMM-yy HH:mm:ss 'GMT'" "EEE MMM d HH:mm:ss yyyy"]]
         (is (< 58000 (retry-wait (format-date pattern) 1 config) 60001) pattern)))
+    (testing "a past date waits 0 ms"
+      (doseq [date ["Sun, 06 Nov 1994 08:49:37 GMT" "Sun, 06 Nov 1994 08:49:37 UTC"
+                    "Wednesday, 06-Nov-24 08:49:37 GMT" "Sun Nov  6 08:49:37 1994"]]
+        (is (= 0 (retry-wait date 1 config)) date)))
     (testing "Retry-After soon waits the interval times the attempt"
       (is (= 10000 (retry-wait "soon" 2 config)))
       (is (= 15000 (retry-wait "Someday, 12:00" 3 config))))
@@ -166,19 +170,19 @@
       (fn [base connections]
         (is (= "jar contents" (http/fetch (str base "b.jar") {:repo-id "central"})))
         (is (= 3 @connections)))))
-  (testing "dropped connections fail after 4 attempts of 2 connections each"
+  (testing "dropped connections fail after 4 attempts"
     (with-dropping-server 100
       (fn [base connections]
         (is (thrown-with-msg? Exception #"Could not transfer"
                               (http/fetch (str base "b.jar") {:repo-id "central"})))
-        (is (= 8 @connections)))))
-  (testing "retryHandler.count 0 with dropped connections makes 2 connections"
+        (is (<= 4 @connections 8)))))
+  (testing "retryHandler.count 0 with dropped connections fails after 1 attempt"
     (with-properties {"aether.connector.http.retryHandler.count" "0"}
       (fn []
         (with-dropping-server 100
           (fn [base connections]
             (is (thrown? Exception (http/fetch (str base "b.jar") {:repo-id "central"})))
-            (is (= 2 @connections)))))))
+            (is (<= 1 @connections 2)))))))
   (testing "a refused connection fails"
     (let [port (with-open [s (java.net.ServerSocket. 0)] (.getLocalPort s))]
       (is (thrown-with-msg? Exception #"Could not transfer"

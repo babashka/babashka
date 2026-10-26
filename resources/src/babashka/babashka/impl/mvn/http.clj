@@ -64,7 +64,7 @@
 (defn- config-values
   "Returns the values of the system properties key.<repo-id> and key, in that order, skipping unset ones."
   [key repo-id]
-  (keep #(System/getProperty %) (cond-> [] repo-id (conj (str key "." repo-id)) true (conj key))))
+  (keep #(System/getProperty %) (cond->> [key] repo-id (cons (str key "." repo-id)))))
 
 (defn- config-long
   "Returns the first numeric value of key.<repo-id> and key, or default if neither is numeric."
@@ -98,6 +98,7 @@
 
 (def ^:private http-date-formats
   [java.time.format.DateTimeFormatter/RFC_1123_DATE_TIME
+   (java.time.format.DateTimeFormatter/ofPattern "EEE, dd MMM yyyy HH:mm:ss zzz" java.util.Locale/US)
    (java.time.format.DateTimeFormatter/ofPattern "EEEE, dd-MMM-yy HH:mm:ss zzz" java.util.Locale/US)
    (java.time.format.DateTimeFormatter/ofPattern "EEE, dd-MMM-yy HH:mm:ss zzz" java.util.Locale/US)
    (-> (java.time.format.DateTimeFormatter/ofPattern "EEE MMM d HH:mm:ss yyyy" java.util.Locale/US)
@@ -108,7 +109,8 @@
   [s]
   (let [s (if (and (> (count s) 1) (str/starts-with? s "'") (str/ends-with? s "'"))
             (subs s 1 (dec (count s)))
-            s)]
+            s)
+        s (str/replace s #"\s+" " ")]
     (some #(try (.toEpochMilli (.toInstant (java.time.ZonedDateTime/parse s %)))
                 (catch Exception _ nil))
           http-date-formats)))
@@ -137,6 +139,7 @@
   (and (instance? java.io.IOException e)
        (not-any? #(contains? final-failures (.getName ^Class %)) (cons (class e) (supers (class e))))))
 
+;; The JDK client retries once by itself if a connection closes before any response byte.
 (defn- send-request
   "Sends request, and sends it again after an I/O failure up to cnt times."
   [request cnt]
