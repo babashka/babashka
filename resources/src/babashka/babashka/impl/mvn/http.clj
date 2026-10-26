@@ -96,24 +96,25 @@
                                                " (list of integers): " codes))))))
                   (str/split codes #","))}))
 
-(def ^:private http-date-formats
-  [java.time.format.DateTimeFormatter/RFC_1123_DATE_TIME
-   (java.time.format.DateTimeFormatter/ofPattern "EEE, dd MMM yyyy HH:mm:ss zzz" java.util.Locale/US)
-   (java.time.format.DateTimeFormatter/ofPattern "EEEE, dd-MMM-yy HH:mm:ss zzz" java.util.Locale/US)
-   (java.time.format.DateTimeFormatter/ofPattern "EEE, dd-MMM-yy HH:mm:ss zzz" java.util.Locale/US)
-   (-> (java.time.format.DateTimeFormatter/ofPattern "EEE MMM d HH:mm:ss yyyy" java.util.Locale/US)
-       (.withZone java.time.ZoneOffset/UTC))])
+(def ^:private http-date-patterns
+  ["EEE, dd MMM yyyy HH:mm:ss zzz" "EEE, dd-MMM-yy HH:mm:ss zzz" "EEE MMM d HH:mm:ss yyyy"])
 
 (defn- parse-http-date
-  "Returns the epoch milliseconds of an HTTP date, or nil if s is not one."
+  "Returns the epoch milliseconds of an HTTP date, or nil if s does not start with one.
+  Reads a two-digit year as 2000 to 2099 and ignores the weekday."
   [s]
   (let [s (if (and (> (count s) 1) (str/starts-with? s "'") (str/ends-with? s "'"))
             (subs s 1 (dec (count s)))
-            s)
-        s (str/replace s #"\s+" " ")]
-    (some #(try (.toEpochMilli (.toInstant (java.time.ZonedDateTime/parse s %)))
-                (catch Exception _ nil))
-          http-date-formats)))
+            s)]
+    (some (fn [pattern]
+            (let [f (doto (java.text.SimpleDateFormat. ^String pattern java.util.Locale/US)
+                      (.setTimeZone (java.util.TimeZone/getTimeZone "GMT"))
+                      (.set2DigitYearStart (java.util.Date. 946684800000)))
+                  pos (java.text.ParsePosition. 0)
+                  date (.parse f ^String s pos)]
+              (when (pos? (.getIndex pos))
+                (.getTime ^java.util.Date date))))
+          http-date-patterns)))
 
 (defn- retry-wait
   "Returns the milliseconds to wait before attempt n+1 of a request, or nil if the wait exceeds :interval-max.

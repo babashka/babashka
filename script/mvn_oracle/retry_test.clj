@@ -127,6 +127,10 @@
       (doseq [date ["Sun, 06 Nov 1994 08:49:37 GMT" "Sun, 06 Nov 1994 08:49:37 UTC"
                     "Wednesday, 06-Nov-24 08:49:37 GMT" "Sun Nov  6 08:49:37 1994"]]
         (is (= 0 (retry-wait date 1 config)) date)))
+    (testing "Sunday, 06-Nov-94 reads as 6 November 2094 and exceeds retryHandler.intervalMax"
+      (is (= (.toEpochMilli (java.time.Instant/parse "2094-11-06T08:49:37Z"))
+             (#'http/parse-http-date "Sunday, 06-Nov-94 08:49:37 GMT")))
+      (is (nil? (retry-wait "Sunday, 06-Nov-94 08:49:37 GMT" 1 config))))
     (testing "Retry-After soon waits the interval times the attempt"
       (is (= 10000 (retry-wait "soon" 2 config)))
       (is (= 15000 (retry-wait "Someday, 12:00" 3 config))))
