@@ -61,13 +61,123 @@
   (let [root (loop [t e] (if-let [c (.getCause t)] (recur c) t))]
     (.getMessage root)))
 
+(defn- config-values
+  "Returns the values of the system properties key.<repo-id> and key, in that order, skipping unset ones."
+  [key repo-id]
+  (keep #(System/getProperty %) (cond->> [key] repo-id (cons (str key "." repo-id)))))
+
+(defn- config-long
+  "Returns the first numeric value of key.<repo-id> and key, or default if neither is numeric."
+  [key repo-id default]
+  (or (some parse-long (config-values key repo-id)) default))
+
+(defn- retry-config
+  "Returns the :count, :interval, :interval-max and :codes of the retries for repo-id.
+  Reads the aether.connector.http.retryHandler system properties, each overridable per repository with a .<repo-id> suffix.
+  Throws IllegalArgumentException for a negative number or a code that is not an integer."
+  [repo-id]
+  (let [prefix "aether.connector.http.retryHandler."
+        cnt (config-long (str prefix "count") repo-id 3)
+        interval (config-long (str prefix "interval") repo-id 5000)
+        interval-max (config-long (str prefix "intervalMax") repo-id 300000)
+        codes-key (str prefix "serviceUnavailable")
+        codes (or (first (config-values codes-key repo-id)) "429,503")]
+    (doseq [[n v] [["retryCount" cnt] ["retryInterval" interval] ["retryIntervalMax" interval-max]]]
+      (when (neg? v)
+        (throw (IllegalArgumentException. (str n " must be >= 0")))))
+    {:count cnt
+     :interval interval
+     :interval-max interval-max
+     :codes (into #{}
+                  (comp (map str/trim) (remove str/blank?)
+                        (map #(or (parse-long %)
+                                  (throw (IllegalArgumentException.
+                                          (str "Illegal HTTP codes for " codes-key
+                                               " (list of integers): " codes))))))
+                  (str/split codes #","))}))
+
+(def ^:private http-date-patterns
+  ["EEE, dd MMM yyyy HH:mm:ss zzz" "EEE, dd-MMM-yy HH:mm:ss zzz" "EEE MMM d HH:mm:ss yyyy"])
+
+(defn- parse-http-date
+  "Returns the epoch milliseconds of an HTTP date, or nil if s does not start with one.
+  Reads a two-digit year as 2000 to 2099 and ignores the weekday."
+  [s]
+  (let [s (if (and (> (count s) 1) (str/starts-with? s "'") (str/ends-with? s "'"))
+            (subs s 1 (dec (count s)))
+            s)]
+    (some (fn [pattern]
+            (let [f (doto (java.text.SimpleDateFormat. ^String pattern java.util.Locale/US)
+                      (.setTimeZone (java.util.TimeZone/getTimeZone "GMT"))
+                      (.set2DigitYearStart (java.util.Date. 946684800000)))
+                  pos (java.text.ParsePosition. 0)
+                  date (.parse f ^String s pos)]
+              (when (pos? (.getIndex pos))
+                (.getTime ^java.util.Date date))))
+          http-date-patterns)))
+
+(defn- retry-wait
+  "Returns the milliseconds to wait before attempt n+1 of a request, or nil if the wait exceeds :interval-max.
+  retry-after is the Retry-After header in seconds or as an HTTP date, or nil if absent.
+  Without a readable retry-after the wait is n times :interval."
+  [retry-after n {:keys [interval interval-max]}]
+  (let [wait (or (when retry-after
+                   (if (str/includes? retry-after ":")
+                     (some-> (parse-http-date retry-after) (- (System/currentTimeMillis)) (max 0))
+                     (some-> (parse-long retry-after) (* 1000))))
+                 (* n interval))]
+    (when (<= wait interval-max)
+      wait)))
+
+;; HttpTimeoutException is the JDK client's counterpart of a socket timeout.
+(def ^:private final-failures
+  #{"java.io.InterruptedIOException" "java.net.UnknownHostException" "java.net.ConnectException"
+    "java.net.NoRouteToHostException" "javax.net.ssl.SSLException" "java.net.http.HttpTimeoutException"})
+
+(defn- retriable?
+  "Returns true if a request that failed with e is sent again."
+  [^Throwable e]
+  (and (instance? java.io.IOException e)
+       (not-any? #(contains? final-failures (.getName ^Class %)) (cons (class e) (supers (class e))))))
+
+;; The JDK client retries once by itself if a connection closes before any response byte.
+(defn- send-request
+  "Sends request, and sends it again after an I/O failure up to cnt times."
+  [request cnt]
+  (loop [n 1]
+    (let [result (try (http/request request)
+                      (catch Exception e
+                        (if (and (<= n cnt) (retriable? e))
+                          ::failed
+                          (throw e))))]
+      (if (= ::failed result)
+        (recur (inc n))
+        result))))
+
+(defn- send-with-retries
+  "Sends request for the repository repo-id, and sends it again after a response with one of the retry codes.
+  Returns the last response."
+  [request repo-id]
+  (let [{cnt :count codes :codes :as config} (retry-config repo-id)]
+    (loop [n 1]
+      (let [{:keys [status headers body] :as response} (send-request request cnt)
+            wait (when (and (<= n cnt) (contains? codes status))
+                   (retry-wait (get headers "retry-after") n config))]
+        (if wait
+          (do (when (instance? java.io.Closeable body)
+                (.close ^java.io.Closeable body))
+              (when (pos? wait)
+                (Thread/sleep (long wait)))
+              (recur (inc n)))
+          response)))))
+
 (defn- request!
   "A request with a transport failure reported as Aether reports it: what
   could not be transferred, from which repository, and why. An unresolved
   host has no message of its own, so the host stands in."
   [method url {:keys [repo-id repo-url label] :as opts}]
   (try
-    (http/request (assoc opts :method method :uri url))
+    (send-with-retries (assoc opts :method method :uri url) repo-id)
     (catch Exception e
       (let [base (if (and label (str/ends-with? url label))
                    (subs url 0 (- (count url) (count label)))
