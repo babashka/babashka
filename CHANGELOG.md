@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Bump `org.babashka/cli` to `0.12.92`
 - The bb resolver retries HTTP 429, HTTP 503 and dropped connections, configured by the `aether.connector.http.retryHandler.*` system properties
 
 ## 1.13.228 (2026-10-25)
