@@ -66,7 +66,7 @@
              :feature/yaml {:source-paths ["feature-yaml"]
                             :dependencies [[clj-commons/clj-yaml "1.0.30"
                                             :exclusions [org.flatland/ordered]#_#_clj-commons/clj-yaml "0.7.110"]
-                                           [org.flatland/ordered "1.15.12"]]}
+                                           [org.flatland/ordered "1.16.13"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :sqlite/deps {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}
