@@ -18,9 +18,9 @@
    [sci.impl.utils :as utils])
   (:import
    [org.jline.keymap KeyMap]
-   [org.jline.reader LineReader LineReader$SuggestionType LineReaderBuilder EndOfFileException UserInterruptException
+   [org.jline.reader LineReader LineReaderBuilder EndOfFileException UserInterruptException
     Parser Parser$ParseContext ParsedLine CompletingParsedLine EOFError
-    Completer Candidate Widget Reference]
+    Completer Candidate Highlighter Widget Reference]
    [org.jline.terminal TerminalBuilder]
    [org.jline.reader.impl LineReaderImpl]
    [sun.misc Signal SignalHandler]
@@ -386,9 +386,32 @@
               (.runMacro line-reader s)))))
       true)))
 
+(def ^:private tail-tip-style
+  (delay (.faint AttributedStyle/DEFAULT)))
+
+(defn- tail-tip-highlighter
+  "Creates a JLine Highlighter that appends the tail tip in faint style
+  if the reader is reading and the cursor is at the end of the buffer."
+  ^Highlighter []
+  (reify Highlighter
+    (highlight [_ reader buffer]
+      (let [tip (.getTailTip reader)
+            buf (.getBuffer reader)]
+        (if (and (.isReading reader) (seq tip) (= (.cursor buf) (.length buf)))
+          (-> (AttributedStringBuilder.)
+              (.append ^String buffer)
+              (.styled ^AttributedStyle @tail-tip-style ^String tip)
+              (.toAttributedString))
+          (AttributedString. ^String buffer))))))
+
 (defn- register-widgets
   "Registers custom widgets and key bindings on the LineReader."
   [^LineReader line-reader {:keys [completions lookup]} force-accept?]
+  (.put (.getWidgets line-reader) LineReader/CALLBACK_FINISH
+        (reify Widget
+          (apply [_]
+            (.setTailTip line-reader "")
+            true)))
   (.put (.getWidgets line-reader) "clojure-doc-at-point"
         (doc-at-point-widget lookup line-reader))
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
@@ -518,12 +541,12 @@
                    (.terminal terminal)
                    (.parser (jline-parser parse-fn force-accept?))
                    (.completer (clojure-completer (:completions helpers)))
+                   (.highlighter (tail-tip-highlighter))
                    (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
                    (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
                    ;; disable JLine treating backslashes as escapes
                    (.option org.jline.reader.LineReader$Option/DISABLE_EVENT_EXPANSION true)
                    (.build))]
-    (.setAutosuggestion reader LineReader$SuggestionType/TAIL_TIP)
     (register-widgets reader helpers force-accept?)
     reader))
 
