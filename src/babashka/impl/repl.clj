@@ -18,13 +18,13 @@
    [sci.impl.utils :as utils])
   (:import
    [org.jline.keymap KeyMap]
-   [org.jline.reader LineReader LineReader$SuggestionType LineReaderBuilder EndOfFileException UserInterruptException
+   [org.jline.reader LineReader LineReaderBuilder EndOfFileException UserInterruptException
     Parser Parser$ParseContext ParsedLine CompletingParsedLine EOFError
-    Completer Candidate Widget Reference]
+    Completer Candidate Highlighter Widget Reference]
    [org.jline.terminal TerminalBuilder]
    [org.jline.reader.impl LineReaderImpl]
    [sun.misc Signal SignalHandler]
-   [org.jline.utils AttributedString AttributedStringBuilder AttributedStyle Status]))
+   [org.jline.utils AttributedString AttributedStringBuilder AttributedStyle]))
 
 (set! *warn-on-reflection* true)
 
@@ -244,6 +244,11 @@
          "-------------------------\n")
        (format-doc-body m)))
 
+(def ^:private post-field
+  (delay
+    (doto (.getDeclaredField LineReaderImpl "post")
+      (.setAccessible true))))
+
 (def ^:private anchor-style
   (delay (-> AttributedStyle/DEFAULT (.faint) (.foreground 39))))
 
@@ -283,24 +288,11 @@
       (.styled asb ^AttributedStyle @separator-style ^String (pr-str arglists)))
     (.toAttributedString asb)))
 
-(defn- show-status
-  "Shows as in the status area at the bottom of the terminal, at most a quarter of its rows.
-  Clears the status area if as is nil."
-  [^LineReader line-reader ^AttributedString as]
-  (let [terminal (.getTerminal line-reader)]
-    (when-let [status (Status/getStatus terminal (some? as))]
-      (.update status
-               (if as
-                 (let [size (.getSize terminal)
-                       lines (.columnSplitLength as (.getColumns size))]
-                   (->> lines
-                        (take (max 1 (quot (.getRows size) 4)))
-                        (reverse)
-                        (drop-while #(zero? (.length ^AttributedString %)))
-                        (reverse)
-                        (vec)))
-                 []))
-      (.flush terminal))))
+(defn- set-post [^LineReaderImpl line-reader ^AttributedString as]
+  (.set ^java.lang.reflect.Field @post-field line-reader
+        (when as
+          (reify java.util.function.Supplier
+            (get [_] as)))))
 
 (defn common-prefix
   "Returns the longest common prefix of a collection of strings."
@@ -331,7 +323,7 @@
 (defn- update-tail-tip
   "Sets the tail tip to the common completion prefix beyond what's typed.
    Only computes when cursor is at end of buffer (where JLine renders it)."
-  [completions-fn ^LineReader line-reader]
+  [completions-fn ^LineReaderImpl line-reader]
   (try
     (let [buf (.getBuffer line-reader)
           cursor (.cursor buf)]
@@ -347,8 +339,8 @@
     (catch Exception _ nil)))
 
 (defn- update-eldoc
-  "Computes eldoc for the current buffer and shows it in the status area, or clears it."
-  [lookup-fn ^LineReader line-reader cache]
+  "Computes eldoc for the current buffer and sets/clears the post field."
+  [lookup-fn ^LineReaderImpl line-reader cache]
   (try
     (let [buf (.getBuffer line-reader)
           line (str buf)
@@ -360,12 +352,12 @@
               (let [result (when fn-name (lookup-fn fn-name))]
                 (reset! cache [fn-name result])
                 result))]
-      (show-status line-reader (when (:arglists m) (format-eldoc-attributed m))))
+      (set-post line-reader (when (:arglists m) (format-eldoc-attributed m))))
     (catch Exception _ nil)))
 
 (defn- wrap-widget
   "Wraps a named widget with before/after hooks."
-  [^LineReader line-reader ^String widget-name before after]
+  [^LineReaderImpl line-reader ^String widget-name before after]
   (let [^Widget original (.get (.getWidgets line-reader) widget-name)]
     (.put (.getWidgets line-reader) widget-name
           (reify Widget
@@ -376,9 +368,9 @@
                 result))))))
 
 (defn- doc-at-point-widget
-  "Creates a JLine Widget that displays documentation for the symbol at cursor
-  in the status area. The next edit replaces it."
-  [lookup-fn ^LineReader line-reader]
+  "Creates a JLine Widget that displays documentation for the symbol at cursor.
+   Shows doc below the prompt, waits for any keypress, clears doc and replays the key."
+  [lookup-fn ^LineReaderImpl line-reader]
   (reify Widget
     (apply [_]
       (let [buf (.getBuffer line-reader)
@@ -386,12 +378,40 @@
             cursor (.cursor buf)]
         (when-let [[word _] (word-at-cursor line cursor)]
           (when-let [m (lookup-fn word)]
-            (show-status line-reader (format-doc-attributed m)))))
+            (set-post line-reader (format-doc-attributed m))
+            (.redisplay line-reader)
+            (.readBinding line-reader (.getKeys line-reader) nil)
+            (set-post line-reader nil)
+            (when-let [s (.getLastBinding line-reader)]
+              (.runMacro line-reader s)))))
       true)))
+
+(def ^:private tail-tip-style
+  (delay (.faint AttributedStyle/DEFAULT)))
+
+(defn- tail-tip-highlighter
+  "Creates a JLine Highlighter that appends the tail tip in faint style
+  if the reader is reading and the cursor is at the end of the buffer."
+  ^Highlighter []
+  (reify Highlighter
+    (highlight [_ reader buffer]
+      (let [tip (.getTailTip reader)
+            buf (.getBuffer reader)]
+        (if (and (.isReading reader) (seq tip) (= (.cursor buf) (.length buf)))
+          (-> (AttributedStringBuilder.)
+              (.append ^String buffer)
+              (.styled ^AttributedStyle @tail-tip-style ^String tip)
+              (.toAttributedString))
+          (AttributedString. ^String buffer))))))
 
 (defn- register-widgets
   "Registers custom widgets and key bindings on the LineReader."
   [^LineReader line-reader {:keys [completions lookup]} force-accept?]
+  (.put (.getWidgets line-reader) LineReader/CALLBACK_FINISH
+        (reify Widget
+          (apply [_]
+            (.setTailTip line-reader "")
+            true)))
   (.put (.getWidgets line-reader) "clojure-doc-at-point"
         (doc-at-point-widget lookup line-reader))
   (let [^KeyMap km (.get (.getKeyMaps line-reader) LineReader/EMACS)]
@@ -412,7 +432,7 @@
     (.put (.getWidgets line-reader) LineReader/ACCEPT_LINE
           (reify Widget
             (apply [_]
-              (let [buf (.getBuffer ^LineReader line-reader)]
+              (let [buf (.getBuffer ^LineReaderImpl line-reader)]
                 (if (< (.cursor buf) (.length buf))
                   (do (.write buf (int \newline)) true)
                   (.apply accept-line)))))))
@@ -420,7 +440,7 @@
         after (fn []
                 (update-eldoc lookup line-reader cache)
                 (update-tail-tip completions line-reader))
-        clear-tip #(.setTailTip ^LineReader line-reader "")]
+        clear-tip #(.setTailTip ^LineReaderImpl line-reader "")]
     (wrap-widget line-reader LineReader/SELF_INSERT nil after)
     (wrap-widget line-reader LineReader/BACKWARD_DELETE_CHAR nil after)
     (wrap-widget line-reader LineReader/EXPAND_OR_COMPLETE clear-tip after)
@@ -428,7 +448,7 @@
     (doseq [w [LineReader/FORWARD_CHAR LineReader/BACKWARD_CHAR
                LineReader/UP_LINE_OR_HISTORY LineReader/DOWN_LINE_OR_HISTORY
                LineReader/BEGINNING_OF_LINE LineReader/END_OF_LINE]]
-      (wrap-widget line-reader w nil #(do (clear-tip) (update-eldoc lookup line-reader cache))))))
+      (wrap-widget line-reader w nil clear-tip))))
 
 (defn- local-parser
   "Reads forms the way the REPL evaluates them, in the sci context."
@@ -521,12 +541,12 @@
                    (.terminal terminal)
                    (.parser (jline-parser parse-fn force-accept?))
                    (.completer (clojure-completer (:completions helpers)))
+                   (.highlighter (tail-tip-highlighter))
                    (.variable org.jline.reader.LineReader/HISTORY_FILE history-file)
                    (.variable org.jline.reader.LineReader/SECONDARY_PROMPT_PATTERN "%P #_=> ")
                    ;; disable JLine treating backslashes as escapes
                    (.option org.jline.reader.LineReader$Option/DISABLE_EVENT_EXPANSION true)
                    (.build))]
-    (.setAutosuggestion reader LineReader$SuggestionType/TAIL_TIP)
     (register-widgets reader helpers force-accept?)
     reader))
 
@@ -581,8 +601,7 @@
                     (parse-form parse-fn buf)))
                 ;; Read new input - JLine handles ALL multi-line via our parser
                 (let [prompt (str (ns-name) "=> ")
-                      input (try (.readLine line-reader prompt)
-                                 (finally (show-status line-reader nil)))]
+                      input (.readLine line-reader prompt)]
                   (parse-form parse-fn input)))]
       (reset! input-buffer remaining)
       (reset! ctrl-c-pending false)

@@ -72,7 +72,6 @@
   ^LineReader [lines]
   (let [remaining (atom lines)]
     (reify LineReader
-      (getTerminal [_] nil)
       (^String readLine [_ ^String _prompt]
         (loop [accumulated ""]
           (if-let [line (first @remaining)]

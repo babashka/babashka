@@ -9,7 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
-- The REPL shows `C-x C-d` docs and eldoc again, in the status area at the bottom of the terminal ([#2260](https://github.com/babashka/babashka/issues/2260))
+- The REPL shows `C-x C-d` docs and eldoc again ([#2260](https://github.com/babashka/babashka/issues/2260))
 
 ## 1.13.229 (2026-10-27)
 
