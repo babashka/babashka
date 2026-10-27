@@ -27,7 +27,8 @@
                                      cmd)
            summary (or (last (re-seq #"Ran \d+ tests containing \d+ assertions\.\r?\n\d+ failures, \d+ errors\." out))
                        "no summary")]
-       (println (format "%-40s %s" (fs/file-name t) (str/replace summary "\n" ", ")))
+       (println (format "%-40s %s%s" (fs/file-name t) (str/replace summary "\n" ", ")
+                        (if (zero? exit) "" (format " (exit 0x%X)" exit))))
        (when-not (zero? exit)
          (println out))
        exit))))
