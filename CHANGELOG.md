@@ -7,7 +7,7 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.13.229 (2026-10-27)
 
 - Bump `org.babashka/cli` to `0.12.92`
 - Bump `org.flatland/ordered` to `1.16.13`
