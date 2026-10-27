@@ -154,32 +154,35 @@
 (defn- cached-text!
   "Returns metadata from repo for rel, with caching and checksum verification under policy.
   Returns cached metadata on transfer failure.
-  If the repository reports missing metadata, deletes the cached copy and returns nil."
+  If the repository reports missing metadata, deletes the cached copy and returns nil.
+  Holds the lock of the cached copy, so no thread reads it while another writes it."
   [local-repo {:keys [id url display-url auth proxy headers] :as repo} rel policy local-updated]
   (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))
         cached #(when (fs/exists? file) (slurp file))]
-    (if (update-required? file repo policy local-updated)
-      (let [[found error]
-            (try [(http/download! (str url rel "/maven-metadata.xml") file
-                                  {:auth auth :proxy proxy :headers headers :checksum (:checksum policy)
-                                   :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
-                 (catch Exception e [nil e]))]
-        (cond
-          error
-          (do (touch! file repo (or (not-empty (ex-message error)) (.getSimpleName (class error))))
-              (cached))
+    #_{:clj-kondo/ignore [:locking-suspicious-lock]}
+    (locking (tracking/lock-for file)
+      (if (update-required? file repo policy local-updated)
+        (let [[found error]
+              (try [(http/download! (str url rel "/maven-metadata.xml") file
+                                    {:auth auth :proxy proxy :headers headers :checksum (:checksum policy)
+                                     :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
+                   (catch Exception e [nil e]))]
+          (cond
+            error
+            (do (touch! file repo (or (not-empty (ex-message error)) (.getSimpleName (class error))))
+                (cached))
 
-          (nil? found)
-          (do (try (fs/delete-if-exists file)
-                   ;; Aether ignores a failed delete
-                   (catch Exception _ nil))
-              (touch! file repo "")
-              nil)
+            (nil? found)
+            (do (try (fs/delete-if-exists file)
+                     ;; Aether ignores a failed delete
+                     (catch Exception _ nil))
+                (touch! file repo "")
+                nil)
 
-          :else
-          (do (touch! file repo nil)
-              (cached))))
-      (cached))))
+            :else
+            (do (touch! file repo nil)
+                (cached))))
+        (cached)))))
 
 (defn- parsed
   "Returns (parse text), or nil if text is nil or parsing fails."

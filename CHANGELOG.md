@@ -12,6 +12,7 @@ A preview of the next release can be installed from
 - Bump `org.babashka/cli` to `0.12.92`
 - Bump `org.flatland/ordered` to `1.16.13`
 - The bb resolver retries HTTP 429, HTTP 503 and dropped connections, configured by the `aether.connector.http.retryHandler.*` system properties
+- The bb resolver no longer fails a version range on Windows when two threads fetch one `maven-metadata.xml` at once
 
 ## 1.13.228 (2026-10-25)
 
