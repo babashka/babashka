@@ -63,6 +63,15 @@ fails with "Can't call public method of non-public class".
 
 ## Why it was rejected
 
+bb is a scripting tool. A script starts, loads its libraries, does a
+short job and exits. Startup and load time come first, run-time
+performance after that.
+
+Crema leaves startup unchanged, but every class it loads is defined at run
+time and runs in an interpreter. The bigger the library, the longer the
+load. cream shows the cost for Clojure code: malli loads in ~1300 ms in
+cream and in ~60 ms in bb, see below.
+
 A package missing from `-H:Preserve` aborts the whole process instead of
 throwing an exception. Seen:
 
@@ -86,8 +95,8 @@ Java code runs slowly in the Crema interpreter. 100k calls to
 | cream, JIT on | 124 |
 | JVM | 42 |
 
-Crema needs an early-access GraalVM to be usable. bb ships on release
-builds.
+Crema in GraalVM 25.0.4 cannot reflect on classes loaded at run time.
+These libraries need GraalVM 25.1.3 or later.
 
 The binary would grow from 74 MB to 180 to 200 MB for a feature most
 scripts do not use.
