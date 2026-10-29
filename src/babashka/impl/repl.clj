@@ -386,9 +386,6 @@
               (.runMacro line-reader s)))))
       true)))
 
-(def ^:private tail-tip-style
-  (delay (.faint AttributedStyle/DEFAULT)))
-
 (defn- tail-tip-highlighter
   "Creates a JLine Highlighter that appends the tail tip in faint style
   if the reader is reading and the cursor is at the end of the buffer."
@@ -400,7 +397,7 @@
         (if (and (.isReading reader) (seq tip) (= (.cursor buf) (.length buf)))
           (-> (AttributedStringBuilder.)
               (.append ^String buffer)
-              (.styled ^AttributedStyle @tail-tip-style ^String tip)
+              (.styled (.faint AttributedStyle/DEFAULT) ^String tip)
               (.toAttributedString))
           (AttributedString. ^String buffer))))))
 
