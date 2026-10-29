@@ -4,7 +4,8 @@
   (:require [babashka.impl.clojure.main :refer [demunge]]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [sci.core :as sci])
+            [sci.core :as sci]
+            [sci.ctx-store :as ctx-store])
   (:import [java.util.jar Manifest]
            (java.net URL)))
 
@@ -92,13 +93,38 @@
    (if (str/starts-with? path "/") nil ;; non-relative paths always return nil
        (getResource loader [path] true))))
 
+(def ^:private crema-loader (atom nil))
+
+(defn- jar-class-loader ^ClassLoader []
+  (let [cp (or (get-classpath) "")
+        [prev-cp loader] @crema-loader]
+    (if (= cp prev-cp)
+      loader
+      (let [loader (babashka.impl.JarClassLoader.
+                    (.split cp path-sep)
+                    (.getContextClassLoader (Thread/currentThread)))]
+        (reset! crema-loader [cp loader])
+        loader))))
+
+(defn load-class
+  "Loads the class named `class-name` from the classpath and makes it available
+  to interop."
+  [class-name]
+  (let [ctx (ctx-store/get-ctx)
+        sym (symbol (str class-name))]
+    (or (get-in @(:env ctx) [:class->opts sym :class])
+        (let [c (Class/forName (str class-name) true (jar-class-loader))]
+          (sci/add-class! ctx sym c)
+          c))))
+
 (def cns (sci/create-ns 'babashka.classpath nil))
 
 (def classpath-namespace
   {:obj cns
    'add-classpath (sci/copy-var add-classpath cns)
    'split-classpath (sci/copy-var split-classpath cns)
-   'get-classpath (sci/copy-var get-classpath cns)})
+   'get-classpath (sci/copy-var get-classpath cns)
+   'load-class (sci/copy-var load-class cns)})
 
 ;;;; Scratch
 

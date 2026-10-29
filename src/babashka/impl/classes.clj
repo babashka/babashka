@@ -1007,7 +1007,10 @@
                    ;; (prn :v v)
                    ;; NOTE: a series of instance check, so far, is still cheaper
                    ;; than piggybacking on defmulti or defprotocol
-                   (let [res (cond (instance? java.lang.Process v)
+                   (let [res (cond (instance? babashka.impl.JarClassLoader
+                                              (.getClassLoader (class v)))
+                                   (class v)
+                                   (instance? java.lang.Process v)
                                    java.lang.Process
                                    (instance? java.lang.ProcessHandle v)
                                    java.lang.ProcessHandle

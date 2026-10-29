@@ -48,6 +48,18 @@ args=("-jar" "$BABASHKA_JAR"
       # --trace-class-initialization=jdk.internal.net.http.common.DebugLogger,jdk.internal.net.http.websocket.WebSocketImpl,jdk.internal.net.http.common.Utils
       "$BABASHKA_XMX")
 
+if [ "${BABASHKA_CREMA:-}" = "true" ]; then
+    args+=("-H:+UnlockExperimentalVMOptions" "-H:+RuntimeClassLoading" "-H:+AllowJRTFileSystem")
+    for p in java.io java.lang java.lang.invoke java.lang.reflect java.util java.util.concurrent \
+             java.util.concurrent.atomic java.util.stream java.text java.util.concurrent.locks \
+             java.util.function java.util.regex java.util.zip java.util.jar java.nio.file \
+             java.nio.charset java.time java.security java.net javax.net javax.net.ssl java.nio \
+             java.nio.channels java.nio.channels.spi; do
+        args+=("-H:Preserve=package=$p")
+    done
+    args+=("-H:Preserve=module=java.logging" "-H:Preserve=module=java.sql")
+fi
+
 BABASHKA_STATIC=${BABASHKA_STATIC:-}
 BABASHKA_MUSL=${BABASHKA_MUSL:-}
 BABASHKA_FULLY_DYNAMIC=${BABASHKA_FULLY_DYNAMIC:-}
