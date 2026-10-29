@@ -55,11 +55,24 @@ gives the size that feature reached, so little gain is expected.
 
 ## What works
 
+These libraries need GraalVM 25.1.3 or later. Crema in GraalVM 25.0.4
+cannot reflect on classes loaded at run time.
+
 Startup stays at 12 to 23 ms with and without Crema.
 
 commons-codec, commons-lang3, jsoup, commonmark, gson and joda-time load
 and run. Caffeine works only with a `^Cache` type hint. Without it SCI
 fails with "Can't call public method of non-public class".
+
+Java code in the Crema interpreter runs slower than on the JVM. 100k
+calls to `DigestUtils/sha256Hex`:
+
+| runtime | ms |
+|---|---|
+| bb + Crema, GraalVM 25.1.3 | 670 to 1800 |
+| bb + Crema, GraalVM 25.3.4.1-dev | 260 to 600 |
+| cream, JIT on | 124 |
+| JVM | 42 |
 
 ## Why it was rejected
 
@@ -81,20 +94,9 @@ performance after that.
     `java.lang.invoke`.
   - gson aborts on `AtomicIntegerArray` with only `java.lang`,
     `java.lang.invoke`, `java.util` and `java.util.function` preserved.
-- Java code runs slowly in the Crema interpreter, see the table below.
-- Crema in GraalVM 25.0.4 cannot reflect on classes loaded at run time.
-  These libraries need GraalVM 25.1.3 or later.
-- The binary would grow from 74 MB to 180 to 200 MB for a feature most
-  scripts do not use.
-
-100k calls to `DigestUtils/sha256Hex`:
-
-| runtime | ms |
-|---|---|
-| bb + Crema, GraalVM 25.1.3 | 670 to 1800 |
-| bb + Crema, GraalVM 25.3.4.1-dev | 260 to 600 |
-| cream, JIT on | 124 |
-| JVM | 42 |
+- The native build takes about 1.6 times longer, 40 s against 64 s
+  locally, and every CI platform pays that. The binary grows from 74 MB
+  to 180 to 200 MB for a feature most scripts do not use.
 
 ## bb compared with cream
 
