@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - master
+      - pgo-builds
     paths-ignore:
       - "**.md"
       - "logo/**"
@@ -92,7 +93,6 @@ jobs:
 
               jar -cMf %zip% bb.exe
 
-              bb --config .build/bb.edn --deps-root . release-artifact %zip%
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
