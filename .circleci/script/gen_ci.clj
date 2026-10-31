@@ -132,6 +132,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                "macos"
                                                platform)
                           :BABASHKA_TEST_ENV "native"
+                          :BABASHKA_PGO      "true"
                           :BABASHKA_XMX      "-J-Xmx6500m"
                           :BABASHKA_SHA (System/getenv "CIRCLE_SHA1")}
         env              (if (= "aarch64" arch)
@@ -194,10 +195,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                           (when (not= "mac" platform)
                                             (run "Check glibc floor" "script/check_glibc.sh"))
                                           (run "Download GraalVM" "script/install-graalvm")
-                                          #_(run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'")
                                           (run "Build binary" (if (= "aarch64" arch)
-                                                                "script/uberjar\nscript/compile -H:PageSize=64K # --pgo=default.iprof"
-                                                                "script/uberjar\nscript/compile # --pgo=default.iprof") "30m")
+                                                                "script/uberjar\nscript/compile -H:PageSize=64K"
+                                                                "script/uberjar\nscript/compile") "30m")
                                           (when (not= "mac" platform)
                                             (run "Verify linking" "script/verify_link"))
                                           (run "Release + publish"

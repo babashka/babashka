@@ -64,6 +64,11 @@ elif [ "$(uname -s)" = "Linux" ] && [ "$BABASHKA_FULLY_DYNAMIC" != "true" ]; the
     args+=("-H:+StaticExecutableWithDynamicLibC")
 fi
 
+if [ -n "${BABASHKA_PGO:-}" ]; then
+    curl -sfLo default.iprof "$(cat script/pgo/profile-url)"
+    args+=("--pgo=default.iprof" "-H:-ReduceImplicitExceptionStackTraceInformation")
+fi
+
 # Get the libffi archive for this build.
 # shellcheck source=script/libffi_archive.sh
 . script/libffi_archive.sh

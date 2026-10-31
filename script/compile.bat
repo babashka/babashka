@@ -49,6 +49,13 @@ Rem Pass the feature setting to image initialization.
 Rem "if defined", not a string compare: the value carries its own quotes
 if defined LIBFFI_ARG (set BABASHKA_FEATURE_LIBFFI=true) else (set BABASHKA_FEATURE_LIBFFI=false)
 
+set PGO_ARGS=
+if not defined BABASHKA_PGO goto :pgo_done
+set /p PGO_URL=<script\pgo\profile-url
+curl -sfLo default.iprof %PGO_URL% || exit /b 1
+set PGO_ARGS=--pgo=default.iprof -H:-ReduceImplicitExceptionStackTraceInformation
+:pgo_done
+
 Rem Windows assigns argument registers by position, so babashka.ffi loads its
 Rem ordered trampolines here. The callback shapes only they need are in a
 Rem metadata file of their own in the ffi submodule, which this option names.
@@ -60,6 +67,7 @@ call %GRAALVM_HOME%\bin\native-image.cmd ^
   "--no-fallback" ^
   "--install-exit-handlers" ^
   %LIBFFI_ARG% ^
+  %PGO_ARGS% ^
   -EBABASHKA_FEATURE_LIBFFI ^
   "-H:ConfigurationResourceRoots=babashka/ffi/native-image-windows" ^
   %*

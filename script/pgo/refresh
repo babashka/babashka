@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# Trains a PGO profile on the current commit, uploads it to
+# babashka/pgo-profiles and pins it. Run before tagging a release.
+
+set -euo pipefail
+
+: "${GRAALVM_HOME:?set GRAALVM_HOME to the GraalVM that CI uses}"
+
+tag="${1:?usage: script/pgo/refresh <tag>}"
+
+script/uberjar
+BABASHKA_BINARY=bb-instrumented script/compile --pgo-instrument
+
+(cd script/pgo && rm -f default.iprof && ../../bb-instrumented --config bb.edn train.clj)
+mv script/pgo/default.iprof default.iprof
+rm bb-instrumented
+
+gh release create "$tag" default.iprof --repo babashka/pgo-profiles --title "$tag" --notes "$(git rev-parse HEAD)"
+echo "https://github.com/babashka/pgo-profiles/releases/download/$tag/default.iprof" > script/pgo/profile-url
