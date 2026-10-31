@@ -1,0 +1,1 @@
+(let [s (System/nanoTime)] (require '[malli.core] '[malli.generator] '[honey.sql] '[loom.graph] '[loom.alg] '[medley.core] '[camel-snake-kebab.core]) (println "load-ms" (/ (- (System/nanoTime) s) 1e6)))

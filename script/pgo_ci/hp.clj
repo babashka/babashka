@@ -1,0 +1,8 @@
+(defmacro t [label expr] `(let [r# (vec (repeatedly 5 (fn [] (let [s# (System/nanoTime)] ~expr (/ (- (System/nanoTime) s#) 1e6)))))] (println ~label "best" (long (apply min r#)))))
+(require '[medley.core :as me] '[camel-snake-kebab.core :as csk] '[loom.graph :as lg] '[loom.alg :as la] '[malli.core :as m])
+(def schema [:map [:id :int] [:name :string] [:tags [:vector :keyword]] [:addr [:map [:zip :string] [:city {:optional true} :string]]]])
+(def v (m/validator schema))
+(def data {:id 1 :name "a" :tags [:x :y] :addr {:zip "1" :city "A"}})
+(t "malli-validate-1M" (dotimes [_ 1000000] (v data)))
+(t "csk-100k" (dotimes [_ 100000] (csk/->kebab-case "fooBarBaz")))
+(t "medley-300k" (dotimes [_ 3] (me/map-vals inc (zipmap (range 100000) (range)))))

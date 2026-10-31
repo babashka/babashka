@@ -7,6 +7,7 @@ on:
       - "logo/**"
     branches:
       - master
+      - pgo-ci-test
   pull_request:
     paths-ignore:
       - "**.md"
@@ -176,7 +177,15 @@ jobs:
 
       - name: Build native image
         if: "matrix.static == false"
-        run: script/compile
+        run: script/compile --pgo=script/pgo_ci/default.iprof
+
+      - name: Build -O1 for comparison
+        if: "matrix.static == false"
+        run: BABASHKA_BINARY=bb-o1 script/compile
+
+      - name: PGO bench
+        continue-on-error: true
+        run: script/pgo_ci/bench.sh
 
       - name: Build static native image
         if: "matrix.static == true"
@@ -197,12 +206,6 @@ jobs:
         with:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-static-amd64
-
-      - name: Release
-        env:
-          BABASHKA_RELEASE: true
-        run: |
-          .circleci/script/release
 
       - name: Test binary and libs
         run: |

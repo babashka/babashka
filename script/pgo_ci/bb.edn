@@ -1,0 +1,6 @@
+{:deps {metosin/malli {:mvn/version "0.20.1"}
+        com.github.seancorfield/honeysql {:mvn/version "2.6.1270"}
+        medley/medley {:mvn/version "1.4.0"}
+        camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+        aysylu/loom {:mvn/version "1.0.2"}
+        aero/aero {:mvn/version "1.1.6"}}}

@@ -196,13 +196,16 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                           (run "Download GraalVM" "script/install-graalvm")
                                           #_(run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'")
                                           (run "Build binary" (if (= "aarch64" arch)
-                                                                "script/uberjar\nscript/compile -H:PageSize=64K # --pgo=default.iprof"
-                                                                "script/uberjar\nscript/compile # --pgo=default.iprof") "30m")
+                                                                "script/uberjar\nscript/compile -H:PageSize=64K --pgo=script/pgo_ci/default.iprof"
+                                                                "script/uberjar\nscript/compile --pgo=script/pgo_ci/default.iprof") "30m")
+                                          (run "Build -O1 for comparison" (if (= "aarch64" arch)
+                                                                            "BABASHKA_BINARY=bb-o1 script/compile -H:PageSize=64K"
+                                                                            "BABASHKA_BINARY=bb-o1 script/compile") "30m")
+                                          (run "PGO bench" "script/pgo_ci/bench.sh || true")
                                           (when (not= "mac" platform)
                                             (run "Verify linking" "script/verify_link"))
                                           (run "Release + publish"
-                                            (str/join "\n" ["export BABASHKA_RELEASE=true"
-                                                            ".circleci/script/release"]))
+                                            ".circleci/script/release")
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}
                                           (run "Run tests" (if static?
@@ -216,9 +219,7 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                     "~/.cache/babashka-tarballs"]
                                             :key   cache-key}}
                                           {:store_artifacts {:path        "/tmp/release"
-                                                             :destination "release"}}
-                                          (run "Publish artifact link to Slack"
-                                            "./bb .circleci/script/publish_artifact.clj || true")])))))))
+                                                             :destination "release"}}])))))))
 
 (defn make-config
   [shorted?]

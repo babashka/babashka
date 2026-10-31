@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - master
+      - pgo-ci-test
     paths-ignore:
       - "**.md"
       - "logo/**"
@@ -83,7 +84,7 @@ jobs:
 
               call script/uberjar.bat
 
-              call script/compile.bat
+              call script/compile.bat --pgo=script\pgo_ci\default.iprof
 
               echo Creating zip archive
 
@@ -91,7 +92,17 @@ jobs:
 
               jar -cMf %zip% bb.exe
 
-              bb --config .build/bb.edn --deps-root . release-artifact %zip%
+
+      - name: Build -O1 for comparison
+        shell: cmd
+        run: |
+              set GRAALVM_HOME=%JAVA_HOME%
+              call script/compile.bat -H:Name=bb-o1
+
+      - name: PGO bench
+        continue-on-error: true
+        shell: bash
+        run: script/pgo_ci/bench.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
