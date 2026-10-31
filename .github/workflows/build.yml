@@ -177,7 +177,7 @@ jobs:
 
       - name: Build native image
         if: "matrix.static == false"
-        run: script/compile --pgo=script/pgo_ci/default.iprof
+        run: script/compile --pgo=script/pgo_ci/default.iprof -H:-ReduceImplicitExceptionStackTraceInformation
 
       - name: Build -O1 for comparison
         if: "matrix.static == false"

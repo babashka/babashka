@@ -196,8 +196,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                           (run "Download GraalVM" "script/install-graalvm")
                                           #_(run "Download iprof" "curl -sLO 'https://github.com/babashka/pgo-profiles/releases/download/2023.10.11/default.iprof'")
                                           (run "Build binary" (if (= "aarch64" arch)
-                                                                "script/uberjar\nscript/compile -H:PageSize=64K --pgo=script/pgo_ci/default.iprof"
-                                                                "script/uberjar\nscript/compile --pgo=script/pgo_ci/default.iprof") "30m")
+                                                                "script/uberjar\nscript/compile -H:PageSize=64K --pgo=script/pgo_ci/default.iprof -H:-ReduceImplicitExceptionStackTraceInformation"
+                                                                "script/uberjar\nscript/compile --pgo=script/pgo_ci/default.iprof -H:-ReduceImplicitExceptionStackTraceInformation") "30m")
                                           (run "Build -O1 for comparison" (if (= "aarch64" arch)
                                                                             "BABASHKA_BINARY=bb-o1 script/compile -H:PageSize=64K"
                                                                             "BABASHKA_BINARY=bb-o1 script/compile") "30m")
