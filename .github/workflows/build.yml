@@ -7,7 +7,6 @@ on:
       - "logo/**"
     branches:
       - master
-      - pgo-builds
   pull_request:
     paths-ignore:
       - "**.md"
@@ -199,6 +198,12 @@ jobs:
         with:
           path: bb
           name: babashka-${{ steps.babashka-version.outputs.version }}-${{ matrix.name }}-static-amd64
+
+      - name: Release
+        env:
+          BABASHKA_RELEASE: true
+        run: |
+          .circleci/script/release
 
       - name: Test binary and libs
         run: |

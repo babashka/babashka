@@ -201,7 +201,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                           (when (not= "mac" platform)
                                             (run "Verify linking" "script/verify_link"))
                                           (run "Release + publish"
-                                            ".circleci/script/release")
+                                            (str/join "\n" ["export BABASHKA_RELEASE=true"
+                                                            ".circleci/script/release"]))
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}
                                           (run "Run tests" (if static?
@@ -215,7 +216,9 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                                     "~/.cache/babashka-tarballs"]
                                             :key   cache-key}}
                                           {:store_artifacts {:path        "/tmp/release"
-                                                             :destination "release"}}])))))))
+                                                             :destination "release"}}
+                                          (run "Publish artifact link to Slack"
+                                            "./bb .circleci/script/publish_artifact.clj || true")])))))))
 
 (defn make-config
   [shorted?]
