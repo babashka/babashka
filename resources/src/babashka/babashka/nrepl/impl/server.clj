@@ -10,6 +10,7 @@
    [babashka.nrepl.impl.java :as java]
    [babashka.nrepl.impl.sci :as sci-helpers]
    [babashka.nrepl.impl.track-state :as track-state]
+   [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.walk :as walk]
    [nrepl.middleware :refer [set-descriptor!]]
@@ -48,13 +49,37 @@
 (defn- forms-join [forms]
   (str/join \newline (map pr-str forms)))
 
-(defn- lookup-reply [{:keys [op sym symbol ns class member] :as _msg}]
+(defn- ns-file
+  "Returns the classpath URL of the file the-ns loads from, or the file of one
+  of its vars, or nil if it has neither."
+  [the-ns]
+  (let [ns-str (str (ns-name the-ns))
+        path (-> ns-str (str/replace \- \_) (str/replace \. \/))]
+    (or (some #(some-> (io/resource (str path %)) str) [".bb" ".clj" ".cljc"])
+        (when-let [sym (first (keys (ns-publics the-ns)))]
+          (:file (sci-helpers/lookup (str ns-str "/" sym) ns-str))))))
+
+(defn- ns-lookup
+  "Returns the lookup result of the namespace that sym-str names, as an alias
+  in the message's namespace or by its own name, or nil if it names none."
+  [sym-str msg]
+  (when-let [sym (some-> sym-str symbol)]
+    (when-let [the-ns (or (get (ns-aliases (msg-ns msg)) sym) (find-ns sym))]
+      (let [file (ns-file the-ns)]
+        (cond-> {:ns (ns-name the-ns)
+                 :name (ns-name the-ns)
+                 :doc (:doc (meta the-ns))}
+          file (assoc :file file :line 1))))))
+
+(defn- lookup-reply [{:keys [op sym symbol ns class member] :as msg}]
   (let [eldoc? (contains? #{"eldoc" "cider/eldoc"} op)
         sym-str (or sym symbol)
         m (when-not (seq class) (sci-helpers/lookup sym-str ns))
         java (when (nil? m)
                (when-let [info (java/info {:ns ns :sym sym-str :class class :member member})]
                  (if eldoc? (java/eldoc info) (java/info-reply info))))
+        m (or m (when-not (or java eldoc? (seq class))
+                  (ns-lookup sym-str msg)))
         {:keys [doc file line column arglists forms special-form macro added deprecated]} m]
     (cond
       java (assoc java :status :done)

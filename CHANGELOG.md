@@ -14,6 +14,7 @@ A preview of the next release can be installed from
 - Bump `cider-nrepl` to `0.64.0`
 - Bump `orchard` to `0.48.0`
 - nREPL test ops send test output under their own message id ([#2265](https://github.com/babashka/babashka/issues/2265))
+- nREPL: `info` answers for a namespace's name or alias with its doc and file ([#2270](https://github.com/babashka/babashka/issues/2270))
 
 ## 1.13.229 (2026-10-27)
 
