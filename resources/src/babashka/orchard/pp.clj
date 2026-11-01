@@ -157,6 +157,19 @@
                             (- *print-level* (:level opts 0)))]
     (print/print-str x)))
 
+(defn ^:private write-multiline
+  "Write a pre-rendered, possibly multi-line string, keeping the writer's line
+  accounting correct and indenting continuation lines."
+  [writer ^String s ^String indentation]
+  (if (neg? (.indexOf s "\n"))
+    (write writer s)
+    (let [[line & more] (str/split s #"\n" -1)]
+      (write writer line)
+      (doseq [^String line more]
+        (nl writer)
+        (write writer indentation)
+        (write writer line)))))
+
 (defn ^:private print-mode
   "Given a CountKeepingWriter, a form, and an options map, return a keyword
   indicating a printing mode (:linear or :miser)."
@@ -371,7 +384,9 @@
   (-pprint [this writer opts]
     (if (array? this)
       (-pprint-seq this writer opts)
-      (write writer (print-str-linear this opts)))))
+      ;; The representation may span multiple lines (e.g. a custom
+      ;; print-method rendering a table); keep line accounting intact.
+      (write-multiline writer (print-str-linear this opts) (:indentation opts)))))
 
 (defn pprint
   "Pretty-print an object into `writer` (*out* by default). Options:

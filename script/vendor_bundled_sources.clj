@@ -12,6 +12,7 @@
 ;; Usage:
 ;;   bb script/vendor_bundled_sources.clj                    ; refresh at the current pins
 ;;   bb script/vendor_bundled_sources.clj nrepl/nrepl 1.8.0  ; bump one artifact
+;;   bb script/vendor_bundled_sources.clj a/b 1.0 c/d 2.0    ; bump several
 ;;
 ;; Only the files listed in `shipped` are taken; anything else in the jars is
 ;; reported, so an upgrade shows every upstream addition for a decision.
@@ -31,13 +32,13 @@
 
 (def bumped
   "The versions to move to: the pins, with the command line applied."
-  (let [[lib version] *command-line-args*]
-    (if lib
-      (let [lib (symbol lib)]
-        (assert (contains? pins lib) (str "Not a vendored artifact: " lib))
-        (assert version "Give a version to bump to")
-        (assoc pins lib version))
-      pins)))
+  (reduce (fn [versions [lib version]]
+            (let [lib (symbol lib)]
+              (assert (contains? pins lib) (str "Not a vendored artifact: " lib))
+              (assert version "Give a version to bump to")
+              (assoc versions lib version)))
+          pins
+          (partition-all 2 *command-line-args*)))
 
 (defn- jar [lib version]
   (str m2 "/" (str/replace (namespace lib) "." "/") "/" (name lib) "/" version "/"
@@ -210,6 +211,7 @@
     "orchard/java/parser_next.clj"
     "orchard/java/resource.clj"
     "orchard/java/source_files.clj"
+    "orchard/ns_form.clj"
     "orchard/profile.clj"
     "orchard/spec.clj"
     "orchard/trace.clj"
@@ -263,7 +265,7 @@
         pinned (bumped 'cider/orchard)]
     (when (not= wanted pinned)
       (str "cider-nrepl " cider-nrepl-version " depends on orchard " wanted ", pinned is " pinned ": "
-           "bb script/vendor_bundled_sources.clj cider/orchard " wanted))))
+           "bb script/vendor_bundled_sources.clj cider/orchard " wanted " cider/cider-nrepl " cider-nrepl-version))))
 
 (defn- data-readers-problem
   "Returns a message if bundled-data-readers in main.clj differs from the
@@ -371,9 +373,10 @@
       (println "\nListed here but gone upstream:")
       (run! #(println " " %) missing))
     (when (not= pins bumped)
-      (spit pins-file (str/replace (slurp pins-file)
-                                   (re-pattern (str "(?m)^(\\s*" (java.util.regex.Pattern/quote (str (first (first (remove (fn [[k v]] (= v (pins k))) bumped))))) "\\s+)\"[^\"]+\"" ))
-                                   (str "$1\"" (second (first (remove (fn [[k v]] (= v (pins k))) bumped))) "\"")))
+      (doseq [[lib version] (remove (fn [[k v]] (= v (pins k))) bumped)]
+        (spit pins-file (str/replace (slurp pins-file)
+                                     (re-pattern (str "(?m)^(\\s*" (java.util.regex.Pattern/quote (str lib)) "\\s+)\"[^\"]+\""))
+                                     (str "$1\"" version "\""))))
       (println "\nscript/vendored.edn updated"))
     (fs/delete-tree old)
     (fs/delete-tree new)

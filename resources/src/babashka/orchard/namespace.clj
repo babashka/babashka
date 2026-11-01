@@ -37,7 +37,11 @@
   "Require `ns` (no-op if already loaded). Return the symbol if successful,
   and `nil` if this fails."
   [ns]
-  (try (doto (symbol ns) require)
+  (try (let [sym (symbol ns)]
+         (require sym)
+         ;; A namespace that threw while loading is removed, but stays in
+         ;; `*loaded-libs*`, so requiring it again does nothing.
+         (when (find-ns sym) sym))
        (catch Exception _)))
 
 ;;; Filters

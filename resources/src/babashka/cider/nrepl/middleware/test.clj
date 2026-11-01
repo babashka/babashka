@@ -7,6 +7,8 @@
    [cider.nrepl.middleware.util :as util :refer [respond-to]]
    #_[cider.nrepl.middleware.util.cljs :as cljs] ;; BB-PATCH no ClojureScript
    [cider.nrepl.middleware.util.coerce :as util.coerce]
+   [cider.nrepl.middleware.util.error-handling :as err]
+   [cider.nrepl.middleware.util.nrepl :as util.nrepl]
    [clojure.walk :as walk]
    [nrepl.middleware.interruptible-eval :as ie]
    [orchard.misc :as misc]
@@ -95,10 +97,15 @@
 
 (defn- run-tests
   "Run the tests with `run-fn`, given the options for `msg`, and return the
-  report ready to be sent."
+  report ready to be sent, after what the tests printed."
   [msg run-fn]
   (binding [orchard.test/*test-error-handler* *test-error-handler*]
-    (stringify-messages (run-fn (run-opts msg)))))
+    (try
+      (stringify-messages (run-fn (run-opts msg)))
+      ;; What doesn't end in a newline would wait here.
+      (finally
+        (flush)
+        (.flush ^java.io.Writer *err*)))))
 
 ;;; ## Middleware
 
@@ -109,37 +116,64 @@
   the nREPL session."
   (atom {}))
 
-(defn handle-test-var-query-op
-  [{:keys [var-query session id] :as msg}]
+(def ^:private nrepl-1-3+?
+  (util.nrepl/satisfies-version? 1 3))
+
+(defn- session-bindings
+  "The bindings to run `msg` with. Since nREPL 1.3, the session's thread has
+  the session's own already, with fresh output streams for `msg`, which the
+  session's, its previous message's, would replace."
+  [session msg]
+  (if nrepl-1-3+?
+    {#'ie/*msg* msg}
+    (assoc @session #'ie/*msg* msg)))
+
+(defn- respond-error
+  "Answer `msg` with `e`, which got out of the op's handler: namespace-not-found
+  for a namespace that isn't loaded, or the error, with its stack trace."
+  [msg e]
+  (if (= :namespace-not-found (::util.coerce/id (ex-data e)))
+    (respond-to msg :status :namespace-not-found)
+    (respond-to msg (err/base-error-response msg e (keyword (str (:op msg) "-error"))))))
+
+(defn- run-in-session
+  "Run `f` for `msg` on its session's thread, the way nREPL runs an evaluation,
+  and answer `done` once it's over. Nothing may get out of `f`: nREPL's session
+  loop then sends no `done`, and its thread dies."
+  [{:keys [session id] :as msg} f]
   (let [{:keys [exec]} (meta session)]
     (exec id
           (fn []
-            (with-bindings (assoc @session #'ie/*msg* msg)
-              (try
-                (let [var-query (-> var-query
-                                    (assoc-in [:ns-query :has-tests?] true)
-                                    (assoc :test? true)
-                                    (util.coerce/var-query))
-                      report (run-tests msg #(orchard.test/run-var-query var-query %))]
-                  (reset! results (:results report))
-                  (respond-to msg (util/transform-value report)))
-                (catch #_clojure.lang.ExceptionInfo Throwable e ;; BB-PATCH a throw ends the session thread, reply instead
-                  (let [d (ex-data e)]
-                    (if (::util.coerce/id d)
-                      (case (::util.coerce/id d)
-                        :namespace-not-found (respond-to msg :status :namespace-not-found))
-                      #_(throw e) ;; BB-PATCH a throw ends the session thread, reply instead
-                      (respond-to msg :status :error :err (str e))))))))
+            (with-bindings (session-bindings session msg)
+              (try (f)
+                   (catch Throwable e
+                     ;; Nor from answering, with the connection gone.
+                     (try (respond-error msg e)
+                          (catch Throwable _))))))
           (fn []
             (respond-to msg :status :done)))))
+
+(defn handle-test-var-query-op
+  [{:keys [var-query] :as msg}]
+  (run-in-session
+   msg
+   (fn []
+     (let [var-query (-> var-query
+                         (assoc-in [:ns-query :has-tests?] true)
+                         (assoc :test? true)
+                         (util.coerce/var-query))
+           report (run-tests msg #(orchard.test/run-var-query var-query %))]
+       (reset! results (:results report))
+       (respond-to msg (util/transform-value report))))))
 
 (defn handle-test-op
   [{:keys [ns tests include exclude] :as msg}]
   (handle-test-var-query-op
-   (merge msg {:var-query {:ns-query {:exactly [ns]}
-                           :include-meta-key include
-                           :exclude-meta-key exclude
-                           :exactly (map #(str ns "/" %) tests)}})))
+   (merge msg {:var-query (cond-> {:ns-query {:exactly [ns]}
+                                   :include-meta-key include
+                                   :exclude-meta-key exclude}
+                            ;; Without tests, the whole namespace.
+                            (seq tests) (assoc :exactly (map #(str ns "/" %) tests)))})))
 
 (defn handle-test-all-op
   [{:keys [load? include exclude] :as msg}]
@@ -150,49 +184,43 @@
                            :exclude-meta-key exclude}})))
 
 (defn handle-retest-op
-  [{:keys [session id] :as msg}]
-  (let [{:keys [exec]} (meta session)]
-    (exec id
-          (fn []
-            (with-bindings (assoc @session #'ie/*msg* msg)
-              (let [nss (reduce (fn [ret [ns tests]]
-                                  (let [problems (filter (comp #{:fail :error} :type)
-                                                         (mapcat val tests))
-                                        vars (distinct (map :var problems))]
-                                    (if (seq vars)
-                                      (assoc ret ns vars)
-                                      ret)))
-                                {} @results)
-                    report (run-tests msg #(orchard.test/run-namespaces nss %))]
-                (reset! results (:results report))
-                (respond-to msg (util/transform-value report)))))
-          (fn []
-            (respond-to msg :status :done)))))
+  [msg]
+  (run-in-session
+   msg
+   (fn []
+     (let [nss (reduce (fn [ret [ns tests]]
+                         (let [problems (filter (comp #{:fail :error} :type)
+                                                (mapcat val tests))
+                               vars (distinct (map :var problems))]
+                           (if (seq vars)
+                             (assoc ret ns vars)
+                             ret)))
+                       {} @results)
+           report (run-tests msg #(orchard.test/run-namespaces nss %))]
+       (reset! results (:results report))
+       (respond-to msg (util/transform-value report))))))
 
 (defn handle-stacktrace-op
-  [{:keys [ns var index session id] :as msg}]
-  (let [{:keys [exec]} (meta session)]
-    (exec id
-          (fn []
-            (with-bindings (assoc @session #'ie/*msg* msg)
-              (let [[ns var] (map misc/as-sym [ns var])]
-                (if-let [e (get-in @results [ns var index :error])]
-                  #_(doseq [cause (stacktrace/analyze e)]
-                    (respond-to msg cause)) ;; BB-PATCH without sci frames, start the trace at the test
-                  (let [test-frame {:name (str ns "/" var)
-                                    :ns (str ns) :fn (str var)
-                                    :file (:file (meta (ns-resolve ns var)))
-                                    :line (get-in @results [ns var index :line])
-                                    :flags #{:clj :project}}
-                        [first-cause & more] (stacktrace/analyze e)
-                        sci-frames? (seq (try (sci/stacktrace e) (catch Throwable _ nil)))]
-                    (doseq [cause (cons (cond-> first-cause
-                                          (not sci-frames?) (update :stacktrace #(into [test-frame] %)))
-                                        more)]
-                      (respond-to msg cause)))
-                  (respond-to msg :status :no-error)))))
-          (fn []
-            (respond-to msg :status :done)))))
+  [{:keys [ns var index] :as msg}]
+  (run-in-session
+   msg
+   (fn []
+     (let [[ns var] (map misc/as-sym [ns var])]
+       (if-let [e (get-in @results [ns var index :error])]
+         #_(doseq [cause (stacktrace/analyze e)]
+             (respond-to msg cause)) ;; BB-PATCH without sci frames, start the trace at the test
+         (let [test-frame {:name (str ns "/" var)
+                           :ns (str ns) :fn (str var)
+                           :file (:file (meta (ns-resolve ns var)))
+                           :line (get-in @results [ns var index :line])
+                           :flags #{:clj :project}}
+               [first-cause & more] (stacktrace/analyze e)
+               sci-frames? (seq (try (sci/stacktrace e) (catch Throwable _ nil)))]
+           (doseq [cause (cons (cond-> first-cause
+                                 (not sci-frames?) (update :stacktrace #(into [test-frame] %)))
+                               more)]
+             (respond-to msg cause)))
+         (respond-to msg :status :no-error))))))
 
 (defn handle-test [handler msg & _configuration]
   (if #_(and (cljs/grab-cljs-env msg)
