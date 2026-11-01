@@ -11,6 +11,9 @@ A preview of the next release can be installed from
 
 - The REPL shows `C-x C-d` docs and eldoc again ([#2260](https://github.com/babashka/babashka/issues/2260))
 - Fix a 30 MB binary size increase from the REPL tail tip highlighter
+- Bump `cider-nrepl` to `0.64.0`
+- Bump `orchard` to `0.48.0`
+- nREPL test ops send test output under their own message id ([#2265](https://github.com/babashka/babashka/issues/2265))
 
 ## 1.13.229 (2026-10-27)
 

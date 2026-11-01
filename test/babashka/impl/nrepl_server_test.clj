@@ -700,13 +700,22 @@
                       (mapcat :status (send {"op" "test-var-query"
                                              "var-query" {"exactly" ["not-loaded.ns/t"]}}))))
             (is (= ["3"] (keep :value (send {"op" "eval" "code" "(+ 1 2)"})))))))
-      (testing "test-var-query with search \"[\" replies error and keeps the session"
+      (testing "test-var-query with search \"[\" replies test-var-query-error and keeps the session"
         (with-session 1682
           (fn [send]
-            (is (some #{"error"}
+            (is (some #{"test-var-query-error"}
                       (mapcat :status (send {"op" "test-var-query"
                                              "var-query" {"search" "["}}))))
             (is (= ["3"] (keep :value (send {"op" "eval" "code" "(+ 1 2)"})))))))
+      (testing "test-var-query replies with the test's output under its own id"
+        (with-session 1682
+          (fn [send]
+            (send {"op" "eval"
+                   "code" "(ns printing-test (:require [clojure.test :refer [deftest is]]))
+                           (deftest printing (println \"printed\") (print \"no newline\") (is true))"})
+            (is (= "printed\nno newline"
+                   (str/join (keep :out (send {"op" "test-var-query"
+                                               "var-query" {"ns-query" {"exactly" ["printing-test"]}}}))))))))
       (testing "test-var-query reports the file of the test after load-file of another file"
         (with-session 1682
           (fn [send]

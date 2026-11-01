@@ -1,7 +1,7 @@
 (ns cider.nrepl.middleware.util.error-handling
   "Utilities to safely reply to op requests and help deal with the
   errors/exceptions that might arise from doing so."
-  (:refer-clojure :exclude [error-handler])
+  (:refer-clojure :exclude [error-handler selector])
   (:require
    [clojure.main]
    [clojure.set :as set]
