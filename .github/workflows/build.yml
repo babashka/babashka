@@ -97,8 +97,8 @@ jobs:
         # Key order sets the generated job name.
         include: >-
           ${{ fromJSON(github.ref == 'refs/heads/master'
-          && '[{"os":"macos-15-intel","name":"macos","arch":"amd64","static":false,"oldest_macos_version":"11.0","graalvm_version":"25.0.1"},{"os":"macos-14","name":"macos","static":false,"arch":"aarch64","oldest_macos_version":"11.0","graalvm_version":"25.0.4"}]'
-          || '[{"os":"macos-14","name":"macos","static":false,"arch":"aarch64","oldest_macos_version":"11.0","graalvm_version":"25.0.4"}]') }}
+          && '[{"os":"macos-15-intel","name":"macos","arch":"amd64","static":false,"oldest_macos_version":"11.0","graalvm_version":"25.0.1"},{"os":"macos-15","name":"macos","static":false,"arch":"aarch64","oldest_macos_version":"11.0","graalvm_version":"25.0.4"}]'
+          || '[{"os":"macos-15","name":"macos","static":false,"arch":"aarch64","oldest_macos_version":"11.0","graalvm_version":"25.0.4"}]') }}
 
          #- os: ubuntu-latest
          #  name: linux
