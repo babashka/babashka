@@ -55,7 +55,7 @@
   path, or nil if file names neither."
   [file]
   (when-let [url (or (io/resource file)
-                     (when (and (fs/absolute? file) (fs/exists? file))
+                     (when (and (fs/exists? file) (fs/absolute? file))
                        (io/as-url (fs/file file))))]
     (let [url (str url)]
       (when (re-find #"^(file|jar):" url) url))))

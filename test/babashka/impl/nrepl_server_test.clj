@@ -963,9 +963,6 @@
                          "file-name" "CHANGELOG.md" "file-path" "CHANGELOG.md"})
                   (is (= "\"CHANGELOG.md\"" (get (reply {"op" "eval" "code" "(:file (meta #'ns-info.relative/x))"}) "value")))
                   (is (not (contains? (reply {"op" "info" "sym" "ns-info.relative" "ns" "user"}) "file"))))
-                (testing "info on a bundled namespace returns no resource URL"
-                  (is (not (some-> (get (reply {"op" "info" "sym" "nrepl.core" "ns" "user"}) "file")
-                                   (str/starts-with? "resource:")))))
                 (testing "info on a var named like an alias returns the var"
                   (is (= "ns-info.user"
                          (get (reply {"op" "info" "sym" "string" "ns" "ns-info.user"}) "ns"))))
@@ -974,6 +971,18 @@
                 (testing "eldoc on a namespace returns status no-eldoc"
                   (is (some #{"no-eldoc"}
                             (get (reply {"op" "eldoc" "sym" "ns-info.some-lib" "ns" "user"}) "status"))))))))))))
+
+(deftest nrepl-bundled-ns-info-test
+  (with-bb-script 1689
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1689 :quiet true}))"
+    (fn []
+      (with-session 1689
+        (fn [send]
+          (testing "info on nrepl.transport returns the namespace and no resource URL"
+            (let [r (decode (first (send {"op" "info" "sym" "nrepl.transport" "ns" "user"})))]
+              (is (= "nrepl.transport" (get r "name")))
+              (is (= ["done"] (get r "status")))
+              (is (not (some-> (get r "file") (str/starts-with? "resource:")))))))))))
 
 (deftest nrepl-java-info-test
   (with-bb-script 1687
