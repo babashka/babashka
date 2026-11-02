@@ -51,11 +51,12 @@
   (str/join \newline (map pr-str forms)))
 
 (defn- file-url
-  "Returns the file or jar URL of file, a classpath resource or a path, or nil
-  if file names neither."
+  "Returns the file or jar URL of file, a classpath resource or an absolute
+  path, or nil if file names neither."
   [file]
   (when-let [url (or (io/resource file)
-                     (when (fs/exists? file) (io/as-url (fs/file file))))]
+                     (when (and (fs/absolute? file) (fs/exists? file))
+                       (io/as-url (fs/file file))))]
     (let [url (str url)]
       (when (re-find #"^(file|jar):" url) url))))
 

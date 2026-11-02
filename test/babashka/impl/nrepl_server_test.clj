@@ -958,6 +958,11 @@
                     (let [r (reply {"op" "info" "sym" ns-name "ns" "user"})]
                       (is (= ns-name (get r "name")))
                       (is (not (contains? r "file"))))))
+                (testing "info on a namespace with a var from a relative path returns no file"
+                  (send {"op" "load-file" "file" "(ns ns-info.relative)\n(def x 1)\n"
+                         "file-name" "CHANGELOG.md" "file-path" "CHANGELOG.md"})
+                  (is (= "\"CHANGELOG.md\"" (get (reply {"op" "eval" "code" "(:file (meta #'ns-info.relative/x))"}) "value")))
+                  (is (not (contains? (reply {"op" "info" "sym" "ns-info.relative" "ns" "user"}) "file"))))
                 (testing "info on a bundled namespace returns no resource URL"
                   (is (not (some-> (get (reply {"op" "info" "sym" "nrepl.core" "ns" "user"}) "file")
                                    (str/starts-with? "resource:")))))
