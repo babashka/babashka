@@ -896,6 +896,94 @@
         (testing "a message without an op gets unknown-op"
           (is (contains? (set (:status (read-msg (bencode/read-bencode in)))) "unknown-op")))))))
 
+(deftest ^:skip-windows nrepl-ns-info-test
+  (fs/with-temp-dir [dir {}]
+    (let [src (fs/file dir "ns_info" "some_lib.clj")
+          script (fs/file dir "ns_info" "script.bb")
+          off-classpath (str (fs/path dir "off_classpath.clj"))
+          shadow (str (fs/path dir "shadow.clj"))
+          src-url (str "file:" src)]
+      (fs/create-dirs (fs/parent src))
+      (spit src "(ns ns-info.some-lib\n  \"Says hi.\")\n")
+      (spit script "(ns ns-info.script)\n")
+      (spit (fs/file dir "ns_info" "shadowed.clj") "(ns ns-info.shadowed)\n")
+      (spit off-classpath "(ns ns-info.off-classpath)\n(defn- hello [] 1)\n")
+      (spit shadow "(ns ns-info.shadowed)\n(defn hello [] 1)\n")
+      (with-bb-script 1688
+        (format "(babashka.classpath/add-classpath %s)
+                 (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1688 :quiet true}))"
+                (pr-str (str dir)))
+        (fn []
+          (with-session 1688
+            (fn [send]
+              (let [reply (fn [m] (decode (first (send m))))
+                    load-file! (fn [f]
+                                 (send {"op" "load-file" "file" (slurp f)
+                                        "file-name" (str (fs/file-name f)) "file-path" f}))]
+                (send {"op" "eval"
+                       "code" "(ns ns-info.repl-only)
+                               (def x 1)
+                               (create-ns 'ns-info.empty)
+                               (ns ns-info.user (:require [ns-info.some-lib :as lib] [ns-info.script] [clojure.string :as string]))
+                               (def string 1)"})
+                (testing "info on a namespace name returns its doc, file and line 1"
+                  (let [r (reply {"op" "info" "sym" "ns-info.some-lib" "ns" "ns-info.user"})]
+                    (is (= ["ns-info.some-lib" "ns-info.some-lib" "Says hi." src-url 1]
+                           (mapv r ["ns" "name" "doc" "file" "line"])))
+                    (is (= ["done"] (get r "status")))))
+                (testing "info on an alias returns the namespace"
+                  (let [r (reply {"op" "info" "sym" "lib" "ns" "ns-info.user"})]
+                    (is (= ["ns-info.some-lib" src-url] (mapv r ["name" "file"])))))
+                (testing "cider/info on an alias returns the namespace"
+                  (is (= "ns-info.some-lib"
+                         (get (reply {"op" "cider/info" "sym" "lib" "ns" "ns-info.user"}) "name"))))
+                (testing "info without ns resolves an alias in the session's namespace"
+                  (is (= "ns-info.some-lib" (get (reply {"op" "info" "sym" "lib"}) "name"))))
+                (testing "info on an alias with an unknown ns returns status no-info"
+                  (is (some #{"no-info"}
+                            (get (reply {"op" "info" "sym" "lib" "ns" "not.loaded"}) "status"))))
+                (testing "info on a namespace in a .bb file returns that file"
+                  (is (= (str "file:" script)
+                         (get (reply {"op" "info" "sym" "ns-info.script" "ns" "user"}) "file"))))
+                (testing "info on a namespace off the classpath returns the file of its private var"
+                  (load-file! off-classpath)
+                  (is (= (str "file:" off-classpath)
+                         (get (reply {"op" "info" "sym" "ns-info.off-classpath" "ns" "user"}) "file"))))
+                (testing "info on a loaded namespace prefers the file of its var over the classpath"
+                  (load-file! shadow)
+                  (is (= (str "file:" shadow)
+                         (get (reply {"op" "info" "sym" "ns-info.shadowed" "ns" "user"}) "file"))))
+                (doseq [ns-name ["ns-info.empty" "ns-info.repl-only" "clojure.string"]]
+                  (testing (str "info on " ns-name " returns no file")
+                    (let [r (reply {"op" "info" "sym" ns-name "ns" "user"})]
+                      (is (= ns-name (get r "name")))
+                      (is (not (contains? r "file"))))))
+                (testing "info on a namespace with a var from a relative path returns no file"
+                  (send {"op" "load-file" "file" "(ns ns-info.relative)\n(def x 1)\n"
+                         "file-name" "CHANGELOG.md" "file-path" "CHANGELOG.md"})
+                  (is (= "\"CHANGELOG.md\"" (get (reply {"op" "eval" "code" "(:file (meta #'ns-info.relative/x))"}) "value")))
+                  (is (not (contains? (reply {"op" "info" "sym" "ns-info.relative" "ns" "user"}) "file"))))
+                (testing "info on a var named like an alias returns the var"
+                  (is (= "ns-info.user"
+                         (get (reply {"op" "info" "sym" "string" "ns" "ns-info.user"}) "ns"))))
+                (testing "info without ns on a var named like an alias returns the var"
+                  (is (= "ns-info.user" (get (reply {"op" "info" "sym" "string"}) "ns"))))
+                (testing "eldoc on a namespace returns status no-eldoc"
+                  (is (some #{"no-eldoc"}
+                            (get (reply {"op" "eldoc" "sym" "ns-info.some-lib" "ns" "user"}) "status"))))))))))))
+
+(deftest nrepl-bundled-ns-info-test
+  (with-bb-script 1689
+    "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1689 :quiet true}))"
+    (fn []
+      (with-session 1689
+        (fn [send]
+          (testing "info on nrepl.transport returns the namespace and no resource URL"
+            (let [r (decode (first (send {"op" "info" "sym" "nrepl.transport" "ns" "user"})))]
+              (is (= "nrepl.transport" (get r "name")))
+              (is (= ["done"] (get r "status")))
+              (is (not (some-> (get r "file") (str/starts-with? "resource:")))))))))))
+
 (deftest nrepl-java-info-test
   (with-bb-script 1687
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1687 :quiet true}))"
