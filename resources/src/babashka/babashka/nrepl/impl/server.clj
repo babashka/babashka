@@ -4,6 +4,7 @@
   {:no-doc true}
   (:require
    [babashka.classpath :as cp]
+   [babashka.fs :as fs]
    [babashka.nrepl.impl.cider :as cider]
    [babashka.nrepl.impl.clojuredocs :as clojuredocs]
    [babashka.nrepl.impl.debug :as debug]
@@ -49,34 +50,42 @@
 (defn- forms-join [forms]
   (str/join \newline (map pr-str forms)))
 
+(defn- file-url
+  "Returns the file or jar URL of file, a classpath resource or a path, or nil
+  if file names neither."
+  [file]
+  (when-let [url (or (io/resource file)
+                     (when (fs/exists? file) (io/as-url (fs/file file))))]
+    (let [url (str url)]
+      (when (re-find #"^(file|jar):" url) url))))
+
 (defn- ns-file
-  "Returns the classpath URL of the file the-ns loads from, or the file of one
-  of its vars, or nil if it has neither."
+  "Returns the URL of the file a var of the-ns comes from, or of the file
+  the-ns loads from, or nil if it has neither."
   [the-ns]
-  (let [ns-str (str (ns-name the-ns))
-        path (-> ns-str (str/replace \- \_) (str/replace \. \/))]
-    (or (some #(some-> (io/resource (str path %)) str) [".bb" ".clj" ".cljc"])
-        (when-let [sym (first (keys (ns-publics the-ns)))]
-          (:file (sci-helpers/lookup (str ns-str "/" sym) ns-str))))))
+  (or (some file-url (distinct (keep (comp :file meta) (vals (ns-interns the-ns)))))
+      (some file-url (sci-helpers/resource-paths (ns-name the-ns)))))
 
 (defn- ns-lookup
   "Returns the lookup result of the namespace that sym-str names, as an alias
   in the message's namespace or by its own name, or nil if it names none."
-  [sym-str msg]
+  [sym-str {:keys [ns] :as msg}]
   (when-let [sym (some-> sym-str symbol)]
-    (when-let [the-ns (or (get (ns-aliases (msg-ns msg)) sym) (find-ns sym))]
-      (let [file (ns-file the-ns)]
-        (cond-> {:ns (ns-name the-ns)
-                 :name (ns-name the-ns)
-                 :doc (:doc (meta the-ns))}
-          file (assoc :file file :line 1))))))
+    (let [context (if ns (find-ns (symbol ns)) (msg-ns msg))]
+      (when-let [the-ns (or (some-> context ns-aliases (get sym)) (find-ns sym))]
+        (let [file (ns-file the-ns)]
+          (cond-> {:ns (ns-name the-ns)
+                   :name (ns-name the-ns)
+                   :doc (:doc (meta the-ns))}
+            file (assoc :file file :line 1)))))))
 
 (defn- lookup-reply [{:keys [op sym symbol ns class member] :as msg}]
   (let [eldoc? (contains? #{"eldoc" "cider/eldoc"} op)
         sym-str (or sym symbol)
-        m (when-not (seq class) (sci-helpers/lookup sym-str ns))
+        ns-str (or ns (str (ns-name (msg-ns msg))))
+        m (when-not (seq class) (sci-helpers/lookup sym-str ns-str))
         java (when (nil? m)
-               (when-let [info (java/info {:ns ns :sym sym-str :class class :member member})]
+               (when-let [info (java/info {:ns ns-str :sym sym-str :class class :member member})]
                  (if eldoc? (java/eldoc info) (java/info-reply info))))
         m (or m (when-not (or java eldoc? (seq class))
                   (ns-lookup sym-str msg)))
