@@ -13,6 +13,7 @@ A preview of the next release can be installed from
 - Fix a 30 MB binary size increase from the REPL tail tip highlighter
 - Bump `cider-nrepl` to `0.64.0`
 - Bump `orchard` to `0.48.0`
+- Bump `jsoup` to `1.24.1`
 - nREPL test ops send test output under their own message id ([#2265](https://github.com/babashka/babashka/issues/2265))
 - nREPL: `info` answers for a namespace's name or alias with its doc and file ([#2270](https://github.com/babashka/babashka/issues/2270))
 - nREPL: `info` and `eldoc` without `ns` resolve vars and Java classes in the session's namespace ([#2270](https://github.com/babashka/babashka/issues/2270))
