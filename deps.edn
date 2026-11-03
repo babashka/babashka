@@ -28,7 +28,7 @@
         org.clojure/core.async {:mvn/version "1.8.741"},
         org.clojure/tools.cli {:mvn/version "1.4.256"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
-        cheshire/cheshire {:mvn/version "6.2.0"}
+        cheshire/cheshire {:mvn/version "6.2.1"}
         org.clojure/data.json {:mvn/version "2.5.2"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha11"}
         clj-commons/clj-yaml {:mvn/version "1.0.30"}
