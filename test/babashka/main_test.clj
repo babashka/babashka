@@ -813,6 +813,20 @@
     (is (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1) (= \":foouser/x\" (pr-str #'x))"))
     (is (= :foouser/x (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1)")))))
 
+(deftest print-method-binding-test
+  (testing "print-method uses *print-length* 3 and *print-level* 1 from binding"
+    (is (= ["[# #]" "(0 1 2 ...)"]
+           (bb nil "(binding [*print-length* 3 *print-level* 1]
+                      [(with-out-str (print-method [(range 10) [1]] *out*))
+                       (with-out-str (print-method (range 10) *out*))])"))))
+  (testing "remove-method removes a print-method added with defmethod"
+    (is (= ["<long (0 1 ...)>" false]
+           (bb nil "(import '[java.util.concurrent.atomic AtomicLong])
+                    (defmethod print-method AtomicLong [_ w] (.write w \"<long \") (print-method (range 5) w) (.write w \">\"))
+                    (let [s (binding [*print-length* 2] (with-out-str (print-method (AtomicLong.) *out*)))]
+                      (remove-method print-method AtomicLong)
+                      [s (str/starts-with? (pr-str (AtomicLong.)) \"<long\")])")))))
+
 (deftest stdout-interop-test
   (when test-utils/native?
     (is (= 'Something (bb nil "(.print (System/out) \"Something\")")))))

@@ -75,11 +75,22 @@
 (when-not @patched?
   (alter-var-root #'pprint/write (constantly new-write)))
 
+(defn- with-sci-print-vars [f]
+  (binding [pprint/*print-right-margin* @print-right-margin
+            pprint/*print-pprint-dispatch* @print-pprint-dispatch
+            pprint/*print-miser-width* @print-miser-width
+            *print-meta* @sci/print-meta
+            *print-readably* @sci/print-readably
+            *print-length* @sci/print-length
+            *print-level* @sci/print-level
+            *print-namespace-maps* @sci/print-namespace-maps]
+    (f)))
+
 (defn write
   [object & kw-args]
   ;; bind *out* to sci's *out*, so with-out-str works
   (binding [*out* @sci/out]
-    (apply pprint/write object kw-args)))
+    (with-sci-print-vars #(apply pprint/write object kw-args))))
 
 (defn print-table
   "Prints a collection of maps in a textual table. Prints table headings
@@ -110,18 +121,12 @@
   ([s]
    (pprint s @sci/out))
   ([s writer]
-   (binding [pprint/*print-right-margin* @print-right-margin
-             pprint/*print-pprint-dispatch* @print-pprint-dispatch
-             pprint/*print-miser-width* @print-miser-width
-             *print-meta* @sci/print-meta
-             *print-readably* @sci/print-readably
-             *print-length* @sci/print-length
-             *print-namespace-maps* @sci/print-namespace-maps]
-     (let [pretty-writer (as-pretty-writer writer)]
-       ;; bind sci's *out* too, so print and friends in custom dispatch functions
-       ;; write to the pretty writer
-       (sci/binding [sci/out pretty-writer]
-         (pprint/pprint s pretty-writer))))))
+   (with-sci-print-vars
+     #(let [pretty-writer (as-pretty-writer writer)]
+        ;; bind sci's *out* too, so print and friends in custom dispatch functions
+        ;; write to the pretty writer
+        (sci/binding [sci/out pretty-writer]
+          (pprint/pprint s pretty-writer))))))
 
 (defn cl-format
   "An implementation of a Common Lisp compatible format function. cl-format formats its

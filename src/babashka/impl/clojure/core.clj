@@ -173,6 +173,29 @@
                      (take-while some? (iterate ex-cause o)))]
     (cond-> m frames (assoc :sci/stacktrace (vec frames)))))
 
+(def ^:private ^clojure.lang.MultiFn host-print-method print-method)
+
+(def sci-print-method
+  (proxy [clojure.lang.MultiFn] ["print-method"
+                                 (.-dispatchFn host-print-method)
+                                 (.-defaultDispatchVal host-print-method)
+                                 (.-hierarchy host-print-method)]
+    (invoke [x w]
+      (binding [*print-length* @sci/print-length
+                *print-level* @sci/print-level
+                *print-meta* @sci/print-meta
+                *print-namespace-maps* @sci/print-namespace-maps
+                *print-readably* @sci/print-readably
+                *print-dup* @sci/print-dup]
+        (host-print-method x w)))
+    (addMethod [dispatch-val f] (.addMethod host-print-method dispatch-val f) this)
+    (removeMethod [dispatch-val] (.removeMethod host-print-method dispatch-val) this)
+    (preferMethod [x y] (.preferMethod host-print-method x y) this)
+    (reset [] (.reset host-print-method) this)
+    (getMethod [dispatch-val] (.getMethod host-print-method dispatch-val))
+    (getMethodTable [] (.getMethodTable host-print-method))
+    (getPreferTable [] (.getPreferTable host-print-method))))
+
 (def core-extras
   {;; agents
    'agent (copy-core-var agent)
@@ -239,7 +262,7 @@
    'abs (sci/copy-var abs clojure-core-ns)
    'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)
    'into-array (sci/copy-var into-array clojure-core-ns)
-   'print-method (sci/copy-var print-method clojure-core-ns)
+   'print-method (sci/copy-var sci-print-method clojure-core-ns {:name 'print-method :copy-meta-from clojure.core/print-method})
    'print-dup (sci/copy-var print-dup clojure-core-ns)
    'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)
    'set-agent-send-executor! (sci/copy-var set-agent-send-executor! clojure-core-ns)
