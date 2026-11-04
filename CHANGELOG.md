@@ -15,7 +15,7 @@ A preview of the next release can be installed from
 - Bump `orchard` to `0.48.0`
 - Bump `jsoup` to `1.24.1`
 - Bump `cheshire` to `6.2.1`
-- `print-method` and `clojure.pprint/write` use `*print-length*` and `*print-level*` from `binding`, and `clojure.pprint/pprint` uses `*print-level*` ([#2274](https://github.com/babashka/babashka/issues/2274))
+- `print-method`, `print-dup` and `clojure.pprint/write` use print vars such as `*print-length*` and `*print-level*` from `binding`, and `clojure.pprint/pprint` uses `*print-level*` ([#2274](https://github.com/babashka/babashka/issues/2274))
 - nREPL test ops send test output under their own message id ([#2265](https://github.com/babashka/babashka/issues/2265))
 - nREPL: `info` answers for a namespace's name or alias with its doc and file ([#2270](https://github.com/babashka/babashka/issues/2270))
 - nREPL: `info` and `eldoc` without `ns` resolve vars and Java classes in the session's namespace ([#2270](https://github.com/babashka/babashka/issues/2270))

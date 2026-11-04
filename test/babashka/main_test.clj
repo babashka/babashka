@@ -827,6 +827,12 @@
                       (remove-method print-method AtomicLong)
                       [s (str/starts-with? (pr-str (AtomicLong.)) \"<long\")])")))))
 
+(deftest print-dup-binding-test
+  (testing "print-dup prints metadata with *print-meta* true from binding"
+    (is (= "^{:a 1} [1]"
+           (bb nil "(binding [*print-meta* true]
+                      (with-out-str (print-dup (with-meta [1] {:a 1}) *out*)))")))))
+
 (deftest stdout-interop-test
   (when test-utils/native?
     (is (= 'Something (bb nil "(.print (System/out) \"Something\")")))))

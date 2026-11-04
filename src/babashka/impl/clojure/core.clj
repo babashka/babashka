@@ -173,13 +173,12 @@
                      (take-while some? (iterate ex-cause o)))]
     (cond-> m frames (assoc :sci/stacktrace (vec frames)))))
 
-(def ^:private ^clojure.lang.MultiFn host-print-method print-method)
-
-(def sci-print-method
-  (proxy [clojure.lang.MultiFn] ["print-method"
-                                 (.-dispatchFn host-print-method)
-                                 (.-defaultDispatchVal host-print-method)
-                                 (.-hierarchy host-print-method)]
+(defn- sci-print-multi-fn
+  [fn-name ^clojure.lang.MultiFn host-fn]
+  (proxy [clojure.lang.MultiFn] [fn-name
+                                 (.-dispatchFn host-fn)
+                                 (.-defaultDispatchVal host-fn)
+                                 (.-hierarchy host-fn)]
     (invoke [x w]
       (binding [*print-length* @sci/print-length
                 *print-level* @sci/print-level
@@ -187,14 +186,17 @@
                 *print-namespace-maps* @sci/print-namespace-maps
                 *print-readably* @sci/print-readably
                 *print-dup* @sci/print-dup]
-        (host-print-method x w)))
-    (addMethod [dispatch-val f] (.addMethod host-print-method dispatch-val f) this)
-    (removeMethod [dispatch-val] (.removeMethod host-print-method dispatch-val) this)
-    (preferMethod [x y] (.preferMethod host-print-method x y) this)
-    (reset [] (.reset host-print-method) this)
-    (getMethod [dispatch-val] (.getMethod host-print-method dispatch-val))
-    (getMethodTable [] (.getMethodTable host-print-method))
-    (getPreferTable [] (.getPreferTable host-print-method))))
+        (host-fn x w)))
+    (addMethod [dispatch-val f] (.addMethod host-fn dispatch-val f) this)
+    (removeMethod [dispatch-val] (.removeMethod host-fn dispatch-val) this)
+    (preferMethod [x y] (.preferMethod host-fn x y) this)
+    (reset [] (.reset host-fn) this)
+    (getMethod [dispatch-val] (.getMethod host-fn dispatch-val))
+    (getMethodTable [] (.getMethodTable host-fn))
+    (getPreferTable [] (.getPreferTable host-fn))))
+
+(def sci-print-method (sci-print-multi-fn "print-method" print-method))
+(def sci-print-dup (sci-print-multi-fn "print-dup" print-dup))
 
 (def core-extras
   {;; agents
@@ -263,7 +265,7 @@
    'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)
    'into-array (sci/copy-var into-array clojure-core-ns)
    'print-method (sci/copy-var sci-print-method clojure-core-ns {:name 'print-method :copy-meta-from clojure.core/print-method})
-   'print-dup (sci/copy-var print-dup clojure-core-ns)
+   'print-dup (sci/copy-var sci-print-dup clojure-core-ns {:name 'print-dup :copy-meta-from clojure.core/print-dup})
    'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)
    'set-agent-send-executor! (sci/copy-var set-agent-send-executor! clojure-core-ns)
    'set-agent-send-off-executor! (sci/copy-var set-agent-send-off-executor! clojure-core-ns)
