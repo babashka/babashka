@@ -831,7 +831,11 @@
   (testing "print-dup prints metadata with *print-meta* true from binding"
     (is (= "^{:a 1} [1]"
            (bb nil "(binding [*print-meta* true]
-                      (with-out-str (print-dup (with-meta [1] {:a 1}) *out*)))")))))
+                      (with-out-str (print-dup (with-meta [1] {:a 1}) *out*)))"))))
+  (testing "print-dup prints [1 2 ...] with *print-length* 2 from binding"
+    (is (= "[1 2 ...]"
+           (bb nil "(binding [*print-length* 2]
+                      (with-out-str (print-dup [1 2 3 4] *out*)))")))))
 
 (deftest stdout-interop-test
   (when test-utils/native?
