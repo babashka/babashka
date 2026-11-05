@@ -180,13 +180,26 @@
                                  (.-defaultDispatchVal host-fn)
                                  (.-hierarchy host-fn)]
     (invoke [x w]
-      (binding [*print-length* @sci/print-length
-                *print-level* @sci/print-level
-                *print-meta* @sci/print-meta
-                *print-namespace-maps* @sci/print-namespace-maps
-                *print-readably* @sci/print-readably
-                *print-dup* @sci/print-dup]
-        (host-fn x w)))
+      (let [length @sci/print-length
+            level @sci/print-level
+            meta? @sci/print-meta
+            ns-maps @sci/print-namespace-maps
+            readably @sci/print-readably
+            dup @sci/print-dup]
+        (if (and (identical? length *print-length*)
+                 (identical? level *print-level*)
+                 (identical? meta? *print-meta*)
+                 (identical? ns-maps *print-namespace-maps*)
+                 (identical? readably *print-readably*)
+                 (identical? dup *print-dup*))
+          (host-fn x w)
+          (binding [*print-length* length
+                    *print-level* level
+                    *print-meta* meta?
+                    *print-namespace-maps* ns-maps
+                    *print-readably* readably
+                    *print-dup* dup]
+            (host-fn x w)))))
     (addMethod [dispatch-val f] (.addMethod host-fn dispatch-val f) this)
     (removeMethod [dispatch-val] (.removeMethod host-fn dispatch-val) this)
     (preferMethod [x y] (.preferMethod host-fn x y) this)
