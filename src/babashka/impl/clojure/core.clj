@@ -9,6 +9,7 @@
             [sci.core :as sci]
             [sci.ctx-store :as store]
             [sci.impl.copy-vars :refer [copy-core-var new-var]]
+            [sci.impl.io :as sio]
             [sci.impl.parser :as parser]
             [sci.impl.read :as read]
             [sci.impl.utils :as utils :refer [clojure-core-ns]]
@@ -173,43 +174,8 @@
                      (take-while some? (iterate ex-cause o)))]
     (cond-> m frames (assoc :sci/stacktrace (vec frames)))))
 
-(defn- sci-print-multi-fn
-  [fn-name ^clojure.lang.MultiFn host-fn]
-  (proxy [clojure.lang.MultiFn] [fn-name
-                                 (.-dispatchFn host-fn)
-                                 (.-defaultDispatchVal host-fn)
-                                 (.-hierarchy host-fn)]
-    (invoke [x w]
-      (let [length @sci/print-length
-            level @sci/print-level
-            meta? @sci/print-meta
-            ns-maps @sci/print-namespace-maps
-            readably @sci/print-readably
-            dup @sci/print-dup]
-        (if (and (identical? length *print-length*)
-                 (identical? level *print-level*)
-                 (identical? meta? *print-meta*)
-                 (identical? ns-maps *print-namespace-maps*)
-                 (identical? readably *print-readably*)
-                 (identical? dup *print-dup*))
-          (host-fn x w)
-          (binding [*print-length* length
-                    *print-level* level
-                    *print-meta* meta?
-                    *print-namespace-maps* ns-maps
-                    *print-readably* readably
-                    *print-dup* dup]
-            (host-fn x w)))))
-    (addMethod [dispatch-val f] (.addMethod host-fn dispatch-val f) this)
-    (removeMethod [dispatch-val] (.removeMethod host-fn dispatch-val) this)
-    (preferMethod [x y] (.preferMethod host-fn x y) this)
-    (reset [] (.reset host-fn) this)
-    (getMethod [dispatch-val] (.getMethod host-fn dispatch-val))
-    (getMethodTable [] (.getMethodTable host-fn))
-    (getPreferTable [] (.getPreferTable host-fn))))
-
-(def sci-print-method (sci-print-multi-fn "print-method" print-method))
-(def sci-print-dup (sci-print-multi-fn "print-dup" print-dup))
+(def sci-print-method (sio/print-multi-fn "print-method" print-method))
+(def sci-print-dup (sio/print-multi-fn "print-dup" print-dup))
 
 (def core-extras
   {;; agents

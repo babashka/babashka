@@ -827,6 +827,25 @@
                       (remove-method print-method AtomicLong)
                       [s (str/starts-with? (pr-str (AtomicLong.)) \"<long\")])")))))
 
+(deftest print-method-nesting-test
+  (testing "print-method in a custom method prints # below depth 2 with *print-level* 2"
+    (is (= ["[[#box #]]" "[#box [#]]"]
+           (bb nil "(defrecord Box [v])
+                    (defmethod print-method Box [x w] (.write w \"#box \") (print-method (:v x) w))
+                    (binding [*print-level* 2] [(pr-str [[(->Box [[1]])]]) (pr-str [(->Box [[[1]]])])])"))))
+  (testing "a custom method reads *print-level* 2 inside a vector printed with *print-level* 3"
+    (is (= "[#lvl 2]"
+           (bb nil "(defrecord Lvl [v])
+                    (defmethod print-method Lvl [_ w] (.write w (str \"#lvl \" *print-level*)))
+                    (binding [*print-level* 3] (pr-str [(->Lvl 1)]))"))))
+  (testing "a custom method binds *print-length* 1 for its fields"
+    (is (= "[1 ...]"
+           (bb nil "(defrecord Trim [v])
+                    (defmethod print-method Trim [x w] (binding [*print-length* 1] (print-method (:v x) w)))
+                    (pr-str (->Trim [1 2 3]))"))))
+  (testing "print-method prints #:a{:b 1} for a namespaced map"
+    (is (= "#:a{:b 1}" (bb nil "(with-out-str (print-method {:a/b 1} *out*))")))))
+
 (deftest print-dup-binding-test
   (testing "print-dup prints metadata with *print-meta* true from binding"
     (is (= "^{:a 1} [1]"
