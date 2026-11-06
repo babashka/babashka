@@ -13,6 +13,15 @@
   (is (= "(0 1 2 3 4 5 6 7 8 9 ...)"
          (bb "-e" "(set! *print-length* 10) (clojure.pprint/pprint (range 20))"))))
 
+(deftest print-length-level-binding-test
+  (testing "write and pprint use *print-length* 3 and *print-level* 1 from binding"
+    (is (= "true"
+           (bb "-e" "(require '[clojure.pprint :as pprint] '[clojure.string :as str])
+                    (binding [*print-length* 3 *print-level* 1]
+                      (prn (and (= \"[# #]\" (with-out-str (pprint/write [(range 10) [1]])))
+                                (= \"(0 1 2 ...)\" (with-out-str (pprint/write (range 10))))
+                                (= \"[# #]\" (str/trim (with-out-str (pprint/pprint [(range 10) [1]])))))))")))))
+
 (deftest print-namespaced-map-test
   (testing
       "Testing disabling of printing namespace maps..."

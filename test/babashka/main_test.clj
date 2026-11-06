@@ -813,6 +813,49 @@
     (is (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1) (= \":foouser/x\" (pr-str #'x))"))
     (is (= :foouser/x (bb nil "(defmethod print-method sci.lang.IVar [o w] (.write w (str :foo (symbol o)))) (def x 1)")))))
 
+(deftest print-method-binding-test
+  (testing "print-method uses *print-length* 3 and *print-level* 1 from binding"
+    (is (= ["[# #]" "(0 1 2 ...)"]
+           (bb nil "(binding [*print-length* 3 *print-level* 1]
+                      [(with-out-str (print-method [(range 10) [1]] *out*))
+                       (with-out-str (print-method (range 10) *out*))])"))))
+  (testing "remove-method removes a print-method added with defmethod"
+    (is (= ["<long (0 1 ...)>" false]
+           (bb nil "(import '[java.util.concurrent.atomic AtomicLong])
+                    (defmethod print-method AtomicLong [_ w] (.write w \"<long \") (print-method (range 5) w) (.write w \">\"))
+                    (let [s (binding [*print-length* 2] (with-out-str (print-method (AtomicLong.) *out*)))]
+                      (remove-method print-method AtomicLong)
+                      [s (str/starts-with? (pr-str (AtomicLong.)) \"<long\")])")))))
+
+(deftest print-method-nesting-test
+  (testing "print-method in a custom method prints # below depth 2 with *print-level* 2"
+    (is (= ["[[#box #]]" "[#box [#]]"]
+           (bb nil "(defrecord Box [v])
+                    (defmethod print-method Box [x w] (.write w \"#box \") (print-method (:v x) w))
+                    (binding [*print-level* 2] [(pr-str [[(->Box [[1]])]]) (pr-str [(->Box [[[1]]])])])"))))
+  (testing "a custom method reads *print-level* 2 inside a vector printed with *print-level* 3"
+    (is (= "[#lvl 2]"
+           (bb nil "(defrecord Lvl [v])
+                    (defmethod print-method Lvl [_ w] (.write w (str \"#lvl \" *print-level*)))
+                    (binding [*print-level* 3] (pr-str [(->Lvl 1)]))"))))
+  (testing "a custom method binds *print-length* 1 for its fields"
+    (is (= "[1 ...]"
+           (bb nil "(defrecord Trim [v])
+                    (defmethod print-method Trim [x w] (binding [*print-length* 1] (print-method (:v x) w)))
+                    (pr-str (->Trim [1 2 3]))"))))
+  (testing "print-method prints #:a{:b 1} for a namespaced map"
+    (is (= "#:a{:b 1}" (bb nil "(with-out-str (print-method {:a/b 1} *out*))")))))
+
+(deftest print-dup-binding-test
+  (testing "print-dup prints metadata with *print-meta* true from binding"
+    (is (= "^{:a 1} [1]"
+           (bb nil "(binding [*print-meta* true]
+                      (with-out-str (print-dup (with-meta [1] {:a 1}) *out*)))"))))
+  (testing "print-dup prints [1 2 ...] with *print-length* 2 from binding"
+    (is (= "[1 2 ...]"
+           (bb nil "(binding [*print-length* 2]
+                      (with-out-str (print-dup [1 2 3 4] *out*)))")))))
+
 (deftest stdout-interop-test
   (when test-utils/native?
     (is (= 'Something (bb nil "(.print (System/out) \"Something\")")))))
