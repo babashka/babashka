@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- `defrecord`, `deftype` and `reify` accept `clojure.lang.IBlockingDeref` ([#2277](https://github.com/babashka/babashka/issues/2277))
 - The REPL shows `C-x C-d` docs and eldoc again ([#2260](https://github.com/babashka/babashka/issues/2260))
 - Fix a 30 MB binary size increase from the REPL tail tip highlighter
 - Bump `cider-nrepl` to `0.64.0`
