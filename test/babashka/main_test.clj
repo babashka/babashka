@@ -849,7 +849,12 @@
 (deftest str-namespaced-map-test
   (when test-utils/native?
     (testing "str prints {:a/b 1} and pr-str prints #:a{:b 1} for a namespaced map"
-      (is (= ["{:a/b 1}" "#:a{:b 1}"] (bb nil "[(str {:a/b 1}) (pr-str {:a/b 1})]"))))))
+      (is (= ["{:a/b 1}" "#:a{:b 1}"] (bb nil "[(str {:a/b 1}) (pr-str {:a/b 1})]"))))
+    (testing "str prints {:a/b 1} in a future and a Thread"
+      (is (= ["{:a/b 1}" "{:a/b 1}"]
+             (bb nil "(let [p (promise)]
+                        (.start (Thread. #(deliver p (str {:a/b 1}))))
+                        [@(future (str {:a/b 1})) @p])"))))))
 
 (deftest print-dup-binding-test
   (testing "print-dup prints metadata with *print-meta* true from binding"
