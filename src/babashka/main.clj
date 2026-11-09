@@ -993,8 +993,7 @@ Use bb run --help to show this help output.
   (sci/eval-form ctx (list 'clojure.tools.build.api/uber (list 'quote params))))
 
 (defn exec [cli-opts]
-  (with-bindings {clojure.lang.Compiler/LOADER @cp/the-url-loader
-                  #'*print-namespace-maps* @sci/print-namespace-maps}
+  (with-bindings {clojure.lang.Compiler/LOADER @cp/the-url-loader}
     (-> (Thread/currentThread) (.setContextClassLoader @cp/the-url-loader))
     (sci/binding [core/warn-on-reflection @core/warn-on-reflection
                   core/unchecked-math @core/unchecked-math
