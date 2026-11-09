@@ -846,6 +846,11 @@
   (testing "print-method prints #:a{:b 1} for a namespaced map"
     (is (= "#:a{:b 1}" (bb nil "(with-out-str (print-method {:a/b 1} *out*))")))))
 
+(deftest str-namespaced-map-test
+  (when test-utils/native?
+    (testing "str prints {:a/b 1} and pr-str prints #:a{:b 1} for a namespaced map"
+      (is (= ["{:a/b 1}" "#:a{:b 1}"] (bb nil "[(str {:a/b 1}) (pr-str {:a/b 1})]"))))))
+
 (deftest print-dup-binding-test
   (testing "print-dup prints metadata with *print-meta* true from binding"
     (is (= "^{:a 1} [1]"
