@@ -279,7 +279,7 @@ org.clojure/core.cache {:git-url "https://github.com/clojure/core.cache"
                                         cloverage.source-test]}
  ;; Clerk tests are run as a special case in run_all_libtests.clj (shells out to checkout dir)
  io.github.nextjournal/clerk {:git-url "https://github.com/nextjournal/clerk"
-                              :git-sha "4c2599946256592858ca2d65e8d453f9f77489ba"
+                              :git-sha "5f8a7ce2827ad61f520dea1f6f5e9cc779d11305"
                               :test-paths ["test" "notebooks" "src" "resources"]
                               :test-namespaces []
                               :manually-added true}
