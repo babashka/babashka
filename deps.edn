@@ -53,7 +53,7 @@
         org.babashka/http-client {:mvn/version "0.4.26"}
         org.flatland/ordered {:mvn/version "1.16.13"}
         org.jsoup/jsoup {:mvn/version "1.24.1"}
-        io.github.nextjournal/markdown {:mvn/version "0.7.228"}
+        io.github.nextjournal/markdown {:mvn/version "0.7.232"}
         org.jline/jline-terminal-ffm {:mvn/version "4.6.0"}
         org.jline/jline-terminal {:mvn/version "4.6.0"
                                   :exclusions [;; this saves 1mb of native-image size
@@ -192,7 +192,7 @@
                                                  :git/sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"}
                          nubank/matcher-combinators {:mvn/version "3.9.1"}
                          io.github.nextjournal/markdown {:git/url "https://github.com/nextjournal/markdown"
-                                                         :git/sha "ee9da78b347246260dbe66412336aafe20397fa3"}
+                                                         :git/sha "1580eeb11773902b943f4acf88d9f8e1a4ea9e67"}
                          funcool/promesa {:git/url "https://github.com/funcool/promesa"
                                           :git/sha "d8e6f67981b102dda2a4af5a3635a2218257f01a"}
                          com.fulcrologic/statecharts {:git/url "https://github.com/fulcrologic/statecharts"

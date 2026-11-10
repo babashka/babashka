@@ -52,7 +52,7 @@ A preview of the next release can be installed from
 - `source-fn` warns if resolving bb's dependencies fails, and retries on the next call ([#2220](https://github.com/babashka/babashka/issues/2220))
 - Fix loading a `clojure.tools.deps.*` or `clojure.tools.gitlibs.*` namespace that bb does not bundle, such as `clojure.tools.deps.config`
 - Add `java.nio.file.FileSystemLoopException`, `java.util.RandomAccess`, `jdk.net.ExtendedSocketOptions`, `org.jline.utils.Status` and `getAddress` on `Inet4Address` and `Inet6Address`, and allow `reify` of `CompletingParsedLine` and `proxy` of `APersistentMap` with `AutoCloseable` ([#2006](https://github.com/babashka/babashka/issues/2006), [#2203](https://github.com/babashka/babashka/issues/2203), [#2218](https://github.com/babashka/babashka/issues/2218), [#2219](https://github.com/babashka/babashka/issues/2219))
-- Bump `nextjournal.markdown` to `0.7.228`
+- Bump `nextjournal.markdown` to `0.7.232`
 - The macOS amd64 binary requires macOS 11.0 or later
 
 ## 1.13.226 (2026-10-11)
