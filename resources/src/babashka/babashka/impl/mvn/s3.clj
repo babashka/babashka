@@ -47,9 +47,9 @@
 
 (defn signed-headers
   "Returns the headers that sign a request without body for credentials.
-  path is the encoded request path, headers are extra headers to sign.
+  path is the encoded request path, query the canonical query string or nil, headers are extra headers to sign.
   Omits the host header."
-  [{:keys [method host path region headers amz-date]}
+  [{:keys [method host path query region headers amz-date]}
    {:keys [access-key-id secret-access-key session-token]}]
   (let [date (subs amz-date 0 8)
         amz (cond-> {"x-amz-date" amz-date "x-amz-content-sha256" empty-sha256}
@@ -58,7 +58,7 @@
                                 (map (fn [[k v]] [(str/lower-case k) (str/trim v)]))
                                 (merge headers amz {"host" host}))
         signed (str/join ";" (keys canonical-headers))
-        canonical (str/join "\n" [(str/upper-case (name method)) path ""
+        canonical (str/join "\n" [(str/upper-case (name method)) path (or query "")
                                   (apply str (map (fn [[k v]] (str k ":" v "\n")) canonical-headers))
                                   signed empty-sha256])
         scope (str date "/" region "/s3/aws4_request")
@@ -67,6 +67,24 @@
     (assoc amz "Authorization"
            (str "AWS4-HMAC-SHA256 Credential=" access-key-id "/" scope
                 ", SignedHeaders=" signed ", Signature=" (hex (hmac k to-sign))))))
+
+(defn endpoint
+  "Returns the :scheme and :host of S3 in region."
+  [region]
+  {:scheme "https"
+   :host (str "s3." region (if (str/starts-with? region "cn-") ".amazonaws.com.cn" ".amazonaws.com"))})
+
+(defn- signed-request
+  "Returns an http request on key in bucket of region, signed with creds."
+  [req bucket key query region creds]
+  (let [{:keys [scheme host]} (endpoint region)
+        path (str "/" (encode-segment bucket) (encode-path key))]
+    (-> req
+        (assoc :uri (str scheme "://" host path (when query (str "?" query))))
+        (update :headers merge (signed-headers {:method (:method req) :host host :path path
+                                                :query (when query (str query "="))
+                                                :region region :amz-date (amz-date)}
+                                               creds)))))
 
 (def ^:private regions (atom {}))
 
@@ -78,44 +96,25 @@
       (swap! regions assoc (.getHost u) region))
     (str/replace url #"\?[^/]*" "")))
 
-(defn- endpoint-override []
-  (some-> (or (env/getenv "AWS_ENDPOINT_URL_S3") (env/getenv "AWS_ENDPOINT_URL"))
-          (str/replace #"/+$" "")))
-
-(defn- endpoint
-  "Returns :scheme, :host and :prefix, the encoded path before the key, of bucket in region."
-  [bucket region]
-  (if-let [e (endpoint-override)]
-    (let [u (URI/create e)]
-      {:scheme (.getScheme u) :host (.getRawAuthority u)
-       :prefix (str (.getRawPath u) "/" (encode-segment bucket))})
-    (if (str/includes? bucket ".")
-      {:scheme "https" :host (str "s3." region ".amazonaws.com") :prefix (str "/" (encode-segment bucket))}
-      {:scheme "https" :host (str bucket ".s3." region ".amazonaws.com") :prefix ""})))
-
-(defn- discover-region
-  "Returns the x-amz-bucket-region header of a HEAD request on bucket, or nil if absent."
-  [bucket client]
-  (let [url (if (str/includes? bucket ".")
-              (str "https://s3.amazonaws.com/" (encode-segment bucket) "/")
-              (str "https://" bucket ".s3.amazonaws.com/"))]
-    (try
-      (-> (http/request (cond-> {:method :head :uri url :throw false :timeout 10000}
-                          client (assoc :client client)))
-          (get-in [:headers "x-amz-bucket-region"]))
-      (catch Exception _ nil))))
+(defn- bucket-location
+  "Returns the LocationConstraint of bucket, us-east-1 if empty, or nil if the request fails."
+  [bucket creds client]
+  (try
+    (let [{:keys [status body]} (http/request (signed-request (cond-> {:method :get :throw false :timeout 120000}
+                                                                client (assoc :client client))
+                                                              bucket "" "location" "us-east-1" creds))]
+      (when (= 200 status)
+        (let [region (or (second (re-find #"<LocationConstraint[^>]*>([^<]*)</LocationConstraint>" body)) "")]
+          (if (= "" region) "us-east-1" region))))
+    (catch Exception _ nil)))
 
 (defn- bucket-region
   "Returns the region of bucket.
   Uses the region= parameter of its repository URL first.
-  With an endpoint override uses AWS_REGION, or us-east-1 if absent.
-  Otherwise uses the region S3 reports, or us-east-1 if S3 reports none."
-  [bucket client]
+  Otherwise uses the location S3 reports, or us-east-1 if the request fails."
+  [bucket creds client]
   (or (get @regions bucket)
-      (let [region (or (when (endpoint-override)
-                         (or (env/getenv "AWS_REGION") "us-east-1"))
-                       (discover-region bucket client)
-                       "us-east-1")]
+      (let [region (or (bucket-location bucket creds client) "us-east-1")]
         (swap! regions assoc bucket region)
         region)))
 
@@ -174,32 +173,45 @@
             (assoc :expiration (some-> Expiration Instant/parse)))))
 
 (defn- get-ok [req]
-  (let [{:keys [status body]} (http/request (merge {:method :get :throw false :timeout 2000
-                                                     :client (http/client {:connect-timeout 1000})}
-                                                    req))]
-    (when (= 200 status) body)))
+  (try
+    (let [{:keys [status body]} (http/request (merge {:method :get :throw false :timeout 1000
+                                                       :client (http/client {:connect-timeout 1000})}
+                                                      req))]
+      (when (= 200 status) body))
+    (catch Exception _ nil)))
+
+(defn- in-container? []
+  (or (env/getenv "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI")
+      (env/getenv "AWS_CONTAINER_CREDENTIALS_FULL_URI")))
+
+(defn- metadata-host []
+  (or (System/getProperty "com.amazonaws.sdk.ec2MetadataServiceEndpointOverride")
+      (env/getenv "AWS_EC2_METADATA_SERVICE_ENDPOINT")
+      (when (in-container?) "http://169.254.170.2")
+      "http://169.254.169.254"))
+
+(defn- metadata-uri [path]
+  (str (str/replace (metadata-host) #"/+$" "") path))
 
 (defn- container-credentials []
-  (when-let [uri (or (some->> (env/getenv "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI") (str "http://169.254.170.2"))
+  (when-let [uri (or (some-> (env/getenv "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI") metadata-uri)
                      (env/getenv "AWS_CONTAINER_CREDENTIALS_FULL_URI"))]
     (some-> (get-ok (cond-> {:uri uri}
                       (env/getenv "AWS_CONTAINER_AUTHORIZATION_TOKEN")
                       (assoc :headers {"Authorization" (env/getenv "AWS_CONTAINER_AUTHORIZATION_TOKEN")})))
             json-credentials)))
 
-(defn- instance-credentials []
-  (when-not (= "true" (some-> (env/getenv "AWS_EC2_METADATA_DISABLED") str/lower-case))
-    (try
-      (let [host (or (some-> (env/getenv "AWS_EC2_METADATA_SERVICE_ENDPOINT") (str/replace #"/+$" ""))
-                     "http://169.254.169.254")
-            token (try (get-ok {:method :put :uri (str host "/latest/api/token")
-                                :headers {"X-aws-ec2-metadata-token-ttl-seconds" "21600"}})
-                       (catch Exception _ nil))
-            headers (if token {"X-aws-ec2-metadata-token" token} {})
-            base (str host "/latest/meta-data/iam/security-credentials/")]
-        (when-let [role (some-> (get-ok {:uri base :headers headers}) str/split-lines first str/trim not-empty)]
-          (some-> (get-ok {:uri (str base role) :headers headers}) json-credentials)))
-      (catch Exception _ nil))))
+(defn- instance-credentials [token]
+  (when-not (in-container?)
+    (let [headers (if token {"X-aws-ec2-metadata-token" token} {})
+          base (metadata-uri "/latest/meta-data/iam/security-credentials/")]
+      (when-let [role (some-> (get-ok {:uri base :headers headers}) str/split-lines first str/trim not-empty)]
+        (some-> (get-ok {:uri (str base role) :headers headers}) json-credentials)))))
+
+(defn- imds-v2-credentials []
+  (when-let [token (get-ok {:method :put :uri (metadata-uri "/latest/api/token")
+                            :headers {"X-aws-ec2-metadata-token-ttl-seconds" "21600"}})]
+    (instance-credentials token)))
 
 (def ^:private cached-credentials (atom nil))
 
@@ -214,26 +226,38 @@
     (if (and c (not (expired? c)))
       (:credentials c)
       (let [creds (some #(%) [env-credentials property-credentials profile-credentials
-                              container-credentials instance-credentials])]
-        (reset! cached-credentials {:credentials creds :expiration (:expiration creds)})
+                              container-credentials imds-v2-credentials #(instance-credentials nil)])]
+        (when creds
+          (reset! cached-credentials {:credentials creds :expiration (:expiration creds)}))
         creds))))
+
+(defn- failure-message [method bucket]
+  (if (= :head method)
+    "Artifact not found"
+    (str "Unexpected error downloading artifact from " bucket)))
 
 (defn request
   "Returns the http request for a request on an s3:// url.
   Signs with the access key id and secret access key in :basic-auth, or the default credentials if absent.
-  Leaves the request unsigned if there are no credentials."
+  Throws if there are no credentials."
   [{:keys [uri method basic-auth client] :as req}]
   (let [u (URI/create uri)
         bucket (.getHost u)
-        region (bucket-region bucket client)
-        {:keys [scheme host prefix]} (endpoint bucket region)
-        path (str prefix (encode-path (.getPath u)))
-        creds (if-let [[id secret] basic-auth]
+        creds (if-let [[id secret] (when (every? some? basic-auth) basic-auth)]
                 {:access-key-id id :secret-access-key secret}
                 (default-credentials))]
-    (cond-> (-> req
-                (dissoc :basic-auth)
-                (assoc :uri (str scheme "://" host path)))
-      creds (update :headers merge (signed-headers {:method method :host host :path path
-                                                    :region region :amz-date (amz-date)}
-                                                   creds)))))
+    (when-not creds
+      (throw (ex-info (failure-message method bucket) {:bucket bucket :reason :no-credentials})))
+    (signed-request (dissoc req :basic-auth) bucket (.getPath u) nil (bucket-region bucket creds client) creds)))
+
+(defn check-response
+  "Returns response with status 404 for a 403.
+  Throws for a status other than 200, 403 and 404."
+  [method uri {:keys [status] :as response}]
+  (cond
+    (#{200 404} status) response
+    (= 403 status) (assoc response :status 404)
+    :else (do (when (instance? java.io.Closeable (:body response))
+                (.close ^java.io.Closeable (:body response)))
+              (throw (ex-info (failure-message method (.getHost (URI/create uri)))
+                              {:uri uri :status status})))))

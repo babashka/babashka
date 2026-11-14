@@ -179,9 +179,7 @@
   [method url {:keys [repo-id repo-url label] :as opts}]
   (try
     (if (s3/s3-url? url)
-      ;; S3 answers 403 for a missing key without list permission.
-      (let [response (send-with-retries (s3/request (assoc opts :method method :uri url)) repo-id)]
-        (cond-> response (= 403 (:status response)) (assoc :status 404)))
+      (s3/check-response method url (send-with-retries (s3/request (assoc opts :method method :uri url)) repo-id))
       (send-with-retries (assoc opts :method method :uri url) repo-id))
     (catch Exception e
       (let [base (if (and label (str/ends-with? url label))
