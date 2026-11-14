@@ -41,9 +41,6 @@
                       :mvn/repos {"dead" {:url "https://nonexistent.invalid/maven2"}}})))))
 
 (deftest s3-test
-  (is (= "S3 repository private (s3://bucket/releases/) requires the JVM resolver. Set BABASHKA_DEPS_RESOLVER=jvm."
-         (failure '{:deps {nope/nope {:mvn/version "1.0.0"}}
-                    :mvn/repos {"private" {:url "s3://bucket/releases/"}}})))
   (testing "a mirror in settings.xml can stand in for the bucket"
     (fs/with-temp-dir [home {}]
       (let [m2 (fs/file home ".m2")

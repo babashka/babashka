@@ -3,6 +3,7 @@
   {:no-doc true}
   (:require [babashka.fs :as fs]
             [babashka.http-client :as http]
+            [babashka.impl.mvn.s3 :as s3]
             [clojure.java.io :as io]
             [clojure.string :as str])
   (:import [java.security MessageDigest]))
@@ -177,7 +178,11 @@
   host has no message of its own, so the host stands in."
   [method url {:keys [repo-id repo-url label] :as opts}]
   (try
-    (send-with-retries (assoc opts :method method :uri url) repo-id)
+    (if (s3/s3-url? url)
+      ;; S3 answers 403 for a missing key without list permission.
+      (let [response (send-with-retries (s3/request (assoc opts :method method :uri url)) repo-id)]
+        (cond-> response (= 403 (:status response)) (assoc :status 404)))
+      (send-with-retries (assoc opts :method method :uri url) repo-id))
     (catch Exception e
       (let [base (if (and label (str/ends-with? url label))
                    (subs url 0 (- (count url) (count label)))

@@ -7,6 +7,7 @@
             [babashka.impl.mvn.env :as env]
             [babashka.impl.mvn.http :as http]
             [babashka.impl.mvn.metadata :as metadata]
+            [babashka.impl.mvn.s3 :as s3]
             [babashka.impl.mvn.settings :as settings]
             [babashka.impl.mvn.tracking :as tracking]
             [clojure.string :as str]))
@@ -57,10 +58,11 @@
   :caller-servers in settings is a map of repository id to :url, :username
   and :password, used for an id without a server in settings.xml."
   [{:keys [mirrors servers caller-servers] :as settings} [name {:keys [url snapshots releases]}]]
-  (let [repo {:id name :url (with-slash url) :display-url url}
+  (let [repo-url #(with-slash (cond-> % (s3/s3-url? %) s3/repo-url))
+        repo {:id name :url (repo-url url) :display-url url}
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
-               {:id (:id mirror) :url (with-slash (:url mirror)) :display-url (:url mirror) :mirrored [name]}
+               {:id (:id mirror) :url (repo-url (:url mirror)) :display-url (:url mirror) :mirrored [name]}
                repo)
         from-settings (get servers (:id repo))
         {:keys [username password private-key passphrase headers]}
@@ -72,11 +74,6 @@
                       password (assoc :password (decrypt password))
                       private-key (assoc :private-key private-key)
                       (and private-key passphrase) (assoc :passphrase (decrypt passphrase)))]
-    ;; Check the repository URL after applying mirrors.
-    (when (str/starts-with? (:url repo) "s3:")
-      (throw (ex-info (str "S3 repository " (:id repo) " (" (:url repo) ") requires the JVM resolver."
-                           " Set BABASHKA_DEPS_RESOLVER=jvm.")
-                      {:repo (:id repo) :url (:url repo)})))
     (cond-> (assoc repo
                    :releases (policy name (or releases {}))
                    :snapshots (policy name (or snapshots {})))
