@@ -209,7 +209,8 @@ either into the image for speed is not worth doing.
   after it, and the same variable is the way back.
 - deps.edn validation is skipped: the specs namespace is a stub, since
   clojure.spec stays out of the image. Accepted.
-- S3 repositories: not supported.
+- S3 repositories: signed with AWS Signature Version 4, with credentials
+  and region from the same sources as tools.deps.
 - Maven 4 password blobs: neither side reads them; tools.deps sits on the
   same plexus-sec-dispatcher 2.0.
 - Failure messages are worded like the CLI's, since a user compares the two.

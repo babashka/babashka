@@ -3,6 +3,7 @@
 (ns s3-test
   (:require [babashka.fs :as fs]
             [babashka.impl.mvn.env :as env]
+            [babashka.impl.mvn.repo :as repo]
             [babashka.impl.mvn.s3 :as s3]
             [cheshire.core :as json]
             [clojure.java.io :as io]
@@ -31,7 +32,21 @@
 
 (deftest repo-url-test
   (is (= "s3://bucket/maven/releases" (s3/repo-url "s3://bucket/maven/releases?region=eu-west-1")))
-  (is (= "s3://bucket/maven/" (s3/repo-url "s3://bucket/maven/"))))
+  (is (= "s3://bucket/maven" (s3/repo-url "s3://bucket/maven/")))
+  (is (= "s3://bucket/maven/releases" (s3/repo-url "s3://bucket//maven//releases/")))
+  (is (= "s3://bucket/" (s3/repo-url "s3://bucket"))))
+
+(deftest region-parameter-test
+  (is (= "eu-west-1" (s3/region "s3://bucket/maven?region=eu-west-1")))
+  (is (= "eu-west-1" (s3/region "s3://bucket/maven?x=1&region=eu-west-1")))
+  (is (nil? (s3/region "s3://bucket/maven"))))
+
+(deftest remote-repo-test
+  (testing "remote-repo returns the region= parameter as :region of its repository only"
+    (is (= {:url "s3://bucket/maven/" :display-url "s3://bucket//maven?region=eu-west-1" :region "eu-west-1"}
+           (select-keys (repo/remote-repo {} ["a" {:url "s3://bucket//maven?region=eu-west-1"}])
+                        [:url :display-url :region])))
+    (is (nil? (:region (repo/remote-repo {} ["b" {:url "s3://bucket/maven"}]))))))
 
 (deftest parse-profiles-test
   (is (= {"default" {"aws_access_key_id" "a" "aws_secret_access_key" "b"}
@@ -60,10 +75,10 @@
       (= (get expected "Authorization") (get headers "authorization")))))
 
 (defn- handler
-  "Serves root path-style, 403 for a request not signed with creds for region.
+  "Serves root path-style, denied-status for a request not signed with creds for region.
   Answers a location request signed for us-east-1 with location, or 403 if location is nil.
   Serves creds as container and instance credentials."
-  [root {:keys [creds region location]} seen]
+  [root {:keys [creds region location denied-status] :or {denied-status 403}} seen]
   (fn [{:keys [request-method uri query-string headers] :as req}]
     (let [creds-json (json/generate-string {"AccessKeyId" (:access-key-id creds)
                                             "SecretAccessKey" (:secret-access-key creds)
@@ -99,7 +114,7 @@
             (if (and (valid-signature? req creds region) token-ok?)
               (let [f (fs/file root (subs uri 1))]
                 (if (fs/regular-file? f) {:status 200 :body (fs/file f)} {:status 404 :body "missing"}))
-              {:status 403 :body "denied"}))))))
+              {:status denied-status :body "denied"}))))))
 
 (defn- resolve-lib
   "Resolves s3-test/lib from an s3:// repository url on a server for creds.
@@ -186,7 +201,10 @@
       (is (jar? result))
       (is (not-any? :location seen))))
   (testing "a failed location request selects us-east-1"
-    (is (jar? (resolve-lib {:creds creds :location nil} creds-env)))))
+    (is (jar? (resolve-lib {:creds creds :location nil} creds-env))))
+  (testing "HTTP 301 for the wrong region fails the download without a redirect"
+    (is (str/ends-with? (:error (resolve-lib {:creds creds :region "eu-west-1" :location nil :denied-status 301} creds-env))
+                        "Unexpected error downloading artifact from bucket"))))
 
 (defn -main []
   (let [{:keys [fail error]} (t/run-tests 's3-test)]

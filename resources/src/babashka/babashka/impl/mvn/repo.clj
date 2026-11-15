@@ -58,11 +58,15 @@
   :caller-servers in settings is a map of repository id to :url, :username
   and :password, used for an id without a server in settings.xml."
   [{:keys [mirrors servers caller-servers] :as settings} [name {:keys [url snapshots releases]}]]
-  (let [repo-url #(with-slash (cond-> % (s3/s3-url? %) s3/repo-url))
-        repo {:id name :url (repo-url url) :display-url url}
+  (let [location (fn [url]
+                   (if (s3/s3-url? url)
+                     (cond-> {:url (with-slash (s3/repo-url url)) :display-url url}
+                       (s3/region url) (assoc :region (s3/region url)))
+                     {:url (with-slash url) :display-url url}))
+        repo (assoc (location url) :id name)
         mirror (settings/mirror-for mirrors repo)
         repo (if mirror
-               {:id (:id mirror) :url (repo-url (:url mirror)) :display-url (:url mirror) :mirrored [name]}
+               (assoc (location (:url mirror)) :id (:id mirror) :mirrored [name])
                repo)
         from-settings (get servers (:id repo))
         {:keys [username password private-key passphrase headers]}
@@ -162,6 +166,7 @@
                           {:auth (:auth repo)
                            :proxy (:proxy repo)
                            :headers (:headers repo)
+                           :region (:region repo)
                            :checksum (get-in repo [policy :checksum])
                            :repo-id (:id repo)
                            :repo-url (:display-url repo)
@@ -184,7 +189,7 @@
               (when (and (get-in repo [policy :enabled])
                          (http/exists? (str (:url repo) rel)
                                        {:auth (:auth repo) :proxy (:proxy repo) :headers (:headers repo)
-                                        :repo-id (:id repo) :repo-url (:display-url repo) :label rel}))
+                                        :region (:region repo) :repo-id (:id repo) :repo-url (:display-url repo) :label rel}))
                 (record-remote! dir file-name (:id repo))
                 dest))
             repos))))

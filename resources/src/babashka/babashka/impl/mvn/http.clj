@@ -14,22 +14,23 @@
     (print (str (str/join " " xs) "\n"))
     (flush)))
 
-(def ^:private proxy-clients (atom {}))
+(def ^:private clients (atom {}))
 
 (defn- client-for
-  "An http client that goes through proxy, one per proxy for the process.
+  "Returns an http client with follow-redirects that goes through proxy if not nil.
+  Caches one client per proxy and follow-redirects for the process.
   Credentials go through an Authenticator, and the JDK's ban on Basic
   authentication for CONNECT tunnels is lifted for them, as Maven's own
   transport allows it."
-  [{:keys [host port username password] :as proxy}]
-  (or (get @proxy-clients proxy)
+  [{:keys [host port username password] :as proxy} follow-redirects]
+  (or (get @clients [proxy follow-redirects])
       (let [credentials? (and username password)
             _ (when credentials?
                 (System/setProperty "jdk.http.auth.tunneling.disabledSchemes" ""))
-            client (http/client (cond-> {:proxy {:host host :port port}
-                                         :follow-redirects :normal}
+            client (http/client (cond-> {:follow-redirects follow-redirects}
+                                  proxy (assoc :proxy {:host host :port port})
                                   credentials? (assoc :authenticator {:user username :pass password})))]
-        (swap! proxy-clients assoc proxy client)
+        (swap! clients assoc [proxy follow-redirects] client)
         client)))
 
 ;; The bundled tools.deps; script/vendor_bundled_sources.clj keeps it current.
@@ -44,8 +45,9 @@
            " tools.deps/" tools-deps-version)))
 
 (defn- request-opts
-  "Returns request options for a repository's :auth, :proxy and :headers."
-  [{:keys [auth proxy headers]}]
+  "Returns request options for url and a repository's :auth, :proxy, :headers and :region.
+  Does not follow redirects for an s3: url."
+  [url {:keys [auth proxy headers region]}]
   (cond-> {:as :stream
            :throw false
            :follow-redirects :normal
@@ -54,7 +56,8 @@
                              {"User-Agent" (user-agent)})
                            headers)}
     auth (assoc :basic-auth auth)
-    proxy (assoc :client (client-for proxy))))
+    (or proxy (s3/s3-url? url)) (assoc :client (client-for proxy (if (s3/s3-url? url) :never :normal)))
+    region (assoc :s3-region region)))
 
 (defn- root-message
   "Returns the message of the innermost cause, or nil."
@@ -207,7 +210,7 @@
   (if (file-url? url)
     (let [f (file-url->path url)]
       (when (fs/exists? f) (slurp f)))
-    (let [{:keys [status body]} (request! :get url (assoc (request-opts opts) :as :string
+    (let [{:keys [status body]} (request! :get url (assoc (request-opts url opts) :as :string
                                                           :repo-id (:repo-id opts) :repo-url (:repo-url opts) :label (:label opts)))]
       (cond
         (= 200 status) body
@@ -220,7 +223,7 @@
   [url opts]
   (if (file-url? url)
     (fs/exists? (file-url->path url))
-    (let [{:keys [status]} (request! :head url (assoc (request-opts opts) :as :string
+    (let [{:keys [status]} (request! :head url (assoc (request-opts url opts) :as :string
                                                       :repo-id (:repo-id opts) :repo-url (:repo-url opts) :label (:label opts)))]
       (cond
         (= 200 status) true
@@ -255,7 +258,7 @@
         (printerrln "Downloading:" label "from" repo-id)
         (fs/copy f dest {:replace-existing true})
         {}))
-    (let [{:keys [status body headers]} (request! :get url (assoc (request-opts opts) :repo-id repo-id :repo-url repo-url :label label))]
+    (let [{:keys [status body headers]} (request! :get url (assoc (request-opts url opts) :repo-id repo-id :repo-url repo-url :label label))]
       ;; Close the response body for every status.
       (try
         (cond
@@ -368,7 +371,7 @@
   "Downloads url to dest atomically and verifies the checksum using opts.
   Writes the published checksum of an accepted file next to dest, as dest.sha1 or dest.md5.
   Returns dest, or nil when the file is absent.
-  opts: :auth [user pass], :proxy, :headers, :checksum :warn/:fail/:ignore, :repo-id,
+  opts: :auth [user pass], :proxy, :headers, :region of an s3: url, :checksum :warn/:fail/:ignore, :repo-id,
   :repo-url and :label for messages."
   [url dest opts]
   (let [dest (str dest)

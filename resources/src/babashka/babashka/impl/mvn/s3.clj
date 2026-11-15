@@ -89,12 +89,15 @@
 (def ^:private regions (atom {}))
 
 (defn repo-url
-  "Returns url without its query, and records the region in its region= parameter for the bucket."
+  "Returns url without its query and without empty path segments."
   [url]
   (let [u (URI/create url)]
-    (when-let [region (some->> (.getRawQuery u) (re-find #"(?:^|&)region=([^&]+)") second)]
-      (swap! regions assoc (.getHost u) region))
-    (str/replace url #"\?[^/]*" "")))
+    (str "s3://" (.getHost u) "/" (str/join "/" (remove str/blank? (str/split (or (.getPath u) "") #"/"))))))
+
+(defn region
+  "Returns the region= parameter of url, or nil if absent."
+  [url]
+  (some->> (.getQuery (URI/create url)) (re-find #"(?:^|&)region=([^&]+)") second))
 
 (defn- bucket-location
   "Returns the LocationConstraint of bucket, us-east-1 if empty, or nil if the request fails."
@@ -109,9 +112,8 @@
     (catch Exception _ nil)))
 
 (defn- bucket-region
-  "Returns the region of bucket.
-  Uses the region= parameter of its repository URL first.
-  Otherwise uses the location S3 reports, or us-east-1 if the request fails."
+  "Returns the location S3 reports for bucket, or us-east-1 if the request fails.
+  Caches the result for the process."
   [bucket creds client]
   (or (get @regions bucket)
       (let [region (or (bucket-location bucket creds client) "us-east-1")]
@@ -239,8 +241,9 @@
 (defn request
   "Returns the http request for a request on an s3:// url.
   Signs with the access key id and secret access key in :basic-auth, or the default credentials if absent.
+  Signs for the region in :s3-region, or the location of the bucket if absent.
   Throws if there are no credentials."
-  [{:keys [uri method basic-auth client] :as req}]
+  [{:keys [uri method basic-auth client s3-region] :as req}]
   (let [u (URI/create uri)
         bucket (.getHost u)
         creds (if-let [[id secret] (when (every? some? basic-auth) basic-auth)]
@@ -248,7 +251,8 @@
                 (default-credentials))]
     (when-not creds
       (throw (ex-info (failure-message method bucket) {:bucket bucket :reason :no-credentials})))
-    (signed-request (dissoc req :basic-auth) bucket (.getPath u) nil (bucket-region bucket creds client) creds)))
+    (signed-request (dissoc req :basic-auth :s3-region) bucket (.getPath u) nil
+                    (or s3-region (bucket-region bucket creds client)) creds)))
 
 (defn check-response
   "Returns response with status 404 for a 403.

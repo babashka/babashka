@@ -156,7 +156,7 @@
   Returns cached metadata on transfer failure.
   If the repository reports missing metadata, deletes the cached copy and returns nil.
   Holds the lock of the cached copy, so no thread reads it while another writes it."
-  [local-repo {:keys [id url display-url auth proxy headers] :as repo} rel policy local-updated]
+  [local-repo {:keys [id url display-url auth proxy headers region] :as repo} rel policy local-updated]
   (let [file (fs/file local-repo rel (str "maven-metadata-" id ".xml"))
         cached #(when (fs/exists? file) (slurp file))]
     #_{:clj-kondo/ignore [:locking-suspicious-lock]}
@@ -164,7 +164,7 @@
       (if (update-required? file repo policy local-updated)
         (let [[found error]
               (try [(http/download! (str url rel "/maven-metadata.xml") file
-                                    {:auth auth :proxy proxy :headers headers :checksum (:checksum policy)
+                                    {:auth auth :proxy proxy :headers headers :region region :checksum (:checksum policy)
                                      :repo-id id :repo-url display-url :label (str rel "/maven-metadata.xml")})]
                    (catch Exception e [nil e]))]
           (cond
