@@ -87,10 +87,10 @@
    (fn [{:keys [request-method uri headers]}]
      (let [imds? (= "imds-token" (get headers "x-aws-ec2-metadata-token"))]
        (cond
-         (= uri "/container") (if (= "container-token" (get headers "authorization")) {:status 200 :body creds-json} {:status 401})
-         (and (= :put request-method) (= uri "/latest/api/token")) {:status 200 :body "imds-token"}
-         (= uri "/latest/meta-data/iam/security-credentials/") (if imds? {:status 200 :body "role"} {:status 401})
-         (= uri "/latest/meta-data/iam/security-credentials/role") (if imds? {:status 200 :body creds-json} {:status 401})
+         (= "/container" uri) (if (= "container-token" (get headers "authorization")) {:status 200 :body creds-json} {:status 401})
+         (and (= :put request-method) (= "/latest/api/token" uri)) {:status 200 :body "imds-token"}
+         (= "/latest/meta-data/iam/security-credentials/" uri) (if imds? {:status 200 :body "role"} {:status 401})
+         (= "/latest/meta-data/iam/security-credentials/role" uri) (if imds? {:status 200 :body creds-json} {:status 401})
          :else {:status 404})))
    {:port 0 :legacy-return-value? false}))
 
