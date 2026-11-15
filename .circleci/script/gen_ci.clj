@@ -206,8 +206,8 @@ java -jar \"$jar\" --config .build/bb.edn --deps-root . release-artifact \"$refl
                                           {:persist_to_workspace {:root  "/tmp"
                                                                   :paths ["release"]}}
                                           (run "Run tests" (if static?
-                                                             "script/test\nscript/run_lib_tests"
-                                                             "script/test\nscript/run_lib_tests\nscript/run_ffi_tests"))
+                                                             "script/test\nscript/run_lib_tests\n./bb script/mvn_oracle/tests.clj --image"
+                                                             "script/test\nscript/run_lib_tests\n./bb script/mvn_oracle/tests.clj --image\nscript/run_ffi_tests"))
                                           {:save_cache
                                            {:paths ["~/.m2" "~/graalvm"
                                                     ;; source tarballs, so a
