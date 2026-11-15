@@ -158,7 +158,13 @@ procurer, and every difference it turns up becomes a case in a test script.
 on the JVM stage, and after the native build runs both again plus
 `./bb script/mvn_oracle/tests.clj --image`. `build-windows.yml` is the
 Windows equivalent. Both trigger only on pushes to master and on pull
-requests against master, so pushing a branch runs no CI.
+requests against master.
+
+CircleCI builds every pushed branch. `.circleci/script/gen_ci.clj`
+generates its config. The JVM job runs `script/test` and
+`script/run_lib_tests`. The native Linux and macOS jobs run both plus
+`./bb script/mvn_oracle/tests.clj --image`. A branch whose changes against
+master touch only `.md` files and `logo/` skips the build.
 
 ## Bundled sources
 
