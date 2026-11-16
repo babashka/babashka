@@ -42,6 +42,7 @@
   - [Single page application with Babashka + htmx](#single-page-application-with-babashka--htmx)
   - [Wikipedia translation](#wikipedia-translation)
   - [Tetris](#tetris)
+  - [Reitit with http-kit](#reitit-with-http-kit)
   
 
 Here's a gallery of useful examples. Do you have a useful example? PR welcome!
@@ -595,3 +596,16 @@ $ bb tetris.clj
 
 Controls: left/right arrows move, up rotates, down soft-drops, space hard-drops,
 `p` pauses, `r` resets, `q` quits.
+
+## Reitit with http-kit
+
+A JSON todo API routed with [reitit](https://github.com/metosin/reitit) and
+served by http-kit. See [reitit_httpkit.clj](reitit_httpkit.clj).
+
+``` shell
+$ bb reitit_httpkit.clj
+$ curl -XPOST -H 'Content-Type: application/json' -d '{"title":"Ship it"}' localhost:8090/api/todos
+{"id":3,"title":"Ship it","done":false}
+$ curl 'localhost:8090/api/todos?done=false'
+[{"id":2,"title":"Write a router","done":false},{"id":3,"title":"Ship it","done":false}]
+```
