@@ -28,7 +28,7 @@
   :dependencies [[org.clojure/clojure "1.12.6"]
                  [borkdude/edamame "1.6.44"]
                  [org.clojure/tools.cli "1.4.256"]
-                 [cheshire "6.2.0"]
+                 [cheshire "6.2.1"]
                  [org.clojure/data.json "2.5.2"]
                  [nrepl/bencode "1.2.0"]
                  [borkdude/sci.impl.reflector "0.0.5"]
@@ -42,11 +42,11 @@
                  [insn/insn "0.5.4"]
                  [org.babashka/cli "0.12.92"]
                  [org.babashka/http-client "0.4.26"]
-                 [org.jsoup/jsoup "1.23.2"]
-                 [io.github.nextjournal/markdown "0.7.228"]
+                 [org.jsoup/jsoup "1.24.1"]
+                 [io.github.nextjournal/markdown "0.7.232"]
                  [borkdude/graal.locking "0.0.2"]
-                 [org.jline/jline-terminal-ffm "4.4.7"]
-                 [org.jline/jline-terminal "4.4.7"
+                 [org.jline/jline-terminal-ffm "4.6.0"]
+                 [org.jline/jline-terminal "4.6.0"
                   :exclusions [;; this saves 1mb of native-image size
                                org.jline/jline-native]]
                  #_[org.jline/jansi "3.30.6"
@@ -55,7 +55,7 @@
                  #_[org.jline/jansi-core "3.30.6"
                   :exclusions [;; this saves 1mb of native-image size
                                org.jline/jline-native]]
-                 [org.jline/jline-reader "4.4.7"]]
+                 [org.jline/jline-reader "4.6.0"]]
   :plugins       [[org.kipz/lein-meta-bom "0.1.1"]]
   :metabom {:jar-name "metabom.jar"}
   :profiles {;; compile-time only: the SVM API for src-java/babashka/impl/FfiTrampoline.java;
@@ -66,7 +66,7 @@
              :feature/yaml {:source-paths ["feature-yaml"]
                             :dependencies [[clj-commons/clj-yaml "1.0.30"
                                             :exclusions [org.flatland/ordered]#_#_clj-commons/clj-yaml "0.7.110"]
-                                           [org.flatland/ordered "1.15.12"]]}
+                                           [org.flatland/ordered "1.16.13"]]}
              :feature/jdbc {:source-paths ["feature-jdbc"]
                             :dependencies [[seancorfield/next.jdbc "1.1.610"]]}
              :sqlite/deps {:dependencies [[org.xerial/sqlite-jdbc "3.36.0.3"]]}

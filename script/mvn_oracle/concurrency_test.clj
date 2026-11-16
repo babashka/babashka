@@ -4,10 +4,14 @@
 (ns concurrency-test
   (:require [babashka.classpath :as cp]
             [babashka.fs :as fs]
+            [babashka.impl.mvn.http :as http]
             [babashka.impl.mvn.repo :as repo]
             [babashka.process :as p]
             [clojure.string :as str]
             [clojure.test :as t :refer [deftest is testing]]
+            [clojure.tools.deps.extensions :as ext]
+            [clojure.tools.deps.extensions.maven]
+            [clojure.tools.deps.util.session :as session]
             [org.httpkit.server :as server]))
 
 (def ^:private threads 64)
@@ -106,6 +110,30 @@
             (is (empty? (fs/glob (fs/parent dest) "*.tmp"))))
           (finally
             (server/server-stop! stop)))))))
+
+(deftest version-range-test
+  (doseq [in-place [false true]]
+    (testing (str "threads resolving one version range at once all get the highest version, in-place writes " in-place)
+      (fs/with-temp-dir [dir {}]
+        (let [versions (mapv #(str "1." %) (range 5000))
+              remote-dir (fs/file dir "remote" "acme" "lib")
+              config {:mvn/repos {"r" {:url (str (.toURI (fs/file dir "remote")))}}
+                      :mvn/local-repo (str (fs/file dir "local"))}
+              results (atom [])]
+          (fs/create-dirs remote-dir)
+          (spit (fs/file remote-dir "maven-metadata.xml")
+                (str "<metadata><groupId>acme</groupId><artifactId>lib</artifactId><versioning><versions>"
+                     (apply str (map #(str "<version>" % "</version>") versions))
+                     "</versions></versioning></metadata>"))
+          (with-redefs [http/windows? in-place]
+            (binding [*err* (java.io.StringWriter.)]
+              (session/with-session
+                (run-together threads
+                              (fn [_]
+                                (swap! results conj
+                                       (try (:mvn/version (second (ext/canonicalize 'acme/lib {:mvn/version "[1.0,)"} config)))
+                                            (catch Exception e (ex-message e)))))))))
+          (is (= #{"1.4999"} (set @results))))))))
 
 (let [{:keys [fail error]} (t/run-tests 'concurrency-test)]
   (System/exit (if (zero? (+ fail error)) 0 1)))

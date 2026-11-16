@@ -118,3 +118,8 @@ jobs:
           call script/test.bat :windows || exit /B 1
           call script/run_lib_tests.bat || exit /B 1
           bb.exe script/mvn_oracle/tests.clj --image || exit /B 1
+
+      - name: List processes
+        if: failure()
+        shell: cmd
+        run: tasklist /v

@@ -22,8 +22,8 @@
 
              project?
              (if load-project-ns?
-               (map find-ns (ns/load-project-namespaces))
-               (map find-ns (ns/loaded-project-namespaces)))
+               (keep find-ns (ns/load-project-namespaces))
+               (keep find-ns (ns/loaded-project-namespaces)))
 
              :else
              (all-ns))

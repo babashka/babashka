@@ -1,6 +1,7 @@
 (ns babashka.impl.nrepl-server
   {:no-doc true}
   (:require
+   [babashka.impl.classpath :as classpath]
    [babashka.impl.common :as common]
    [babashka.impl.nrepl.sci :as sci-helpers]
    [babashka.nrepl.server :as server]
@@ -32,4 +33,5 @@
 (def sci-helpers-namespace
   (let [ns-sci (sci/create-ns 'babashka.nrepl.impl.sci)]
     {'completions (sci/copy-var completions ns-sci)
-     'lookup (sci/copy-var lookup ns-sci)}))
+     'lookup (sci/copy-var lookup ns-sci)
+     'resource-paths (sci/copy-var classpath/resource-paths ns-sci)}))

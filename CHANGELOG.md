@@ -9,8 +9,26 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- `defrecord`, `deftype` and `reify` accept `clojure.lang.IBlockingDeref` ([#2277](https://github.com/babashka/babashka/issues/2277))
+- The REPL shows `C-x C-d` docs and eldoc again ([#2260](https://github.com/babashka/babashka/issues/2260))
+- Fix a 30 MB binary size increase from the REPL tail tip highlighter
+- Bump `cider-nrepl` to `0.64.0`
+- Bump `orchard` to `0.48.0`
+- Bump `jsoup` to `1.24.1`
+- Bump `cheshire` to `6.2.1`
+- Bump `jline` to `4.6.0`
+- Bump `babashka.ffi` to `0.1.3`
+- `print-method`, `print-dup` and `clojure.pprint/write` use print vars such as `*print-length*` and `*print-level*` from `binding`, and `clojure.pprint/pprint` uses `*print-level*` ([#2274](https://github.com/babashka/babashka/issues/2274))
+- nREPL test ops send test output under their own message id ([#2265](https://github.com/babashka/babashka/issues/2265))
+- nREPL: `info` answers for a namespace's name or alias with its doc and file ([#2270](https://github.com/babashka/babashka/issues/2270))
+- nREPL: `info` and `eldoc` without `ns` resolve vars and Java classes in the session's namespace ([#2270](https://github.com/babashka/babashka/issues/2270))
+
+## 1.13.229 (2026-10-27)
+
 - Bump `org.babashka/cli` to `0.12.92`
+- Bump `org.flatland/ordered` to `1.16.13`
 - The bb resolver retries HTTP 429, HTTP 503 and dropped connections, configured by the `aether.connector.http.retryHandler.*` system properties
+- The bb resolver no longer fails a version range on Windows when two threads fetch one `maven-metadata.xml` at once
 
 ## 1.13.228 (2026-10-25)
 
@@ -34,7 +52,7 @@ A preview of the next release can be installed from
 - `source-fn` warns if resolving bb's dependencies fails, and retries on the next call ([#2220](https://github.com/babashka/babashka/issues/2220))
 - Fix loading a `clojure.tools.deps.*` or `clojure.tools.gitlibs.*` namespace that bb does not bundle, such as `clojure.tools.deps.config`
 - Add `java.nio.file.FileSystemLoopException`, `java.util.RandomAccess`, `jdk.net.ExtendedSocketOptions`, `org.jline.utils.Status` and `getAddress` on `Inet4Address` and `Inet6Address`, and allow `reify` of `CompletingParsedLine` and `proxy` of `APersistentMap` with `AutoCloseable` ([#2006](https://github.com/babashka/babashka/issues/2006), [#2203](https://github.com/babashka/babashka/issues/2203), [#2218](https://github.com/babashka/babashka/issues/2218), [#2219](https://github.com/babashka/babashka/issues/2219))
-- Bump `nextjournal.markdown` to `0.7.228`
+- Bump `nextjournal.markdown` to `0.7.232`
 - The macOS amd64 binary requires macOS 11.0 or later
 
 ## 1.13.226 (2026-10-11)

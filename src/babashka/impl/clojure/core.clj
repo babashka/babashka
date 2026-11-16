@@ -9,6 +9,7 @@
             [sci.core :as sci]
             [sci.ctx-store :as store]
             [sci.impl.copy-vars :refer [copy-core-var new-var]]
+            [sci.impl.io :as sio]
             [sci.impl.parser :as parser]
             [sci.impl.read :as read]
             [sci.impl.utils :as utils :refer [clojure-core-ns]]
@@ -173,6 +174,9 @@
                      (take-while some? (iterate ex-cause o)))]
     (cond-> m frames (assoc :sci/stacktrace (vec frames)))))
 
+(def sci-print-method (sio/print-multi-fn "print-method" print-method))
+(def sci-print-dup (sio/print-multi-fn "print-dup" print-dup))
+
 (def core-extras
   {;; agents
    'agent (copy-core-var agent)
@@ -239,8 +243,8 @@
    'abs (sci/copy-var abs clojure-core-ns)
    'StackTraceElement->vec (sci/copy-var StackTraceElement->vec clojure-core-ns)
    'into-array (sci/copy-var into-array clojure-core-ns)
-   'print-method (sci/copy-var print-method clojure-core-ns)
-   'print-dup (sci/copy-var print-dup clojure-core-ns)
+   'print-method (sci/copy-var sci-print-method clojure-core-ns {:name 'print-method :copy-meta-from clojure.core/print-method})
+   'print-dup (sci/copy-var sci-print-dup clojure-core-ns {:name 'print-dup :copy-meta-from clojure.core/print-dup})
    'PrintWriter-on (sci/copy-var PrintWriter-on clojure-core-ns)
    'set-agent-send-executor! (sci/copy-var set-agent-send-executor! clojure-core-ns)
    'set-agent-send-off-executor! (sci/copy-var set-agent-send-off-executor! clojure-core-ns)

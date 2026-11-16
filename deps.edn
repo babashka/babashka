@@ -28,7 +28,7 @@
         org.clojure/core.async {:mvn/version "1.8.741"},
         org.clojure/tools.cli {:mvn/version "1.4.256"},
         org.clojure/data.csv {:mvn/version "1.0.0"},
-        cheshire/cheshire {:mvn/version "6.2.0"}
+        cheshire/cheshire {:mvn/version "6.2.1"}
         org.clojure/data.json {:mvn/version "2.5.2"}
         org.clojure/data.xml {:mvn/version "0.2.0-alpha11"}
         clj-commons/clj-yaml {:mvn/version "1.0.30"}
@@ -51,14 +51,14 @@
         org.clojure/core.rrb-vector {:mvn/version "0.2.0"}
         org.babashka/cli {:mvn/version "0.12.92"}
         org.babashka/http-client {:mvn/version "0.4.26"}
-        org.flatland/ordered {:mvn/version "1.15.12"}
-        org.jsoup/jsoup {:mvn/version "1.23.2"}
-        io.github.nextjournal/markdown {:mvn/version "0.7.228"}
-        org.jline/jline-terminal-ffm {:mvn/version "4.4.7"}
-        org.jline/jline-terminal {:mvn/version "4.4.7"
+        org.flatland/ordered {:mvn/version "1.16.13"}
+        org.jsoup/jsoup {:mvn/version "1.24.1"}
+        io.github.nextjournal/markdown {:mvn/version "0.7.232"}
+        org.jline/jline-terminal-ffm {:mvn/version "4.6.0"}
+        org.jline/jline-terminal {:mvn/version "4.6.0"
                                   :exclusions [;; this saves 1mb of native-image size
                                                org.jline/jline-native]}
-        org.jline/jline-reader {:mvn/version "4.4.7"}}
+        org.jline/jline-reader {:mvn/version "4.6.0"}}
  :aliases {:babashka/dev
            {:extra-deps {babashka/babashka {:local/root "."}}
             :main-opts ["-m" "babashka.main"]
@@ -192,7 +192,7 @@
                                                  :git/sha "0b1d825ec45a998c4d3481dfb292e08ce6a47f0b"}
                          nubank/matcher-combinators {:mvn/version "3.9.1"}
                          io.github.nextjournal/markdown {:git/url "https://github.com/nextjournal/markdown"
-                                                         :git/sha "ee9da78b347246260dbe66412336aafe20397fa3"}
+                                                         :git/sha "1580eeb11773902b943f4acf88d9f8e1a4ea9e67"}
                          funcool/promesa {:git/url "https://github.com/funcool/promesa"
                                           :git/sha "d8e6f67981b102dda2a4af5a3635a2218257f01a"}
                          com.fulcrologic/statecharts {:git/url "https://github.com/fulcrologic/statecharts"
@@ -210,7 +210,7 @@
                                               :git/sha "9b8f3a49cfc2f5a46375d59b9b341162d91d2226"
                                               :deps/root "cloverage"}
                          io.github.nextjournal/clerk {:git/url "https://github.com/nextjournal/clerk"
-                                                      :git/sha "4c2599946256592858ca2d65e8d453f9f77489ba"}}
+                                                      :git/sha "5f8a7ce2827ad61f520dea1f6f5e9cc779d11305"}}
             :classpath-overrides {org.clojure/clojure nil
                                   org.clojure/spec.alpha nil}}
            :clj-nvd
