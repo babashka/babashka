@@ -1179,6 +1179,12 @@
                                                                              (vars/reset-thread-binding-frame frame#))
                                    (list 'quote 'getThreadBindingFrame) `(fn [_#]
                                                                            (vars/get-thread-binding-frame))
+                                   (list 'quote 'pushThreadBindings) `(fn [_# bindings#]
+                                                                        (vars/push-thread-bindings bindings#))
+                                   (list 'quote 'popThreadBindings) `(fn [_#]
+                                                                       (vars/pop-thread-bindings))
+                                   (list 'quote 'getThreadBindings) `(fn [_#]
+                                                                       (vars/get-thread-bindings))
                                    (list 'quote 'intern) `(fn [_# & args#]
                                                             (apply sci/intern (ctx) args#))}})
         m (assoc m (list 'quote 'clojure.lang.Namespace) 'sci.lang.Namespace)]
