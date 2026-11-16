@@ -189,7 +189,8 @@
 ;; bencode delegates to the compiled bencode.core, completion to bb's own,
 ;; the classloader returns the context classloader, and TLS is not
 ;; supported. orchard.info, orchard.meta and orchard.stacktrace are bb's
-;; own. Never copied.
+;; own, and so are cider-nrepl's complete and info middleware, which answer
+;; with bb's completion and lookup. Never copied.
 (def stand-ins
   #{"clojure/tools/deps/extensions/local.clj"
     "clojure/tools/deps/extensions/maven.clj"

@@ -616,7 +616,8 @@
        :error "No ns form to clean"})
     ;; The code doesn't read.
     (catch Exception e
-      (let [line (:clojure.error/line (ex-data e))]
+      (let [line #_(:clojure.error/line (ex-data e)) ;; BB-PATCH sci's reader error carries :line
+(let [d (ex-data e)] (or (:clojure.error/line d) (:line d)))]
         (cond-> {:status :cider/clean-ns-error
                  :error (ex-message (or (ex-cause e) e))}
           line (assoc :line line))))))
