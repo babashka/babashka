@@ -68,7 +68,8 @@
   (let [ns-vars (if private? ns-interns ns-publics)
         nss (namespaces ns-query)]
     (cond->> (or (:exactly var-query)
-                 (mapcat (comp vals ns-vars) nss))
+                 #_(mapcat (comp vals ns-vars) nss) ;; BB-PATCH user/*input* is interned as a non-var
+(filter var? (mapcat (comp vals ns-vars) nss)))
 
       manipulate-vars
       (manipulate-vars nss)

@@ -255,8 +255,7 @@
             (swap! status (fn [st] (merge-with + st (dissoc (t/run-tests n) :type))))))))))
 
 ;;;; cider-nrepl
-;; cider-nrepl's debugger and track-state suites against the bundled
-;; middleware, from the checkout pinned in bb-tested-libs.edn. Its src stays off
+;; cider-nrepl's middleware suites against the bundled middleware, from the checkout pinned in bb-tested-libs.edn. Its src stays off
 ;; the classpath because a directory there would shadow the bundled cider.nrepl
 ;; namespaces. Three test files need changes. Their copies live under cider/,
 ;; each deviation marked BB-TEST-PATCH.
@@ -269,21 +268,56 @@
     cider.nrepl.middleware.test-test
     cider.nrepl.middleware.test.extensions-test
     cider.nrepl.middleware.inspect-test
-    cider.nrepl.middleware.stacktrace-test])
+    cider.nrepl.middleware.stacktrace-test
+    cider.nrepl.middleware.apropos-test
+    cider.nrepl.middleware.classify-symbols-test
+    cider.nrepl.middleware.classpath-test
+    cider.nrepl.middleware.clojuredocs-test
+    cider.nrepl.middleware.enlighten-test
+    cider.nrepl.middleware.macroexpand-test
+    cider.nrepl.middleware.ns-test
+    cider.nrepl.middleware.profile-test
+    cider.nrepl.middleware.resource-test
+    cider.nrepl.middleware.spec-test
+    cider.nrepl.middleware.trace-test
+    cider.nrepl.middleware.undef-test
+    cider.nrepl.middleware.version-test])
 
 (def cider-nrepl-skipped
   "Upstream tests that assert JVM specifics: the exact reify* expansion, an
   abort! that keeps the eval running, cider-nrepl's fn printing, and stepping
   into nrepl.server, whose bundled source var-code cannot read. test-all runs
   the project's tests, and the checkout is outside the working directory.
-  test-output-test expects \\n, and println writes \\r\\n on Windows."
+  test-output-test expects \\n, and println writes \\r\\n on Windows.
+  bb scans no classpath for classes, bundles clojure.core and cider-nrepl as
+  sources outside jars, keeps no :inline metadata on vars and does not ship
+  the ClojureDocs export. The ClojureScript tests need a compiler env.
+  In sci, tidy macroexpansion leaves zero? unqualified and undef-all keeps
+  the refer of clojure.core/assoc. The native run puts no project directory
+  on the classpath for ns-load-all to load."
   (cond-> '{cider.nrepl.middleware.util.instrument-test [instrument-reify-test]
             cider.nrepl.middleware.debug-test [abort-without-session-thread-test]
             cider.nrepl.middleware.debug-integration-test [debug-expression-test
                                                            step-in-to-function-in-jar-test]
             cider.nrepl.middleware.test-test [only-smoke-test-run-test-deprecated
-                                              deprecated-ops-test]}
-    (windows?) (update 'cider.nrepl.middleware.test-test conj 'test-output-test)))
+                                              deprecated-ops-test]
+            cider.nrepl.middleware.ns-test [ns-path-integration-test
+                                            deprecated-ops-test
+                                            ns-vars-including-privates-test
+                                            ns-vars-with-meta-integration-test
+                                            ns-vars-with-meta-including-privates-test
+                                            resolve-missing-test
+                                            resolve-missing-cljs-env-test
+                                            resolve-missing-integration-test
+                                            resolve-alias-integration-test
+                                            clean-ns-integration-test]
+            cider.nrepl.middleware.classify-symbols-test [classify-symbols-test]
+            cider.nrepl.middleware.clojuredocs-test [clojuredocs-refresh-cache-integration-test
+                                                     deprecated-ops-test]
+            cider.nrepl.middleware.macroexpand-test [display-namespaces-option-test]
+            cider.nrepl.middleware.undef-test [undef-all-test]}
+    (windows?) (update 'cider.nrepl.middleware.test-test conj 'test-output-test)
+    (native?) (update 'cider.nrepl.middleware.ns-test conj 'ns-load-all-integration-test)))
 
 (let [cider-nss (filter #(str/starts-with? (str %) "cider.nrepl.") ns-args)]
   (when (or (empty? ns-args) (seq cider-nss))

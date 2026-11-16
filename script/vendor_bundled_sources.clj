@@ -147,7 +147,30 @@
     "orchard/java/classpath.clj"
     "orchard/namespace.clj"
     "orchard/query.clj"
-    "orchard/test.clj"})
+    "orchard/test.clj"
+    ;; the middleware stack and the ops built on orchard
+    "cider/nrepl.clj"
+    "cider/nrepl/version.clj"
+    "cider/nrepl/middleware/apropos.clj"
+    "cider/nrepl/middleware/classpath.clj"
+    "cider/nrepl/middleware/clojuredocs.clj"
+    "cider/nrepl/middleware/enlighten.clj"
+    "cider/nrepl/middleware/macroexpand.clj"
+    "cider/nrepl/middleware/ns.clj"
+    "cider/nrepl/middleware/profile.clj"
+    "cider/nrepl/middleware/resource.clj"
+    "cider/nrepl/middleware/spec.clj"
+    "cider/nrepl/middleware/trace.clj"
+    "cider/nrepl/middleware/undef.clj"
+    "cider/nrepl/middleware/version.clj"
+    "orchard/apropos.clj"
+    "orchard/cljs/analysis.cljc"
+    "orchard/cljs/meta.cljc"
+    "orchard/java/resource.clj"
+    "orchard/ns_form.clj"
+    "orchard/profile.clj"
+    "orchard/spec.clj"
+    "orchard/trace.clj"})
 
 ;; nREPL's Java classes, compiled into bb from src-java.
 (def java-shipped
@@ -178,6 +201,8 @@
     "nrepl/tls.clj"
     "nrepl/util/classloader.clj"
     "nrepl/util/completion.clj"
+    "cider/nrepl/middleware/complete.clj"
+    "cider/nrepl/middleware/info.clj"
     "orchard/info.clj"
     "orchard/meta.clj"
     "orchard/stacktrace.clj"})
@@ -203,22 +228,14 @@
     "nrepl/JvmtiAgent.java"
     "nrepl/main.java"
     ;; orchard beyond the inspector and ClojureDocs: JVM introspection bb does not do
-    "orchard/apropos.clj"
-    "orchard/cljs/analysis.cljc"
-    "orchard/cljs/meta.cljc"
     "orchard/eldoc.clj"
     "orchard/java.clj"
     "orchard/java/parser_next.clj"
-    "orchard/java/resource.clj"
     "orchard/java/source_files.clj"
-    "orchard/ns_form.clj"
-    "orchard/profile.clj"
-    "orchard/spec.clj"
-    "orchard/trace.clj"
     "orchard/xref.clj"
     "mx/cider/orchard/LruMap.java"})
 
-;; cider-nrepl beyond the debugger and track-state is not shipped.
+;; cider-nrepl files not listed above are not shipped.
 (defn- dropped? [rel]
   (or (contains? dropped rel)
       (and (str/starts-with? rel "cider/")
@@ -349,9 +366,9 @@
             #"(;; BB-PATCH the pom.properties resource is not in the image\n)\"[^\"]+\""
             (str "$1\"" nrepl-version "\"")
             "nrepl version literal")
-    (stamp! "resources/src/babashka/babashka/nrepl/impl/cider.clj"
-            #"\(let \[s \"[^\"]+\""
-            (str "(let [s \"" cider-nrepl-version "\"")
+    (stamp! (str (fs/file target "cider/nrepl/version.clj"))
+            #"(;; BB-PATCH the version.edn resource is not in the image\n  )\"[^\"]+\""
+            (str "$1\"" cider-nrepl-version "\"")
             "cider-nrepl version literal")
     ;; the root deps.edn is embedded in edn.clj, so it must match the jar we pin
     (let [embedded (let [src (slurp (str (fs/file target "clojure/tools/deps/edn.clj")))

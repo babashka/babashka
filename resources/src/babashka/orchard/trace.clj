@@ -83,7 +83,35 @@
       (> (bounded-count (inc max-event-args) args) max-event-args)
       (conj "..."))))
 
-(defn- trace-fn-call [name f args]
+(def ^:private ^:dynamic *tracing*
+  "True while orchard.trace prints or sends a traced call, when the traced fns
+  of the namespaces it calls into go straight to the fn."
+  false)
+
+(defn- tooling-ns?
+  "Whether `ns` is one that tracing calls into, printing a call or sending it
+  to the listeners: Clojure's and orchard's, and nREPL's and cider-nrepl's for
+  cider-nrepl's listener."
+  [ns]
+  (let [ns-str (str ns)]
+    (boolean (some #(str/starts-with? ns-str %)
+                   ["clojure." "orchard." "nrepl." "cider."]))))
+
+(defmacro ^:private with-interop-bindings
+  "Like `binding`, for a map of vars to values, without calling `hash-map` or
+  `push-thread-bindings`, which may be traced."
+  [bindings & body]
+  `(do #_(clojure.lang.Var/pushThreadBindings ~bindings) ;; BB-PATCH Var interop is not in sci
+(push-thread-bindings ~bindings)
+       (try ~@body
+            (finally #_(clojure.lang.Var/popThreadBindings) ;; BB-PATCH
+(pop-thread-bindings)))))
+
+(defn- throwable-str [^Throwable e]
+  (cond-> (.getName (class e))
+    (ex-message e) (str ": " (ex-message e))))
+
+(defn- trace-call [name ^clojure.lang.IFn f ^clojure.lang.ISeq args]
   ;; Good defaults for orchard.print.
   (let [repl? (print-to-repl?)
         events? (emit-events?)
@@ -98,17 +126,30 @@
      (when events?
        (emit {:id id :phase :call :name sname :depth depth
               :args (event-args args)})))
-    (let [value (binding [*depth* (inc *depth*)]
-                  (apply f args))]
+    (let [[value thrown] (with-interop-bindings {#'*tracing* false
+                                                 #'*depth* (inc *depth*)}
+                           ;; Not apply, which may be traced.
+                           (try [(.applyTo f args)]
+                                (catch Throwable e [nil e])))]
       (limit-printing
-       (when repl?
-         (binding [*depth* (inc *depth*)]
-           (println (trace-indent)))
-         (println (str (trace-indent) "└─→ " (print/print-str value))))
-       (when events?
-         (emit {:id id :phase :return :name sname :depth depth
-                :value (print/print-str value)})))
-      value)))
+       (let [shown (if thrown (throwable-str thrown) (print/print-str value))]
+         (when repl?
+           (binding [*depth* (inc *depth*)]
+             (println (trace-indent)))
+           (println (str (trace-indent) (if thrown "└─✗ " "└─→ ") shown)))
+         (when events?
+           (emit (if thrown
+                   {:id id :phase :throw :name sname :depth depth :error shown}
+                   {:id id :phase :return :name sname :depth depth :value shown})))))
+      (if thrown (throw thrown) value))))
+
+(defn- trace-fn-call [name tooling? ^clojure.lang.IFn f ^clojure.lang.ISeq args]
+  (if (and tooling? *tracing*)
+    ;; Most likely a call from orchard.trace's own code, which tracing would
+    ;; recurse into. Interop only, since anything else may be traced too.
+    (.applyTo f args)
+    (with-interop-bindings {#'*tracing* true}
+      (trace-call name f args))))
 
 (defn- resolve-var ^clojure.lang.Var [v]
   (if (var? v) v (resolve v)))
@@ -120,9 +161,10 @@
 
 (defn add-trace-listener
   "Register F to be called with each structured trace event, and return F.
-  An event is a map with keys `:id`, `:phase` (`:call` or `:return`), `:name`,
-  `:depth`, and either `:args` (on `:call`) or `:value` (on `:return`); `:id`
-  pairs a call with its return.  Events are only produced when the output mode
+  An event is a map with keys `:id`, `:phase` (`:call`, `:return` or `:throw`),
+  `:name`, `:depth`, and `:args` (on `:call`), `:value` (on `:return`) or
+  `:error`, the class and message of what the call threw (on `:throw`); `:id`
+  pairs a call with its return or throw.  Events are only produced when the output mode
   includes `:listeners` (see `set-output-mode!`)."
   [f]
   (swap! listeners conj f)
@@ -169,10 +211,11 @@
         s  (.sym v)]
     (when (and (traceable? v) (not (traced? v)))
       (let [f @v
-            vname (symbol (str ns "/" s))]
+            vname (symbol (str ns "/" s))
+            tooling? (tooling-ns? ns)]
         (swap! traced-vars conj v)
         (alter-var-root v #(fn tracing-wrapper [& args]
-                             (trace-fn-call vname % args)))
+                             (trace-fn-call vname tooling? % args)))
         (alter-meta! v assoc ::traced f)
         v))))
 
@@ -198,7 +241,8 @@
     (when-not ('#{clojure.core orchard.trace} (.name ns))
       (->> (ns-interns ns)
            vals
-           (filter (comp fn? var-get))
+           #_(filter (comp fn? var-get)) ;; BB-PATCH user/*input* is interned as a non-var
+(filter #(and (var? %) (fn? (var-get %))))
            (run! trace-var*))
       (swap! traced-nses conj ns))))
 
@@ -208,7 +252,8 @@
   (let [ns (the-ns ns)]
     (->> (ns-interns ns)
          vals
-         (filter (comp fn? var-get))
+         #_(filter (comp fn? var-get)) ;; BB-PATCH user/*input* is interned as a non-var
+(filter #(and (var? %) (fn? (var-get %))))
          (run! untrace-var*))
     (swap! traced-nses disj ns)))
 

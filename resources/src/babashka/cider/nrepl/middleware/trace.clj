@@ -3,8 +3,7 @@
    [cider.nrepl.middleware.util :refer [msg->var respond-to]]
    [cider.nrepl.middleware.util.error-handling :refer [with-op-aliases with-safe-transport]]
    [orchard.trace :as trace])
-  (:import
-   [java.util UUID]))
+  (:import [java.util UUID]))
 
 (defn toggle-trace-var
   [msg]

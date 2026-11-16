@@ -11,8 +11,7 @@
    [clojure.pprint :as pp]
    [clojure.walk :as walk]
    [orchard.misc :as misc])
-  (:import
-   [clojure.lang Var]))
+  (:import [clojure.lang Var]))
 
 ;; Macroexpansion for CLJ and CLJS follow two separate paths. In CLJ, a special
 ;; macroexpanding code is formatted and passed down as `eval` message, then the

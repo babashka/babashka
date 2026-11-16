@@ -5,7 +5,7 @@
 (def version-string
   "The current version for cider-nrepl as a string."
   ;; BB-PATCH the version.edn resource is not in the image
-  "0.63.1"
+  "0.64.0"
   #_(-> (io/resource "cider/nrepl/version.edn")
       slurp
       read-string))

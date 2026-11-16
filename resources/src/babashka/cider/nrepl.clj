@@ -376,7 +376,9 @@ If specified, the value will be concatenated to that of `orchard.meta/var-meta-a
            be inspected. Returns a string representation of the resulting
            inspector's state in the `:value` slot."
    :requires #{"clone" #'wrap-caught #'wrap-print}
-   :expects (cljs/maybe-add-piggieback #{"eval"})
+   ;; shadow-cljs's middleware, by an op it handles, as in `wrap-test`, so that
+   ;; its ClojureScript evaluations come back through here.
+   :expects (cljs/maybe-add-piggieback #{"eval" "shadow-remote-init"})
    :handles (merge
              (with-deprecated-aliases
                {"cider/inspect-print-current-value"
@@ -639,38 +641,65 @@ if applicable, and re-render the updated value."
 (def-wrapper wrap-ns cider.nrepl.middleware.ns/handle-ns
   {:doc "Provide ns listing and browsing functionality."
    :requires (cljs/maybe-add-piggieback #{#'session})
-   :handles (with-deprecated-aliases
-              {"cider/ns-list"
-               {:doc "Return a sorted list of all namespaces."
-                :returns {"status" "done" "ns-list" "The sorted list of all namespaces."}
-                :optional {"filter-regexps" "All namespaces matching any regexp from this list would be dropped from the result."}}
-               "cider/ns-list-vars-by-name"
-               {:doc "Return a list of vars named `name` amongst all namespaces."
-                :requires {"name" "The name to use."}
-                :returns {"status" "done" "var-list" "The list obtained."}}
-               "cider/ns-vars"
-               {:doc "Returns a sorted list of public vars in a namespace."
-                :requires {"ns" "The namespace to browse."}
-                :optional {"var-query" "The search query for vars. Only \"private?\" is supported for ClojureScript."}
-                :returns {"status" "done" "ns-vars" "The sorted list of public vars in a namespace."}}
-               "cider/ns-vars-with-meta"
-               {:doc "Returns a map of [var-name] to [var-metadata] for public vars in a namespace."
-                :requires {"ns" "The namespace to use."}
-                :optional {"var-query" "The search query for vars. Only \"private?\" is supported for ClojureScript."}
-                :returns {"status" "done" "ns-vars-with-meta" "The map of [var-name] to [var-metadata] for public vars in a namespace."}}
-               "cider/ns-path"
-               {:doc "Returns the path to the file containing ns."
-                :requires {"ns" "The namespace to find."}
-                :returns {"status" "done"
-                          "path" "The path to the file containing ns. Please favor `:url` in ClojureScript, but fall back to `:path`."
-                          "url" "The Java URL indicating the file containing ns. Please favor this attribute over `:path` when possible. If this value is nil, you can fall back to `:path`."}}
-               "cider/ns-load-all"
-               {:doc "Loads all project namespaces."
-                :returns {"status" "done" "loaded-ns" "The list of ns that were loaded."}}
-               "cider/ns-aliases"
-               {:doc "Returns a map of [ns-alias] to [ns-name] in a namespace."
-                :requires {"ns" "The namespace to use."}
-                :returns {"status" "done" "ns-aliases" "The map of [ns-alias] to [ns-name] in a namespace."}}})})
+   :handles (merge
+             (with-deprecated-aliases
+               {"cider/ns-list"
+                {:doc "Return a sorted list of all namespaces."
+                 :returns {"status" "done" "ns-list" "The sorted list of all namespaces."}
+                 :optional {"filter-regexps" "All namespaces matching any regexp from this list would be dropped from the result."}}
+                "cider/ns-list-vars-by-name"
+                {:doc "Return a list of vars named `name` amongst all namespaces."
+                 :requires {"name" "The name to use."}
+                 :returns {"status" "done" "var-list" "The list obtained."}}
+                "cider/ns-vars"
+                {:doc "Returns a sorted list of public vars in a namespace."
+                 :requires {"ns" "The namespace to browse."}
+                 :optional {"var-query" "The search query for vars. Only \"private?\" is supported for ClojureScript."}
+                 :returns {"status" "done" "ns-vars" "The sorted list of public vars in a namespace."}}
+                "cider/ns-vars-with-meta"
+                {:doc "Returns a map of [var-name] to [var-metadata] for public vars in a namespace."
+                 :requires {"ns" "The namespace to use."}
+                 :optional {"var-query" "The search query for vars. Only \"private?\" is supported for ClojureScript."}
+                 :returns {"status" "done" "ns-vars-with-meta" "The map of [var-name] to [var-metadata] for public vars in a namespace."}}
+                "cider/ns-path"
+                {:doc "Returns the path to the file containing ns."
+                 :requires {"ns" "The namespace to find."}
+                 :returns {"status" "done"
+                           "path" "The path to the file containing ns. Please favor `:url` in ClojureScript, but fall back to `:path`."
+                           "url" "The Java URL indicating the file containing ns. Please favor this attribute over `:path` when possible. If this value is nil, you can fall back to `:path`."}}
+                "cider/ns-load-all"
+                {:doc "Loads all project namespaces."
+                 :returns {"status" "done" "loaded-ns" "The list of ns that were loaded."}}
+                "cider/ns-aliases"
+                {:doc "Returns a map of [ns-alias] to [ns-name] in a namespace."
+                 :requires {"ns" "The namespace to use."}
+                 :returns {"status" "done" "ns-aliases" "The map of [ns-alias] to [ns-name] in a namespace."}}})
+             ;; These are newer and have no deprecated aliases, which would
+             ;; shadow refactor-nrepl's `resolve-missing` and `clean-ns`.
+             {"cider/resolve-missing"
+              {:doc "Return the namespaces and classes that could provide a symbol the namespace can't resolve yet: loaded namespaces with a public var of that name, to require, and classes of that name, to import. There are none when the namespace can already use the symbol, and a fully qualified symbol gets only its own namespace."
+               :requires {"symbol" "The symbol to resolve, as written (e.g. `join`, `str/join`, `Date`, `Date.` or `Instant/now`)."}
+               :optional {"ns" "The namespace the symbol is used in."}
+               :returns {"status" "done"
+                         "candidates" "A list of maps with the candidate's `name` and `type`: `ns` or (ClojureScript only) `macro` for a namespace to require, `class` for a class to import, and `type` for a `deftype` or `defrecord` class, which also has the `ns` that defines it."}}
+              "cider/resolve-alias"
+              {:doc "Return the namespaces an alias could stand for, judging by the project's source files: the namespaces they give that alias, the most used first. Only when none of those works on the platform do the preferred namespaces and the project namespaces named after the alias count. There are none when the namespace already has the alias, or the alias names a namespace or a class, or it's `js` in ClojureScript."
+               :requires {"alias" "The alias, e.g. `str` for `str/join`."}
+               :optional {"ns" "The namespace the alias is used in."
+                          "platform" "`clj`, `cljs`, or `cljc`, where a candidate has to work for both. Defaults to `cljs` in a ClojureScript session and to `clj` otherwise."
+                          "preferred" "A list of namespaces to offer when the project's source files don't give the alias to one, as long as they're there to require. A JavaScript module comes quoted, as in a libspec."}
+               :returns {"status" "done"
+                         "candidates" "A list of maps with the candidate's `ns`, as written in a libspec (so a JavaScript module comes quoted), and its `source`: `project`, with the `count` of the source files that give the namespace this alias, `preferred` or `suggested`."}}
+              "cider/clean-ns"
+              {:doc "Return what the ns form at the start of `code` requires, refers and imports that the rest of `code` doesn't use, going by reading it, without loading anything. A name counts as used wherever it comes up. Requires with no alias or names to refer, `:refer :all`, `:rename`, prefix lists and whatever is in a reader conditional count as used. A libspec whose alias goes unused, but whose namespace is used fully qualified or defines a class that gets imported, only loses the alias."
+               :requires {"code" "The code, from the ns form on, e.g. the rest of a source file."}
+               :optional {"line" "The line `code` starts on, 1 by default, so that a read error tells the line in the file."
+                          "platform" "`clj`, `cljs`, or `cljc` for both. Without it, less goes, as the code might be ClojureScript, where the alias of a JavaScript module is also a value, and a class used fully qualified still needs its import."}
+               :returns {"status" "done, with `cider/clean-ns-error` when `code` doesn't read or has no ns form"
+                         "libspecs" "A list of maps with a libspec's `ns`, as written (so a JavaScript module comes quoted), its `clause` (`require` or `require-macros`), and either `remove` (`true`) when the whole libspec can go, or the parts of it that can: its `as` or `as-alias` alias, and the names in its `refer` or `refer-macros` list."
+                         "imports" "A list of the fully qualified names of the imported classes that can go."
+                         "error" "Why `code` couldn't be cleaned."
+                         "line" "The line where reading `code` failed."}}})})
 
 (def-wrapper wrap-out cider.nrepl.middleware.out/handle-out
   {:requires #{#'session}
@@ -851,13 +880,18 @@ stack frame of the most recent exception."
 
 (def test-run-optional-doc (merge wrap-print-optional-arguments stream-optional-doc))
 
-(def test-run-return-doc (merge fail-fast-doc timing-info-return-doc stream-return-doc))
+(def test-output-return-doc {"out" "What the tests print to `*out*`, as they run (on nREPL 1.3 and later)."
+                             "err" "What the tests print to `*err*`, as they run (on nREPL 1.3 and later)."})
+
+(def test-run-return-doc (merge fail-fast-doc timing-info-return-doc stream-return-doc test-output-return-doc))
 
 (def-wrapper wrap-test cider.nrepl.middleware.test/handle-test
   {:doc "Middleware that handles testing requests."
    ;; Expect piggieback so that, for ClojureScript, the `eval` op we synthesize
-   ;; to run the tests flows down into the piggieback middleware.
-   :expects (cljs/maybe-add-piggieback #{})
+   ;; to run the tests flows down into the piggieback middleware, and
+   ;; shadow-cljs's, named by an op it handles, so that this does nothing
+   ;; without shadow-cljs. Its var would get its middleware added to any stack.
+   :expects (cljs/maybe-add-piggieback #{"shadow-remote-init"})
    :requires #{#'session #'wrap-print}
    :handles (merge
              (with-deprecated-aliases
@@ -914,7 +948,7 @@ stack frame of the most recent exception."
               "cider/trace-subscribe"
               {:doc     "Open a streaming subscription that delivers a message for each traced call and return until `cider/trace-unsubscribe`. While subscribed, trace output is routed to the subscriber instead of the REPL."
                :returns {"cider/trace-subscribe" "The id of the subscription, to be passed to `cider/trace-unsubscribe`"
-                         "cider/trace-event" "A trace event, with `id`, `phase` (\"call\" or \"return\"), `name`, `depth`, and `args` (on a call) or `value` (on a return)"}}
+                         "cider/trace-event" "A trace event, with `id`, `phase` (\"call\", \"return\" or \"throw\"), `name`, `depth`, and `args` (on a call), `value` (on a return) or `error`, the class and message of what the call threw (on a throw)"}}
               "cider/trace-unsubscribe"
               {:doc      "Stop streaming trace events for the given subscription."
                :requires {"subscription" "The id of the subscription to remove"}

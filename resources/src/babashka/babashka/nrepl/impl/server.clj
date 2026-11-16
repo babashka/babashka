@@ -3,21 +3,17 @@
   from bundled source, plus the ops babashka adds."
   {:no-doc true}
   (:require
-   [babashka.classpath :as cp]
    [babashka.fs :as fs]
-   [babashka.nrepl.impl.cider :as cider]
    [babashka.nrepl.impl.clojuredocs :as clojuredocs]
-   [babashka.nrepl.impl.debug :as debug]
    [babashka.nrepl.impl.java :as java]
    [babashka.nrepl.impl.sci :as sci-helpers]
-   [babashka.nrepl.impl.track-state :as track-state]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.walk :as walk]
    [nrepl.middleware :refer [set-descriptor!]]
    [nrepl.misc :as misc]
    [nrepl.server :as server]
-   [nrepl.transport :as t :refer [safe-handle]]))
+   [nrepl.transport :as t]))
 
 (defonce ^:private versions
   (atom {}))
@@ -39,7 +35,9 @@
   (or (when ns (find-ns (symbol ns)))
       (misc/resolve-in-session msg *ns*)))
 
-(defn- complete-reply [{:keys [symbol prefix] :as msg}]
+(defn complete-reply
+  "Returns the completions of the message's `prefix` or `symbol`."
+  [{:keys [symbol prefix] :as msg}]
   (let [query (or symbol prefix)]
     {:status :done
      :completions (if query
@@ -80,7 +78,10 @@
                    :doc (:doc (meta the-ns))}
             file (assoc :file file :line 1)))))))
 
-(defn- lookup-reply [{:keys [op sym symbol ns class member] :as msg}]
+(defn lookup-reply
+  "Returns the info of the message's `sym`, or its eldoc if `op` is `eldoc` or
+  `cider/eldoc`."
+  [{:keys [op sym symbol ns class member] :as msg}]
   (let [eldoc? (contains? #{"eldoc" "cider/eldoc"} op)
         sym-str (or sym symbol)
         ns-str (or ns (str (ns-name (msg-ns msg))))
@@ -122,21 +123,8 @@
                 column (assoc :column column)
                 see-also (assoc :see-also see-also))))))
 
-(defn- ns-list-reply [{:keys [filter-regexps exclude-patterns]}]
-  (let [patterns (map re-pattern (concat filter-regexps exclude-patterns))]
-    {:status :done
-     :ns-list (->> (all-ns)
-                   (map (comp name ns-name))
-                   (remove (fn [n] (some #(re-find % n) patterns)))
-                   sort)}))
-
-(defn- classpath-reply [_msg]
-  {:status :done
-   :classpath (cp/split-classpath (cp/get-classpath))})
-
 (defn wrap-babashka
-  "Middleware that adds babashka's versions to `describe`. The cider-nrepl
-  ops it used to answer come from `cider-middleware` now."
+  "Adds babashka's versions to `describe` replies."
   [h]
   (fn [{:keys [op] :as msg}]
     (if (= "describe" op)
@@ -149,11 +137,9 @@
                   :handles {}})
 
 (def ^:private cider-middleware
-  "The cider-nrepl middleware that runs in bb, from upstream's
-  cider.nrepl/cider-middleware. Left out: content-type and slurp (classes
-  not registered), format (cljfmt), log (logjam), out (reify of
-  ThreadFactory), refresh and reload (tools.namespace reload, clj-reload),
-  tap (Transport imported as a class), xref (walks fn classes)."
+  "The cider-nrepl middleware bb runs.
+  content-type, format, log, out, refresh, reload, slurp, tap and xref do not
+  run in bb."
   '[cider.nrepl/wrap-apropos
     cider.nrepl/wrap-classpath
     cider.nrepl/wrap-clojuredocs

@@ -1043,6 +1043,36 @@
                   (is (contains? ops op))
                   (is (contains? ops (str "cider/" op))))))))))))
 
+(def ^:private op-args
+  {"sym" "myf" "symbol" "myf" "ns" "user" "prefix" "my" "code" "(+ 1 2)" "name" "myf"
+   "query" "myf" "symbols" ["myf" "when" "if"] "alias" "str" "var" "myf" "index" 0 "idx" 1
+   "line" 1 "column" 1 "var-query" {"exactly" ["user/myf"]} "page-size" 10
+   "max-atom-length" 10 "max-coll-size" 10 "max-nested-depth" 3 "view-mode" "normal"})
+
+(def ^:private ops-without-reply
+  #{"close" "interrupt" "stdin" "init-debugger" "cider/init-debugger" "debug-input" "cider/debug-input"
+    "ns-load-all" "cider/ns-load-all" "test-all" "cider/test-all"
+    ;; unknown-op in cider-nrepl 0.64.0 on the JVM as well
+    "debug-middleware" "cider/debug-middleware"})
+
+(deftest ^:skip-windows nrepl-describe-ops-test
+  (with-bb-script 1692
+    "(defn myf [x] x)
+     (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1692 :quiet true}))"
+    (fn []
+      (let [ops (with-session 1692 #(keys (get (decode (first (% {"op" "describe"}))) "ops")))]
+        (is (< 100 (count ops)))
+        (doseq [op (sort ops)
+                :when (not (ops-without-reply op))]
+          (with-session 1692
+            (fn [send]
+              (let [replies (map decode (send (assoc op-args "op" op)))
+                    err (str/join (keep #(get % "err") replies))]
+                (testing (str op " is answered")
+                  (is (not-any? #{"unknown-op"} (mapcat #(get % "status") replies))))
+                (testing (str op " runs without a missing class or method")
+                  (is (not (re-find #"No matching (method|field)|Unable to resolve classname|cannot be cast|Cannot reflectively" err))))))))))))
+
 (deftest ^:skip-windows nrepl-track-state-test
   (with-bb-script 1679
     "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1679 :quiet true}))"
@@ -1144,8 +1174,7 @@
       (with-bb-script 1676
         "(def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1676 :quiet true}))"
         (fn []
-          (testing "the debugger loads on the first clone"
-            (is (= "nil" (sessionless-eval 1676 "(find-ns 'cider.nrepl.middleware.debug)")))
+          (testing "the debugger is loaded in a session's first eval"
             (is (= "true" (some :value (:replies (debug-eval 1676 "(some? (find-ns 'cider.nrepl.middleware.debug))" []))))))
           (testing "#dbg stops at each subform with its value"
             (let [{:keys [breaks replies]} (debug-eval 1676 "#dbg (let [x 1 y (inc x)] (+ x y))"

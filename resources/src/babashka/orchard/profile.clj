@@ -136,7 +136,8 @@
     (when-not ('#{clojure.core orchard.profile} (.name ns))
       (->> (ns-interns ns)
            vals
-           (filter (comp fn? var-get))
+           #_(filter (comp fn? var-get)) ;; BB-PATCH user/*input* is interned as a non-var
+(filter #(and (var? %) (fn? (var-get %))))
            (run! profile-var))
       (swap! profiled-nses conj ns))))
 
@@ -146,7 +147,8 @@
   (let [ns (the-ns ns)]
     (->> (ns-interns ns)
          vals
-         (filter (comp fn? var-get))
+         #_(filter (comp fn? var-get)) ;; BB-PATCH user/*input* is interned as a non-var
+(filter #(and (var? %) (fn? (var-get %))))
          (run! unprofile-var))
     (swap! profiled-nses disj ns)))
 

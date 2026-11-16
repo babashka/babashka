@@ -374,7 +374,8 @@
 
 (defn handle-tracker [handler {:keys [op session] :as msg}]
   (cond
-    (= "cider/get-state" op) (calculate-changed-project-state-response msg)
+    (= "cider/get-state" op) #_(calculate-changed-project-state-response msg) ;; BB-PATCH the reply is returned, not sent
+(transport/send (:transport msg) (assoc (calculate-changed-project-state-response msg) :status #{:state :done}))
 
     (mw/ops-that-can-eval op)
     (handler (assoc msg :transport (make-transport msg)))

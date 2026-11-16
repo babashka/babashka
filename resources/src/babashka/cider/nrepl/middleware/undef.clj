@@ -34,7 +34,8 @@
     ;; Do not remove the default java.lang imports, as they are not relinked on the next load
     ;; see https://github.com/clojure-emacs/cider/issues/3194
     (doseq [[sym ref] (ns-map ns)]
-      (when-not (identical? ref (get clojure.lang.RT/DEFAULT_IMPORTS sym))
+      (when-not (identical? ref #_(get clojure.lang.RT/DEFAULT_IMPORTS sym) ;; BB-PATCH the field is not registered in the image
+(get (ns-imports 'clojure.core) sym))
         (ns-unmap ns sym)))
     (doseq [[sym _] (ns-aliases ns)]
       (ns-unalias ns sym))

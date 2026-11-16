@@ -98,3 +98,25 @@
             (str/split #"(?<=\.) ")) ; split sentences
         (take n)
         (str/join " "))))
+
+(defn resolve-var
+  "Returns the var sym resolves to in the namespace named ns, or nil if none."
+  [ns sym]
+  {:pre [(symbol? ns) (symbol? sym)]}
+  (when-let [ns (find-ns ns)]
+    (try (ns-resolve ns sym)
+         (catch Exception _ nil))))
+
+(defn classify-symbol
+  "Returns :macro, :inline, :special or :function for sym resolved in the
+  namespace named ns, or nil if sym resolves to no var."
+  [ns sym]
+  (if (special-symbol? sym)
+    :special
+    (when-let [v (resolve-var ns sym)]
+      (when (var? v)
+        (let [m (meta v)]
+          (cond
+            (:macro m) :macro
+            (:inline m) :inline
+            :else :function))))))

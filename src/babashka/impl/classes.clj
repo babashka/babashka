@@ -108,7 +108,8 @@
     {:methods [{:name "copyOf"}
                {:name "copyOfRange"}
                {:name "equals"}
-               {:name "fill"}]}
+               {:name "fill"}
+               {:name "sort"}]}
     ;; this fixes clojure.lang.Reflector for Java 11
     java.lang.reflect.AccessibleObject
     {:methods [{:name "canAccess"}
