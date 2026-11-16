@@ -103,6 +103,10 @@
   ;; the cider debugger to debug these tests. :(
   (with-redefs [d/debugger-message (atom nil)]
     (nrepl-send {:op "init-debugger"})
+    ;; BB-TEST-PATCH the debugger loads on the first message, wait until init-debugger is through
+    (let [deadline (+ (System/currentTimeMillis) 30000)]
+      (while (and (nil? @d/debugger-message) (< (System/currentTimeMillis) deadline))
+        (Thread/sleep 10)))
     (binding [*debugger-key* (LinkedBlockingQueue.)]
       (f))))
 

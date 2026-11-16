@@ -292,10 +292,8 @@
   bb scans no classpath for classes, bundles clojure.core and cider-nrepl as
   sources outside jars, keeps no :inline metadata on vars and does not ship
   the ClojureDocs export. The ClojureScript tests need a compiler env.
-  SCI ignores ns-unmap of a default clojure.core refer and keeps vars
-  excluded by :refer-clojure in ns-refers and ns-map, babashka/sci#1135 and
-  #1136. The native run puts no project directory on the classpath for
-  ns-load-all to load."
+  The native run puts no project directory on the classpath for ns-load-all
+  to load. resources-list-test expects / in paths, and Windows paths use \\."
   (cond-> '{cider.nrepl.middleware.util.instrument-test [instrument-reify-test]
             cider.nrepl.middleware.debug-test [abort-without-session-thread-test]
             cider.nrepl.middleware.debug-integration-test [debug-expression-test
@@ -313,10 +311,9 @@
                                             resolve-alias-integration-test]
             cider.nrepl.middleware.classify-symbols-test [classify-symbols-test]
             cider.nrepl.middleware.clojuredocs-test [clojuredocs-refresh-cache-integration-test
-                                                     deprecated-ops-test]
-            cider.nrepl.middleware.macroexpand-test [display-namespaces-option-test]
-            cider.nrepl.middleware.undef-test [undef-all-test]}
-    (windows?) (update 'cider.nrepl.middleware.test-test conj 'test-output-test)
+                                                     deprecated-ops-test]}
+    (windows?) (-> (update 'cider.nrepl.middleware.test-test conj 'test-output-test)
+                   (update 'cider.nrepl.middleware.resource-test (fnil conj []) 'resources-list-test))
     (native?) (update 'cider.nrepl.middleware.ns-test conj 'ns-load-all-integration-test)))
 
 (let [cider-nss (filter #(str/starts-with? (str %) "cider.nrepl.") ns-args)]
