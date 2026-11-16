@@ -293,7 +293,8 @@
   sources outside jars, keeps no :inline metadata on vars and does not ship
   the ClojureDocs export. The ClojureScript tests need a compiler env.
   SCI ignores ns-unmap of a default clojure.core refer and keeps vars
-  excluded by :refer-clojure in ns-map, both bugs. The native run puts no project directory
+  excluded by :refer-clojure in ns-map, babashka/sci#1135 and #1136. The
+  native run puts no project directory
   on the classpath for ns-load-all to load."
   (cond-> '{cider.nrepl.middleware.util.instrument-test [instrument-reify-test]
             cider.nrepl.middleware.debug-test [abort-without-session-thread-test]
