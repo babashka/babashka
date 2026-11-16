@@ -25,11 +25,9 @@ upstream file through `script/vendor_bundled_sources.clj`, with `BB-PATCH`
 regions where sci or the image needs a change. Write bb's own version only
 when that fails, and record why next to the file in `stand-ins`.
 
-The middleware layer of cider-nrepl stays bb's own, as in
-`babashka.nrepl.impl.cider`. Those files depend on
-`cider.nrepl.middleware.util.error-handling` and the `def-wrapper`
-loading in `cider/nrepl.clj`, which bb does not ship, and each is a
-few lines over the orchard call.
+cider-nrepl's middleware layer is shipped as well. `cider/nrepl.clj`
+builds the stack with its `def-wrapper` loading. `info` and `complete`
+are bb's own, because upstream needs compliment and `orchard.java`.
 
 Before calling an upstream file unusable, load it in bb and check its
 requires and interop against the image.

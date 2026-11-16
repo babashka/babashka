@@ -3,21 +3,17 @@
   from bundled source, plus the ops babashka adds."
   {:no-doc true}
   (:require
-   [babashka.classpath :as cp]
    [babashka.fs :as fs]
-   [babashka.nrepl.impl.cider :as cider]
    [babashka.nrepl.impl.clojuredocs :as clojuredocs]
-   [babashka.nrepl.impl.debug :as debug]
    [babashka.nrepl.impl.java :as java]
    [babashka.nrepl.impl.sci :as sci-helpers]
-   [babashka.nrepl.impl.track-state :as track-state]
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.walk :as walk]
    [nrepl.middleware :refer [set-descriptor!]]
    [nrepl.misc :as misc]
    [nrepl.server :as server]
-   [nrepl.transport :as t :refer [safe-handle]]))
+   [nrepl.transport :as t]))
 
 (defonce ^:private versions
   (atom {}))
@@ -39,7 +35,9 @@
   (or (when ns (find-ns (symbol ns)))
       (misc/resolve-in-session msg *ns*)))
 
-(defn- complete-reply [{:keys [symbol prefix] :as msg}]
+(defn complete-reply
+  "Returns the completions of the message's `prefix` or `symbol`."
+  [{:keys [symbol prefix] :as msg}]
   (let [query (or symbol prefix)]
     {:status :done
      :completions (if query
@@ -80,7 +78,10 @@
                    :doc (:doc (meta the-ns))}
             file (assoc :file file :line 1)))))))
 
-(defn- lookup-reply [{:keys [op sym symbol ns class member] :as msg}]
+(defn lookup-reply
+  "Returns the info of the message's `sym`, or its eldoc if `op` is `eldoc` or
+  `cider/eldoc`."
+  [{:keys [op sym symbol ns class member] :as msg}]
   (let [eldoc? (contains? #{"eldoc" "cider/eldoc"} op)
         sym-str (or sym symbol)
         ns-str (or ns (str (ns-name (msg-ns msg))))
@@ -122,67 +123,42 @@
                 column (assoc :column column)
                 see-also (assoc :see-also see-also))))))
 
-(defn- ns-list-reply [{:keys [filter-regexps exclude-patterns]}]
-  (let [patterns (map re-pattern (concat filter-regexps exclude-patterns))]
-    {:status :done
-     :ns-list (->> (all-ns)
-                   (map (comp name ns-name))
-                   (remove (fn [n] (some #(re-find % n) patterns)))
-                   sort)}))
-
-(defn- classpath-reply [_msg]
-  {:status :done
-   :classpath (cp/split-classpath (cp/get-classpath))})
-
 (defn wrap-babashka
-  "Returns a handler that answers the cider-nrepl ops `complete`, `eldoc`,
-  `info`, `ns-list` and `classpath` under their `cider/` and bare names."
+  "Adds babashka's versions to `describe` replies."
   [h]
   (fn [{:keys [op] :as msg}]
     (if (= "describe" op)
       (h (assoc msg :transport (versions-transport (:transport msg))))
-      (safe-handle msg
-        "cider/complete" complete-reply
-        "complete" complete-reply
-        "cider/eldoc" lookup-reply
-        "eldoc" lookup-reply
-        "cider/info" lookup-reply
-        "info" lookup-reply
-        "cider/ns-list" ns-list-reply
-        "ns-list" ns-list-reply
-        "cider/classpath" classpath-reply
-        "classpath" classpath-reply
-        :else h))))
+      (h msg))))
 
 (set-descriptor! #'wrap-babashka
                  {:requires #{"clone"}
                   :expects #{}
-                  :handles (cider/with-cider-names
-                            {"complete"
-                             {:doc "Completions of a prefix."
-                              :requires {"prefix" "The prefix to complete."}
-                              :optional {"ns" "The namespace to complete in. Defaults to the session's."}
-                              :returns {"completions" "Maps with `candidate`, `type` and `ns`."}}
-                             "eldoc"
-                             {:doc "Arglists and docstring of a symbol."
-                              :requires {"sym" "The symbol to look up."}
-                              :optional {"ns" "The namespace to resolve in."}
-                              :returns {"eldoc" "The arglists, each a list of strings."}}
-                             "info"
-                             {:doc "Metadata of a symbol."
-                              :requires {"sym" "The symbol to look up."}
-                              :optional {"ns" "The namespace to resolve in."}
-                              :returns {}}
-                             "ns-list"
-                             {:doc "The names of all namespaces."
-                              :requires {}
-                              :optional {"filter-regexps" "Regexes of namespaces to leave out."}
-                              :returns {"ns-list" "The sorted names."}}
-                             "classpath"
-                             {:doc "The classpath entries."
-                              :requires {}
-                              :optional {}
-                              :returns {"classpath" "A list of paths."}}})})
+                  :handles {}})
+
+(def ^:private cider-middleware
+  "The cider-nrepl middleware bb runs.
+  content-type, format, log, out, refresh, reload, slurp, tap and xref do not
+  run in bb."
+  '[cider.nrepl/wrap-apropos
+    cider.nrepl/wrap-classpath
+    cider.nrepl/wrap-clojuredocs
+    cider.nrepl/wrap-complete
+    cider.nrepl/wrap-debug
+    cider.nrepl/wrap-enlighten
+    cider.nrepl/wrap-info
+    cider.nrepl/wrap-inspect
+    cider.nrepl/wrap-macroexpand
+    cider.nrepl/wrap-ns
+    cider.nrepl/wrap-profile
+    cider.nrepl/wrap-resource
+    cider.nrepl/wrap-spec
+    cider.nrepl/wrap-stacktrace
+    cider.nrepl/wrap-test
+    cider.nrepl/wrap-trace
+    cider.nrepl/wrap-tracker
+    cider.nrepl/wrap-undef
+    cider.nrepl/wrap-version])
 
 (defn- middleware-var [m]
   (if (symbol? m) (requiring-resolve m) m))
@@ -200,12 +176,9 @@
     :or {host "127.0.0.1" port 1667}}
    wrap-handler]
   (reset! versions (walk/keywordize-keys (get describe "versions" (:versions describe))))
-  (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka #'cider/wrap-cider #'clojuredocs/wrap-clojuredocs #'debug/wrap-debug #'track-state/wrap-track-state
-                                     (map middleware-var middleware)))
-        ;; a session's first eval cannot arrive before the clone reply
-        handler (fn [msg]
-                  (when (= "clone" (:op msg)) (debug/load!) (track-state/load!))
-                  (handler msg))
+  (let [handler (wrap-handler (apply server/default-handler #'wrap-babashka
+                                     (concat (map requiring-resolve cider-middleware)
+                                             (map middleware-var middleware))))
         srv (if socket
               (server/start-server :socket socket :handler handler)
               (server/start-server :bind host :port port :handler handler))

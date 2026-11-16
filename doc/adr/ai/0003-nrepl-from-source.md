@@ -79,10 +79,9 @@ supported. Dropped: `cmdline`, `spec`, `tls_client_proxy`, the JVMTI agent.
 
 ### 4. babashka's ops are nREPL middleware
 
-`babashka.nrepl.impl.server/wrap-babashka`, interpreted, carries a
-descriptor and handles `complete` (the old name of `completions`),
-`eldoc`, `info`, `ns-list` and `classpath`, and adds babashka's versions
-to `describe` through a wrapping transport. The completion and lookup
+`babashka.nrepl.impl.server/wrap-babashka`, interpreted, adds babashka's
+versions to `describe` through a wrapping transport. The CIDER ops come
+from cider-nrepl's middleware, see ADR 0004. The completion and lookup
 code stays compiled in `babashka.impl.nrepl.sci`, since it reads sci's
 context internals, and is exposed to the interpreted side as
 `babashka.nrepl.impl.sci`. User middleware is a var with an nREPL
