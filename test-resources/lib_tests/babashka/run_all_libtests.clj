@@ -289,9 +289,8 @@
   into nrepl.server, whose bundled source var-code cannot read. test-all runs
   the project's tests, and the checkout is outside the working directory.
   test-output-test expects \\n, and println writes \\r\\n on Windows.
-  bb scans no classpath for classes, bundles clojure.core and cider-nrepl as
-  sources outside jars, keeps no :inline metadata on vars and does not ship
-  the ClojureDocs export. The ClojureScript tests need a compiler env.
+  bb bundles clojure.core and cider-nrepl as sources outside jars, keeps no
+  :inline metadata on vars and does not ship the ClojureDocs export. The ClojureScript tests need a compiler env.
   The native run puts no project directory on the classpath for ns-load-all
   to load. resources-list-test expects / in paths, and Windows paths use \\."
   (cond-> '{cider.nrepl.middleware.util.instrument-test [instrument-reify-test]
@@ -305,9 +304,7 @@
                                             ns-vars-including-privates-test
                                             ns-vars-with-meta-integration-test
                                             ns-vars-with-meta-including-privates-test
-                                            resolve-missing-test
                                             resolve-missing-cljs-env-test
-                                            resolve-missing-integration-test
                                             resolve-alias-integration-test]
             cider.nrepl.middleware.classify-symbols-test [classify-symbols-test]
             cider.nrepl.middleware.clojuredocs-test [clojuredocs-refresh-cache-integration-test

@@ -11,10 +11,8 @@
 
 (def crns (sci/create-ns 'clojure.repl nil))
 
-(def special-doc-var
-  (sci/new-var
-   'special-doc
-   (let [m '{. {:url "java_interop#dot"
+(def ^:private special-docs
+  '{. {:url "java_interop#dot"
                 :forms [(.instanceMember instance args*)
                         (.instanceMember Classname args*)
                         (Classname/staticMethod args*)
@@ -67,10 +65,17 @@ fields, and Java class static fields."}
   Catches and handles Java exceptions."}
              var {:forms [(var symbol)]
                   :doc "The symbol must resolve to a var, and the Var object
-itself (not its value) is returned. The reader macro #'x expands to (var x)."}}]
-     (fn [name-symbol]
-       (when-let [doc (m name-symbol)]
-         (assoc doc :name name-symbol :special-form true))))
+itself (not its value) is returned. The reader macro #'x expands to (var x)."}})
+
+(def special-doc-map-var
+  (sci/new-var 'special-doc-map special-docs {:ns crns :private true}))
+
+(def special-doc-var
+  (sci/new-var
+   'special-doc
+   (fn [name-symbol]
+     (when-let [doc (special-docs name-symbol)]
+       (assoc doc :name name-symbol :special-form true)))
    {:ns crns :private true}))
 
 (def set-break-handler-var
@@ -130,5 +135,6 @@ itself (not its value) is returned. The reader macro #'x expands to (var x)."}}]
 
 (def repl-namespace
   {'special-doc special-doc-var
+   'special-doc-map special-doc-map-var
    'set-break-handler! set-break-handler-var
    'source-fn source-fn-var})

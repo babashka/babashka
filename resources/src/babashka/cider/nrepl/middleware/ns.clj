@@ -11,6 +11,7 @@
    [clojure.string :as str]
    ;; BB-PATCH compliment does not run in sci
    #_[compliment.utils :as compliment.utils]
+   [babashka.classes] ;; BB-PATCH
    [orchard.info :as info]
    [orchard.java.classpath :as cp]
    [orchard.misc :as misc]
@@ -206,8 +207,8 @@
          (if (clojure-type? c)
            {:name (.getName c) :type "type" :ns (defining-ns c)}
            {:name (.getName c) :type "class"}))
-       ;; BB-PATCH only the loaded classes, bb scans no classpath
-       (for [^String c nil #_(compliment.utils/classes-on-classpath)
+       (for [^String c #_(compliment.utils/classes-on-classpath) ;; BB-PATCH the classes bb has
+(map #(.getName ^Class %) (babashka.classes/all-classes))
              :when (and (.endsWith c suffix)
                         (not (loaded-names c))
                         (not (jdk-internal? c)))]
