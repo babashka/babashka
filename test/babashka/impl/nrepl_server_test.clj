@@ -1034,6 +1034,11 @@
               (let [nss (get (reply {"op" "cider/ns-list" "filter-regexps" ["^clojure"]}) "ns-list")]
                 (is (some #{"user"} nss))
                 (is (not-any? #(str/starts-with? % "clojure") nss))))
+            (testing "cider/apropos finds the special form throw by name and if by doc"
+              (is (some #{"throw"} (map #(get % "name") (get (reply {"op" "cider/apropos" "query" "^throw$"}) "apropos-matches"))))
+              (is (some #{"if"} (map #(get % "name") (get (reply {"op" "cider/apropos" "query" "yields then" "docs?" "true"}) "apropos-matches")))))
+            (testing "cider/resolve-missing offers java.time.Instant for Instant/now"
+              (is (some #{"java.time.Instant"} (map #(get % "name") (get (reply {"op" "cider/resolve-missing" "symbol" "Instant/now" "ns" "user"}) "candidates")))))
             (testing "cider/classpath returns a list"
               (is (sequential? (get (reply {"op" "cider/classpath"}) "classpath"))))
             (testing "describe lists the cider/ and the bare names"

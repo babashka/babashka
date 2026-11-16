@@ -374,7 +374,7 @@
 
 (defn handle-tracker [handler {:keys [op session] :as msg}]
   (cond
-    (= "cider/get-state" op) #_(calculate-changed-project-state-response msg) ;; BB-PATCH the reply is returned, not sent
+    (= "cider/get-state" op) #_(calculate-changed-project-state-response msg) ;; BB-PATCH the reply is returned, not sent, clojure-emacs/cider-nrepl#1081
 (transport/send (:transport msg) (assoc (calculate-changed-project-state-response msg) :status #{:state :done}))
 
     (mw/ops-that-can-eval op)

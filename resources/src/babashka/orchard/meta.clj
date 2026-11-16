@@ -1,6 +1,7 @@
 (ns orchard.meta
   "Stand-in for orchard.meta, used by the debugger and orchard.query."
   (:require [clojure.java.io :as io]
+            [clojure.repl]
             [clojure.string :as str]
             [clojure.walk :as walk]))
 
@@ -71,11 +72,11 @@
                    :code code)))))))
 
 (defn meta+
-  "Returns the metadata of var v, or a name for a special form symbol, which
-  orchard.apropos adds to the vars it searches."
+  "Returns the metadata of var v, or the forms and doc of a special form
+  symbol, which orchard.apropos adds to the vars it searches."
   [v]
   (if (and (symbol? v) (special-symbol? v))
-    {:name v :special-form true}
+    (or (#'clojure.repl/special-doc v) {:name v :special-form true})
     (meta v)))
 
 (defn var-name
