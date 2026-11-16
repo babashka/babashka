@@ -1061,22 +1061,26 @@
     "debug-middleware" "cider/debug-middleware"})
 
 (deftest ^:skip-windows nrepl-describe-ops-test
-  (with-bb-script 1692
-    "(defn myf [x] x)
-     (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1692 :quiet true}))"
-    (fn []
-      (let [ops (with-session 1692 #(keys (get (decode (first (% {"op" "describe"}))) "ops")))]
-        (is (< 100 (count ops)))
-        (doseq [op (sort ops)
-                :when (not (ops-without-reply op))]
-          (with-session 1692
-            (fn [send]
-              (let [replies (map decode (send (assoc op-args "op" op)))
-                    err (str/join (keep #(get % "err") replies))]
-                (testing (str op " is answered")
-                  (is (not-any? #{"unknown-op"} (mapcat #(get % "status") replies))))
-                (testing (str op " runs without a missing class or method")
-                  (is (not (re-find #"No matching (method|field)|Unable to resolve classname|cannot be cast|Cannot reflectively" err))))))))))))
+  ;; resources-list walks the classpath, the working directory by default
+  (fs/with-temp-dir [dir {}]
+    (with-bb-script 1692
+      (format "(babashka.classpath/add-classpath %s)
+               (defn myf [x] x)
+               (def server (babashka.nrepl.server/start-server! {:host \"127.0.0.1\" :port 1692 :quiet true}))"
+              (pr-str (str dir)))
+      (fn []
+        (let [ops (with-session 1692 #(keys (get (decode (first (% {"op" "describe"}))) "ops")))]
+          (is (< 100 (count ops)))
+          (doseq [op (sort ops)
+                  :when (not (ops-without-reply op))]
+            (with-session 1692
+              (fn [send]
+                (let [replies (map decode (send (assoc op-args "op" op)))
+                      err (str/join (keep #(get % "err") replies))]
+                  (testing (str op " is answered")
+                    (is (not-any? #{"unknown-op"} (mapcat #(get % "status") replies))))
+                  (testing (str op " runs without a missing class or method")
+                    (is (not (re-find #"No matching (method|field)|Unable to resolve classname|cannot be cast|Cannot reflectively" err)))))))))))))
 
 (deftest ^:skip-windows nrepl-track-state-test
   (with-bb-script 1679
