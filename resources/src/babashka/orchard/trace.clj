@@ -101,11 +101,9 @@
   "Like `binding`, for a map of vars to values, without calling `hash-map` or
   `push-thread-bindings`, which may be traced."
   [bindings & body]
-  `(do #_(clojure.lang.Var/pushThreadBindings ~bindings) ;; BB-PATCH Var interop is not in sci
-(push-thread-bindings ~bindings)
+  `(do (clojure.lang.Var/pushThreadBindings ~bindings)
        (try ~@body
-            (finally #_(clojure.lang.Var/popThreadBindings) ;; BB-PATCH
-(pop-thread-bindings)))))
+            (finally (clojure.lang.Var/popThreadBindings)))))
 
 (defn- throwable-str [^Throwable e]
   (cond-> (.getName (class e))
