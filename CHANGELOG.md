@@ -9,6 +9,7 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- `ns-refers` and `ns-map` leave out names removed by `ns-unmap` or `:refer-clojure :exclude` ([babashka/sci#1135](https://github.com/babashka/sci/issues/1135), [babashka/sci#1136](https://github.com/babashka/sci/issues/1136))
 - nREPL: the CIDER ops come from cider-nrepl's own middleware stack, which adds `apropos`, `macroexpand`, `ns-*`, `resolve-missing`, `resource`, `spec-*`, `toggle-trace-*`, `profile-*`, `undef`, `classify-symbols` and `complete-doc` ([#1851](https://github.com/babashka/babashka/issues/1851), [@bbatsov](https://github.com/bbatsov))
 - `clojure.lang.Var/pushThreadBindings`, `popThreadBindings` and `getThreadBindings` work on sci vars
 - `defrecord`, `deftype` and `reify` accept `clojure.lang.IBlockingDeref` ([#2277](https://github.com/babashka/babashka/issues/2277))
