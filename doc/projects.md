@@ -855,6 +855,7 @@ Pods not available in the pod registry:
   functionality.
 - [pod-jaydeesimon-jsoup](https://github.com/jaydeesimon/pod-jaydeesimon-jsoup):
     a pod for parsing HTML using CSS queries backed by Jsoup.
+    Babashka includes Jsoup since v1.12.195.
 - [pod.xledger.sql-server](https://github.com/xledger/pod_sql_server): pod for interacting with SQL Server.
 
 ## Projects
