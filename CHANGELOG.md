@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Speed up `try` with `catch` (about 4x)
+- Speed up calls to interpreted fns (about 8%)
 - An excluded or unmapped `clojure.core` macro such as `fn` throws `Unable to resolve symbol` instead of `No matching clause`
 - nREPL: `cider/apropos` finds special forms and searches their docs ([#2287](https://github.com/babashka/babashka/issues/2287))
 - nREPL: `cider/resolve-missing` offers every class bb has, such as `java.time.Instant` for `Instant/now` ([#2287](https://github.com/babashka/babashka/issues/2287))
