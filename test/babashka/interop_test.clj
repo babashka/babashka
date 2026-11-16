@@ -355,6 +355,15 @@
       (swap! results conj *test-var*)))
    @results"))))
 
+(deftest clojure-lang-Var-thread-bindings-test
+  (is (= [42 {"*test-var*" 42} 1]
+         (bb nil "(def ^:dynamic *test-var* 1)
+   (clojure.lang.Var/pushThreadBindings {#'*test-var* 42})
+   (let [inside *test-var*
+         bindings (clojure.lang.Var/getThreadBindings)]
+     (clojure.lang.Var/popThreadBindings)
+     [inside (update-keys (select-keys bindings [#'*test-var*]) (comp str :name meta)) *test-var*])"))))
+
 (deftest clojure-lang-Var-fields-test
   (testing ".ns returns the namespace of a var"
     (is (= 'clojure.core (bb nil "(ns-name (.ns #'inc))"))))
