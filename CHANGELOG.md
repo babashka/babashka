@@ -9,6 +9,8 @@ A preview of the next release can be installed from
 
 ## Unreleased
 
+- Speed up calls to multi-arity fns (about 20%)
+- Binary is 0.6 MB smaller
 - Speed up `try` with `catch` (about 4x)
 - Speed up calls to interpreted fns (about 8%)
 - An excluded or unmapped `clojure.core` macro such as `fn` throws `Unable to resolve symbol` instead of `No matching clause`
