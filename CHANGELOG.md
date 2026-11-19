@@ -7,32 +7,50 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
-## Unreleased
+## 1.13.230 (2026-11-19)
+
+### Highlights
+
+- [Performance](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#performance): speed up `try` with `catch` (about 4x), calls to multi-arity fns (about 20%) and interpreted fns (about 8%), 0.6 MB off the binary
+- [nREPL](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#nrepl): the CIDER ops come from cider-nrepl's own middleware stack, which adds `apropos`, `macroexpand`, `ns-*`, `spec-*` and more ([@bbatsov](https://github.com/bbatsov))
+- [Dependencies](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#dependencies): Clojure `1.12.7`, `cider-nrepl` `0.64.0`, `jline` `4.6.0`
+- [Enhancements / fixes](https://github.com/babashka/babashka/blob/master/CHANGELOG.md#enhancements--fixes) to printing, namespaces, the REPL and thread bindings
+
+### Performance
 
 - Speed up calls to multi-arity fns (about 20%)
-- Binary is 0.6 MB smaller
 - Speed up `try` with `catch` (about 4x)
 - Speed up calls to interpreted fns (about 8%)
-- An excluded or unmapped `clojure.core` macro such as `fn` throws `Unable to resolve symbol` instead of `No matching clause`
-- nREPL: `cider/apropos` finds special forms and searches their docs ([#2287](https://github.com/babashka/babashka/issues/2287))
-- nREPL: `cider/resolve-missing` offers every class bb has, such as `java.time.Instant` for `Instant/now` ([#2287](https://github.com/babashka/babashka/issues/2287))
+- Binary is 0.6 MB smaller
+
+### nREPL
+
+- The CIDER ops come from cider-nrepl's own middleware stack, which adds `apropos`, `macroexpand`, `ns-*`, `resolve-missing`, `resource`, `spec-*`, `toggle-trace-*`, `profile-*`, `undef`, `classify-symbols` and `complete-doc` ([#1851](https://github.com/babashka/babashka/issues/1851), [@bbatsov](https://github.com/bbatsov))
+- `cider/apropos` finds special forms and searches their docs ([#2287](https://github.com/babashka/babashka/issues/2287))
+- `cider/resolve-missing` offers every class bb has, such as `java.time.Instant` for `Instant/now` ([#2287](https://github.com/babashka/babashka/issues/2287))
+- `info` answers for a namespace's name or alias with its doc and file ([#2270](https://github.com/babashka/babashka/issues/2270))
+- `info` and `eldoc` without `ns` resolve vars and Java classes in the session's namespace ([#2270](https://github.com/babashka/babashka/issues/2270))
+- Test ops send test output under their own message id ([#2265](https://github.com/babashka/babashka/issues/2265))
+
+### Enhancements / fixes
+
+- `print-method`, `print-dup` and `clojure.pprint/write` use print vars such as `*print-length*` and `*print-level*` from `binding`, and `clojure.pprint/pprint` uses `*print-level*` ([#2274](https://github.com/babashka/babashka/issues/2274))
 - `ns-refers` and `ns-map` leave out names removed by `ns-unmap` or `:refer-clojure :exclude` ([babashka/sci#1135](https://github.com/babashka/sci/issues/1135), [babashka/sci#1136](https://github.com/babashka/sci/issues/1136))
-- nREPL: the CIDER ops come from cider-nrepl's own middleware stack, which adds `apropos`, `macroexpand`, `ns-*`, `resolve-missing`, `resource`, `spec-*`, `toggle-trace-*`, `profile-*`, `undef`, `classify-symbols` and `complete-doc` ([#1851](https://github.com/babashka/babashka/issues/1851), [@bbatsov](https://github.com/bbatsov))
+- An excluded or unmapped `clojure.core` macro such as `fn` throws `Unable to resolve symbol` instead of `No matching clause`
 - `clojure.lang.Var/pushThreadBindings`, `popThreadBindings` and `getThreadBindings` work on sci vars
 - `defrecord`, `deftype` and `reify` accept `clojure.lang.IBlockingDeref` ([#2277](https://github.com/babashka/babashka/issues/2277))
 - The REPL shows `C-x C-d` docs and eldoc again ([#2260](https://github.com/babashka/babashka/issues/2260))
 - Fix a 30 MB binary size increase from the REPL tail tip highlighter
+
+### Dependencies
+
+- Bump Clojure to `1.12.7`
 - Bump `cider-nrepl` to `0.64.0`
 - Bump `orchard` to `0.48.0`
 - Bump `jsoup` to `1.24.1`
 - Bump `cheshire` to `6.2.1`
 - Bump `jline` to `4.6.0`
 - Bump `babashka.ffi` to `0.1.3`
-- Bump Clojure to `1.12.7`
-- `print-method`, `print-dup` and `clojure.pprint/write` use print vars such as `*print-length*` and `*print-level*` from `binding`, and `clojure.pprint/pprint` uses `*print-level*` ([#2274](https://github.com/babashka/babashka/issues/2274))
-- nREPL test ops send test output under their own message id ([#2265](https://github.com/babashka/babashka/issues/2265))
-- nREPL: `info` answers for a namespace's name or alias with its doc and file ([#2270](https://github.com/babashka/babashka/issues/2270))
-- nREPL: `info` and `eldoc` without `ns` resolve vars and Java classes in the session's namespace ([#2270](https://github.com/babashka/babashka/issues/2270))
 
 ## 1.13.229 (2026-10-27)
 
