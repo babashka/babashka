@@ -100,9 +100,7 @@
              :else (throw (UnsupportedOperationException.
                            (str "Unsupported interface combination: "
                                 (set (map #(.getName ^Class %) ~'interfaces))
-                                ". Supported: {FileFilter+FilenameFilter}, {Comparable+Comparator}, "
-                                "{Seqable+ILookup}, {Seqable+Associative}, {ILookup+Associative}, "
-                                "{Seqable+ILookup+Associative}"))))
+                                ". Supported: {FileFilter+FilenameFilter}"))))
 
            (case (.getName ~(with-meta `(first ~'interfaces)
                               {:tag 'Class})) ;; single-interface branch
