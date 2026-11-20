@@ -187,8 +187,10 @@ rm -rf resources/*.class
 
 if [ -z "$BABASHKA_JAR" ]; then
     lein with-profiles "$BABASHKA_LEIN_PROFILES,+reflection,-uberjar" do run
-    # Generate wrapper classes for multi-interface reify support
+    # Generate wrapper classes for multi-interface reify support and copy them into target/classes
     (cd impl-java && clojure -T:build gen-classes)
+    mkdir -p target/classes/babashka/impl/java/io
+    cp -r impl-java/target/classes/babashka/impl/java/io/FileFilter__java target/classes/babashka/impl/java/io/
     lein with-profiles "$BABASHKA_LEIN_PROFILES" do clean, uberjar, metabom
     # target/classes is on deps.edn's paths for the src-java classes, the
     # AOT output of the uberjar would shadow the sources there
