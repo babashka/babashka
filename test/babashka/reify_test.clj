@@ -227,3 +227,35 @@
 (let [seg (->segment \"abcde\" 0 5)
       sub (.subSequence seg 2 5)]
   [(.length seg) (.charAt seg 2) (str sub) (str seg)])")))))
+
+(deftest reify-filefilter-filenamefilter-combo-test
+  (testing "reify object implementing both FileFilter and FilenameFilter"
+    (is (true? (bb nil "
+(import java.io.File java.io.FileFilter java.io.FilenameFilter)
+(def combo-filter (reify FileFilter FilenameFilter
+                    (accept [this ^File f]
+                      (.endsWith (.getName f) \".clj\"))
+                    (accept [this ^File f ^String name]
+                      (.endsWith name \".clj\"))))
+
+; Test FileFilter via File.listFiles (use \".\" which has .clj files)
+(def files1 (try
+  (.listFiles (File. \".\") combo-filter)
+  (catch Exception _
+    (into-array File []))))
+
+; Test FilenameFilter via File.list (use \".\" which has .clj files)
+(def names1 (try
+  (.list (File. \".\") combo-filter)
+  (catch Exception _
+    (into-array String []))))
+
+; Verify results
+(and
+  (array? files1)
+  (array? names1)
+  (pos? (count files1))
+  (pos? (count names1))
+  ; Current test file is in results
+  (some #(.endsWith (.getName ^File %) \"reify_test.clj\") files1)
+  (some #(.endsWith ^String % \"reify_test.clj\") names1))")))))

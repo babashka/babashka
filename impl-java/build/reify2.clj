@@ -1,9 +1,14 @@
 (ns build.reify2
   {:no-doc true}
   (:require [babashka.impl.reify2.interfaces :refer [interfaces]]
+            [clojure.string :as str]
             [insn.core :as insn]))
 
 (set! *warn-on-reflection* false)
+
+(def supported-combinations
+  "Set of supported multi-interface combinations. Each combination is a set of interface classes."
+  [#{java.io.FileFilter java.io.FilenameFilter}])
 
 (defn set-symbol! [s]
   [[:aconst-null]
@@ -217,12 +222,117 @@
 
 (def reified (babashka.impl.clojure.lang.IFn. {'invoke (fn [& _args] :yep)} {} {}))
 
+(defn generate-combo-class-name
+  "Generate canonical class name from a set of interfaces (sorted for consistency)"
+  [interface-set]
+  (->> interface-set
+       (map #(.getName ^Class %))
+       sort
+       (clojure.string/join "__")
+       (str "babashka.impl.")))
+
+(defn interface-data-combo
+  "Generate class definition for a wrapper implementing multiple interfaces"
+  [interface-set methods]
+  (let [combo-class-name  (generate-combo-class-name interface-set)
+        interface-symbols (->> interface-set (map #(symbol (.getName ^Class %))) vec)
+        method-names      (->> methods (map :name) distinct)]
+    {:name       (symbol combo-class-name)
+     :version    1.8
+     :interfaces (into interface-symbols
+                       ['sci.impl.types.ICustomType
+                        'clojure.lang.IMeta
+                        'clojure.lang.IObj])
+     :flags      [:super :public]
+     :fields     (into [{:flags #{:private},
+                         :name  "_methods" :type java.util.Map}
+                        {:flags #{:private},
+                         :name  "_interfaces" :type Object}
+                        {:flags #{:private},
+                         :name  "_protocols" :type Object}
+                        {:flags #{:private},
+                         :name  "_meta" :type clojure.lang.IPersistentMap}]
+                       (for [name method-names]
+                         {:flags #{:private :static},
+                          :name  (str "_sym_" name) :type clojure.lang.Symbol}))
+     :methods    (into [{:name :clinit
+                         :emit (reduce into
+                                       []
+                                       (conj
+                                        (mapv set-symbol! method-names)
+                                        [[:return]]))}
+                        {:name :init
+                         :desc [:void]
+                         :emit [[:aload 0]
+                                [:invokespecial :super :init [:void]]
+                                [:return]]}
+                        {:name :init
+                         :desc [java.util.Map Object Object :void]
+                         :emit [[:aload 0]
+                                [:invokespecial :super :init [:void]]
+                                [:aload 0]
+                                [:aload 1]
+                                [:putfield :this "_methods" java.util.Map]
+                                [:aload 0]
+                                [:aload 2]
+                                [:putfield :this "_interfaces" Object]
+                                [:aload 0]
+                                [:aload 3]
+                                [:putfield :this "_protocols" Object]
+                                [:return]]}
+                        {:name :meta
+                         :desc [clojure.lang.IPersistentMap]
+                         :emit [[:aload 0]
+                                [:getfield :this "_meta" clojure.lang.IPersistentMap]
+                                [:areturn]]}
+                        {:name :withMeta
+                         :desc [clojure.lang.IPersistentMap clojure.lang.IObj]
+                         :emit [[:aload 0]
+                                [:aload 1]
+                                [:putfield :this "_meta" clojure.lang.IPersistentMap]
+                                [:aload 0]
+                                [:areturn]]}
+                        {:name :getInterfaces
+                         :desc [Object]
+                         :emit [[:aload 0]
+                                [:getfield :this "_interfaces" Object]
+                                [:areturn]]}
+                        {:name :getMethods
+                         :desc [Object]
+                         :emit [[:aload 0]
+                                [:getfield :this "_methods" java.util.Map]
+                                [:areturn]]}
+                        {:name :getProtocols
+                         :desc [Object]
+                         :emit [[:aload 0]
+                                [:getfield :this "_protocols" Object]
+                                [:areturn]]}
+                        {:name :getFields
+                         :desc [Object]
+                         :emit [[:aconst-null]
+                                [:areturn]]}]
+                       (for [{:keys [name desc default]} methods]
+                         {:flags #{:public}, :name name
+                          :desc  desc
+                          :emit  (emit-method (first interface-set) name desc default)}))}))
+
 (defn gen-reified [i]
   (insn/write (doto (insn/visit (interface-data i (class->methods i)))
                 insn/define) "target/classes"))
 
+(defn gen-reified-combo
+  "Generate wrapper class for a set of interfaces.
+   Takes a set of interface classes, collects all methods from all interfaces,
+   deduplicates them, and generates a single wrapper class implementing all interfaces."
+  [interface-set]
+  (let [distinct-methods (->> interface-set (mapcat class->methods) distinct)]
+    (insn/write
+     (-> interface-set (interface-data-combo distinct-methods) insn/visit (doto insn/define))
+     "target/classes")))
+
 (defn gen-classes [_]
-  (run! gen-reified interfaces))
+  (run! gen-reified interfaces)
+  (run! gen-reified-combo supported-combinations))
 
 (comment
   (definterface IHaveManyPrimitives

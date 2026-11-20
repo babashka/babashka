@@ -46,6 +46,15 @@
       (invoke [this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20] (invoke-fn this a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 a10 a11 a12 a13 a14 a15 a16 a17 a18 a19 a20))
       (applyTo [this arglist] (apply-fn this arglist)))))
 
+(defn instantiate-combo-wrapper
+  "Instantiate a combo wrapper class using the class name and constructor args"
+  [class-name methods interfaces protocols]
+  (let [constructor (->> [java.util.Map Object Object]
+                         (into-array Class)
+                         (.getConstructor (Class/forName class-name)))
+        initargs    (into-array Object [methods interfaces protocols])]
+    (.newInstance constructor initargs)))
+
 (defn reify-object [m]
   (let [methods (:methods m)
         toString-fn (or (get methods 'toString)
@@ -74,31 +83,43 @@
 
 (defmacro gen-reify-fn []
   `(fn [~'m]
-     (when (> (count (:interfaces ~'m)) 1)
-       (throw (UnsupportedOperationException. "babashka reify only supports implementing a single interface")))
-     (if (empty? (:interfaces ~'m))
-       (reify
-         sci.impl.types.ICustomType
-         (getMethods [_] (:methods ~'m))
-         (getInterfaces [_] (:interfaces ~'m))
-         (getProtocols [_] (:protocols ~'m))
-         (getFields [_] nil))
-       (case (.getName ~(with-meta `(first (:interfaces ~'m))
-                          {:tag 'Class}))
-         ~@(mapcat identity
-                   (cons
-                    ["clojure.lang.IFn"
-                     `(reify-ifn ~'m)
-                     "java.lang.Object"
-                     `(reify-object ~'m)]
-                    (for [i interfaces]
-                      (let [in (.getName ^Class i)]
-                        [in
-                         `(new ~(symbol (str "babashka.impl." in))
-                               (:methods ~'m)
-                               (:interfaces ~'m)
-                               (:protocols ~'m))]))))
-         nil))))
+     (let [~'interfaces (:interfaces ~'m)]
+       (if (empty? ~'interfaces)
+         (reify
+           sci.impl.types.ICustomType
+           (getMethods [_] (:methods ~'m))
+           (getInterfaces [_] ~'interfaces)
+           (getProtocols [_] (:protocols ~'m))
+           (getFields [_] nil))
+
+         (if (> (count ~'interfaces) 1) ;; multi-interface branch
+           (cond
+             (= (set ~'interfaces) #{java.io.FileFilter java.io.FilenameFilter})
+             (instantiate-combo-wrapper "babashka.impl.java.io.FileFilter__java.io.FilenameFilter"
+                                        (:methods ~'m) ~'interfaces (:protocols ~'m))
+             :else (throw (UnsupportedOperationException.
+                           (str "Unsupported interface combination: "
+                                (set (map #(.getName ^Class %) ~'interfaces))
+                                ". Supported: {FileFilter+FilenameFilter}, {Comparable+Comparator}, "
+                                "{Seqable+ILookup}, {Seqable+Associative}, {ILookup+Associative}, "
+                                "{Seqable+ILookup+Associative}"))))
+
+           (case (.getName ~(with-meta `(first ~'interfaces)
+                              {:tag 'Class})) ;; single-interface branch
+             ~@(mapcat identity
+                       (cons
+                        ["clojure.lang.IFn"
+                         `(reify-ifn ~'m)
+                         "java.lang.Object"
+                         `(reify-object ~'m)]
+                        (for [i interfaces]
+                          (let [in (.getName ^Class i)]
+                            [in
+                             `(new ~(symbol (str "babashka.impl." in))
+                                   (:methods ~'m)
+                                   ~'interfaces
+                                   (:protocols ~'m))]))))
+             nil))))))
 
 (def reify-fn (gen-reify-fn))
 

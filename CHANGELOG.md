@@ -7,6 +7,14 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+### Enhancements
+
+- `reify` now supports implementing multiple Java interfaces simultaneously ([#603](https://github.com/babashka/babashka/issues/603))
+  - Supported: `FileFilter` + `FilenameFilter`
+  - This combination is pre-compiled as a wrapper class during build for optimal performance
+
 ## 1.13.230 (2026-11-19)
 
 ### Highlights

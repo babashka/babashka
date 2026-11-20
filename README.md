@@ -391,7 +391,8 @@ Differences with Clojure:
   maps. Ostensibly they work the same, but under the hood there are no Java
   classes that correspond to them.
 
-- Currently `reify` works only for one class at a time
+- `reify` supports implementing multiple Java interfaces simultaneously (currently
+  only supports: FileFilter+FilenameFilter)
 
 - The `clojure.core.async/go` macro is not (yet) supported. For compatibility it
   currently maps to `clojure.core.async/thread`. More info
