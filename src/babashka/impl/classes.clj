@@ -1340,9 +1340,10 @@
                                    (dissoc v :inherit))]
                            (assoc v :name class-name)))
         wrapper-class-entries [{:name "babashka.impl.java.io.FileFilter__java.io.FilenameFilter"
-                                :constructors [{:name "<init>"
-                                               :parameterTypes ["java.util.Map" "java.lang.Object" "java.lang.Object"]}]
-                                :allPublicMethods true}]
+                                :methods [{:name "<init>"
+                                          :parameterTypes ["java.util.Map" "java.lang.Object" "java.lang.Object"]}]
+                                :allPublicMethods true
+                                :allPublicConstructors true}]
         all-entries (concat entries constructors methods fields instance-checks superclass-fields custom-entries wrapper-class-entries)]
     all-entries))
 
