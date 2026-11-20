@@ -1339,7 +1339,11 @@
                                          (update :methods into inherited-methods)))
                                    (dissoc v :inherit))]
                            (assoc v :name class-name)))
-        all-entries (concat entries constructors methods fields instance-checks superclass-fields custom-entries)]
+        wrapper-class-entries [{:name "babashka.impl.java.io.FileFilter__java.io.FilenameFilter"
+                                :constructors [{:name "<init>"
+                                               :parameterTypes ["java.util.Map" "java.lang.Object" "java.lang.Object"]}]
+                                :allPublicMethods true}]
+        all-entries (concat entries constructors methods fields instance-checks superclass-fields custom-entries wrapper-class-entries)]
     all-entries))
 
 (defn generate-reflection-file
