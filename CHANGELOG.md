@@ -7,6 +7,17 @@ A preview of the next release can be installed from
 
 [Babashka](https://github.com/babashka/babashka): Native, fast starting Clojure interpreter for scripting
 
+## Unreleased
+
+### Breaking
+
+- `recur` in a `reify`, `deftype` or `defrecord` method takes the parameters after `this`. `(recur this x)` there throws `Mismatched argument count to recur` ([babashka/sci#1146](https://github.com/babashka/sci/pull/1146))
+
+### Enhancements / fixes
+
+- `recur` in `lazy-seq` takes no args and reruns the body ([babashka/sci#1145](https://github.com/babashka/sci/issues/1145))
+- Fix `lazy-seq` in a recurring `loop` or fn reading the locals of a later iteration
+
 ## 1.13.230 (2026-11-19)
 
 ### Highlights
