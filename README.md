@@ -196,7 +196,7 @@ Upgrade:
 pkg upgrade babashka
 ```
 
-The `lang/babashka` port makes use of the FreeBSD Linux emulation layer aka [Linuxulator](https://docs.freebsd.org/en/books/handbook/linuxemu/) to run the static binaries from [Github Releases](https://github.com/babashka/babashka/releases). In order for this package to work in FreeBSD it is therefore necessary to have the Linux ABI enabled at boot time and the service to be started.
+The `lang/babashka` port makes use of the FreeBSD Linux emulation layer aka [Linuxulator](https://docs.freebsd.org/en/books/handbook/linuxemu/) to run the dynamic linux-amd64 binary from [Github Releases](https://github.com/babashka/babashka/releases). In order for this package to work in FreeBSD it is therefore necessary to have the Linux ABI enabled at boot time and the service to be started.
 
 This can be done by the following commands in the shell
 
@@ -291,10 +291,10 @@ use the `--download-dir` argument:
 $ ./install --dir . --version 0.4.1 --download-dir .
 ```
 
-On Linux the script installs the dynamic binary when the system glibc is 2.17
+On Linux the script installs the dynamic binary when the system glibc is 2.28
 or newer. On musl systems like Alpine and on older glibc versions it falls
 back to the static binary. On FreeBSD the dynamic binary is picked when the
-Linuxulator is enabled with a linux_base providing glibc 2.17 or newer, such
+Linuxulator is enabled with a linux_base providing glibc 2.28 or newer, such
 as `linux_base-rl9`. Use `--static` or `--dynamic` to override:
 
 ``` shell
