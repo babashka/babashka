@@ -196,6 +196,8 @@ Upgrade:
 pkg upgrade babashka
 ```
 
+To install without `pkg`, see the [FreeBSD wiki page](https://github.com/babashka/babashka/wiki/FreeBSD).
+
 The `lang/babashka` port makes use of the FreeBSD Linux emulation layer aka [Linuxulator](https://docs.freebsd.org/en/books/handbook/linuxemu/) to run the dynamic linux-amd64 binary from [Github Releases](https://github.com/babashka/babashka/releases). In order for this package to work in FreeBSD it is therefore necessary to have the Linux ABI enabled at boot time and the service to be started.
 
 This can be done by the following commands in the shell
