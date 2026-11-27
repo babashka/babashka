@@ -15,6 +15,10 @@ A preview of the next release can be installed from
 - `recur` in `lazy-seq` takes no args and reruns the body ([babashka/sci#1145](https://github.com/babashka/sci/issues/1145))
 - Fix `lazy-seq` in a recurring `loop` or fn reading the locals of a later iteration
 
+### Dependencies
+
+- Bump `jline` to `4.7.1`
+
 ## 1.13.230 (2026-11-19)
 
 ### Highlights
